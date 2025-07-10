@@ -36,10 +36,16 @@ function novel_game_meta_box_callback($post) {
     $character = get_post_meta($post->ID, '_character_image', true);
     $dialogue = get_post_meta($post->ID, '_dialogue_text', true);
     $choices = get_post_meta($post->ID, '_choices', true);
+    $game_title = get_post_meta($post->ID, '_game_title', true);
 
     // WordPressメディアアップローダ用スクリプト
     wp_enqueue_media();
     ?>
+    <p>
+        <label>ゲームタイトル:
+            <input type="text" name="game_title" value="<?php echo esc_attr($game_title); ?>" style="width: 100%;" placeholder="このシーンが属するゲームのタイトルを入力してください">
+        </label>
+    </p>
     <p>
         <label>背景画像:
             <input type="hidden" name="background_image" id="novel_background_image" value="<?php echo esc_attr($background); ?>">
@@ -207,6 +213,9 @@ function novel_game_save_meta_box_data($post_id) {
     }
     if (array_key_exists('choices', $_POST)) {
         update_post_meta($post_id, '_choices', sanitize_textarea_field($_POST['choices']));
+    }
+    if (array_key_exists('game_title', $_POST)) {
+        update_post_meta($post_id, '_game_title', sanitize_text_field($_POST['game_title']));
     }
 }
 add_action('save_post', 'novel_game_save_meta_box_data');
