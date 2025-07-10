@@ -24,6 +24,7 @@ add_filter('the_content', function($content) {
     $character = esc_url(get_post_meta($post->ID, '_character_image', true));
     $dialogue = get_post_meta($post->ID, '_dialogue_text', true);
     $choices_raw = get_post_meta($post->ID, '_choices', true);
+    $game_title = get_post_meta($post->ID, '_game_title', true);
 
     $dialogue_lines = array_filter(array_map('trim', explode("\n", $dialogue)));
     $choices = array();
@@ -41,6 +42,11 @@ add_filter('the_content', function($content) {
 
     ob_start();
     ?>
+    <?php if ($game_title): ?>
+    <div id="novel-game-title" style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #333;">
+        <?php echo esc_html($game_title); ?>
+    </div>
+    <?php endif; ?>
     <div id="novel-game-container" style="background-image:url('<?php echo esc_url($background); ?>'); min-height: 400px; position: relative;">
         <?php if ($character): ?>
         <img id="novel-character" src="<?php echo esc_url($character); ?>" alt="character" style="position:absolute;left:50%;bottom:100px;max-height:50%;transform:translateX(-50%);z-index:2;">
