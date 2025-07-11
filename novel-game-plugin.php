@@ -74,8 +74,8 @@ add_action('wp_enqueue_scripts', 'novel_game_enqueue_scripts');
  */
 function noveltool_add_admin_menu() {
     add_menu_page(
-        'ノベルゲーム',
-        'ノベルゲーム',
+        __('ノベルゲーム', 'noveltool'),
+        __('ノベルゲーム', 'noveltool'),
         'edit_posts',
         'novel-games',
         'noveltool_games_list_page',
