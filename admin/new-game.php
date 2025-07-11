@@ -13,8 +13,8 @@ if (!defined('ABSPATH')) {
 function noveltool_new_game_page() {
     ?>
     <div class="wrap">
-        <h1>新規ゲーム作成</h1>
-        <p>新しいノベルゲームを作成します。まずはゲームタイトルを入力してください。</p>
+        <h1><?php _e('新規ゲーム作成', 'noveltool'); ?></h1>
+        <p><?php _e('新しいノベルゲームを作成します。まずはゲームタイトルを入力してください。', 'noveltool'); ?></p>
         
         <form method="post" action="" id="new-game-form">
             <?php wp_nonce_field('noveltool_new_game_nonce', 'noveltool_new_game_nonce'); ?>
