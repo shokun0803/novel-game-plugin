@@ -1,70 +1,158 @@
 <?php
 /**
  * Plugin Name: Novel Game Plugin
+ * Plugin URI: https://github.com/shokun0803/novel-game-plugin
  * Description: WordPressでノベルゲームを作成できるプラグイン。
  * Version: 1.1.0
  * Author: Your Name
+ * Author URI: https://github.com/shokun0803
+ * Text Domain: novel-game-plugin
+ * Domain Path: /languages
+ * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ *
+ * @package NovelGamePlugin
+ * @since 1.0.0
  */
 
-if (!defined('ABSPATH')) {
+// 直接アクセスを防ぐ
+if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// プラグインの基本定数を定義
+define( 'NOVEL_GAME_PLUGIN_VERSION', '1.1.0' );
+define( 'NOVEL_GAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'NOVEL_GAME_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
+define( 'NOVEL_GAME_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+define( 'NOVEL_GAME_PLUGIN_TEXT_DOMAIN', 'novel-game-plugin' );
 
-require_once plugin_dir_path(__FILE__) . 'includes/post-types.php';
-require_once plugin_dir_path(__FILE__) . 'admin/meta-boxes.php';
+// 必要なファイルをインクルード
+require_once NOVEL_GAME_PLUGIN_PATH . 'includes/post-types.php';
+require_once NOVEL_GAME_PLUGIN_PATH . 'admin/meta-boxes.php';
+
+/**
+ * プラグインの初期化
+ * 
+ * @since 1.0.0
+ */
+function noveltool_init() {
+    // 言語ファイルの読み込み
+    load_plugin_textdomain( 
+        NOVEL_GAME_PLUGIN_TEXT_DOMAIN, 
+        false, 
+        dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages' 
+    );
+}
+add_action( 'plugins_loaded', 'noveltool_init' );
 
 
-// カスタム投稿タイプ「novel_game」の本文出力をノベルゲームビューに置き換え
-add_filter('the_content', function($content) {
+/**
+ * カスタム投稿タイプ「novel_game」のコンテンツをノベルゲームビューに置き換える
+ * 
+ * @param string $content 投稿のコンテンツ
+ * @return string 変更されたコンテンツ
+ * @since 1.0.0
+ */
+function noveltool_filter_novel_game_content( $content ) {
     global $post;
-    if (!is_singular('novel_game') || !in_the_loop() || !is_main_query()) return $content;
-
-    $background = esc_url(get_post_meta($post->ID, '_background_image', true));
-    $character = esc_url(get_post_meta($post->ID, '_character_image', true));
-    $dialogue = get_post_meta($post->ID, '_dialogue_text', true);
-    $choices_raw = get_post_meta($post->ID, '_choices', true);
-    $game_title = get_post_meta($post->ID, '_game_title', true);
-
-    $dialogue_lines = array_filter(array_map('trim', explode("\n", $dialogue)));
+    
+    // 適切な条件でのみ処理を実行
+    if ( ! is_singular( 'novel_game' ) || ! in_the_loop() || ! is_main_query() ) {
+        return $content;
+    }
+    
+    // セキュリティチェック：投稿が存在するかチェック
+    if ( ! $post || ! isset( $post->ID ) ) {
+        return $content;
+    }
+    
+    // メタデータの取得
+    $background = get_post_meta( $post->ID, '_background_image', true );
+    $character = get_post_meta( $post->ID, '_character_image', true );
+    $dialogue = get_post_meta( $post->ID, '_dialogue_text', true );
+    $choices_raw = get_post_meta( $post->ID, '_choices', true );
+    $game_title = get_post_meta( $post->ID, '_game_title', true );
+    
+    // セリフの処理
+    $dialogue_lines = array();
+    if ( $dialogue ) {
+        $dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
+    }
+    
+    // 選択肢の処理
     $choices = array();
-    if ($choices_raw) {
-        foreach (explode("\n", $choices_raw) as $line) {
-            $parts = explode('|', $line);
-            if (count($parts) === 2) {
-                $choices[] = array(
-                    'text' => trim($parts[0]),
-                    'nextScene' => get_permalink(trim($parts[1]))
-                );
+    if ( $choices_raw ) {
+        foreach ( explode( "\n", $choices_raw ) as $line ) {
+            $parts = explode( '|', $line );
+            if ( count( $parts ) === 2 ) {
+                $post_id = intval( trim( $parts[1] ) );
+                $permalink = get_permalink( $post_id );
+                
+                if ( $permalink ) {
+                    $choices[] = array(
+                        'text' => trim( $parts[0] ),
+                        'nextScene' => $permalink,
+                    );
+                }
             }
         }
     }
-
+    
+    // テンプレートの出力
     ob_start();
-    ?>
-    <?php if ($game_title): ?>
-    <div id="novel-game-title" style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #333;">
-        <?php echo esc_html($game_title); ?>
-    </div>
+    
+    if ( $game_title ) : ?>
+        <div id="novel-game-title" class="novel-game-title">
+            <?php echo esc_html( $game_title ); ?>
+        </div>
     <?php endif; ?>
-    <div id="novel-game-container" style="background-image:url('<?php echo esc_url($background); ?>'); min-height: 400px; position: relative;">
-        <?php if ($character): ?>
-        <img id="novel-character" src="<?php echo esc_url($character); ?>" alt="character" style="position:absolute;left:50%;bottom:100px;max-height:50%;transform:translateX(-50%);z-index:2;">
+    
+    <div id="novel-game-container" class="novel-game-container" style="background-image: url('<?php echo esc_url( $background ); ?>');">
+        <?php if ( $character ) : ?>
+            <img id="novel-character" class="novel-character" src="<?php echo esc_url( $character ); ?>" alt="<?php echo esc_attr__( 'キャラクター', 'novel-game-plugin' ); ?>" />
         <?php endif; ?>
-        <div id="novel-dialogue-box" style="position:absolute;bottom:0;width:100%;background:rgba(0,0,0,0.7);color:#fff;padding:20px;z-index:3;">
+        
+        <div id="novel-dialogue-box" class="novel-dialogue-box">
             <span id="novel-dialogue-text"></span>
         </div>
-        <div id="novel-choices" style="position:absolute;bottom:80px;width:100%;text-align:center;z-index:4;"></div>
-        <script id="novel-dialogue-data" type="application/json"><?php echo json_encode($dialogue_lines, JSON_UNESCAPED_UNICODE); ?></script>
-        <script id="novel-choices-data" type="application/json"><?php echo json_encode($choices, JSON_UNESCAPED_UNICODE); ?></script>
+        
+        <div id="novel-choices" class="novel-choices"></div>
+        
+        <script id="novel-dialogue-data" type="application/json">
+            <?php echo wp_json_encode( $dialogue_lines, JSON_UNESCAPED_UNICODE ); ?>
+        </script>
+        
+        <script id="novel-choices-data" type="application/json">
+            <?php echo wp_json_encode( $choices, JSON_UNESCAPED_UNICODE ); ?>
+        </script>
     </div>
+    
     <?php
     return ob_get_clean();
-}, 20);
-
-function novel_game_enqueue_scripts() {
-    wp_enqueue_script('novel-game-frontend', plugin_dir_url(__FILE__) . 'js/frontend.js', array('jquery'), '1.1.0', true);
-    wp_enqueue_style('novel-game-style', plugin_dir_url(__FILE__) . 'css/style.css', array(), '1.1.0');
 }
-add_action('wp_enqueue_scripts', 'novel_game_enqueue_scripts');
+add_filter( 'the_content', 'noveltool_filter_novel_game_content', 20 );
+
+/**
+ * フロントエンドとバックエンドのスクリプト・スタイルを読み込む
+ * 
+ * @since 1.0.0
+ */
+function noveltool_enqueue_scripts() {
+    wp_enqueue_script( 
+        'novel-game-frontend', 
+        NOVEL_GAME_PLUGIN_URL . 'js/frontend.js', 
+        array( 'jquery' ), 
+        NOVEL_GAME_PLUGIN_VERSION, 
+        true 
+    );
+    
+    wp_enqueue_style( 
+        'novel-game-style', 
+        NOVEL_GAME_PLUGIN_URL . 'css/style.css', 
+        array(), 
+        NOVEL_GAME_PLUGIN_VERSION 
+    );
+}
+add_action( 'wp_enqueue_scripts', 'noveltool_enqueue_scripts' );
 ?>
