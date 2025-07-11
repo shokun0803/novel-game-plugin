@@ -13,6 +13,7 @@ if (!defined('ABSPATH')) {
 
 require_once plugin_dir_path(__FILE__) . 'includes/post-types.php';
 require_once plugin_dir_path(__FILE__) . 'admin/meta-boxes.php';
+require_once plugin_dir_path(__FILE__) . 'admin/new-game.php';
 
 
 // カスタム投稿タイプ「novel_game」の本文出力をノベルゲームビューに置き換え
@@ -67,4 +68,146 @@ function novel_game_enqueue_scripts() {
     wp_enqueue_style('novel-game-style', plugin_dir_url(__FILE__) . 'css/style.css', array(), '1.1.0');
 }
 add_action('wp_enqueue_scripts', 'novel_game_enqueue_scripts');
+
+/**
+ * 管理画面メニューの追加
+ */
+function noveltool_add_admin_menu() {
+    add_menu_page(
+        'ノベルゲーム',
+        'ノベルゲーム',
+        'edit_posts',
+        'novel-games',
+        'noveltool_games_list_page',
+        'dashicons-book',
+        25
+    );
+    
+    add_submenu_page(
+        'novel-games',
+        '新規ゲーム作成',
+        '新規作成',
+        'edit_posts',
+        'novel-games-new',
+        'noveltool_new_game_page'
+    );
+    
+    add_submenu_page(
+        'novel-games',
+        'ゲーム一覧',
+        'ゲーム一覧',
+        'edit_posts',
+        'edit.php?post_type=novel_game'
+    );
+}
+add_action('admin_menu', 'noveltool_add_admin_menu');
+
+/**
+ * ゲーム一覧ページ（メインページ）
+ */
+function noveltool_games_list_page() {
+    ?>
+    <div class="wrap">
+        <h1>ノベルゲーム</h1>
+        <p>ノベルゲームを管理します。</p>
+        
+        <div class="notice notice-info">
+            <p>
+                <strong>はじめに</strong><br>
+                新しいノベルゲームを作成するには、「新規作成」をクリックしてください。
+            </p>
+        </div>
+        
+        <div class="card">
+            <h2>クイックアクション</h2>
+            <p>
+                <a href="<?php echo admin_url('admin.php?page=novel-games-new'); ?>" class="button button-primary">
+                    新規ゲーム作成
+                </a>
+                <a href="<?php echo admin_url('edit.php?post_type=novel_game'); ?>" class="button">
+                    ゲーム一覧を表示
+                </a>
+            </p>
+        </div>
+        
+        <?php
+        // 最近作成されたゲームを表示
+        $recent_games = get_posts([
+            'post_type' => 'novel_game',
+            'posts_per_page' => 5,
+            'post_status' => ['publish', 'draft'],
+            'orderby' => 'date',
+            'order' => 'DESC'
+        ]);
+        
+        if (!empty($recent_games)) {
+            ?>
+            <div class="card">
+                <h2>最近作成されたゲーム</h2>
+                <table class="widefat">
+                    <thead>
+                        <tr>
+                            <th>ゲームタイトル</th>
+                            <th>シーン名</th>
+                            <th>ステータス</th>
+                            <th>作成日</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($recent_games as $game): ?>
+                        <tr>
+                            <td>
+                                <strong><?php echo esc_html(get_post_meta($game->ID, '_game_title', true)); ?></strong>
+                            </td>
+                            <td><?php echo esc_html($game->post_title); ?></td>
+                            <td>
+                                <span class="status-<?php echo esc_attr($game->post_status); ?>">
+                                    <?php echo esc_html($game->post_status === 'publish' ? '公開中' : '下書き'); ?>
+                                </span>
+                            </td>
+                            <td><?php echo esc_html(get_the_date('Y-m-d H:i', $game->ID)); ?></td>
+                            <td>
+                                <a href="<?php echo get_edit_post_link($game->ID); ?>" class="button button-small">
+                                    編集
+                                </a>
+                                <?php if ($game->post_status === 'publish'): ?>
+                                <a href="<?php echo get_permalink($game->ID); ?>" class="button button-small" target="_blank">
+                                    表示
+                                </a>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php
+        }
+        ?>
+    </div>
+    
+    <style>
+    .card {
+        background: #fff;
+        border: 1px solid #ccd0d4;
+        border-radius: 4px;
+        margin: 16px 0;
+        padding: 16px;
+    }
+    .card h2 {
+        margin: 0 0 16px 0;
+        padding: 0;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+    }
+    .status-publish {
+        color: #46b450;
+    }
+    .status-draft {
+        color: #ffb900;
+    }
+    </style>
+    <?php
+}
 ?>
