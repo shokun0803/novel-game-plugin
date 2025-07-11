@@ -10,9 +10,16 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// テキストドメインの読み込み
+function noveltool_load_textdomain() {
+    load_plugin_textdomain('noveltool', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+}
+add_action('init', 'noveltool_load_textdomain');
+
 
 require_once plugin_dir_path(__FILE__) . 'includes/post-types.php';
 require_once plugin_dir_path(__FILE__) . 'admin/meta-boxes.php';
+require_once plugin_dir_path(__FILE__) . 'includes/game-post-listing.php';
 
 
 // カスタム投稿タイプ「novel_game」の本文出力をノベルゲームビューに置き換え

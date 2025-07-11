@@ -37,3 +37,63 @@
     border: 1px solid black;
     cursor: pointer;
 }
+
+/* ゲーム別投稿一覧のスタイル */
+.noveltool-game-posts {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.noveltool-game-title {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.5em;
+    border-bottom: 2px solid #0073aa;
+    padding-bottom: 10px;
+}
+
+.noveltool-posts-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.noveltool-posts-list li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.3s ease;
+}
+
+.noveltool-posts-list li:hover {
+    background-color: #f0f0f0;
+}
+
+.noveltool-posts-list li:last-child {
+    border-bottom: none;
+}
+
+.noveltool-posts-list a {
+    text-decoration: none;
+    color: #0073aa;
+    font-weight: bold;
+}
+
+.noveltool-posts-list a:hover {
+    text-decoration: underline;
+    color: #005a87;
+}
+
+.noveltool-post-excerpt {
+    margin-top: 5px;
+    color: #666;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+.noveltool-all-games {
+    margin: 20px 0;
+}
