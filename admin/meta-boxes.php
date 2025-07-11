@@ -37,15 +37,37 @@ function novel_game_meta_box_callback($post) {
     $dialogue = get_post_meta($post->ID, '_dialogue_text', true);
     $choices = get_post_meta($post->ID, '_choices', true);
     $game_title = get_post_meta($post->ID, '_game_title', true);
+    $game_description = get_post_meta($post->ID, '_game_description', true);
+    $game_title_image = get_post_meta($post->ID, '_game_title_image', true);
 
     // WordPressメディアアップローダ用スクリプト
     wp_enqueue_media();
     ?>
-    <p>
-        <label>ゲームタイトル:
-            <input type="text" name="game_title" value="<?php echo esc_attr($game_title); ?>" style="width: 100%;" placeholder="このシーンが属するゲームのタイトルを入力してください">
-        </label>
-    </p>
+    <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; background-color: #f9f9f9;">
+        <h3 style="margin-top: 0; color: #333;">ゲーム基本情報</h3>
+        <p>
+            <label><strong>ゲームタイトル:</strong><br>
+                <input type="text" name="game_title" value="<?php echo esc_attr($game_title); ?>" style="width: 100%;" placeholder="ゲームのタイトルを入力してください">
+            </label>
+        </p>
+        <p>
+            <label><strong>ゲーム概要:</strong><br>
+                <textarea name="game_description" rows="3" style="width: 100%;" placeholder="ゲームの概要・説明を入力してください"><?php echo esc_textarea($game_description); ?></textarea>
+            </label>
+        </p>
+        <p>
+            <label><strong>タイトル画面画像:</strong><br>
+                <input type="hidden" name="game_title_image" id="novel_game_title_image" value="<?php echo esc_attr($game_title_image); ?>">
+                <img id="novel_game_title_image_preview" src="<?php echo esc_url($game_title_image); ?>" style="max-width:200px; max-height:150px; display:<?php echo $game_title_image ? 'block' : 'none'; ?>; margin-bottom: 10px;" />
+                <br>
+                <button type="button" class="button" id="novel_game_title_image_button">タイトル画像を選択</button>
+                <button type="button" class="button" id="novel_game_title_image_remove" style="<?php echo $game_title_image ? '' : 'display:none;'; ?>">画像を削除</button>
+            </label>
+        </p>
+    </div>
+    
+    <div style="border: 1px solid #ddd; padding: 15px; background-color: #fff;">
+        <h3 style="margin-top: 0; color: #333;">シーンデータ</h3>
     <p>
         <label>背景画像:
             <input type="hidden" name="background_image" id="novel_background_image" value="<?php echo esc_attr($background); ?>">
@@ -70,6 +92,7 @@ function novel_game_meta_box_callback($post) {
         </table>
         <button type="button" class="button" id="novel-choice-add">選択肢を追加</button>
         <input type="hidden" name="choices" id="novel_choices_hidden" value="<?php echo esc_textarea($choices); ?>">
+    </div>
     </div>
     <script>
     jQuery(function($){
@@ -196,6 +219,32 @@ function novel_game_meta_box_callback($post) {
         }
         mediaUploader('#novel_background_image_button', '#novel_background_image', '#novel_background_image_preview');
         mediaUploader('#novel_character_image_button', '#novel_character_image', '#novel_character_image_preview');
+        mediaUploader('#novel_game_title_image_button', '#novel_game_title_image', '#novel_game_title_image_preview');
+        
+        // タイトル画像削除ボタン
+        $('#novel_game_title_image_remove').on('click', function(e) {
+            e.preventDefault();
+            $('#novel_game_title_image').val('');
+            $('#novel_game_title_image_preview').hide();
+            $(this).hide();
+        });
+        
+        // タイトル画像選択時に削除ボタンを表示
+        $('#novel_game_title_image_button').on('click', function(e) {
+            e.preventDefault();
+            var custom_uploader = wp.media({
+                title: 'タイトル画像を選択',
+                button: { text: 'この画像を使う' },
+                multiple: false
+            })
+            .on('select', function() {
+                var attachment = custom_uploader.state().get('selection').first().toJSON();
+                $('#novel_game_title_image').val(attachment.url);
+                $('#novel_game_title_image_preview').attr('src', attachment.url).show();
+                $('#novel_game_title_image_remove').show();
+            })
+            .open();
+        });
     });
     </script>
 <?php
@@ -216,6 +265,12 @@ function novel_game_save_meta_box_data($post_id) {
     }
     if (array_key_exists('game_title', $_POST)) {
         update_post_meta($post_id, '_game_title', sanitize_text_field($_POST['game_title']));
+    }
+    if (array_key_exists('game_description', $_POST)) {
+        update_post_meta($post_id, '_game_description', sanitize_textarea_field($_POST['game_description']));
+    }
+    if (array_key_exists('game_title_image', $_POST)) {
+        update_post_meta($post_id, '_game_title_image', sanitize_text_field($_POST['game_title_image']));
     }
 }
 add_action('save_post', 'novel_game_save_meta_box_data');
