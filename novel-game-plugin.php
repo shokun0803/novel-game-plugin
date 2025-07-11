@@ -155,4 +155,21 @@ function noveltool_enqueue_scripts() {
     );
 }
 add_action( 'wp_enqueue_scripts', 'noveltool_enqueue_scripts' );
+
+/**
+ * アーカイブテンプレートの読み込み
+ * 
+ * @param string $template テンプレートファイルパス
+ * @return string 変更後のテンプレートファイルパス
+ */
+function novel_game_load_archive_template($template) {
+    if (is_post_type_archive('novel_game')) {
+        $plugin_template = plugin_dir_path(__FILE__) . 'templates/archive-novel_game.php';
+        if (file_exists($plugin_template)) {
+            return $plugin_template;
+        }
+    }
+    return $template;
+}
+add_filter('archive_template', 'novel_game_load_archive_template');
 ?>
