@@ -1,7 +1,7 @@
 <?php
 /**
  * カスタム投稿タイプの登録と管理
- * 
+ *
  * @package NovelGamePlugin
  * @since 1.0.0
  */
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * ノベルゲーム用のカスタム投稿タイプを登録
- * 
+ *
  * @since 1.0.0
  */
 function noveltool_register_post_type() {
@@ -46,7 +46,7 @@ function noveltool_register_post_type() {
         'items_list_navigation' => __( 'ノベルゲーム一覧ナビゲーション', 'novel-game-plugin' ),
         'filter_items_list'     => __( 'ノベルゲーム一覧をフィルター', 'novel-game-plugin' ),
     );
-    
+
     $args = array(
         'label'                 => __( 'ノベルゲーム', 'novel-game-plugin' ),
         'description'           => __( 'ノベルゲームのシーンを管理', 'novel-game-plugin' ),
@@ -68,14 +68,14 @@ function noveltool_register_post_type() {
         'capability_type'       => 'post',
         'show_in_rest'          => true,
     );
-    
+
     register_post_type( 'novel_game', $args );
 }
 add_action( 'init', 'noveltool_register_post_type' );
 
 /**
  * 管理画面の投稿一覧にゲームタイトル列を追加
- * 
+ *
  * @param array $columns 既存の列
  * @return array 修正された列
  * @since 1.0.0
@@ -88,8 +88,8 @@ add_filter( 'manage_novel_game_posts_columns', 'noveltool_add_custom_columns' );
 
 /**
  * ゲームタイトル列の内容を表示
- * 
- * @param string $column 列名
+ *
+ * @param string $column  列名
  * @param int    $post_id 投稿ID
  * @since 1.0.0
  */
@@ -105,7 +105,7 @@ add_action( 'manage_novel_game_posts_custom_column', 'noveltool_custom_column_co
 
 /**
  * ゲームタイトル列をソート可能にする
- * 
+ *
  * @param array $columns ソート可能な列
  * @return array 修正された列
  * @since 1.0.0
@@ -118,7 +118,7 @@ add_filter( 'manage_edit-novel_game_sortable_columns', 'noveltool_sortable_colum
 
 /**
  * ゲームタイトルでのソート処理
- * 
+ *
  * @param WP_Query $query WPクエリオブジェクト
  * @since 1.0.0
  */
@@ -126,7 +126,7 @@ function noveltool_orderby( $query ) {
     if ( ! is_admin() || ! $query->is_main_query() ) {
         return;
     }
-    
+
     if ( 'game_title' === $query->get( 'orderby' ) ) {
         $query->set( 'meta_key', '_game_title' );
         $query->set( 'orderby', 'meta_value' );
