@@ -21,11 +21,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // プラグインの基本定数を定義
-define( 'NOVEL_GAME_PLUGIN_VERSION', '1.1.0' );
-define( 'NOVEL_GAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'NOVEL_GAME_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
-define( 'NOVEL_GAME_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
-define( 'NOVEL_GAME_PLUGIN_TEXT_DOMAIN', 'novel-game-plugin' );
+if ( ! defined( 'NOVEL_GAME_PLUGIN_VERSION' ) ) {
+    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.1.0' );
+}
+if ( ! defined( 'NOVEL_GAME_PLUGIN_URL' ) ) {
+    define( 'NOVEL_GAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+}
+if ( ! defined( 'NOVEL_GAME_PLUGIN_PATH' ) ) {
+    define( 'NOVEL_GAME_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
+}
+if ( ! defined( 'NOVEL_GAME_PLUGIN_BASENAME' ) ) {
+    define( 'NOVEL_GAME_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+}
+if ( ! defined( 'NOVEL_GAME_PLUGIN_TEXT_DOMAIN' ) ) {
+    define( 'NOVEL_GAME_PLUGIN_TEXT_DOMAIN', 'novel-game-plugin' );
+}
 
 // 必要なファイルをインクルード
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/post-types.php';
