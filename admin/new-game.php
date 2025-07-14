@@ -492,6 +492,9 @@ function noveltool_create_new_game( $game_title ) {
         // ゲームタイトルをメタデータとして保存
         update_post_meta( $new_id, '_game_title', $game_title );
         
+        // ゲームタイトルをグローバル設定としても保存
+        update_option( 'noveltool_game_title', $game_title );
+        
         // デフォルトのセリフを設定
         $default_dialogue = sprintf( __( 'ようこそ「%s」へ！', 'novel-game-plugin' ), $game_title );
         update_post_meta( $new_id, '_dialogue_text', $default_dialogue );
