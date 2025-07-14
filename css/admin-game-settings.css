@@ -1,0 +1,194 @@
+/**
+ * ゲーム設定ページのスタイル
+ *
+ * @package NovelGamePlugin
+ * @since 1.1.0
+ */
+
+.noveltool-game-settings-form {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.noveltool-game-settings-form h2 {
+    margin-top: 0;
+    color: #23282d;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.noveltool-game-settings-form .form-table th {
+    width: 200px;
+    padding: 15px 10px 15px 0;
+    vertical-align: top;
+    font-weight: 600;
+}
+
+.noveltool-game-settings-form .form-table td {
+    padding: 15px 10px;
+}
+
+.noveltool-game-settings-form input[type="text"],
+.noveltool-game-settings-form textarea {
+    font-size: 14px;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.07);
+    transition: border-color 0.3s;
+}
+
+.noveltool-game-settings-form input[type="text"]:focus,
+.noveltool-game-settings-form textarea:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+.noveltool-game-settings-form .description {
+    margin-top: 5px;
+    font-style: italic;
+    color: #666;
+    font-size: 13px;
+}
+
+.noveltool-game-settings-form textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* 画像プレビュー関連のスタイル */
+.noveltool-game-settings-form #game_title_image_preview {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 5px;
+    background: #f9f9f9;
+}
+
+.noveltool-game-settings-form .button {
+    margin-right: 10px;
+}
+
+.noveltool-game-settings-form .button-primary {
+    background: #0073aa;
+    border-color: #0073aa;
+    color: #fff;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 3px;
+    transition: background-color 0.3s;
+}
+
+.noveltool-game-settings-form .button-primary:hover {
+    background: #005a87;
+    border-color: #005a87;
+}
+
+/* ヘルプセクション */
+.noveltool-help-section {
+    background: #f9f9f9;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.noveltool-help-section h3 {
+    margin-top: 0;
+    color: #23282d;
+    font-size: 1.1em;
+    margin-bottom: 15px;
+}
+
+.noveltool-help-section p {
+    margin-bottom: 10px;
+    line-height: 1.5;
+    color: #555;
+}
+
+.noveltool-help-section p:last-child {
+    margin-bottom: 0;
+}
+
+/* 通知メッセージ */
+.notice {
+    border-left: 4px solid #ddd;
+    padding: 12px;
+    margin: 20px 0;
+    background: #fff;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.notice.notice-success {
+    border-left-color: #46b450;
+}
+
+.notice.notice-error {
+    border-left-color: #dc3232;
+}
+
+.notice p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 782px) {
+    .noveltool-game-settings-form .form-table th,
+    .noveltool-game-settings-form .form-table td {
+        display: block;
+        width: 100%;
+        padding: 10px 0;
+    }
+    
+    .noveltool-game-settings-form .form-table th {
+        border-bottom: none;
+        padding-bottom: 5px;
+    }
+    
+    .noveltool-game-settings-form input[type="text"],
+    .noveltool-game-settings-form textarea {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .noveltool-game-settings-form #game_title_image_preview {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .noveltool-game-settings-form .button {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+}
+
+/* フォームの見た目を向上 */
+.noveltool-game-settings-form .form-table tr:not(:last-child) {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.noveltool-game-settings-form .form-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* 送信ボタンの見た目 */
+.noveltool-game-settings-form .submit {
+    border-top: 1px solid #e5e5e5;
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+.noveltool-game-settings-form .submit input[type="submit"] {
+    padding: 10px 20px;
+    font-size: 16px;
+    line-height: 1.5;
+}

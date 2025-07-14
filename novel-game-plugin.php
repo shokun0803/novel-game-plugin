@@ -41,6 +41,7 @@ if ( ! defined( 'NOVEL_GAME_PLUGIN_TEXT_DOMAIN' ) ) {
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/post-types.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/meta-boxes.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/new-game.php';
+require_once NOVEL_GAME_PLUGIN_PATH . 'admin/game-settings.php';
 
 /**
  * プラグインの初期化
