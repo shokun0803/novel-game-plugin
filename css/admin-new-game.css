@@ -1,0 +1,95 @@
+/**
+ * 新規ゲーム作成ページのスタイル
+ *
+ * @package NovelGamePlugin
+ * @since 1.1.0
+ */
+
+.noveltool-new-game-form {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.noveltool-new-game-form h2 {
+    margin-top: 0;
+    color: #23282d;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.noveltool-new-game-form .form-table th {
+    width: 200px;
+    padding: 15px 10px 15px 0;
+    vertical-align: top;
+}
+
+.noveltool-new-game-form .form-table td {
+    padding: 15px 10px;
+}
+
+.noveltool-new-game-form input[type="text"] {
+    font-size: 14px;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.07);
+    transition: border-color 0.3s;
+}
+
+.noveltool-new-game-form input[type="text"]:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+.noveltool-new-game-form .description {
+    margin-top: 5px;
+    font-style: italic;
+    color: #666;
+}
+
+.noveltool-help-section {
+    background: #f9f9f9;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.noveltool-help-section h3 {
+    margin-top: 0;
+    color: #23282d;
+    font-size: 1.1em;
+}
+
+.noveltool-help-section p {
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.noveltool-help-section p:last-child {
+    margin-bottom: 0;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 782px) {
+    .noveltool-new-game-form .form-table th,
+    .noveltool-new-game-form .form-table td {
+        display: block;
+        width: 100%;
+        padding: 10px 0;
+    }
+    
+    .noveltool-new-game-form .form-table th {
+        border-bottom: none;
+        padding-bottom: 5px;
+    }
+    
+    .noveltool-new-game-form input[type="text"] {
+        width: 100%;
+        max-width: 100%;
+    }
+}
