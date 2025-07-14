@@ -62,7 +62,7 @@ jQuery( function( $ ) {
             var gameTitle = $( '#game_title' ).val().trim();
             
             if ( ! gameTitle ) {
-                alert( 'ゲームタイトルを入力してください。' );
+                alert( novelGameSettings.strings.titleRequired );
                 e.preventDefault();
                 return false;
             }

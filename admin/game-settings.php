@@ -288,6 +288,7 @@ function noveltool_game_settings_admin_scripts( $hook ) {
         'selectImage'   => __( '画像を選択', 'novel-game-plugin' ),
         'useThisImage'  => __( 'この画像を使う', 'novel-game-plugin' ),
         'confirmRemove' => __( '本当に画像を削除しますか？', 'novel-game-plugin' ),
+        'titleRequired' => __( 'ゲームタイトルを入力してください。', 'novel-game-plugin' ),
     );
 
     wp_localize_script(
