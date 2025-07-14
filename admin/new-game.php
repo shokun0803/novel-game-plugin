@@ -190,13 +190,11 @@ function noveltool_new_game_page() {
         wp_die( __( 'このページにアクセスする権限がありません。', 'novel-game-plugin' ) );
     }
 
-    $error_message = '';
-    $success_message = '';
-
-    // フォーム送信の処理
+    // フォーム送信の処理（出力前に処理）
     if ( isset( $_POST['create_game'] ) ) {
         // nonceチェック
         if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'create_new_game' ) ) {
+            // セキュリティエラーのメッセージを設定
             $error_message = __( 'セキュリティチェックに失敗しました。', 'novel-game-plugin' );
         } else {
             // ゲームタイトルの取得とバリデーション
@@ -211,9 +209,9 @@ function noveltool_new_game_page() {
                 $new_game_id = noveltool_create_new_game( $game_title );
                 
                 if ( $new_game_id && ! is_wp_error( $new_game_id ) ) {
-                    // 成功時は編集画面にリダイレクト
+                    // 成功時は編集画面にリダイレクト（出力前に実行）
                     $edit_url = admin_url( 'post.php?post=' . $new_game_id . '&action=edit' );
-                    wp_redirect( $edit_url );
+                    wp_safe_redirect( $edit_url );
                     exit;
                 } else {
                     $error_message = __( 'ゲームの作成に失敗しました。', 'novel-game-plugin' );
@@ -221,6 +219,12 @@ function noveltool_new_game_page() {
             }
         }
     }
+
+    // エラーメッセージが設定されていない場合は空文字列
+    if ( ! isset( $error_message ) ) {
+        $error_message = '';
+    }
+    $success_message = '';
 
     ?>
     <div class="wrap">
