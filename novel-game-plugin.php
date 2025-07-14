@@ -58,6 +58,37 @@ function noveltool_init() {
 }
 add_action( 'plugins_loaded', 'noveltool_init' );
 
+/**
+ * ゲーム設定を取得するヘルパー関数
+ *
+ * @param string $key 設定キー (title, description, title_image)
+ * @return string 設定値
+ * @since 1.1.0
+ */
+function noveltool_get_game_setting( $key ) {
+    $settings = array(
+        'title'       => get_option( 'noveltool_game_title', '' ),
+        'description' => get_option( 'noveltool_game_description', '' ),
+        'title_image' => get_option( 'noveltool_game_title_image', '' ),
+    );
+    
+    return isset( $settings[ $key ] ) ? $settings[ $key ] : '';
+}
+
+/**
+ * すべてのゲーム設定を取得する関数
+ *
+ * @return array ゲーム設定の配列
+ * @since 1.1.0
+ */
+function noveltool_get_all_game_settings() {
+    return array(
+        'title'       => get_option( 'noveltool_game_title', '' ),
+        'description' => get_option( 'noveltool_game_description', '' ),
+        'title_image' => get_option( 'noveltool_game_title_image', '' ),
+    );
+}
+
 
 /**
  * カスタム投稿タイプ「novel_game」のコンテンツをノベルゲームビューに置き換える
