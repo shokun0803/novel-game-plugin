@@ -1,11 +1,6 @@
 <?php
-/**
-<<<<<<< HEAD
- * 新規ゲーム作成用管理画面
- */
 
-if (!defined('ABSPATH')) {
-=======
+/**
  * 新規ゲーム作成ページの管理
  *
  * @package NovelGamePlugin
@@ -14,7 +9,6 @@ if (!defined('ABSPATH')) {
 
 // 直接アクセスを防ぐ
 if ( ! defined( 'ABSPATH' ) ) {
->>>>>>> 8943cdb (Add new game creation UI with title input and validation)
     exit;
 }
 
@@ -448,7 +442,8 @@ function noveltool_ajax_create_new_game() {
         'edit_url' => admin_url('post.php?post=' . $post_id . '&action=edit')
     ]);
 }
-=======
+
+/**
  * ゲームタイトルが既に存在するかチェック
  *
  * @param string $game_title ゲームタイトル
@@ -521,5 +516,5 @@ function noveltool_new_game_admin_styles( $hook ) {
         NOVEL_GAME_PLUGIN_VERSION
     );
 }
+
 add_action( 'admin_enqueue_scripts', 'noveltool_new_game_admin_styles' );
->>>>>>> 8943cdb (Add new game creation UI with title input and validation)
