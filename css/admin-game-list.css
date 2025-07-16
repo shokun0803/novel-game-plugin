@@ -1,0 +1,90 @@
+/*
+ * Admin styles for Game List page
+ */
+
+.noveltool-game-list-container {
+    max-width: 1200px;
+}
+
+.noveltool-game-selector {
+    background: #f9f9f9;
+    padding: 15px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    border-radius: 3px;
+}
+
+.noveltool-game-selector select {
+    margin: 0 10px;
+    min-width: 200px;
+}
+
+.noveltool-posts-actions {
+    margin-bottom: 15px;
+}
+
+.noveltool-game-posts h2 {
+    margin-bottom: 15px;
+    color: #23282d;
+}
+
+.noveltool-game-overview {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.noveltool-games-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.noveltool-game-summary-item {
+    background: white;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    min-width: 200px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.noveltool-game-summary-item strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #23282d;
+    font-size: 1.1em;
+}
+
+.noveltool-game-summary-item .post-count {
+    color: #666;
+    font-size: 0.9em;
+    margin-right: 10px;
+}
+
+.noveltool-game-summary-item .button {
+    margin-top: 8px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .noveltool-games-summary {
+        flex-direction: column;
+    }
+    
+    .noveltool-game-summary-item {
+        min-width: auto;
+    }
+    
+    .noveltool-game-selector {
+        text-align: center;
+    }
+    
+    .noveltool-game-selector select {
+        width: 100%;
+        margin: 10px 0;
+    }
+}

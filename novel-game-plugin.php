@@ -41,6 +41,7 @@ if ( ! defined( 'NOVEL_GAME_PLUGIN_TEXT_DOMAIN' ) ) {
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/post-types.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/meta-boxes.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/new-game.php';
+require_once NOVEL_GAME_PLUGIN_PATH . 'admin/game-settings.php';
 
 /**
  * プラグインの初期化
@@ -169,4 +170,243 @@ function noveltool_enqueue_scripts() {
     );
 }
 add_action( 'wp_enqueue_scripts', 'noveltool_enqueue_scripts' );
+
+/**
+ * ゲーム投稿一覧を表示するショートコード
+ *
+ * @param array $atts ショートコードの属性
+ * @return string ショートコードの出力
+ * @since 1.0.0
+ */
+function noveltool_game_posts_shortcode( $atts ) {
+    // 属性のデフォルト値
+    $atts = shortcode_atts( array(
+        'game_title' => '',
+        'limit'      => -1,
+        'orderby'    => 'date',
+        'order'      => 'ASC',
+        'show_title' => 'true',
+        'show_date'  => 'true',
+    ), $atts, 'novel_game_posts' );
+    
+    // パラメータの処理
+    $game_title = sanitize_text_field( $atts['game_title'] );
+    $limit      = intval( $atts['limit'] );
+    $orderby    = sanitize_text_field( $atts['orderby'] );
+    $order      = sanitize_text_field( $atts['order'] );
+    $show_title = filter_var( $atts['show_title'], FILTER_VALIDATE_BOOLEAN );
+    $show_date  = filter_var( $atts['show_date'], FILTER_VALIDATE_BOOLEAN );
+    
+    // ゲームタイトルが指定されていない場合は全ゲームを表示
+    if ( empty( $game_title ) ) {
+        return noveltool_all_games_shortcode_output( $atts );
+    }
+    
+    // 投稿の取得
+    $posts = noveltool_get_posts_by_game_title( $game_title, array(
+        'posts_per_page' => $limit,
+        'orderby'        => $orderby,
+        'order'          => $order,
+    ) );
+    
+    if ( empty( $posts ) ) {
+        return '<p>' . esc_html__( 'このゲームには投稿がありません。', 'novel-game-plugin' ) . '</p>';
+    }
+    
+    // 出力の開始
+    ob_start();
+    
+    echo '<div class="noveltool-game-posts-list">';
+    
+    if ( $show_title ) {
+        echo '<h3 class="noveltool-game-title">' . esc_html( $game_title ) . '</h3>';
+    }
+    
+    echo '<div class="noveltool-posts-grid">';
+    
+    foreach ( $posts as $post ) {
+        setup_postdata( $post );
+        
+        $background = get_post_meta( $post->ID, '_background_image', true );
+        $dialogue   = get_post_meta( $post->ID, '_dialogue_text', true );
+        
+        echo '<div class="noveltool-post-item">';
+        
+        if ( $background ) {
+            echo '<div class="noveltool-post-thumbnail">';
+            echo '<img src="' . esc_url( $background ) . '" alt="' . esc_attr( $post->post_title ) . '" />';
+            echo '</div>';
+        }
+        
+        echo '<div class="noveltool-post-content">';
+        echo '<h4 class="noveltool-post-title">';
+        echo '<a href="' . esc_url( get_permalink( $post->ID ) ) . '">' . esc_html( $post->post_title ) . '</a>';
+        echo '</h4>';
+        
+        if ( $dialogue ) {
+            $dialogue_preview = mb_substr( strip_tags( $dialogue ), 0, 100 );
+            echo '<p class="noveltool-post-dialogue">' . esc_html( $dialogue_preview ) . '...</p>';
+        }
+        
+        if ( $show_date ) {
+            echo '<p class="noveltool-post-date">' . esc_html( get_the_date( 'Y年m月d日', $post->ID ) ) . '</p>';
+        }
+        
+        echo '<a href="' . esc_url( get_permalink( $post->ID ) ) . '" class="noveltool-post-link button">';
+        echo esc_html__( 'プレイ', 'novel-game-plugin' );
+        echo '</a>';
+        
+        echo '</div>'; // .noveltool-post-content
+        echo '</div>'; // .noveltool-post-item
+    }
+    
+    echo '</div>'; // .noveltool-posts-grid
+    echo '</div>'; // .noveltool-game-posts-list
+    
+    wp_reset_postdata();
+    
+    return ob_get_clean();
+}
+add_shortcode( 'novel_game_posts', 'noveltool_game_posts_shortcode' );
+
+/**
+ * すべてのゲーム一覧を表示するショートコード出力
+ *
+ * @param array $atts ショートコードの属性
+ * @return string ショートコードの出力
+ * @since 1.0.0
+ */
+function noveltool_all_games_shortcode_output( $atts ) {
+    $game_titles = noveltool_get_all_game_titles();
+    
+    if ( empty( $game_titles ) ) {
+        return '<p>' . esc_html__( 'まだゲームが作成されていません。', 'novel-game-plugin' ) . '</p>';
+    }
+    
+    ob_start();
+    
+    echo '<div class="noveltool-all-games-list">';
+    echo '<h3>' . esc_html__( 'ゲーム一覧', 'novel-game-plugin' ) . '</h3>';
+    echo '<div class="noveltool-games-grid">';
+    
+    foreach ( $game_titles as $game_title ) {
+        $posts = noveltool_get_posts_by_game_title( $game_title, array( 'posts_per_page' => 1 ) );
+        
+        if ( empty( $posts ) ) {
+            continue;
+        }
+        
+        $first_post = $posts[0];
+        $background = get_post_meta( $first_post->ID, '_background_image', true );
+        $post_count = count( noveltool_get_posts_by_game_title( $game_title ) );
+        
+        echo '<div class="noveltool-game-item">';
+        
+        if ( $background ) {
+            echo '<div class="noveltool-game-thumbnail">';
+            echo '<img src="' . esc_url( $background ) . '" alt="' . esc_attr( $game_title ) . '" />';
+            echo '</div>';
+        }
+        
+        echo '<div class="noveltool-game-info">';
+        echo '<h4 class="noveltool-game-title">' . esc_html( $game_title ) . '</h4>';
+        echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
+        echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '" class="noveltool-game-link button">';
+        echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
+        echo '</a>';
+        echo '</div>';
+        
+        echo '</div>';
+    }
+    
+    echo '</div>';
+    echo '</div>';
+    
+    return ob_get_clean();
+}
+
+/**
+ * ショートコード用のスタイルを追加
+ *
+ * @since 1.0.0
+ */
+function noveltool_shortcode_styles() {
+    ?>
+    <style>
+    .noveltool-game-posts-list,
+    .noveltool-all-games-list {
+        margin: 20px 0;
+    }
+    .noveltool-posts-grid,
+    .noveltool-games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 15px;
+    }
+    .noveltool-post-item,
+    .noveltool-game-item {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        overflow: hidden;
+        background: white;
+    }
+    .noveltool-post-thumbnail,
+    .noveltool-game-thumbnail {
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+    }
+    .noveltool-post-thumbnail img,
+    .noveltool-game-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .noveltool-post-content,
+    .noveltool-game-info {
+        padding: 15px;
+    }
+    .noveltool-post-title,
+    .noveltool-game-title {
+        margin: 0 0 10px 0;
+        font-size: 1.2em;
+    }
+    .noveltool-post-title a {
+        text-decoration: none;
+        color: inherit;
+    }
+    .noveltool-post-title a:hover {
+        color: #0073aa;
+    }
+    .noveltool-post-dialogue {
+        color: #666;
+        font-size: 0.9em;
+        margin-bottom: 10px;
+    }
+    .noveltool-post-date,
+    .noveltool-game-count {
+        color: #999;
+        font-size: 0.8em;
+        margin-bottom: 15px;
+    }
+    .noveltool-post-link,
+    .noveltool-game-link {
+        display: inline-block;
+        padding: 8px 15px;
+        background: #0073aa;
+        color: white;
+        text-decoration: none;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
+    .noveltool-post-link:hover,
+    .noveltool-game-link:hover {
+        background: #005a87;
+        color: white;
+    }
+    </style>
+    <?php
+}
+add_action( 'wp_head', 'noveltool_shortcode_styles' );
 ?>
