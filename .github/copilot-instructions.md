@@ -1,3 +1,4 @@
+<!-- I want to review in Japanese. -->
 # copilot-instructions.md
 
 ## プロジェクト概要
@@ -7,6 +8,7 @@
 このプラグインは **WordPress 公式プラグインディレクトリへの登録**を前提としているため、高い品質基準とライセンス順守が求められます。
 
 ## GitHub Copilot への指示
+<!-- for GitHub Copilot review rule-->
 
 ### ✅ コーディング規約に関する指示
 
@@ -33,3 +35,7 @@
 - すべての表示テキストには翻訳関数 `__()`, `_e()`, `_x()` などを使用してください。
 - テキストドメインにはプラグイン固有のドメイン（例：`noveltool`）を使用してください。
 - 翻訳用ファイル（.pot / .po / .mo）を生成することを前提とした設計にしてください。
+
+<!-- for GitHub Copilot review rule-->
+
+<!-- I want to review in Japanese. -->
