@@ -12,8 +12,8 @@ get_header(); ?>
 
 <div id="novel-game-archive" class="novel-game-archive-container">
     <header class="archive-header">
-        <h1 class="archive-title"><?php _e('ノベルゲーム一覧', 'noveltool'); ?></h1>
-        <p class="archive-description"><?php _e('プレイしたいゲームを選択してください', 'noveltool'); ?></p>
+        <h1 class="archive-title"><?php _e('ノベルゲーム一覧', 'novel-game-plugin'); ?></h1>
+        <p class="archive-description"><?php _e('プレイしたいゲームを選択してください', 'novel-game-plugin'); ?></p>
     </header>
 
     <div class="novel-games-grid">
@@ -55,16 +55,16 @@ get_header(); ?>
                             <img src="<?php echo esc_url($background_image); ?>" alt="<?php echo esc_attr($game_title); ?>" class="game-bg-image">
                         <?php else : ?>
                             <div class="game-placeholder">
-                                <span class="placeholder-text"><?php _e('No Image', 'noveltool'); ?></span>
+                                <span class="placeholder-text"><?php _e('No Image', 'novel-game-plugin'); ?></span>
                             </div>
                         <?php endif; ?>
                         <div class="game-overlay">
                             <div class="game-info">
                                 <h3 class="game-title"><?php echo $game_title; ?></h3>
-                                <p class="scene-count"><?php printf(__('%d シーン', 'noveltool'), $scene_count); ?></p>
+                                <p class="scene-count"><?php printf(__('%d シーン', 'novel-game-plugin'), $scene_count); ?></p>
                             </div>
                             <div class="play-button">
-                                <span><?php _e('プレイ', 'noveltool'); ?></span>
+                                <span><?php _e('プレイ', 'novel-game-plugin'); ?></span>
                             </div>
                         </div>
                     </div>
@@ -74,9 +74,9 @@ get_header(); ?>
         else :
             ?>
             <div class="no-games-message">
-                <p><?php _e('まだゲームが作成されていません。', 'noveltool'); ?></p>
+                <p><?php _e('まだゲームが作成されていません。', 'novel-game-plugin'); ?></p>
                 <?php if (current_user_can('edit_posts')) : ?>
-                    <p><a href="<?php echo admin_url('post-new.php?post_type=novel_game'); ?>" class="button"><?php _e('新しいゲームを作成', 'noveltool'); ?></a></p>
+                    <p><a href="<?php echo admin_url('post-new.php?post_type=novel_game'); ?>" class="button"><?php _e('新しいゲームを作成', 'novel-game-plugin'); ?></a></p>
                 <?php endif; ?>
             </div>
             <?php
