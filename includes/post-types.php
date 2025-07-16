@@ -82,10 +82,7 @@ add_action( 'init', 'noveltool_register_post_type' );
  */
 function noveltool_add_custom_columns( $columns ) {
     $columns['game_title'] = __( 'ゲームタイトル', 'novel-game-plugin' );
-// 管理画面のpost一覧にゲーム情報列を追加
-function novel_game_add_custom_columns($columns) {
-    $columns['game_title'] = 'ゲームタイトル';
-    $columns['game_description'] = 'ゲーム概要';
+    // 必要に応じて他のカラムも追加
     return $columns;
 }
 add_filter( 'manage_novel_game_posts_columns', 'noveltool_add_custom_columns' );
@@ -99,9 +96,6 @@ add_filter( 'manage_novel_game_posts_columns', 'noveltool_add_custom_columns' );
  */
 function noveltool_custom_column_content( $column, $post_id ) {
     switch ( $column ) {
-// ゲーム情報列の内容を表示
-function novel_game_custom_column_content($column, $post_id) {
-    switch ($column) {
         case 'game_title':
             $game_title = get_post_meta( $post_id, '_game_title', true );
             echo $game_title ? esc_html( $game_title ) : '—';
@@ -126,9 +120,9 @@ add_action( 'manage_novel_game_posts_custom_column', 'noveltool_custom_column_co
  * @return array 修正された列
  * @since 1.0.0
  */
+
 function noveltool_sortable_columns( $columns ) {
-// ゲーム情報列をソート可能にする
-function novel_game_sortable_columns($columns) {
+    // 必要に応じてカスタムソート列を追加
     $columns['game_title'] = 'game_title';
     $columns['game_description'] = 'game_description';
     return $columns;
@@ -149,19 +143,8 @@ function noveltool_orderby( $query ) {
     if ( 'game_title' === $query->get( 'orderby' ) ) {
         $query->set( 'meta_key', '_game_title' );
         $query->set( 'orderby', 'meta_value' );
-// ゲーム情報でのソート処理
-function novel_game_orderby($query) {
-    if (!is_admin() || !$query->is_main_query()) {
-        return;
-    }
-
-    if ('game_title' === $query->get('orderby')) {
-        $query->set('meta_key', '_game_title');
-        $query->set('orderby', 'meta_value');
-    } elseif ('game_description' === $query->get('orderby')) {
-        $query->set('meta_key', '_game_description');
-        $query->set('orderby', 'meta_value');
+    } elseif ( 'game_description' === $query->get( 'orderby' ) ) {
+        $query->set( 'meta_key', '_game_description' );
+        $query->set( 'orderby', 'meta_value' );
     }
 }
-add_action( 'pre_get_posts', 'noveltool_orderby' );
-?>
