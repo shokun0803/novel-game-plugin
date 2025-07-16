@@ -29,6 +29,12 @@ function noveltool_ajax_create_scene() {
 
     // タイトルの取得とサニタイズ
     $title = isset( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
+    
+    // 自動遷移フラグの取得
+    $auto_redirect = isset( $_POST['auto_redirect'] ) ? filter_var( wp_unslash( $_POST['auto_redirect'] ), FILTER_VALIDATE_BOOLEAN ) : false;
+    
+    // 現在の投稿IDの取得（ゲームタイトルを継承するため）
+    $current_post_id = isset( $_POST['current_post_id'] ) ? intval( wp_unslash( $_POST['current_post_id'] ) ) : 0;
 
     if ( empty( $title ) ) {
         wp_send_json_error( array( 'message' => __( 'タイトルが入力されていません。', 'novel-game-plugin' ) ) );
@@ -44,12 +50,25 @@ function noveltool_ajax_create_scene() {
     $new_id = wp_insert_post( $post_data );
 
     if ( $new_id && ! is_wp_error( $new_id ) ) {
-        wp_send_json_success(
-            array(
-                'ID'    => $new_id,
-                'title' => $title,
-            )
+        // 現在の投稿からゲームタイトルを継承
+        if ( $current_post_id ) {
+            $game_title = get_post_meta( $current_post_id, '_game_title', true );
+            if ( $game_title ) {
+                update_post_meta( $new_id, '_game_title', $game_title );
+            }
+        }
+        
+        $response_data = array(
+            'ID'    => $new_id,
+            'title' => $title,
         );
+        
+        // 自動遷移が要求されている場合、編集URLを追加
+        if ( $auto_redirect ) {
+            $response_data['edit_url'] = admin_url( 'post.php?post=' . $new_id . '&action=edit' );
+        }
+        
+        wp_send_json_success( $response_data );
     } else {
         wp_send_json_error( array( 'message' => __( '投稿の作成に失敗しました。', 'novel-game-plugin' ) ) );
     }
@@ -152,14 +171,16 @@ function noveltool_meta_box_callback( $post ) {
 
     // JavaScript用の翻訳文字列
     $js_strings = array(
-        'selectOption'  => __( '-- 選択 --', 'novel-game-plugin' ),
-        'createNew'     => __( '+ 新規作成...', 'novel-game-plugin' ),
-        'remove'        => __( '削除', 'novel-game-plugin' ),
-        'selectImage'   => __( '画像を選択', 'novel-game-plugin' ),
-        'useThisImage'  => __( 'この画像を使う', 'novel-game-plugin' ),
-        'confirmDelete' => __( '本当に削除しますか？', 'novel-game-plugin' ),
-        'createFailed'  => __( '作成に失敗しました。', 'novel-game-plugin' ),
-        'selectTitle'   => __( '新しいシーンのタイトルを入力してください', 'novel-game-plugin' ),
+        'selectOption'       => __( '-- 選択 --', 'novel-game-plugin' ),
+        'createNew'          => __( '+ 新規作成...', 'novel-game-plugin' ),
+        'remove'             => __( '削除', 'novel-game-plugin' ),
+        'selectImage'        => __( '画像を選択', 'novel-game-plugin' ),
+        'useThisImage'       => __( 'この画像を使う', 'novel-game-plugin' ),
+        'confirmDelete'      => __( '本当に削除しますか？', 'novel-game-plugin' ),
+        'createFailed'       => __( '作成に失敗しました。', 'novel-game-plugin' ),
+        'selectTitle'        => __( '新しいシーンのタイトルを入力してください', 'novel-game-plugin' ),
+        'selectNextTitle'    => __( '次のコマンドのタイトルを入力してください', 'novel-game-plugin' ),
+        'redirectingMessage' => __( '作成中です...', 'novel-game-plugin' ),
     );
 
     // データをJavaScriptに渡す
@@ -168,9 +189,10 @@ function noveltool_meta_box_callback( $post ) {
         'novel-game-admin-meta-boxes',
         'novelGameMeta',
         array(
-            'nonce'   => wp_create_nonce( 'novel_game_meta_box_nonce' ),
-            'ajaxurl' => admin_url( 'admin-ajax.php' ),
-            'strings' => $js_strings,
+            'nonce'         => wp_create_nonce( 'novel_game_meta_box_nonce' ),
+            'ajaxurl'       => admin_url( 'admin-ajax.php' ),
+            'current_post_id' => $post->ID,
+            'strings'       => $js_strings,
         )
     );
 
@@ -277,6 +299,11 @@ function noveltool_meta_box_callback( $post ) {
                                 class="button"
                                 id="novel-choice-add">
                             <?php esc_html_e( '選択肢を追加', 'novel-game-plugin' ); ?>
+                        </button>
+                        <button type="button"
+                                class="button button-secondary"
+                                id="novel-create-next-command">
+                            <?php esc_html_e( '次のコマンドを新規作成', 'novel-game-plugin' ); ?>
                         </button>
                     </p>
                     <input type="hidden"
