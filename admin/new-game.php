@@ -13,150 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
-<<<<<<< HEAD
- * 新規ゲーム作成画面のHTML出力
- */
-function noveltool_new_game_page() {
-    ?>
-    <div class="wrap">
-        <h1><?php _e('新規ゲーム作成', 'noveltool'); ?></h1>
-        <p><?php _e('新しいノベルゲームを作成します。まずはゲームタイトルを入力してください。', 'noveltool'); ?></p>
-        
-        <form method="post" action="" id="new-game-form">
-            <?php wp_nonce_field('noveltool_new_game_nonce', 'noveltool_new_game_nonce'); ?>
-            
-            <table class="form-table">
-                <tr>
-                    <th scope="row">
-                        <label for="game_title">ゲームタイトル</label>
-                    </th>
-                    <td>
-                        <input type="text" id="game_title" name="game_title" class="regular-text" value="" required>
-                        <p class="description">
-                            ゲームのタイトルを入力してください。他のゲームと重複しないユニークなタイトルにしてください。
-                        </p>
-                        <div id="title-validation-message" style="display: none;"></div>
-                    </td>
-                </tr>
-            </table>
-            
-            <p class="submit">
-                <input type="submit" name="create_game" id="create-game-btn" class="button button-primary" value="ゲームを作成">
-                <span class="spinner" id="create-game-spinner"></span>
-            </p>
-        </form>
-    </div>
-    
-    <script>
-    jQuery(document).ready(function($) {
-        var titleInput = $('#game_title');
-        var submitBtn = $('#create-game-btn');
-        var spinner = $('#create-game-spinner');
-        var validationMessage = $('#title-validation-message');
-        
-        // リアルタイムバリデーション
-        titleInput.on('input', function() {
-            var title = $(this).val().trim();
-            
-            if (title.length === 0) {
-                validationMessage.hide();
-                submitBtn.prop('disabled', false);
-                return;
-            }
-            
-            if (title.length < 2) {
-                validationMessage
-                    .text('タイトルは2文字以上で入力してください。')
-                    .css('color', 'red')
-                    .show();
-                submitBtn.prop('disabled', true);
-                return;
-            }
-            
-            // 重複チェック
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'noveltool_check_game_title',
-                    title: title,
-                    nonce: '<?php echo wp_create_nonce('noveltool_check_title_nonce'); ?>'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        if (response.data.exists) {
-                            validationMessage
-                                .text('このタイトルは既に使用されています。')
-                                .css('color', 'red')
-                                .show();
-                            submitBtn.prop('disabled', true);
-                        } else {
-                            validationMessage
-                                .text('このタイトルは使用可能です。')
-                                .css('color', 'green')
-                                .show();
-                            submitBtn.prop('disabled', false);
-                        }
-                    }
-                }
-            });
-        });
-        
-        // フォーム送信
-        $('#new-game-form').on('submit', function(e) {
-            e.preventDefault();
-            
-            var title = titleInput.val().trim();
-            
-            if (title.length === 0) {
-                alert('ゲームタイトルを入力してください。');
-                return;
-            }
-            
-            submitBtn.prop('disabled', true);
-            spinner.addClass('is-active');
-            
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'noveltool_create_new_game',
-                    title: title,
-                    nonce: '<?php echo wp_create_nonce('noveltool_create_game_nonce'); ?>'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // 成功時はシーン編集画面へリダイレクト
-                        window.location.href = response.data.edit_url;
-                    } else {
-                        alert('ゲームの作成に失敗しました: ' + response.data.message);
-                        submitBtn.prop('disabled', false);
-                        spinner.removeClass('is-active');
-                    }
-                },
-                error: function() {
-                    alert('エラーが発生しました。');
-                    submitBtn.prop('disabled', false);
-                    spinner.removeClass('is-active');
-                }
-            });
-        });
-    });
-    </script>
-    
-    <style>
-    .form-table th {
-        width: 200px;
-    }
-    #title-validation-message {
-        margin-top: 5px;
-        font-weight: bold;
-    }
-    .spinner.is-active {
-        visibility: visible;
-    }
-    </style>
-=======
  * 新規ゲーム作成ページをメニューに追加
  *
  * @since 1.1.0
@@ -225,6 +81,51 @@ function noveltool_handle_new_game_form() {
         $new_game_id = noveltool_create_new_game( $game_title );
         
         if ( $new_game_id && ! is_wp_error( $new_game_id ) ) {
+    // 新規ゲーム作成ページでのフォーム送信のみ処理
+    if ( ! isset( $_GET['page'] ) || $_GET['page'] !== 'novel-game-new' ) {
+        return;
+    }
+
+    // フォーム送信の処理
+    if ( isset( $_POST['create_game'] ) ) {
+        // 権限チェック
+        if ( ! current_user_can( 'edit_posts' ) ) {
+            wp_die( __( 'このページにアクセスする権限がありません。', 'novel-game-plugin' ) );
+        }
+
+        // nonceチェック
+        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'create_new_game' ) ) {
+            // セキュリティエラーのメッセージを設定してリダイレクト
+            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-new' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        // ゲームタイトルの取得とバリデーション
+        $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
+        
+        if ( empty( $game_title ) ) {
+            $redirect_url = add_query_arg( 'error', 'empty_title', admin_url( 'edit.php?post_type=novel_game&page=novel-game-new' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        if ( noveltool_game_title_exists( $game_title ) ) {
+            $redirect_url = add_query_arg( 
+                array( 
+                    'error' => 'title_exists', 
+                    'title' => urlencode( $game_title ) 
+                ), 
+                admin_url( 'edit.php?post_type=novel_game&page=novel-game-new' ) 
+            );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        // 新しいゲームの作成
+        $new_game_id = noveltool_create_new_game( $game_title );
+        
+        if ( $new_game_id && ! is_wp_error( $new_game_id ) ) {
             // 成功時は編集画面にリダイレクト
             $edit_url = admin_url( 'post.php?post=' . $new_game_id . '&action=edit' );
             wp_safe_redirect( $edit_url );
@@ -242,80 +143,12 @@ function noveltool_handle_new_game_form() {
         }
     }
 }
-add_action( 'admin_init', 'noveltool_handle_new_game_form' );
-
-/**
- * 新規ゲーム作成ページの内容
- *
- * @since 1.1.0
- */
-function noveltool_new_game_page() {
-    // 権限チェック
-    if ( ! current_user_can( 'edit_posts' ) ) {
-        wp_die( __( 'このページにアクセスする権限がありません。', 'novel-game-plugin' ) );
-    }
-
-    // URLパラメーターからエラーメッセージを取得
-    $error_message = '';
-    if ( isset( $_GET['error'] ) ) {
-        switch ( sanitize_text_field( wp_unslash( $_GET['error'] ) ) ) {
-            case 'security':
-                $error_message = __( 'セキュリティチェックに失敗しました。', 'novel-game-plugin' );
-                break;
-            case 'empty_title':
-                $error_message = __( 'ゲームタイトルを入力してください。', 'novel-game-plugin' );
-                break;
-            case 'title_exists':
-                $error_message = __( 'このゲームタイトルは既に使用されています。', 'novel-game-plugin' );
-                break;
-            case 'create_failed':
-                $error_message = __( 'ゲームの作成に失敗しました。', 'novel-game-plugin' );
-                break;
-        }
-    }
-
-    $success_message = '';
-
-    ?>
-    <div class="wrap">
-        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-        
-        <?php if ( $error_message ) : ?>
-            <div class="notice notice-error">
-                <p><?php echo esc_html( $error_message ); ?></p>
-            </div>
-        <?php endif; ?>
-
-        <?php if ( $success_message ) : ?>
-            <div class="notice notice-success">
-                <p><?php echo esc_html( $success_message ); ?></p>
-            </div>
-        <?php endif; ?>
-
-        <div class="noveltool-new-game-form">
-            <form method="post" action="">
-                <?php wp_nonce_field( 'create_new_game' ); ?>
-                
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">
-                            <label for="game_title"><?php esc_html_e( 'ゲームタイトル', 'novel-game-plugin' ); ?></label>
-                        </th>
-                        <td>
-                            <input type="text" 
-                                   id="game_title" 
-                                   name="game_title" 
-                                   value="<?php echo isset( $_GET['title'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_GET['title'] ) ) ) : ''; ?>" 
-                                   class="regular-text"
-                                   placeholder="<?php esc_attr_e( '新しいゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>"
-                                   required />
-                            <p class="description">
-                                <?php esc_html_e( 'このタイトルは全体のゲームタイトルとして使用されます。', 'novel-game-plugin' ); ?>
-                            </p>
+?>
+                            <input type="text" id="game_title" name="game_title" value="<?php echo isset( $_GET['title'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_GET['title'] ) ) ) : ''; ?>" class="regular-text" placeholder="<?php esc_attr_e( '新しいゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" required />
+                            <p class="description"><?php esc_html_e( 'このタイトルは全体のゲームタイトルとして使用されます。', 'novel-game-plugin' ); ?></p>
                         </td>
                     </tr>
                 </table>
-
                 <p class="submit">
                     <input type="submit" 
                            name="create_game" 
@@ -332,85 +165,8 @@ function noveltool_new_game_page() {
             <p><?php esc_html_e( '作成後は自動的にシーン編集画面に移動し、背景画像、キャラクター、セリフ、選択肢などを設定できます。', 'novel-game-plugin' ); ?></p>
         </div>
     </div>
->>>>>>> 8943cdb (Add new game creation UI with title input and validation)
-    <?php
+<?php
 }
-
-/**
-<<<<<<< HEAD
- * AJAX: ゲームタイトルの重複チェック
- */
-add_action('wp_ajax_noveltool_check_game_title', 'noveltool_ajax_check_game_title');
-function noveltool_ajax_check_game_title() {
-    // nonce検証
-    if (!wp_verify_nonce($_POST['nonce'], 'noveltool_check_title_nonce')) {
-        wp_send_json_error(['message' => 'セキュリティチェックに失敗しました。']);
-    }
-    
-    $title = sanitize_text_field($_POST['title']);
-    
-    if (empty($title)) {
-        wp_send_json_error(['message' => 'タイトルが入力されていません。']);
-    }
-    
-    // 同じゲームタイトルが存在するかチェック
-    $existing_games = get_posts([
-        'post_type' => 'novel_game',
-        'meta_query' => [
-            [
-                'key' => '_game_title',
-                'value' => $title,
-                'compare' => '='
-            ]
-        ],
-        'post_status' => ['publish', 'draft', 'private'],
-        'posts_per_page' => 1
-    ]);
-    
-    wp_send_json_success([
-        'exists' => !empty($existing_games),
-        'title' => $title
-    ]);
-}
-
-/**
- * AJAX: 新規ゲーム作成
- */
-add_action('wp_ajax_noveltool_create_new_game', 'noveltool_ajax_create_new_game');
-function noveltool_ajax_create_new_game() {
-    // nonce検証
-    if (!wp_verify_nonce($_POST['nonce'], 'noveltool_create_game_nonce')) {
-        wp_send_json_error(['message' => 'セキュリティチェックに失敗しました。']);
-    }
-    
-    // 権限チェック
-    if (!current_user_can('edit_posts')) {
-        wp_send_json_error(['message' => '権限が不足しています。']);
-    }
-    
-    $title = sanitize_text_field($_POST['title']);
-    
-    if (empty($title)) {
-        wp_send_json_error(['message' => 'ゲームタイトルを入力してください。']);
-    }
-    
-    if (strlen($title) < 2) {
-        wp_send_json_error(['message' => 'タイトルは2文字以上で入力してください。']);
-    }
-    
-    // 重複チェック
-    $existing_games = get_posts([
-        'post_type' => 'novel_game',
-        'meta_query' => [
-            [
-                'key' => '_game_title',
-                'value' => $title,
-                'compare' => '='
-            ]
-        ],
-        'post_status' => ['publish', 'draft', 'private'],
-        'posts_per_page' => 1
-    ]);
     
     if (!empty($existing_games)) {
         wp_send_json_error(['message' => 'このタイトルは既に使用されています。']);
