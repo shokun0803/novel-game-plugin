@@ -4,6 +4,22 @@
  * Plugin URI: https://github.com/shokun0803/novel-game-plugin
  * Description: WordPressでノベルゲームを作成できるプラグイン。
  * Version: 1.1.0
+ * Author: Your Name
+ * Author URI: https://github.com/shokun0803
+ * Text Domain: novel-game-plugin
+ * Domain Path: /languages
+ * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ *
+ * @package NovelGamePlugin
+ * @since 1.0.0
+ */
+
+// 直接アクセスを防ぐ
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
 // プラグインの基本定数を定義
 if ( ! defined( 'NOVEL_GAME_PLUGIN_VERSION' ) ) {
     define( 'NOVEL_GAME_PLUGIN_VERSION', '1.1.0' );
@@ -25,7 +41,6 @@ if ( ! defined( 'NOVEL_GAME_PLUGIN_TEXT_DOMAIN' ) ) {
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/post-types.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/meta-boxes.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/new-game.php';
-require_once NOVEL_GAME_PLUGIN_PATH . 'admin/game-settings.php';
 
 /**
  * プラグインの初期化
@@ -41,38 +56,6 @@ function noveltool_init() {
     );
 }
 add_action( 'plugins_loaded', 'noveltool_init' );
-
-/**
- * ゲーム設定を取得するヘルパー関数
- *
- * @param string $key 設定キー (title, description, title_image)
- * @return string 設定値
- * @since 1.1.0
- */
-function noveltool_get_game_setting( $key ) {
-    $settings = array(
-        'title'       => get_option( 'noveltool_game_title', '' ),
-        'description' => get_option( 'noveltool_game_description', '' ),
-        'title_image' => get_option( 'noveltool_game_title_image', '' ),
-    );
-    
-    return isset( $settings[ $key ] ) ? $settings[ $key ] : '';
-}
-
-/**
- * すべてのゲーム設定を取得する関数
- *
- * @return array ゲーム設定の配列
- * @since 1.1.0
- */
-function noveltool_get_all_game_settings() {
-    return array(
-        'title'       => get_option( 'noveltool_game_title', '' ),
-        'description' => get_option( 'noveltool_game_description', '' ),
-        'title_image' => get_option( 'noveltool_game_title_image', '' ),
-    );
-}
-
 
 
 /**
@@ -185,23 +168,5 @@ function noveltool_enqueue_scripts() {
         NOVEL_GAME_PLUGIN_VERSION
     );
 }
-// ...existing code...
 add_action( 'wp_enqueue_scripts', 'noveltool_enqueue_scripts' );
-
-/**
- * アーカイブテンプレートの読み込み
- * 
- * @param string $template テンプレートファイルパス
- * @return string 変更後のテンプレートファイルパス
- */
-function novel_game_load_archive_template($template) {
-    if (is_post_type_archive('novel_game')) {
-        $plugin_template = plugin_dir_path(__FILE__) . 'templates/archive-novel_game.php';
-        if (file_exists($plugin_template)) {
-            return $plugin_template;
-        }
-    }
-    return $template;
-}
-add_filter('archive_template', 'novel_game_load_archive_template');
 ?>
