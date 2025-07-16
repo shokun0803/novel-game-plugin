@@ -172,6 +172,26 @@ function noveltool_enqueue_scripts() {
 add_action( 'wp_enqueue_scripts', 'noveltool_enqueue_scripts' );
 
 /**
+ * カスタムテンプレートを読み込む
+ *
+ * @param string $template 現在のテンプレートパス
+ * @return string 適切なテンプレートパス
+ * @since 1.1.0
+ */
+function noveltool_load_custom_templates( $template ) {
+    // アーカイブページのテンプレートを読み込む
+    if ( is_post_type_archive( 'novel_game' ) ) {
+        $custom_template = NOVEL_GAME_PLUGIN_PATH . 'templates/archive-novel_game.php';
+        if ( file_exists( $custom_template ) ) {
+            return $custom_template;
+        }
+    }
+    
+    return $template;
+}
+add_filter( 'template_include', 'noveltool_load_custom_templates' );
+
+/**
  * ゲーム投稿一覧を表示するショートコード
  *
  * @param array $atts ショートコードの属性
