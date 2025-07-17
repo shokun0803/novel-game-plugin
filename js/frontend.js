@@ -143,6 +143,9 @@
 		 * 次のページまたは選択肢を表示
 		 */
 		function showNextDialogue() {
+			// キーボードイベントリスナーをクリーンアップ
+			$( document ).off( 'keydown.novel-choices' );
+			
 			// 次のページがある場合
 			if ( currentPageIndex < allDialoguePages.length - 1 ) {
 				currentPageIndex++;
@@ -162,32 +165,107 @@
 				return;
 			}
 
+			// 最大4つの選択肢に制限
+			const displayChoices = choices.slice( 0, 4 );
+			
 			$choicesContainer.empty();
-
-			choices.forEach( function( choice ) {
-				var $button = $( '<button>' )
-					.addClass( 'novel-choice-button' )
-					.text( choice.text )
-					.on( 'click', function( e ) {
+			
+			// 選択肢リストコンテナの作成
+			var $choicesList = $( '<div>' ).addClass( 'choice-list' );
+			
+			// 選択肢状態の初期化
+			var selectedChoiceIndex = 0;
+			var choiceElements = [];
+			
+			// 各選択肢を作成
+			displayChoices.forEach( function( choice, index ) {
+				var $choiceItem = $( '<div>' )
+					.addClass( 'choice-item' )
+					.attr( 'data-index', index )
+					.attr( 'data-next-scene', choice.nextScene )
+					.text( choice.text );
+				
+				// 最初の選択肢を選択状態にする
+				if ( index === 0 ) {
+					$choiceItem.addClass( 'selected' );
+				}
+				
+				choiceElements.push( $choiceItem );
+				$choicesList.append( $choiceItem );
+			} );
+			
+			$choicesContainer.append( $choicesList );
+			
+			// 選択肢の更新関数
+			function updateChoiceSelection( newIndex ) {
+				// 現在の選択を解除
+				choiceElements[ selectedChoiceIndex ].removeClass( 'selected' );
+				
+				// 新しい選択肢を選択状態にする
+				selectedChoiceIndex = newIndex;
+				choiceElements[ selectedChoiceIndex ].addClass( 'selected' );
+			}
+			
+			// 選択肢の実行関数
+			function executeChoice( index ) {
+				var nextScene = displayChoices[ index ].nextScene;
+				if ( nextScene ) {
+					window.location.href = nextScene;
+				}
+			}
+			
+			// タッチデバイスの場合：タップで即座に選択・実行
+			if ( isTouch ) {
+				choiceElements.forEach( function( $element, index ) {
+					$element.on( 'touchstart', function( e ) {
 						e.preventDefault();
 						e.stopPropagation();
-						if ( choice.nextScene ) {
-							window.location.href = choice.nextScene;
-						}
+						executeChoice( index );
 					} );
-
-				// タッチデバイス対応
-				if ( isTouch ) {
-					$button.on( 'touchstart', function() {
-						$( this ).addClass( 'touch-active' );
-					} ).on( 'touchend touchcancel', function() {
-						$( this ).removeClass( 'touch-active' );
+					
+					$element.on( 'click', function( e ) {
+						e.preventDefault();
+						e.stopPropagation();
+						executeChoice( index );
 					} );
+				} );
+			} else {
+				// デスクトップの場合：クリックで選択状態変更、エンターで実行
+				choiceElements.forEach( function( $element, index ) {
+					$element.on( 'click', function( e ) {
+						e.preventDefault();
+						e.stopPropagation();
+						updateChoiceSelection( index );
+					} );
+				} );
+			}
+			
+			// キーボードナビゲーション
+			$( document ).on( 'keydown.novel-choices', function( e ) {
+				if ( ! $choicesContainer.is( ':visible' ) ) {
+					return;
 				}
-
-				$choicesContainer.append( $button );
+				
+				switch( e.which ) {
+					case 38: // 上矢印
+						e.preventDefault();
+						var newIndex = selectedChoiceIndex > 0 ? selectedChoiceIndex - 1 : displayChoices.length - 1;
+						updateChoiceSelection( newIndex );
+						break;
+						
+					case 40: // 下矢印
+						e.preventDefault();
+						var newIndex = selectedChoiceIndex < displayChoices.length - 1 ? selectedChoiceIndex + 1 : 0;
+						updateChoiceSelection( newIndex );
+						break;
+						
+					case 13: // エンター
+						e.preventDefault();
+						executeChoice( selectedChoiceIndex );
+						break;
+				}
 			} );
-
+			
 			$choicesContainer.show();
 		}
 
@@ -203,8 +281,8 @@
 					return;
 				}
 
-				// 選択肢ボタンがクリックされた場合も無視
-				if ( $( e.target ).hasClass( 'novel-choice-button' ) ) {
+				// 選択肢要素がクリックされた場合も無視
+				if ( $( e.target ).hasClass( 'choice-item' ) || $( e.target ).closest( '.choice-list' ).length > 0 ) {
 					return;
 				}
 
@@ -217,6 +295,11 @@
 				$gameContainer.on( 'touchstart', function( e ) {
 					// 選択肢が表示されている場合はタッチを無視
 					if ( $choicesContainer.is( ':visible' ) ) {
+						return;
+					}
+					
+					// 選択肢要素がタッチされた場合も無視
+					if ( $( e.target ).hasClass( 'choice-item' ) || $( e.target ).closest( '.choice-list' ).length > 0 ) {
 						return;
 					}
 					

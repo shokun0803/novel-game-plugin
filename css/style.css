@@ -85,59 +85,95 @@
     bottom: 5%;
     left: 5%;
     width: 90%;
-    text-align: center;
     z-index: 4;
     display: none;
 }
 
-/* 選択肢ボタン */
-#novel-choices button,
-.novel-choices button,
-.novel-choice-button {
-    display: inline-block;
-    margin: 5px;
+/* 選択肢リスト */
+#novel-choices .choice-list,
+.novel-choices .choice-list {
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'Meiryo', 'メイリオ', sans-serif;
+    font-size: clamp(14px, 3vw, 18px);
+    line-height: 1.6;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* 選択肢アイテム */
+#novel-choices .choice-item,
+.novel-choices .choice-item {
+    display: block;
     padding: 12px 20px;
-    background: #fff;
-    color: #333;
-    border: 2px solid #333;
+    margin: 8px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid transparent;
     border-radius: 5px;
     cursor: pointer;
-    font-size: clamp(13px, 2.5vw, 16px); /* レスポンシブフォントサイズ */
     transition: all 0.3s ease;
     -webkit-transition: all 0.3s ease;
     -moz-transition: all 0.3s ease;
     -ms-transition: all 0.3s ease;
     min-height: 44px; /* タッチ対応最小サイズ */
-    min-width: 44px; /* タッチ対応最小サイズ */
     box-sizing: border-box;
+    white-space: pre-wrap;
+    word-break: break-word;
+    text-align: left;
 }
 
-#novel-choices button:hover,
-.novel-choices button:hover,
-.novel-choice-button:hover {
-    background: #333;
+/* 選択肢アイテムの選択状態 */
+#novel-choices .choice-item.selected,
+.novel-choices .choice-item.selected {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: #fff;
     color: #fff;
-    transform: scale(1.05);
-    -webkit-transform: scale(1.05);
-    -moz-transform: scale(1.05);
-    -ms-transform: scale(1.05);
 }
 
-#novel-choices button:focus,
-.novel-choices button:focus,
-.novel-choice-button:focus {
+/* 選択肢アイテムのホバー状態 */
+#novel-choices .choice-item:hover,
+.novel-choices .choice-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* 選択肢アイテムのフォーカス状態 */
+#novel-choices .choice-item:focus,
+.novel-choices .choice-item:focus {
     outline: 2px solid #0073aa;
     outline-offset: 2px;
 }
 
-/* アクセシビリティ向上のための追加スタイル */
-#novel-choices button:active,
-.novel-choices button:active,
-.novel-choice-button:active {
-    transform: scale(0.95);
-    -webkit-transform: scale(0.95);
-    -moz-transform: scale(0.95);
-    -ms-transform: scale(0.95);
+/* 選択肢アイテムのアクティブ状態 */
+#novel-choices .choice-item:active,
+.novel-choices .choice-item:active {
+    transform: scale(0.98);
+    -webkit-transform: scale(0.98);
+    -moz-transform: scale(0.98);
+    -ms-transform: scale(0.98);
+}
+
+/* 選択肢番号表示 */
+#novel-choices .choice-item::before,
+.novel-choices .choice-item::before {
+    content: counter(choice-counter) ". ";
+    counter-increment: choice-counter;
+    font-weight: bold;
+    opacity: 0.7;
+}
+
+#novel-choices .choice-list,
+.novel-choices .choice-list {
+    counter-reset: choice-counter;
+}
+
+/* 古いボタンスタイル（後方互換性のため残す） */
+#novel-choices button,
+.novel-choices button,
+.novel-choice-button {
+    display: none; /* 新しいスタイルを使用する場合は非表示 */
 }
 
 /* スクリーンリーダー専用テキスト */
@@ -312,10 +348,15 @@
 
 /* 高コントラストモード対応 */
 @media (prefers-contrast: high) {
-    #novel-choices button,
-    .novel-choices button,
-    .novel-choice-button {
+    #novel-choices .choice-item,
+    .novel-choices .choice-item {
         border-width: 3px;
+    }
+
+    #novel-choices .choice-item.selected,
+    .novel-choices .choice-item.selected {
+        border-color: #fff;
+        background: rgba(255, 255, 255, 0.5);
     }
 
     .novel-game-title {
@@ -328,31 +369,34 @@
         background: rgba(0, 0, 0, 1);
         border: 2px solid #fff;
     }
+
+    #novel-choices .choice-list,
+    .novel-choices .choice-list {
+        background: rgba(0, 0, 0, 1);
+        border: 2px solid #fff;
+    }
 }
 
 /* 動きを減らす設定への対応 */
 @media (prefers-reduced-motion: reduce) {
-    #novel-choices button,
-    .novel-choices button,
-    .novel-choice-button {
+    #novel-choices .choice-item,
+    .novel-choices .choice-item {
         transition: none;
         -webkit-transition: none;
         -moz-transition: none;
         -ms-transition: none;
     }
 
-    #novel-choices button:hover,
-    .novel-choices button:hover,
-    .novel-choice-button:hover {
+    #novel-choices .choice-item:hover,
+    .novel-choices .choice-item:hover {
         transform: none;
         -webkit-transform: none;
         -moz-transform: none;
         -ms-transform: none;
     }
 
-    #novel-choices button:active,
-    .novel-choices button:active,
-    .novel-choice-button:active {
+    #novel-choices .choice-item:active,
+    .novel-choices .choice-item:active {
         transform: none;
         -webkit-transform: none;
         -moz-transform: none;
@@ -405,11 +449,10 @@
         font-size: clamp(16px, 2.5vw, 20px);
     }
 
-    #novel-choices button,
-    .novel-choices button,
-    .novel-choice-button {
+    #novel-choices .choice-item,
+    .novel-choices .choice-item {
         padding: 15px 25px;
-        margin: 8px;
+        margin: 8px 0;
     }
 }
 
@@ -501,13 +544,16 @@
         width: 80%;
     }
 
-    #novel-choices button,
-    .novel-choices button,
-    .novel-choice-button {
-        display: block;
-        width: 100%;
-        margin: 8px 0;
+    #novel-choices .choice-list,
+    .novel-choices .choice-list {
         padding: 15px;
+        font-size: 14px;
+    }
+
+    #novel-choices .choice-item,
+    .novel-choices .choice-item {
+        padding: 15px;
+        margin: 10px 0;
         font-size: 14px;
         min-height: 48px; /* タッチ対応 */
     }
@@ -591,12 +637,17 @@
         width: 50%;
     }
 
-    #novel-choices button,
-    .novel-choices button,
-    .novel-choice-button {
+    #novel-choices .choice-list,
+    .novel-choices .choice-list {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    #novel-choices .choice-item,
+    .novel-choices .choice-item {
         font-size: 12px;
         padding: 8px 12px;
-        margin: 3px;
+        margin: 3px 0;
         min-height: 36px;
     }
 
@@ -638,9 +689,8 @@
         line-height: 1.5;
     }
 
-    #novel-choices button,
-    .novel-choices button,
-    .novel-choice-button {
+    #novel-choices .choice-item,
+    .novel-choices .choice-item {
         font-size: 13px;
         padding: 12px;
         min-height: 44px;
@@ -687,9 +737,8 @@
 
 /* タッチデバイス専用スタイル */
 @media (hover: none) and (pointer: coarse) {
-    #novel-choices button,
-    .novel-choices button,
-    .novel-choice-button {
+    #novel-choices .choice-item,
+    .novel-choices .choice-item {
         padding: 16px 24px;
         font-size: 16px;
         min-height: 48px;
