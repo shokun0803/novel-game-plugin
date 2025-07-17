@@ -20,6 +20,37 @@
 		var $dialogueBox = $( '#novel-dialogue-box' );
 		var $choicesContainer = $( '#novel-choices' );
 		var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+		
+		// セリフ表示用の新しい変数
+		var currentDialogueIndex = 0;
+		var currentPageIndex = 0;
+		var currentDialoguePages = [];
+		var allDialoguePages = [];
+		
+		// 表示設定
+		var displaySettings = {
+			maxCharsPerLine: 20,
+			maxLines: 3,
+			get maxCharsPerPage() {
+				return this.maxCharsPerLine * this.maxLines;
+			},
+			
+			// 画面サイズに応じた設定調整
+			adjustForScreenSize: function() {
+				const screenWidth = window.innerWidth;
+				
+				if ( screenWidth < 480 ) {
+					// 小画面：文字数を調整
+					this.maxCharsPerLine = 18;
+				} else if ( screenWidth < 768 ) {
+					// モバイル：標準設定
+					this.maxCharsPerLine = 20;
+				} else {
+					// タブレット・デスクトップ：標準設定
+					this.maxCharsPerLine = 20;
+				}
+			}
+		};
 
 		// データの取得
 		try {
@@ -39,14 +70,85 @@
 		}
 
 		/**
-		 * 次のセリフを表示
+		 * テキストを20文字×3行のページに分割する
+		 *
+		 * @param {string} text 分割するテキスト
+		 * @return {array} ページ配列
+		 */
+		function splitTextIntoPages( text ) {
+			if ( ! text ) {
+				return [];
+			}
+			
+			const pages = [];
+			let currentIndex = 0;
+			
+			while ( currentIndex < text.length ) {
+				const pageText = text.substring( currentIndex, currentIndex + displaySettings.maxCharsPerPage );
+				pages.push( pageText );
+				currentIndex += displaySettings.maxCharsPerPage;
+			}
+			
+			return pages;
+		}
+		
+		/**
+		 * ページテキストを表示用にフォーマット（20文字で改行）
+		 *
+		 * @param {string} pageText ページのテキスト
+		 * @return {string} フォーマットされたテキスト
+		 */
+		function formatTextForDisplay( pageText ) {
+			const lines = [];
+			let currentIndex = 0;
+			
+			while ( currentIndex < pageText.length && lines.length < displaySettings.maxLines ) {
+				const lineText = pageText.substring( currentIndex, currentIndex + displaySettings.maxCharsPerLine );
+				lines.push( lineText );
+				currentIndex += displaySettings.maxCharsPerLine;
+			}
+			
+			return lines.join( '\n' );
+		}
+		
+		/**
+		 * すべてのセリフをページに分割して準備する
+		 */
+		function prepareDialoguePages() {
+			allDialoguePages = [];
+			
+			dialogues.forEach( function( dialogue ) {
+				const pages = splitTextIntoPages( dialogue );
+				allDialoguePages = allDialoguePages.concat( pages );
+			} );
+			
+			currentDialogueIndex = 0;
+			currentPageIndex = 0;
+		}
+		
+		/**
+		 * 現在のページを表示する
+		 */
+		function displayCurrentPage() {
+			if ( currentPageIndex < allDialoguePages.length ) {
+				const currentPageText = allDialoguePages[ currentPageIndex ];
+				const formattedText = formatTextForDisplay( currentPageText );
+				$dialogueText.text( formattedText );
+				return true;
+			}
+			return false;
+		}
+		
+		/**
+		 * 次のページまたは選択肢を表示
 		 */
 		function showNextDialogue() {
-			if ( dialogueIndex < dialogues.length ) {
-				$dialogueText.text( dialogues[ dialogueIndex ] );
-				dialogueIndex++;
+			// 次のページがある場合
+			if ( currentPageIndex < allDialoguePages.length - 1 ) {
+				currentPageIndex++;
+				displayCurrentPage();
 			} else {
-				// セリフが終わったら選択肢を表示
+				// すべてのセリフが終わったら選択肢を表示
 				$dialogueBox.hide();
 				showChoices();
 			}
@@ -137,6 +239,28 @@
 			if ( isTouch && viewportHeight < 500 ) {
 				$gameContainer.css( 'height', viewportHeight + 'px' );
 			}
+			
+			// 画面サイズに応じた表示設定の調整
+			displaySettings.adjustForScreenSize();
+			
+			// 既にセリフが表示されている場合は再分割
+			if ( dialogues.length > 0 && allDialoguePages.length > 0 ) {
+				const currentPageContent = allDialoguePages[ currentPageIndex ];
+				prepareDialoguePages();
+				
+				// 現在の位置を可能な限り保持
+				if ( currentPageContent ) {
+					const newPageIndex = allDialoguePages.findIndex( function( page ) {
+						return page.includes( currentPageContent.substring( 0, 10 ) );
+					} );
+					
+					if ( newPageIndex !== -1 ) {
+						currentPageIndex = newPageIndex;
+					}
+				}
+				
+				displayCurrentPage();
+			}
 		}
 
 		/**
@@ -164,8 +288,11 @@
 			// 初期調整
 			adjustForResponsive();
 
-			// 最初のセリフを表示
-			showNextDialogue();
+			// セリフデータがある場合は分割処理を実行
+			if ( dialogues.length > 0 ) {
+				prepareDialoguePages();
+				displayCurrentPage();
+			}
 		}
 
 		// ゲームの初期化

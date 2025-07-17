@@ -67,6 +67,17 @@
     min-height: 80px; /* 最小高さ設定 */
 }
 
+/* セリフテキストの詳細スタイル */
+#novel-dialogue-text {
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'Meiryo', 'メイリオ', sans-serif;
+    letter-spacing: 0.05em;
+    overflow-wrap: break-word;
+    max-height: calc(1.6em * 3); /* 3行分の高さ */
+    overflow: hidden;
+}
+
 /* 選択肢コンテナ */
 #novel-choices,
 .novel-choices {
@@ -388,6 +399,11 @@
         padding: 25px;
         min-height: 100px;
     }
+    
+    #novel-dialogue-text {
+        max-height: calc(1.6em * 3);
+        font-size: clamp(16px, 2.5vw, 20px);
+    }
 
     #novel-choices button,
     .novel-choices button,
@@ -423,6 +439,11 @@
     .novel-dialogue-box {
         padding: 30px;
         min-height: 120px;
+    }
+    
+    #novel-dialogue-text {
+        max-height: calc(1.6em * 3);
+        font-size: clamp(18px, 2vw, 22px);
     }
 }
 
@@ -465,6 +486,12 @@
         padding: 15px;
         min-height: 70px;
         font-size: 14px;
+    }
+    
+    #novel-dialogue-text {
+        max-height: calc(1.5em * 3);
+        font-size: 14px;
+        line-height: 1.5;
     }
 
     #novel-choices,
@@ -550,6 +577,12 @@
         left: 0;
         width: 55%;
     }
+    
+    #novel-dialogue-text {
+        max-height: calc(1.4em * 3);
+        font-size: 12px;
+        line-height: 1.4;
+    }
 
     #novel-choices,
     .novel-choices {
@@ -597,6 +630,12 @@
         padding: 12px;
         font-size: 13px;
         min-height: 65px;
+    }
+    
+    #novel-dialogue-text {
+        max-height: calc(1.5em * 3);
+        font-size: 13px;
+        line-height: 1.5;
     }
 
     #novel-choices button,
