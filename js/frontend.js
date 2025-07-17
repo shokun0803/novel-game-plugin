@@ -292,6 +292,9 @@
 			if ( dialogues.length > 0 ) {
 				prepareDialoguePages();
 				displayCurrentPage();
+			} else {
+				// デバッグ用：セリフデータがない場合のメッセージ
+				console.log( 'No dialogue data found' );
 			}
 		}
 
