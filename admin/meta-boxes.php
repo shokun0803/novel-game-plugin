@@ -262,7 +262,7 @@ function noveltool_meta_box_callback( $post ) {
         border-color: #c62d2d;
     }
     </style>
-    <?php
+    
     <table class="form-table">
         <tr>
             <th scope="row">
