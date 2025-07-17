@@ -205,6 +205,37 @@ jQuery( function( $ ) {
 				}
 			}
 		} );
+
+		// 次のコマンドを新規作成（自動遷移）
+		$( '#novel-create-next-command' ).on( 'click', function() {
+			var title = prompt( novelGameMeta.strings.selectNextTitle );
+
+			if ( title ) {
+				var $button = $( this );
+				var originalText = $button.text();
+				
+				$button.prop( 'disabled', true ).text( novelGameMeta.strings.redirectingMessage );
+
+				$.post( ajaxurl, {
+					action: 'novel_game_create_scene',
+					title: title,
+					auto_redirect: true,
+					current_post_id: novelGameMeta.current_post_id,
+					_ajax_nonce: novelGameMeta.nonce
+				}, function( response ) {
+					if ( response.success && response.data.edit_url ) {
+						// 編集画面に遷移
+						window.location.href = response.data.edit_url;
+					} else {
+						alert( novelGameMeta.strings.createFailed );
+						$button.prop( 'disabled', false ).text( originalText );
+					}
+				} ).fail( function() {
+					alert( novelGameMeta.strings.createFailed );
+					$button.prop( 'disabled', false ).text( originalText );
+				} );
+			}
+		} );
 	}
 
 	// 初期化の実行
