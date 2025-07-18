@@ -136,8 +136,14 @@ function noveltool_filter_novel_game_content( $content ) {
 
     // セリフの処理
     $dialogue_lines = array();
-    if ( $dialogue ) {
-        $dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
+    
+    // JSONベースのデータが存在する場合は、それを使用
+    if ( is_string( $dialogue_speakers ) ) {
+        $dialogue_speakers_array = json_decode( $dialogue_speakers, true );
+    } elseif ( is_array( $dialogue_speakers ) ) {
+        $dialogue_speakers_array = $dialogue_speakers;
+    } else {
+        $dialogue_speakers_array = array();
     }
     
     // セリフ背景の処理
@@ -148,13 +154,31 @@ function noveltool_filter_novel_game_content( $content ) {
         $dialogue_backgrounds_array = $dialogue_backgrounds;
     }
     
-    // セリフ話者の処理
-    $dialogue_speakers_array = array();
-    if ( is_string( $dialogue_speakers ) ) {
-        $dialogue_speakers_array = json_decode( $dialogue_speakers, true );
-    } elseif ( is_array( $dialogue_speakers ) ) {
-        $dialogue_speakers_array = $dialogue_speakers;
+    // JSONベースのデータが存在する場合はそれを優先
+    if ( ! empty( $dialogue_speakers_array ) || ! empty( $dialogue_backgrounds_array ) ) {
+        // 新しいJSONベースのシステムを使用
+        $max_count = max( count( $dialogue_speakers_array ), count( $dialogue_backgrounds_array ) );
+        if ( $max_count > 0 ) {
+            // 古いテキストデータから改行で分割して取得
+            $old_dialogue_lines = array();
+            if ( $dialogue ) {
+                $old_dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
+            }
+            
+            // JSON データの数に合わせてセリフを構築
+            for ( $i = 0; $i < $max_count; $i++ ) {
+                $dialogue_lines[] = isset( $old_dialogue_lines[ $i ] ) ? $old_dialogue_lines[ $i ] : '';
+            }
+        }
+    } else {
+        // 古いシステムの場合、改行で分割（後方互換性のため）
+        if ( $dialogue ) {
+            $dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
+        }
     }
+    
+    // セリフ話者の処理（既に上で処理済み）
+    // $dialogue_speakers_array は既に定義済み
     
     // セリフと背景と話者を組み合わせた配列を作成
     $dialogue_data = array();

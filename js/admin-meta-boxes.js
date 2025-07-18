@@ -247,6 +247,9 @@ jQuery( function( $ ) {
 	 * 隠しテキストエリアの更新（後方互換性のため）
 	 */
 	function updateDialogueTextarea() {
+		// 改行を含むセリフテキストを適切に処理するため、
+		// 各セリフを改行で区切って結合するのではなく、
+		// JSONベースのデータのみを使用
 		var textLines = dialogueData.map( function( dialogue ) {
 			return dialogue.text;
 		} );

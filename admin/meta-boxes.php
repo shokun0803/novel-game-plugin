@@ -171,10 +171,48 @@ function noveltool_meta_box_callback( $post ) {
         $dialogue_speakers = array();
     }
     
-    // 既存のセリフテキストを行に分割
+    // 既存のセリフデータの処理
     $dialogue_lines = array();
-    if ( $dialogue ) {
-        $dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
+    
+    // JSONベースのデータが存在する場合は、それを使用
+    if ( is_string( $dialogue_speakers ) ) {
+        $dialogue_speakers_array = json_decode( $dialogue_speakers, true );
+    } elseif ( is_array( $dialogue_speakers ) ) {
+        $dialogue_speakers_array = $dialogue_speakers;
+    } else {
+        $dialogue_speakers_array = array();
+    }
+    
+    // JSONベースのデータが存在する場合はそれを優先
+    if ( ! empty( $dialogue_speakers_array ) || ! empty( $dialogue_backgrounds ) ) {
+        // 新しいJSONベースのシステムを使用
+        if ( is_string( $dialogue_backgrounds ) ) {
+            $dialogue_backgrounds_array = json_decode( $dialogue_backgrounds, true );
+        } elseif ( is_array( $dialogue_backgrounds ) ) {
+            $dialogue_backgrounds_array = $dialogue_backgrounds;
+        } else {
+            $dialogue_backgrounds_array = array();
+        }
+        
+        // セリフテキストを改行で分割せずに、JSON データの数に合わせて処理
+        $max_count = max( count( $dialogue_speakers_array ), count( $dialogue_backgrounds_array ) );
+        if ( $max_count > 0 ) {
+            // 古いテキストデータから改行で分割して取得
+            $old_dialogue_lines = array();
+            if ( $dialogue ) {
+                $old_dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
+            }
+            
+            // JSON データの数に合わせてセリフを構築
+            for ( $i = 0; $i < $max_count; $i++ ) {
+                $dialogue_lines[] = isset( $old_dialogue_lines[ $i ] ) ? $old_dialogue_lines[ $i ] : '';
+            }
+        }
+    } else {
+        // 古いシステムの場合、改行で分割（後方互換性のため）
+        if ( $dialogue ) {
+            $dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
+        }
     }
 
     // WordPressメディアアップローダー用スクリプトの読み込み
