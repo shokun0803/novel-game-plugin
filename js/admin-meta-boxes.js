@@ -18,6 +18,25 @@ jQuery( function( $ ) {
 	var ajaxurl = novelGameMeta.ajaxurl;
 	
 	/**
+	 * 現在のフォームデータを dialogueData に同期
+	 */
+	function syncCurrentFormData() {
+		$( '#novel-dialogue-list .novel-dialogue-item' ).each( function( index ) {
+			var $item = $( this );
+			var text = $item.find( '.dialogue-text' ).val();
+			var speaker = $item.find( '.dialogue-speaker-select' ).val();
+			var background = $item.find( '.dialogue-background-input' ).val();
+			
+			// dialogueData が存在し、該当インデックスがある場合のみ更新
+			if ( dialogueData && dialogueData[index] ) {
+				dialogueData[index].text = text || '';
+				dialogueData[index].speaker = speaker || '';
+				dialogueData[index].background = background || '';
+			}
+		} );
+	}
+	
+	/**
 	 * セリフデータの初期化
 	 */
 	function initializeDialogueData() {
@@ -25,6 +44,13 @@ jQuery( function( $ ) {
 		var existingLines = novelGameMeta.dialogue_lines || [];
 		var existingBackgrounds = novelGameMeta.dialogue_backgrounds || [];
 		var existingSpeakers = novelGameMeta.dialogue_speakers || [];
+		
+		// 既存の dialogueData が存在する場合は、それを保持
+		if ( dialogueData && dialogueData.length > 0 ) {
+			// 既存のデータがある場合は、フォームから最新データを同期
+			syncCurrentFormData();
+			return;
+		}
 		
 		dialogueData = [];
 		
@@ -64,7 +90,7 @@ jQuery( function( $ ) {
 			// セリフテキスト入力
 			var $textArea = $( '<textarea class="dialogue-text large-text" rows="2" placeholder="セリフを入力してください"></textarea>' );
 			$textArea.val( dialogue.text );
-			$textArea.on( 'input', function() {
+			$textArea.on( 'input change blur', function() {
 				dialogueData[index].text = $( this ).val();
 				updateDialogueTextarea();
 			} );
@@ -79,7 +105,7 @@ jQuery( function( $ ) {
 			$speakerSelect.append( '<option value="right"' + ( dialogue.speaker === 'right' ? ' selected' : '' ) + '>右キャラクター</option>' );
 			$speakerSelect.append( '<option value="narrator"' + ( dialogue.speaker === 'narrator' ? ' selected' : '' ) + '>ナレーター</option>' );
 			
-			$speakerSelect.on( 'change', function() {
+			$speakerSelect.on( 'change blur', function() {
 				dialogueData[index].speaker = $( this ).val();
 				updateDialogueTextarea();
 			} );
@@ -451,6 +477,14 @@ jQuery( function( $ ) {
 		
 		// フォーム送信時に最新のデータを保存
 		$( '#post' ).on( 'submit', function() {
+			// 現在のフォームデータを最新の状態に更新
+			syncCurrentFormData();
+			updateDialogueTextarea();
+		} );
+		
+		// ページ離脱時にもデータを保存
+		$( window ).on( 'beforeunload', function() {
+			syncCurrentFormData();
 			updateDialogueTextarea();
 		} );
 

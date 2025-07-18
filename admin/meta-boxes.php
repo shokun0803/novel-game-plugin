@@ -645,30 +645,38 @@ function noveltool_save_meta_box_data( $post_id ) {
     if ( isset( $_POST['dialogue_backgrounds'] ) ) {
         $dialogue_backgrounds = wp_unslash( $_POST['dialogue_backgrounds'] );
         
-        // JSON文字列の場合はそのまま保存
+        // JSON文字列の場合は妥当性をチェックして保存
         if ( is_string( $dialogue_backgrounds ) ) {
-            $dialogue_backgrounds = sanitize_text_field( $dialogue_backgrounds );
+            $decoded = json_decode( $dialogue_backgrounds, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+                // 配列の各要素をサニタイズ
+                $sanitized_backgrounds = array_map( 'sanitize_text_field', $decoded );
+                update_post_meta( $post_id, '_dialogue_backgrounds', $sanitized_backgrounds );
+            }
         } elseif ( is_array( $dialogue_backgrounds ) ) {
             // 配列の場合は各要素をサニタイズ
-            $dialogue_backgrounds = array_map( 'sanitize_text_field', $dialogue_backgrounds );
+            $sanitized_backgrounds = array_map( 'sanitize_text_field', $dialogue_backgrounds );
+            update_post_meta( $post_id, '_dialogue_backgrounds', $sanitized_backgrounds );
         }
-        
-        update_post_meta( $post_id, '_dialogue_backgrounds', $dialogue_backgrounds );
     }
     
     // セリフ話者データの保存
     if ( isset( $_POST['dialogue_speakers'] ) ) {
         $dialogue_speakers = wp_unslash( $_POST['dialogue_speakers'] );
         
-        // JSON文字列の場合はそのまま保存
+        // JSON文字列の場合は妥当性をチェックして保存
         if ( is_string( $dialogue_speakers ) ) {
-            $dialogue_speakers = sanitize_text_field( $dialogue_speakers );
+            $decoded = json_decode( $dialogue_speakers, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+                // 配列の各要素をサニタイズ
+                $sanitized_speakers = array_map( 'sanitize_text_field', $decoded );
+                update_post_meta( $post_id, '_dialogue_speakers', $sanitized_speakers );
+            }
         } elseif ( is_array( $dialogue_speakers ) ) {
             // 配列の場合は各要素をサニタイズ
-            $dialogue_speakers = array_map( 'sanitize_text_field', $dialogue_speakers );
+            $sanitized_speakers = array_map( 'sanitize_text_field', $dialogue_speakers );
+            update_post_meta( $post_id, '_dialogue_speakers', $sanitized_speakers );
         }
-        
-        update_post_meta( $post_id, '_dialogue_speakers', $dialogue_speakers );
     }
 
     foreach ( $fields as $field => $meta_key ) {
