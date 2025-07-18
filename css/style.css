@@ -294,8 +294,6 @@
     text-align: center;
     font-size: clamp(24px, 6vw, 36px);
     font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
     border: 2px solid #ffd700;
     margin: 20px 0;
     min-height: 80px;
@@ -308,14 +306,66 @@
     -ms-user-select: none;
 }
 
+/* ゲームナビゲーションボタン */
+.game-navigation {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.game-nav-button {
+    display: inline-block;
+    padding: 15px 30px;
+    margin: 0 10px;
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: clamp(16px, 3vw, 20px);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    min-height: 50px;
+    min-width: 150px;
+    box-sizing: border-box;
+}
+
+.game-nav-button:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.game-nav-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.game-nav-button.close-button {
+    background: #666;
+}
+
+.game-nav-button.close-button:hover {
+    background: #555;
+}
+
+.game-nav-button.game-list-button {
+    background: #4CAF50;
+}
+
+.game-nav-button.game-list-button:hover {
+    background: #45a049;
+}
+
+/* 古いゲーム終了メッセージのスタイル調整 */
 .game-end-message:hover {
     background: rgba(0, 0, 0, 0.9);
     border-color: #fff;
-    transform: scale(1.05);
+    transform: none; /* ナビゲーションボタンがある場合は変形しない */
 }
 
 .game-end-message:active {
-    transform: scale(0.95);
+    transform: none; /* ナビゲーションボタンがある場合は変形しない */
 }
 
 /* タッチデバイス用のゲーム終了メッセージ */
@@ -325,6 +375,14 @@
         font-size: clamp(28px, 8vw, 42px);
         min-height: 100px;
     }
+    
+    .game-nav-button {
+        padding: 20px 40px;
+        font-size: clamp(18px, 4vw, 24px);
+        min-height: 60px;
+        min-width: 200px;
+        margin: 10px;
+    }
 }
 
 /* 小画面での調整 */
@@ -333,6 +391,20 @@
         padding: 30px;
         font-size: clamp(20px, 5vw, 28px);
         min-height: 60px;
+    }
+    
+    .game-nav-button {
+        padding: 15px 25px;
+        font-size: clamp(14px, 3vw, 18px);
+        min-height: 50px;
+        min-width: 120px;
+        margin: 5px;
+        display: block;
+        width: 100%;
+    }
+    
+    .game-navigation {
+        margin-top: 15px;
     }
 }
 

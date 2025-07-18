@@ -64,7 +64,7 @@ get_header(); ?>
                                 <p class="scene-count"><?php printf(__('%d シーン', 'novel-game-plugin'), $scene_count); ?></p>
                             </div>
                             <div class="play-button">
-                                <span><?php _e('プレイ', 'novel-game-plugin'); ?></span>
+                                <span><?php _e('スタート', 'novel-game-plugin'); ?></span>
                             </div>
                         </div>
                     </div>
