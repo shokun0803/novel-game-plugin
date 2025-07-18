@@ -112,7 +112,6 @@
     height: 140px; /* 固定高さ設定 - ノベルゲームの標準的な表示 */
     display: flex;
     flex-direction: column;
-    justify-content: center;
 }
 
 /* 話者名表示 */
@@ -122,6 +121,20 @@
     color: #ffd700;
     font-size: 0.9em;
     opacity: 0.9;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: block;
+    width: fit-content;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* セリフテキストコンテナ */
+.novel-dialogue-text-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
 }
 
 /* セリフテキストの詳細スタイル */
@@ -134,7 +147,6 @@
     max-height: calc(1.6em * 3); /* 3行分の高さ */
     overflow: hidden;
     width: 100%;
-    flex: 1;
 }
 
 /* 継続インジケーター */
@@ -233,18 +245,32 @@
     -ms-transform: scale(0.98);
 }
 
-/* 選択肢番号表示 */
+/* 選択肢の三角表示 */
 #novel-choices .choice-item::before,
 .novel-choices .choice-item::before {
-    content: counter(choice-counter) ". ";
-    counter-increment: choice-counter;
-    font-weight: bold;
-    opacity: 0.7;
+    content: "";
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    margin-right: 8px;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+#novel-choices .choice-item.selected::before,
+.novel-choices .choice-item.selected::before {
+    border-left: 8px solid #fff;
+    border-right: 0;
+    border-bottom: 4px solid transparent;
+    border-top: 4px solid transparent;
 }
 
 #novel-choices .choice-list,
 .novel-choices .choice-list {
-    counter-reset: choice-counter;
+    /* Remove counter reset since we're not using counters anymore */
 }
 
 /* 古いボタンスタイル（後方互換性のため残す） */
@@ -533,6 +559,12 @@
         height: 160px; /* 固定高さ - タブレット以上 */
     }
     
+    .novel-dialogue-text-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+    }
+    
     #novel-dialogue-text {
         max-height: calc(1.6em * 3);
         font-size: clamp(16px, 2.5vw, 20px);
@@ -582,6 +614,12 @@
     .novel-dialogue-box {
         padding: 30px;
         height: 180px; /* 固定高さ - デスクトップ */
+    }
+    
+    .novel-dialogue-text-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
     }
     
     #novel-dialogue-text {
@@ -645,6 +683,12 @@
         padding: 15px;
         height: 100px; /* 固定高さ - モバイル縦画面 */
         font-size: 14px;
+    }
+    
+    .novel-dialogue-text-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
     }
     
     #novel-dialogue-text {
@@ -759,6 +803,12 @@
         width: 55%;
     }
     
+    .novel-dialogue-text-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+    }
+    
     #novel-dialogue-text {
         max-height: calc(1.4em * 3);
         font-size: 12px;
@@ -821,6 +871,12 @@
         padding: 12px;
         font-size: 13px;
         height: 90px; /* 固定高さ - 小画面 */
+    }
+    
+    .novel-dialogue-text-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
     }
     
     #novel-dialogue-text {

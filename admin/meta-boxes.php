@@ -145,6 +145,11 @@ function noveltool_meta_box_callback( $post ) {
     $character_right  = get_post_meta( $post->ID, '_character_right', true );
     $dialogue_speakers = get_post_meta( $post->ID, '_dialogue_speakers', true );
     
+    // キャラクター名前の取得
+    $character_left_name   = get_post_meta( $post->ID, '_character_left_name', true );
+    $character_center_name = get_post_meta( $post->ID, '_character_center_name', true );
+    $character_right_name  = get_post_meta( $post->ID, '_character_right_name', true );
+    
     // 後方互換性：既存の単一キャラクター画像をセンター位置に移行
     if ( $character && ! $character_center ) {
         $character_center = $character;
@@ -227,6 +232,9 @@ function noveltool_meta_box_callback( $post ) {
             'character_left' => $character_left,
             'character_center' => $character_center,
             'character_right' => $character_right,
+            'character_left_name' => $character_left_name,
+            'character_center_name' => $character_center_name,
+            'character_right_name' => $character_right_name,
         )
     );
 
@@ -253,6 +261,27 @@ function noveltool_meta_box_callback( $post ) {
         margin: 0 0 10px 0;
         font-size: 14px;
         color: #333;
+    }
+    
+    .character-name-input {
+        margin-bottom: 15px;
+    }
+    
+    .character-name-input label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 13px;
+        color: #555;
+    }
+    
+    .character-name-input input {
+        width: 100%;
+        max-width: 200px;
+        padding: 6px 8px;
+        border: 1px solid #ccd0d4;
+        border-radius: 3px;
+        font-size: 13px;
     }
     
     .character-position-item img {
@@ -395,6 +424,15 @@ function noveltool_meta_box_callback( $post ) {
                                id="novel_character_left"
                                name="character_left"
                                value="<?php echo esc_attr( $character_left ); ?>" />
+                        <div class="character-name-input">
+                            <label for="novel_character_left_name"><?php esc_html_e( 'キャラクター名', 'novel-game-plugin' ); ?></label>
+                            <input type="text"
+                                   id="novel_character_left_name"
+                                   name="character_left_name"
+                                   value="<?php echo esc_attr( $character_left_name ); ?>"
+                                   placeholder="<?php esc_attr_e( 'キャラクター名を入力', 'novel-game-plugin' ); ?>"
+                                   class="regular-text" />
+                        </div>
                         <img id="novel_character_left_preview"
                              src="<?php echo esc_url( $character_left ); ?>"
                              alt="<?php esc_attr_e( '左キャラクター画像プレビュー', 'novel-game-plugin' ); ?>"
@@ -421,6 +459,15 @@ function noveltool_meta_box_callback( $post ) {
                                id="novel_character_center"
                                name="character_center"
                                value="<?php echo esc_attr( $character_center ); ?>" />
+                        <div class="character-name-input">
+                            <label for="novel_character_center_name"><?php esc_html_e( 'キャラクター名', 'novel-game-plugin' ); ?></label>
+                            <input type="text"
+                                   id="novel_character_center_name"
+                                   name="character_center_name"
+                                   value="<?php echo esc_attr( $character_center_name ); ?>"
+                                   placeholder="<?php esc_attr_e( 'キャラクター名を入力', 'novel-game-plugin' ); ?>"
+                                   class="regular-text" />
+                        </div>
                         <img id="novel_character_center_preview"
                              src="<?php echo esc_url( $character_center ); ?>"
                              alt="<?php esc_attr_e( '中央キャラクター画像プレビュー', 'novel-game-plugin' ); ?>"
@@ -447,6 +494,15 @@ function noveltool_meta_box_callback( $post ) {
                                id="novel_character_right"
                                name="character_right"
                                value="<?php echo esc_attr( $character_right ); ?>" />
+                        <div class="character-name-input">
+                            <label for="novel_character_right_name"><?php esc_html_e( 'キャラクター名', 'novel-game-plugin' ); ?></label>
+                            <input type="text"
+                                   id="novel_character_right_name"
+                                   name="character_right_name"
+                                   value="<?php echo esc_attr( $character_right_name ); ?>"
+                                   placeholder="<?php esc_attr_e( 'キャラクター名を入力', 'novel-game-plugin' ); ?>"
+                                   class="regular-text" />
+                        </div>
                         <img id="novel_character_right_preview"
                              src="<?php echo esc_url( $character_right ); ?>"
                              alt="<?php esc_attr_e( '右キャラクター画像プレビュー', 'novel-game-plugin' ); ?>"
@@ -571,6 +627,9 @@ function noveltool_save_meta_box_data( $post_id ) {
         'character_left'   => '_character_left',
         'character_center' => '_character_center',
         'character_right'  => '_character_right',
+        'character_left_name'   => '_character_left_name',
+        'character_center_name' => '_character_center_name',
+        'character_right_name'  => '_character_right_name',
         'dialogue_text'    => '_dialogue_text',
         'choices'          => '_choices',
         'game_title'       => '_game_title',

@@ -124,6 +124,11 @@ function noveltool_filter_novel_game_content( $content ) {
     $character_right  = get_post_meta( $post->ID, '_character_right', true );
     $dialogue_speakers = get_post_meta( $post->ID, '_dialogue_speakers', true );
     
+    // キャラクター名前の取得
+    $character_left_name   = get_post_meta( $post->ID, '_character_left_name', true );
+    $character_center_name = get_post_meta( $post->ID, '_character_center_name', true );
+    $character_right_name  = get_post_meta( $post->ID, '_character_right_name', true );
+    
     // 後方互換性：既存の単一キャラクターをセンターに設定
     if ( $character && ! $character_center ) {
         $character_center = $character;
@@ -212,8 +217,10 @@ function noveltool_filter_novel_game_content( $content ) {
         <?php endif; ?>
 
         <div id="novel-dialogue-box" class="novel-dialogue-box">
-            <div id="novel-speaker-name" class="novel-speaker-name"></div>
-            <span id="novel-dialogue-text"></span>
+            <div id="novel-speaker-name" class="novel-speaker-name"><?php esc_html_e( 'ナレーター', 'novel-game-plugin' ); ?></div>
+            <div id="novel-dialogue-text-container" class="novel-dialogue-text-container">
+                <span id="novel-dialogue-text"></span>
+            </div>
             <div id="novel-dialogue-continue" class="novel-dialogue-continue" style="display: none;">
                 <span class="continue-indicator">▼</span>
             </div>
@@ -234,7 +241,10 @@ function noveltool_filter_novel_game_content( $content ) {
                 'left' => $character_left,
                 'center' => $character_center,
                 'right' => $character_right,
-                'legacy' => $character // 後方互換性のため
+                'legacy' => $character, // 後方互換性のため
+                'left_name' => $character_left_name,
+                'center_name' => $character_center_name,
+                'right_name' => $character_right_name,
             ), JSON_UNESCAPED_UNICODE ); ?>
         </script>
 

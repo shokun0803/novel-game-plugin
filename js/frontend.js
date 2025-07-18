@@ -100,6 +100,7 @@
 
 		/**
 		 * テキストを20文字×3行のページに分割する
+		 * 改行文字を考慮して分割する
 		 *
 		 * @param {string} text 分割するテキスト
 		 * @return {array} ページ配列
@@ -113,31 +114,46 @@
 			let currentIndex = 0;
 			
 			while ( currentIndex < text.length ) {
-				const pageText = text.substring( currentIndex, currentIndex + displaySettings.maxCharsPerPage );
+				let pageText = '';
+				let currentLines = 0;
+				let currentLineLength = 0;
+				
+				while ( currentIndex < text.length && currentLines < displaySettings.maxLines ) {
+					const char = text.charAt( currentIndex );
+					
+					if ( char === '\n' ) {
+						// 改行文字の場合
+						pageText += char;
+						currentLines++;
+						currentLineLength = 0;
+						currentIndex++;
+					} else if ( currentLineLength >= displaySettings.maxCharsPerLine ) {
+						// 行の文字数が上限に達した場合
+						pageText += '\n';
+						currentLines++;
+						currentLineLength = 0;
+						
+						// 次の行に移れない場合はページを終了
+						if ( currentLines >= displaySettings.maxLines ) {
+							break;
+						}
+						
+						// 現在の文字を追加
+						pageText += char;
+						currentLineLength++;
+						currentIndex++;
+					} else {
+						// 通常の文字
+						pageText += char;
+						currentLineLength++;
+						currentIndex++;
+					}
+				}
+				
 				pages.push( pageText );
-				currentIndex += displaySettings.maxCharsPerPage;
 			}
 			
 			return pages;
-		}
-		
-		/**
-		 * ページテキストを表示用にフォーマット（20文字で改行）
-		 *
-		 * @param {string} pageText ページのテキスト
-		 * @return {string} フォーマットされたテキスト
-		 */
-		function formatTextForDisplay( pageText ) {
-			const lines = [];
-			let currentIndex = 0;
-			
-			while ( currentIndex < pageText.length && lines.length < displaySettings.maxLines ) {
-				const lineText = pageText.substring( currentIndex, currentIndex + displaySettings.maxCharsPerLine );
-				lines.push( lineText );
-				currentIndex += displaySettings.maxCharsPerLine;
-			}
-			
-			return lines.join( '\n' );
 		}
 		
 		/**
@@ -192,26 +208,22 @@
 			
 			switch ( speaker ) {
 				case 'left':
-					speakerName = '左キャラクター';
+					speakerName = charactersData.left_name || '左キャラクター';
 					break;
 				case 'center':
-					speakerName = '中央キャラクター';
+					speakerName = charactersData.center_name || '中央キャラクター';
 					break;
 				case 'right':
-					speakerName = '右キャラクター';
+					speakerName = charactersData.right_name || '右キャラクター';
 					break;
 				case 'narrator':
+				case '':
+				default:
 					speakerName = 'ナレーター';
 					break;
-				default:
-					speakerName = '';
 			}
 			
-			if ( speakerName ) {
-				$speakerName.text( speakerName ).show();
-			} else {
-				$speakerName.hide();
-			}
+			$speakerName.text( speakerName );
 		}
 		
 		/**
@@ -260,7 +272,6 @@
 		function displayCurrentPage() {
 			if ( currentPageIndex < allDialoguePages.length ) {
 				const currentPage = allDialoguePages[ currentPageIndex ];
-				const formattedText = formatTextForDisplay( currentPage.text );
 				
 				// 話者名を表示
 				displaySpeakerName( currentPage.speaker );
@@ -278,10 +289,10 @@
 				// 新しいセリフの最初のページの場合は背景を変更
 				if ( currentPage.isFirstPageOfDialogue && currentPage.background ) {
 					changeBackground( currentPage.background ).then( function() {
-						$dialogueText.text( formattedText );
+						$dialogueText.text( currentPage.text );
 					} );
 				} else {
-					$dialogueText.text( formattedText );
+					$dialogueText.text( currentPage.text );
 				}
 				
 				return true;
