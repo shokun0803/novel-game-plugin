@@ -18,9 +18,12 @@
 		var choices = [];
 		var baseBackground = '';
 		var currentBackground = '';
+		var charactersData = {};
 		var $gameContainer = $( '#novel-game-container' );
 		var $dialogueText = $( '#novel-dialogue-text' );
 		var $dialogueBox = $( '#novel-dialogue-box' );
+		var $speakerName = $( '#novel-speaker-name' );
+		var $dialogueContinue = $( '#novel-dialogue-continue' );
 		var $choicesContainer = $( '#novel-choices' );
 		var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 		
@@ -60,6 +63,7 @@
 			var dialogueDataRaw = $( '#novel-dialogue-data' ).text();
 			var choicesData = $( '#novel-choices-data' ).text();
 			var baseBackgroundData = $( '#novel-base-background' ).text();
+			var charactersDataRaw = $( '#novel-characters-data' ).text();
 
 			if ( dialogueDataRaw ) {
 				dialogueData = JSON.parse( dialogueDataRaw );
@@ -67,7 +71,7 @@
 				// 後方互換性のため、文字列配列の場合は変換
 				if ( dialogueData.length > 0 && typeof dialogueData[0] === 'string' ) {
 					dialogueData = dialogueData.map( function( text ) {
-						return { text: text, background: '' };
+						return { text: text, background: '', speaker: '' };
 					} );
 				}
 				
@@ -85,6 +89,10 @@
 				baseBackground = JSON.parse( baseBackgroundData );
 				currentBackground = baseBackground;
 			}
+			
+			if ( charactersDataRaw ) {
+				charactersData = JSON.parse( charactersDataRaw );
+			}
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
 			return;
@@ -92,6 +100,7 @@
 
 		/**
 		 * テキストを20文字×3行のページに分割する
+		 * 改行文字を考慮して分割する
 		 *
 		 * @param {string} text 分割するテキスト
 		 * @return {array} ページ配列
@@ -105,31 +114,46 @@
 			let currentIndex = 0;
 			
 			while ( currentIndex < text.length ) {
-				const pageText = text.substring( currentIndex, currentIndex + displaySettings.maxCharsPerPage );
+				let pageText = '';
+				let currentLines = 0;
+				let currentLineLength = 0;
+				
+				while ( currentIndex < text.length && currentLines < displaySettings.maxLines ) {
+					const char = text.charAt( currentIndex );
+					
+					if ( char === '\n' ) {
+						// 改行文字の場合
+						pageText += char;
+						currentLines++;
+						currentLineLength = 0;
+						currentIndex++;
+					} else if ( currentLineLength >= displaySettings.maxCharsPerLine ) {
+						// 行の文字数が上限に達した場合
+						pageText += '\n';
+						currentLines++;
+						currentLineLength = 0;
+						
+						// 次の行に移れない場合はページを終了
+						if ( currentLines >= displaySettings.maxLines ) {
+							break;
+						}
+						
+						// 現在の文字を追加
+						pageText += char;
+						currentLineLength++;
+						currentIndex++;
+					} else {
+						// 通常の文字
+						pageText += char;
+						currentLineLength++;
+						currentIndex++;
+					}
+				}
+				
 				pages.push( pageText );
-				currentIndex += displaySettings.maxCharsPerPage;
 			}
 			
 			return pages;
-		}
-		
-		/**
-		 * ページテキストを表示用にフォーマット（20文字で改行）
-		 *
-		 * @param {string} pageText ページのテキスト
-		 * @return {string} フォーマットされたテキスト
-		 */
-		function formatTextForDisplay( pageText ) {
-			const lines = [];
-			let currentIndex = 0;
-			
-			while ( currentIndex < pageText.length && lines.length < displaySettings.maxLines ) {
-				const lineText = pageText.substring( currentIndex, currentIndex + displaySettings.maxCharsPerLine );
-				lines.push( lineText );
-				currentIndex += displaySettings.maxCharsPerLine;
-			}
-			
-			return lines.join( '\n' );
 		}
 		
 		/**
@@ -145,6 +169,7 @@
 					allDialoguePages.push( {
 						text: pageText,
 						background: dialogue.background,
+						speaker: dialogue.speaker,
 						isFirstPageOfDialogue: pageIndex === 0,
 						dialogueIndex: dialogueIndex
 					} );
@@ -153,6 +178,56 @@
 			
 			currentDialogueIndex = 0;
 			currentPageIndex = 0;
+		}
+		
+		/**
+		 * キャラクターの状態を更新する
+		 *
+		 * @param {string} activeSpeaker 現在話しているキャラクター
+		 */
+		function updateCharacterStates( activeSpeaker ) {
+			// すべてのキャラクターをリセット
+			$( '.novel-character' ).removeClass( 'speaking not-speaking' );
+			
+			// 話者がいない場合（ナレーター）は全キャラクターを通常状態に戻す
+			if ( ! activeSpeaker || activeSpeaker === 'narrator' || activeSpeaker === '' ) {
+				// 全キャラクターを通常状態で表示
+				return;
+			}
+			
+			// 話しているキャラクターを強調
+			$( '.novel-character-' + activeSpeaker ).addClass( 'speaking' );
+			
+			// 他のキャラクターを薄く表示
+			$( '.novel-character' ).not( '.novel-character-' + activeSpeaker ).addClass( 'not-speaking' );
+		}
+		
+		/**
+		 * 話者名を表示する
+		 *
+		 * @param {string} speaker 話者の種類
+		 */
+		function displaySpeakerName( speaker ) {
+			var speakerName = '';
+			
+			switch ( speaker ) {
+				case 'left':
+					speakerName = charactersData.left_name || '左キャラクター';
+					break;
+				case 'center':
+					speakerName = charactersData.center_name || '中央キャラクター';
+					break;
+				case 'right':
+					speakerName = charactersData.right_name || '右キャラクター';
+					break;
+				case 'narrator':
+				case '':
+				default:
+					speakerName = '';
+					break;
+			}
+			
+			$speakerName.text( speakerName );
 		}
 		
 		/**
@@ -201,15 +276,29 @@
 		function displayCurrentPage() {
 			if ( currentPageIndex < allDialoguePages.length ) {
 				const currentPage = allDialoguePages[ currentPageIndex ];
-				const formattedText = formatTextForDisplay( currentPage.text );
+				
+				// 話者名を表示
+				displaySpeakerName( currentPage.speaker );
+				
+				// キャラクターの状態を更新
+				updateCharacterStates( currentPage.speaker );
+				
+				// 継続インジケーターの表示/非表示
+				// 次のページがある場合は常に表示
+				if ( currentPageIndex < allDialoguePages.length - 1 ) {
+					$dialogueContinue.show();
+				} else {
+					// 最後のページでも継続マーカーを表示（選択肢がある場合もない場合も）
+					$dialogueContinue.show();
+				}
 				
 				// 新しいセリフの最初のページの場合は背景を変更
 				if ( currentPage.isFirstPageOfDialogue && currentPage.background ) {
 					changeBackground( currentPage.background ).then( function() {
-						$dialogueText.text( formattedText );
+						$dialogueText.text( currentPage.text );
 					} );
 				} else {
-					$dialogueText.text( formattedText );
+					$dialogueText.text( currentPage.text );
 				}
 				
 				return true;
@@ -231,15 +320,21 @@
 			} else {
 				// すべてのセリフが終わったら選択肢を表示
 				$dialogueBox.hide();
+				
+				// すべてのキャラクターを通常状態に戻す
+				updateCharacterStates( '' );
+				
 				showChoices();
 			}
 		}
 
 		/**
-		 * 選択肢を表示
+		 * 選択肢を表示、選択肢がない場合は「おわり」を表示
 		 */
 		function showChoices() {
 			if ( choices.length === 0 ) {
+				// 選択肢がない場合は「おわり」を表示
+				showGameEnd();
 				return;
 			}
 
@@ -313,7 +408,7 @@
 					$element.on( 'click', function( e ) {
 						e.preventDefault();
 						e.stopPropagation();
-						updateChoiceSelection( index );
+						executeChoice( index );
 					} );
 				} );
 			}
@@ -348,6 +443,44 @@
 		}
 
 		/**
+		 * ゲーム終了時の「おわり」画面を表示
+		 */
+		function showGameEnd() {
+			$choicesContainer.empty();
+			
+			// 「おわり」メッセージを表示
+			var $endMessage = $( '<div>' )
+				.addClass( 'game-end-message' )
+				.text( 'おわり' );
+			
+			$choicesContainer.append( $endMessage );
+			$choicesContainer.show();
+			
+			// 継続マーカーを非表示
+			$dialogueContinue.hide();
+			
+			// クリック・タッチ・キーボードイベントでアーカイブページに戻る
+			function returnToArchive() {
+				// アーカイブページのURLを取得
+				var archiveUrl = window.location.origin + window.location.pathname.replace( /\/[^\/]+\/?$/, '' );
+				// novel_gameアーカイブページのURLを構築
+				var gameArchiveUrl = archiveUrl.replace( /\/$/, '' ) + '/novel_game/';
+				window.location.href = gameArchiveUrl;
+			}
+			
+			// イベントリスナーの設定
+			$endMessage.on( 'click touchend', returnToArchive );
+			
+			// キーボードイベント
+			$( document ).on( 'keydown.novel-end', function( e ) {
+				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
+					e.preventDefault();
+					returnToArchive();
+				}
+			} );
+		}
+
+		/**
 		 * ゲームコンテナのクリック/タッチイベント
 		 */
 		function setupGameInteraction() {
@@ -361,6 +494,11 @@
 
 				// 選択肢要素がクリックされた場合も無視
 				if ( $( e.target ).hasClass( 'choice-item' ) || $( e.target ).closest( '.choice-list' ).length > 0 ) {
+					return;
+				}
+				
+				// 「おわり」メッセージがクリックされた場合も無視（別途処理）
+				if ( $( e.target ).hasClass( 'game-end-message' ) ) {
 					return;
 				}
 
@@ -381,12 +519,31 @@
 						return;
 					}
 					
+					// 「おわり」メッセージがタッチされた場合も無視（別途処理）
+					if ( $( e.target ).hasClass( 'game-end-message' ) ) {
+						return;
+					}
+					
 					// タッチフィードバック
 					$( this ).addClass( 'touch-active' );
 				} ).on( 'touchcancel', function() {
 					$( this ).removeClass( 'touch-active' );
 				} );
 			}
+			
+			// キーボードイベント処理（Enter、Space）
+			$( document ).on( 'keydown.novel-dialogue', function( e ) {
+				// 選択肢が表示されている場合はキーボード操作を無視
+				if ( $choicesContainer.is( ':visible' ) ) {
+					return;
+				}
+				
+				// EnterキーまたはSpaceキーでセリフを進める
+				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
+					e.preventDefault();
+					showNextDialogue();
+				}
+			} );
 		}
 
 		/**

@@ -18,20 +18,42 @@ jQuery( function( $ ) {
 	var ajaxurl = novelGameMeta.ajaxurl;
 	
 	/**
+	 * 現在のフォームデータを dialogueData に同期
+	 */
+	function syncCurrentFormData() {
+		$( '#novel-dialogue-list .novel-dialogue-item' ).each( function( index ) {
+			var $item = $( this );
+			var text = $item.find( '.dialogue-text' ).val();
+			var speaker = $item.find( '.dialogue-speaker-select' ).val();
+			var background = $item.find( '.dialogue-background-input' ).val();
+			
+			// dialogueData が存在し、該当インデックスがある場合のみ更新
+			if ( dialogueData && dialogueData[index] ) {
+				dialogueData[index].text = text || '';
+				dialogueData[index].speaker = speaker || '';
+				dialogueData[index].background = background || '';
+			}
+		} );
+	}
+	
+	/**
 	 * セリフデータの初期化
 	 */
 	function initializeDialogueData() {
 		// 既存のセリフデータを読み込み
 		var existingLines = novelGameMeta.dialogue_lines || [];
 		var existingBackgrounds = novelGameMeta.dialogue_backgrounds || [];
+		var existingSpeakers = novelGameMeta.dialogue_speakers || [];
 		
+		// 常に新しいデータでリセット（初期化時）
 		dialogueData = [];
 		
 		// 既存のセリフ行をデータ配列に変換
 		existingLines.forEach( function( line, index ) {
 			dialogueData.push( {
 				text: line,
-				background: existingBackgrounds[index] || ''
+				background: existingBackgrounds[index] || '',
+				speaker: existingSpeakers[index] || ''
 			} );
 		} );
 		
@@ -39,9 +61,13 @@ jQuery( function( $ ) {
 		if ( dialogueData.length === 0 ) {
 			dialogueData.push( {
 				text: '',
-				background: ''
+				background: '',
+				speaker: ''
 			} );
 		}
+		
+		// 初期化後に隠しフィールドを更新
+		updateDialogueTextarea();
 	}
 	
 	/**
@@ -58,10 +84,27 @@ jQuery( function( $ ) {
 			// セリフテキスト入力
 			var $textArea = $( '<textarea class="dialogue-text large-text" rows="2" placeholder="セリフを入力してください"></textarea>' );
 			$textArea.val( dialogue.text );
-			$textArea.on( 'input', function() {
+			$textArea.on( 'input change blur', function() {
 				dialogueData[index].text = $( this ).val();
 				updateDialogueTextarea();
 			} );
+			
+			// 話者選択
+			var $speakerContainer = $( '<div class="dialogue-speaker-container">' );
+			var $speakerLabel = $( '<label>話者:</label>' );
+			var $speakerSelect = $( '<select class="dialogue-speaker-select">' );
+			$speakerSelect.append( '<option value="">-- 話者を選択 --</option>' );
+			$speakerSelect.append( '<option value="left"' + ( dialogue.speaker === 'left' ? ' selected' : '' ) + '>左キャラクター</option>' );
+			$speakerSelect.append( '<option value="center"' + ( dialogue.speaker === 'center' ? ' selected' : '' ) + '>中央キャラクター</option>' );
+			$speakerSelect.append( '<option value="right"' + ( dialogue.speaker === 'right' ? ' selected' : '' ) + '>右キャラクター</option>' );
+			$speakerSelect.append( '<option value="narrator"' + ( dialogue.speaker === 'narrator' ? ' selected' : '' ) + '>ナレーター</option>' );
+			
+			$speakerSelect.on( 'change blur', function() {
+				dialogueData[index].speaker = $( this ).val();
+				updateDialogueTextarea();
+			} );
+			
+			$speakerContainer.append( $speakerLabel, $speakerSelect );
 			
 			// 背景画像選択
 			var $imageContainer = $( '<div class="dialogue-background-container">' );
@@ -72,12 +115,19 @@ jQuery( function( $ ) {
 				$imagePreview.attr( 'src', dialogue.background ).show();
 			}
 			var $imageButton = $( '<button type="button" class="button dialogue-background-button">背景画像を選択</button>' );
+			var $imageClearButton = $( '<button type="button" class="button dialogue-background-clear" style="display: ' + ( dialogue.background ? 'inline-block' : 'none' ) + ';">削除</button>' );
 			
 			$imageButton.on( 'click', function() {
 				selectDialogueBackground( index );
 			} );
 			
-			$imageContainer.append( $imageInput, $imagePreview, $imageButton );
+			$imageClearButton.on( 'click', function() {
+				dialogueData[index].background = '';
+				renderDialogueList();
+				updateDialogueTextarea();
+			} );
+			
+			$imageContainer.append( $imageInput, $imagePreview, '<br>', $imageButton, $imageClearButton );
 			
 			// 削除ボタン
 			var $deleteButton = $( '<button type="button" class="button dialogue-delete-button">削除</button>' );
@@ -103,6 +153,7 @@ jQuery( function( $ ) {
 			
 			$item.append( '<p><strong>セリフ ' + ( index + 1 ) + '</strong></p>' );
 			$item.append( $textArea );
+			$item.append( $speakerContainer );
 			$item.append( '<p><strong>背景画像:</strong></p>' );
 			$item.append( $imageContainer );
 			$item.append( $controls );
@@ -153,7 +204,8 @@ jQuery( function( $ ) {
 	function addDialogue() {
 		dialogueData.push( {
 			text: '',
-			background: ''
+			background: '',
+			speaker: ''
 		} );
 		renderDialogueList();
 		updateDialogueTextarea();
@@ -195,6 +247,9 @@ jQuery( function( $ ) {
 	 * 隠しテキストエリアの更新（後方互換性のため）
 	 */
 	function updateDialogueTextarea() {
+		// 改行を含むセリフテキストを適切に処理するため、
+		// 各セリフを改行で区切って結合するのではなく、
+		// JSONベースのデータのみを使用
 		var textLines = dialogueData.map( function( dialogue ) {
 			return dialogue.text;
 		} );
@@ -205,12 +260,36 @@ jQuery( function( $ ) {
 			return dialogue.background;
 		} );
 		
+		// 話者データの更新
+		var speakers = dialogueData.map( function( dialogue ) {
+			return dialogue.speaker;
+		} );
+		
+		// セリフテキストデータの更新（新しいJSON形式）
+		var texts = dialogueData.map( function( dialogue ) {
+			return dialogue.text;
+		} );
+		
 		// 隠しフィールドに背景データを設定
-		var $existingInput = $( 'input[name="dialogue_backgrounds"]' );
-		if ( $existingInput.length === 0 ) {
+		var $existingBackgroundInput = $( 'input[name="dialogue_backgrounds"]' );
+		if ( $existingBackgroundInput.length === 0 ) {
 			$( '<input type="hidden" name="dialogue_backgrounds">' ).appendTo( '#novel-dialogue-container' );
 		}
 		$( 'input[name="dialogue_backgrounds"]' ).val( JSON.stringify( backgrounds ) );
+		
+		// 隠しフィールドに話者データを設定
+		var $existingSpeakerInput = $( 'input[name="dialogue_speakers"]' );
+		if ( $existingSpeakerInput.length === 0 ) {
+			$( '<input type="hidden" name="dialogue_speakers">' ).appendTo( '#novel-dialogue-container' );
+		}
+		$( 'input[name="dialogue_speakers"]' ).val( JSON.stringify( speakers ) );
+		
+		// 隠しフィールドにテキストデータを設定（新しいJSON形式）
+		var $existingTextInput = $( 'input[name="dialogue_texts"]' );
+		if ( $existingTextInput.length === 0 ) {
+			$( '<input type="hidden" name="dialogue_texts">' ).appendTo( '#novel-dialogue-container' );
+		}
+		$( 'input[name="dialogue_texts"]' ).val( JSON.stringify( texts ) );
 	}
 
 	/**
@@ -312,9 +391,64 @@ jQuery( function( $ ) {
 				var attachment = customUploader.state().get( 'selection' ).first().toJSON();
 				$( inputId ).val( attachment.url );
 				$( previewId ).attr( 'src', attachment.url ).show();
+				
+				// 削除ボタンを表示
+				var position = $( e.target ).data( 'position' );
+				if ( position ) {
+					$( '.character-image-clear[data-position="' + position + '"]' ).show();
+				}
 			} );
 
 			customUploader.open();
+		} );
+	}
+	
+	/**
+	 * キャラクター画像の選択用メディアアップローダーを設定
+	 *
+	 * @param {string} position キャラクターの位置 (left, center, right)
+	 */
+	function setupCharacterMediaUploader( position ) {
+		$( '.character-image-button[data-position="' + position + '"]' ).on( 'click', function( e ) {
+			e.preventDefault();
+
+			var customUploader = wp.media( {
+				title: 'キャラクター画像を選択',
+				button: {
+					text: 'この画像を使用'
+				},
+				multiple: false,
+				library: {
+					type: 'image'
+				}
+			} );
+
+			customUploader.on( 'select', function() {
+				var attachment = customUploader.state().get( 'selection' ).first().toJSON();
+				$( '#novel_character_' + position ).val( attachment.url );
+				$( '#novel_character_' + position + '_preview' ).attr( 'src', attachment.url ).show();
+				$( '.character-image-clear[data-position="' + position + '"]' ).show();
+				
+				// 後方互換性のため、センターキャラクターは古いフィールドにも設定
+				if ( position === 'center' ) {
+					$( '#novel_character_image' ).val( attachment.url );
+				}
+			} );
+
+			customUploader.open();
+		} );
+		
+		// 削除ボタンの設定
+		$( '.character-image-clear[data-position="' + position + '"]' ).on( 'click', function( e ) {
+			e.preventDefault();
+			$( '#novel_character_' + position ).val( '' );
+			$( '#novel_character_' + position + '_preview' ).attr( 'src', '' ).hide();
+			$( this ).hide();
+			
+			// 後方互換性のため、センターキャラクターは古いフィールドもクリア
+			if ( position === 'center' ) {
+				$( '#novel_character_image' ).val( '' );
+			}
 		} );
 	}
 
@@ -331,6 +465,13 @@ jQuery( function( $ ) {
 
 		// メディアアップローダーの設定
 		setupMediaUploader( '#novel_background_image_button', '#novel_background_image', '#novel_background_image_preview' );
+		
+		// キャラクター画像用メディアアップローダーの設定
+		setupCharacterMediaUploader( 'left' );
+		setupCharacterMediaUploader( 'center' );
+		setupCharacterMediaUploader( 'right' );
+		
+		// 旧キャラクター画像用（後方互換性のため）
 		setupMediaUploader( '#novel_character_image_button', '#novel_character_image', '#novel_character_image_preview' );
 	}
 
@@ -341,6 +482,19 @@ jQuery( function( $ ) {
 		// セリフを追加
 		$( '#novel-dialogue-add' ).on( 'click', function() {
 			addDialogue();
+		} );
+		
+		// フォーム送信時に最新のデータを保存
+		$( '#post' ).on( 'submit', function() {
+			// 現在のフォームデータを最新の状態に更新
+			syncCurrentFormData();
+			updateDialogueTextarea();
+		} );
+		
+		// ページ離脱時にもデータを保存
+		$( window ).on( 'beforeunload', function() {
+			syncCurrentFormData();
+			updateDialogueTextarea();
 		} );
 
 		// 選択肢を追加
