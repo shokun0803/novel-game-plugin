@@ -217,7 +217,7 @@ function noveltool_filter_novel_game_content( $content ) {
         <?php endif; ?>
 
         <div id="novel-dialogue-box" class="novel-dialogue-box">
-            <div id="novel-speaker-name" class="novel-speaker-name"><?php esc_html_e( 'ナレーター', 'novel-game-plugin' ); ?></div>
+            <div id="novel-speaker-name" class="novel-speaker-name"></div>
             <div id="novel-dialogue-text-container" class="novel-dialogue-text-container">
                 <span id="novel-dialogue-text"></span>
             </div>

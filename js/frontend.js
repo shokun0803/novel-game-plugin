@@ -219,7 +219,7 @@
 				case 'narrator':
 				case '':
 				default:
-					speakerName = 'ナレーター';
+					speakerName = '';
 					break;
 			}
 			
