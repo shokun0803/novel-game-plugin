@@ -18,9 +18,12 @@
 		var choices = [];
 		var baseBackground = '';
 		var currentBackground = '';
+		var charactersData = {};
 		var $gameContainer = $( '#novel-game-container' );
 		var $dialogueText = $( '#novel-dialogue-text' );
 		var $dialogueBox = $( '#novel-dialogue-box' );
+		var $speakerName = $( '#novel-speaker-name' );
+		var $dialogueContinue = $( '#novel-dialogue-continue' );
 		var $choicesContainer = $( '#novel-choices' );
 		var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 		
@@ -60,6 +63,7 @@
 			var dialogueDataRaw = $( '#novel-dialogue-data' ).text();
 			var choicesData = $( '#novel-choices-data' ).text();
 			var baseBackgroundData = $( '#novel-base-background' ).text();
+			var charactersDataRaw = $( '#novel-characters-data' ).text();
 
 			if ( dialogueDataRaw ) {
 				dialogueData = JSON.parse( dialogueDataRaw );
@@ -67,7 +71,7 @@
 				// 後方互換性のため、文字列配列の場合は変換
 				if ( dialogueData.length > 0 && typeof dialogueData[0] === 'string' ) {
 					dialogueData = dialogueData.map( function( text ) {
-						return { text: text, background: '' };
+						return { text: text, background: '', speaker: '' };
 					} );
 				}
 				
@@ -84,6 +88,10 @@
 			if ( baseBackgroundData ) {
 				baseBackground = JSON.parse( baseBackgroundData );
 				currentBackground = baseBackground;
+			}
+			
+			if ( charactersDataRaw ) {
+				charactersData = JSON.parse( charactersDataRaw );
 			}
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
@@ -145,6 +153,7 @@
 					allDialoguePages.push( {
 						text: pageText,
 						background: dialogue.background,
+						speaker: dialogue.speaker,
 						isFirstPageOfDialogue: pageIndex === 0,
 						dialogueIndex: dialogueIndex
 					} );
@@ -153,6 +162,56 @@
 			
 			currentDialogueIndex = 0;
 			currentPageIndex = 0;
+		}
+		
+		/**
+		 * キャラクターの状態を更新する
+		 *
+		 * @param {string} activeSpeaker 現在話しているキャラクター
+		 */
+		function updateCharacterStates( activeSpeaker ) {
+			// すべてのキャラクターをリセット
+			$( '.novel-character' ).removeClass( 'speaking not-speaking' );
+			
+			if ( activeSpeaker && activeSpeaker !== 'narrator' ) {
+				// 話しているキャラクターを強調
+				$( '.novel-character-' + activeSpeaker ).addClass( 'speaking' );
+				
+				// 他のキャラクターを薄く表示
+				$( '.novel-character' ).not( '.novel-character-' + activeSpeaker ).addClass( 'not-speaking' );
+			}
+		}
+		
+		/**
+		 * 話者名を表示する
+		 *
+		 * @param {string} speaker 話者の種類
+		 */
+		function displaySpeakerName( speaker ) {
+			var speakerName = '';
+			
+			switch ( speaker ) {
+				case 'left':
+					speakerName = '左キャラクター';
+					break;
+				case 'center':
+					speakerName = '中央キャラクター';
+					break;
+				case 'right':
+					speakerName = '右キャラクター';
+					break;
+				case 'narrator':
+					speakerName = 'ナレーター';
+					break;
+				default:
+					speakerName = '';
+			}
+			
+			if ( speakerName ) {
+				$speakerName.text( speakerName ).show();
+			} else {
+				$speakerName.hide();
+			}
 		}
 		
 		/**
@@ -203,6 +262,19 @@
 				const currentPage = allDialoguePages[ currentPageIndex ];
 				const formattedText = formatTextForDisplay( currentPage.text );
 				
+				// 話者名を表示
+				displaySpeakerName( currentPage.speaker );
+				
+				// キャラクターの状態を更新
+				updateCharacterStates( currentPage.speaker );
+				
+				// 継続インジケーターの表示/非表示
+				if ( currentPageIndex < allDialoguePages.length - 1 ) {
+					$dialogueContinue.show();
+				} else {
+					$dialogueContinue.hide();
+				}
+				
 				// 新しいセリフの最初のページの場合は背景を変更
 				if ( currentPage.isFirstPageOfDialogue && currentPage.background ) {
 					changeBackground( currentPage.background ).then( function() {
@@ -231,6 +303,10 @@
 			} else {
 				// すべてのセリフが終わったら選択肢を表示
 				$dialogueBox.hide();
+				
+				// すべてのキャラクターを通常状態に戻す
+				updateCharacterStates( '' );
+				
 				showChoices();
 			}
 		}

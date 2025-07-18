@@ -117,6 +117,17 @@ function noveltool_filter_novel_game_content( $content ) {
     $choices_raw = get_post_meta( $post->ID, '_choices', true );
     $game_title = get_post_meta( $post->ID, '_game_title', true );
     $dialogue_backgrounds = get_post_meta( $post->ID, '_dialogue_backgrounds', true );
+    
+    // 3体キャラクター対応のメタデータ取得
+    $character_left   = get_post_meta( $post->ID, '_character_left', true );
+    $character_center = get_post_meta( $post->ID, '_character_center', true );
+    $character_right  = get_post_meta( $post->ID, '_character_right', true );
+    $dialogue_speakers = get_post_meta( $post->ID, '_dialogue_speakers', true );
+    
+    // 後方互換性：既存の単一キャラクターをセンターに設定
+    if ( $character && ! $character_center ) {
+        $character_center = $character;
+    }
 
     // セリフの処理
     $dialogue_lines = array();
@@ -132,12 +143,21 @@ function noveltool_filter_novel_game_content( $content ) {
         $dialogue_backgrounds_array = $dialogue_backgrounds;
     }
     
-    // セリフと背景を組み合わせた配列を作成
+    // セリフ話者の処理
+    $dialogue_speakers_array = array();
+    if ( is_string( $dialogue_speakers ) ) {
+        $dialogue_speakers_array = json_decode( $dialogue_speakers, true );
+    } elseif ( is_array( $dialogue_speakers ) ) {
+        $dialogue_speakers_array = $dialogue_speakers;
+    }
+    
+    // セリフと背景と話者を組み合わせた配列を作成
     $dialogue_data = array();
     foreach ( $dialogue_lines as $index => $line ) {
         $dialogue_data[] = array(
             'text' => $line,
-            'background' => isset( $dialogue_backgrounds_array[ $index ] ) ? $dialogue_backgrounds_array[ $index ] : ''
+            'background' => isset( $dialogue_backgrounds_array[ $index ] ) ? $dialogue_backgrounds_array[ $index ] : '',
+            'speaker' => isset( $dialogue_speakers_array[ $index ] ) ? $dialogue_speakers_array[ $index ] : ''
         );
     }
 
@@ -173,12 +193,30 @@ function noveltool_filter_novel_game_content( $content ) {
     ?>
 
     <div id="novel-game-container" class="novel-game-container" style="background-image: url('<?php echo esc_url( $background ); ?>');">
-        <?php if ( $character ) : ?>
-            <img id="novel-character" class="novel-character" src="<?php echo esc_url( $character ); ?>" alt="<?php echo esc_attr__( 'キャラクター', 'novel-game-plugin' ); ?>" />
+        <!-- 3体キャラクター表示 -->
+        <?php if ( $character_left ) : ?>
+            <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" alt="<?php echo esc_attr__( '左キャラクター', 'novel-game-plugin' ); ?>" />
+        <?php endif; ?>
+        
+        <?php if ( $character_center ) : ?>
+            <img id="novel-character-center" class="novel-character novel-character-center" src="<?php echo esc_url( $character_center ); ?>" alt="<?php echo esc_attr__( '中央キャラクター', 'novel-game-plugin' ); ?>" />
+        <?php endif; ?>
+        
+        <?php if ( $character_right ) : ?>
+            <img id="novel-character-right" class="novel-character novel-character-right" src="<?php echo esc_url( $character_right ); ?>" alt="<?php echo esc_attr__( '右キャラクター', 'novel-game-plugin' ); ?>" />
+        <?php endif; ?>
+        
+        <!-- 後方互換性のための旧キャラクター表示 -->
+        <?php if ( $character && ! $character_center ) : ?>
+            <img id="novel-character" class="novel-character novel-character-center" src="<?php echo esc_url( $character ); ?>" alt="<?php echo esc_attr__( 'キャラクター', 'novel-game-plugin' ); ?>" />
         <?php endif; ?>
 
         <div id="novel-dialogue-box" class="novel-dialogue-box">
+            <div id="novel-speaker-name" class="novel-speaker-name"></div>
             <span id="novel-dialogue-text"></span>
+            <div id="novel-dialogue-continue" class="novel-dialogue-continue" style="display: none;">
+                <span class="continue-indicator">▼</span>
+            </div>
         </div>
 
         <div id="novel-choices" class="novel-choices"></div>
@@ -189,6 +227,15 @@ function noveltool_filter_novel_game_content( $content ) {
         
         <script id="novel-base-background" type="application/json">
             <?php echo wp_json_encode( $background, JSON_UNESCAPED_UNICODE ); ?>
+        </script>
+        
+        <script id="novel-characters-data" type="application/json">
+            <?php echo wp_json_encode( array(
+                'left' => $character_left,
+                'center' => $character_center,
+                'right' => $character_right,
+                'legacy' => $character // 後方互換性のため
+            ), JSON_UNESCAPED_UNICODE ); ?>
         </script>
 
         <script id="novel-choices-data" type="application/json">

@@ -139,9 +139,25 @@ function noveltool_meta_box_callback( $post ) {
     $game_title  = get_post_meta( $post->ID, '_game_title', true );
     $dialogue_backgrounds = get_post_meta( $post->ID, '_dialogue_backgrounds', true );
     
+    // 3体キャラクター対応の値を取得
+    $character_left   = get_post_meta( $post->ID, '_character_left', true );
+    $character_center = get_post_meta( $post->ID, '_character_center', true );
+    $character_right  = get_post_meta( $post->ID, '_character_right', true );
+    $dialogue_speakers = get_post_meta( $post->ID, '_dialogue_speakers', true );
+    
+    // 後方互換性：既存の単一キャラクター画像をセンター位置に移行
+    if ( $character && ! $character_center ) {
+        $character_center = $character;
+    }
+    
     // 対話背景データが存在しない場合は空の配列で初期化
     if ( ! is_array( $dialogue_backgrounds ) ) {
         $dialogue_backgrounds = array();
+    }
+    
+    // 対話話者データが存在しない場合は空の配列で初期化
+    if ( ! is_array( $dialogue_speakers ) ) {
+        $dialogue_speakers = array();
     }
     
     // 既存のセリフテキストを行に分割
@@ -207,12 +223,48 @@ function noveltool_meta_box_callback( $post ) {
             'strings'       => $js_strings,
             'dialogue_lines' => $dialogue_lines,
             'dialogue_backgrounds' => $dialogue_backgrounds,
+            'dialogue_speakers' => $dialogue_speakers,
+            'character_left' => $character_left,
+            'character_center' => $character_center,
+            'character_right' => $character_right,
         )
     );
 
     // HTMLテンプレートの出力
     ?>
     <style>
+    .character-positions-container {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+    
+    .character-position-item {
+        border: 1px solid #ccd0d4;
+        padding: 15px;
+        border-radius: 4px;
+        background: #f9f9f9;
+        min-width: 200px;
+        flex: 1;
+    }
+    
+    .character-position-item h4 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        color: #333;
+    }
+    
+    .character-position-item img {
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .character-position-item .button {
+        margin-right: 5px;
+    }
+    
     .novel-dialogue-item {
         border: 1px solid #ccd0d4;
         margin-bottom: 10px;
@@ -223,6 +275,21 @@ function noveltool_meta_box_callback( $post ) {
     
     .novel-dialogue-item .dialogue-text {
         margin-bottom: 10px;
+    }
+    
+    .dialogue-speaker-container {
+        margin-bottom: 10px;
+    }
+    
+    .dialogue-speaker-container label {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .dialogue-speaker-container select {
+        width: 100%;
+        max-width: 200px;
     }
     
     .dialogue-background-container {
@@ -260,6 +327,16 @@ function noveltool_meta_box_callback( $post ) {
     .dialogue-delete-button:hover {
         background: #c62d2d;
         border-color: #c62d2d;
+    }
+    
+    @media (max-width: 768px) {
+        .character-positions-container {
+            flex-direction: column;
+        }
+        
+        .character-position-item {
+            min-width: auto;
+        }
     }
     </style>
     
@@ -305,25 +382,96 @@ function noveltool_meta_box_callback( $post ) {
 
         <tr>
             <th scope="row">
-                <label for="novel_character_image"><?php esc_html_e( 'キャラクター画像', 'novel-game-plugin' ); ?></label>
+                <label><?php esc_html_e( 'キャラクター画像', 'novel-game-plugin' ); ?></label>
             </th>
             <td>
+                <div class="character-positions-container">
+                    <p class="description"><?php esc_html_e( '最大3体のキャラクターを左・中央・右の位置に配置できます。', 'novel-game-plugin' ); ?></p>
+                    
+                    <!-- 左キャラクター -->
+                    <div class="character-position-item">
+                        <h4><?php esc_html_e( '左キャラクター', 'novel-game-plugin' ); ?></h4>
+                        <input type="hidden"
+                               id="novel_character_left"
+                               name="character_left"
+                               value="<?php echo esc_attr( $character_left ); ?>" />
+                        <img id="novel_character_left_preview"
+                             src="<?php echo esc_url( $character_left ); ?>"
+                             alt="<?php esc_attr_e( '左キャラクター画像プレビュー', 'novel-game-plugin' ); ?>"
+                             style="max-width: 150px; height: auto; display: <?php echo $character_left ? 'block' : 'none'; ?>;" />
+                        <p>
+                            <button type="button"
+                                    class="button character-image-button"
+                                    data-position="left">
+                                <?php esc_html_e( '画像を選択', 'novel-game-plugin' ); ?>
+                            </button>
+                            <button type="button"
+                                    class="button character-image-clear"
+                                    data-position="left"
+                                    style="display: <?php echo $character_left ? 'inline-block' : 'none'; ?>;">
+                                <?php esc_html_e( '削除', 'novel-game-plugin' ); ?>
+                            </button>
+                        </p>
+                    </div>
+                    
+                    <!-- 中央キャラクター -->
+                    <div class="character-position-item">
+                        <h4><?php esc_html_e( '中央キャラクター', 'novel-game-plugin' ); ?></h4>
+                        <input type="hidden"
+                               id="novel_character_center"
+                               name="character_center"
+                               value="<?php echo esc_attr( $character_center ); ?>" />
+                        <img id="novel_character_center_preview"
+                             src="<?php echo esc_url( $character_center ); ?>"
+                             alt="<?php esc_attr_e( '中央キャラクター画像プレビュー', 'novel-game-plugin' ); ?>"
+                             style="max-width: 150px; height: auto; display: <?php echo $character_center ? 'block' : 'none'; ?>;" />
+                        <p>
+                            <button type="button"
+                                    class="button character-image-button"
+                                    data-position="center">
+                                <?php esc_html_e( '画像を選択', 'novel-game-plugin' ); ?>
+                            </button>
+                            <button type="button"
+                                    class="button character-image-clear"
+                                    data-position="center"
+                                    style="display: <?php echo $character_center ? 'inline-block' : 'none'; ?>;">
+                                <?php esc_html_e( '削除', 'novel-game-plugin' ); ?>
+                            </button>
+                        </p>
+                    </div>
+                    
+                    <!-- 右キャラクター -->
+                    <div class="character-position-item">
+                        <h4><?php esc_html_e( '右キャラクター', 'novel-game-plugin' ); ?></h4>
+                        <input type="hidden"
+                               id="novel_character_right"
+                               name="character_right"
+                               value="<?php echo esc_attr( $character_right ); ?>" />
+                        <img id="novel_character_right_preview"
+                             src="<?php echo esc_url( $character_right ); ?>"
+                             alt="<?php esc_attr_e( '右キャラクター画像プレビュー', 'novel-game-plugin' ); ?>"
+                             style="max-width: 150px; height: auto; display: <?php echo $character_right ? 'block' : 'none'; ?>;" />
+                        <p>
+                            <button type="button"
+                                    class="button character-image-button"
+                                    data-position="right">
+                                <?php esc_html_e( '画像を選択', 'novel-game-plugin' ); ?>
+                            </button>
+                            <button type="button"
+                                    class="button character-image-clear"
+                                    data-position="right"
+                                    style="display: <?php echo $character_right ? 'inline-block' : 'none'; ?>;">
+                                <?php esc_html_e( '削除', 'novel-game-plugin' ); ?>
+                            </button>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- 後方互換性のために古いフィールドを残す -->
                 <input type="hidden"
                        id="novel_character_image"
                        name="character_image"
                        value="<?php echo esc_attr( $character ); ?>" />
-                <img id="novel_character_image_preview"
-                     src="<?php echo esc_url( $character ); ?>"
-                     alt="<?php esc_attr_e( 'キャラクター画像プレビュー', 'novel-game-plugin' ); ?>"
-                     style="max-width: 300px; height: auto; display: <?php echo $character ? 'block' : 'none'; ?>;" />
-                <p>
-                    <button type="button"
-                            class="button"
-                            id="novel_character_image_button">
-                        <?php esc_html_e( 'メディアから選択', 'novel-game-plugin' ); ?>
-                    </button>
-                </p>
-                <p class="description"><?php esc_html_e( 'シーンに表示するキャラクター画像を設定します。', 'novel-game-plugin' ); ?></p>
             </td>
         </tr>
 
@@ -420,6 +568,9 @@ function noveltool_save_meta_box_data( $post_id ) {
     $fields = array(
         'background_image' => '_background_image',
         'character_image'  => '_character_image',
+        'character_left'   => '_character_left',
+        'character_center' => '_character_center',
+        'character_right'  => '_character_right',
         'dialogue_text'    => '_dialogue_text',
         'choices'          => '_choices',
         'game_title'       => '_game_title',
@@ -438,6 +589,21 @@ function noveltool_save_meta_box_data( $post_id ) {
         }
         
         update_post_meta( $post_id, '_dialogue_backgrounds', $dialogue_backgrounds );
+    }
+    
+    // セリフ話者データの保存
+    if ( isset( $_POST['dialogue_speakers'] ) ) {
+        $dialogue_speakers = wp_unslash( $_POST['dialogue_speakers'] );
+        
+        // JSON文字列の場合はそのまま保存
+        if ( is_string( $dialogue_speakers ) ) {
+            $dialogue_speakers = sanitize_text_field( $dialogue_speakers );
+        } elseif ( is_array( $dialogue_speakers ) ) {
+            // 配列の場合は各要素をサニタイズ
+            $dialogue_speakers = array_map( 'sanitize_text_field', $dialogue_speakers );
+        }
+        
+        update_post_meta( $post_id, '_dialogue_speakers', $dialogue_speakers );
     }
 
     foreach ( $fields as $field => $meta_key ) {

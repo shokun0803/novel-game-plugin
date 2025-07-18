@@ -39,15 +39,60 @@
 .novel-character {
     position: absolute;
     bottom: 20%;
+    max-height: 40%;
+    max-width: 70%;
+    z-index: 2;
+    object-fit: contain;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+/* 3体キャラクター個別配置 */
+.novel-character-left {
+    left: 5%;
+    transform: none;
+    -webkit-transform: none;
+    -moz-transform: none;
+    -ms-transform: none;
+    max-width: 25%;
+}
+
+.novel-character-center {
     left: 50%;
     transform: translateX(-50%);
     -webkit-transform: translateX(-50%);
     -moz-transform: translateX(-50%);
     -ms-transform: translateX(-50%);
-    max-height: 40%;
-    max-width: 70%;
-    z-index: 2;
-    object-fit: contain;
+    max-width: 30%;
+}
+
+.novel-character-right {
+    right: 5%;
+    transform: none;
+    -webkit-transform: none;
+    -moz-transform: none;
+    -ms-transform: none;
+    max-width: 25%;
+}
+
+/* 話者によるキャラクター強調 */
+.novel-character.speaking {
+    opacity: 1;
+    filter: brightness(1.1);
+}
+
+.novel-character.not-speaking {
+    opacity: 0.5;
+    filter: brightness(0.8);
+}
+
+/* 後方互換性のための旧スタイル */
+#novel-character:not(.novel-character-left):not(.novel-character-center):not(.novel-character-right) {
+    left: 50%;
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
 }
 
 /* セリフボックス */
@@ -66,7 +111,17 @@
     box-sizing: border-box;
     height: 140px; /* 固定高さ設定 - ノベルゲームの標準的な表示 */
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* 話者名表示 */
+.novel-speaker-name {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #ffd700;
+    font-size: 0.9em;
+    opacity: 0.9;
 }
 
 /* セリフテキストの詳細スタイル */
@@ -79,6 +134,26 @@
     max-height: calc(1.6em * 3); /* 3行分の高さ */
     overflow: hidden;
     width: 100%;
+    flex: 1;
+}
+
+/* 継続インジケーター */
+.novel-dialogue-continue {
+    position: absolute;
+    bottom: 5px;
+    right: 15px;
+    z-index: 1;
+}
+
+.continue-indicator {
+    font-size: 16px;
+    color: #ffd700;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
 }
 
 /* 選択肢コンテナ */
@@ -434,11 +509,22 @@
         height: 200px;
     }
 
+    .novel-character-left {
+        max-width: 28%;
+    }
+
+    .novel-character-center {
+        max-width: 32%;
+    }
+
+    .novel-character-right {
+        max-width: 28%;
+    }
+
     #novel-character,
     .novel-character {
         bottom: 15%;
         max-height: 45%;
-        max-width: 75%;
     }
 
     #novel-dialogue-box,
@@ -474,11 +560,22 @@
         height: 220px;
     }
 
+    .novel-character-left {
+        max-width: 30%;
+    }
+
+    .novel-character-center {
+        max-width: 35%;
+    }
+
+    .novel-character-right {
+        max-width: 30%;
+    }
+
     #novel-character,
     .novel-character {
         bottom: 20%;
         max-height: 50%;
-        max-width: 80%;
     }
 
     #novel-dialogue-box,
@@ -520,11 +617,27 @@
         padding: 8px;
     }
 
+    .novel-character-left {
+        left: 2%;
+        max-width: 25%;
+        max-height: 35%;
+    }
+
+    .novel-character-center {
+        max-width: 30%;
+        max-height: 35%;
+    }
+
+    .novel-character-right {
+        right: 2%;
+        max-width: 25%;
+        max-height: 35%;
+    }
+
     #novel-character,
     .novel-character {
         bottom: 25%;
         max-height: 35%;
-        max-width: 60%;
     }
 
     #novel-dialogue-box,
@@ -538,6 +651,11 @@
         max-height: calc(1.5em * 3);
         font-size: 14px;
         line-height: 1.5;
+    }
+    
+    .novel-speaker-name {
+        font-size: 12px;
+        margin-bottom: 5px;
     }
 
     #novel-choices,
@@ -605,17 +723,31 @@
         padding: 5px;
     }
 
+    .novel-character-left {
+        left: 2%;
+        bottom: 15%;
+        max-width: 20%;
+        max-height: 40%;
+    }
+
+    .novel-character-center {
+        left: 40%;
+        bottom: 15%;
+        max-width: 20%;
+        max-height: 40%;
+    }
+
+    .novel-character-right {
+        right: 2%;
+        bottom: 15%;
+        max-width: 20%;
+        max-height: 40%;
+    }
+
     #novel-character,
     .novel-character {
         bottom: 20%;
         max-height: 40%;
-        max-width: 45%;
-        right: 10%;
-        left: auto;
-        transform: none;
-        -webkit-transform: none;
-        -moz-transform: none;
-        -ms-transform: none;
     }
 
     #novel-dialogue-box,
@@ -631,6 +763,11 @@
         max-height: calc(1.4em * 3);
         font-size: 12px;
         line-height: 1.4;
+    }
+    
+    .novel-speaker-name {
+        font-size: 10px;
+        margin-bottom: 3px;
     }
 
     #novel-choices,
