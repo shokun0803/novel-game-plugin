@@ -570,6 +570,20 @@ jQuery( function( $ ) {
 
 		// 次のコマンドを新規作成（自動遷移）
 		$( '#novel-create-next-command' ).on( 'click', function() {
+			// 投稿が保存されているかチェック
+			if ( ! noveltool_is_post_saved() ) {
+				if ( confirm( '投稿が保存されていません。保存してから新しいコマンドを作成しますか？' ) ) {
+					// 投稿を保存
+					$( '#publish' ).click();
+					
+					// 保存完了を待ってから再実行
+					setTimeout( function() {
+						$( '#novel-create-next-command' ).trigger( 'click' );
+					}, 2000 );
+				}
+				return;
+			}
+			
 			var title = prompt( novelGameMeta.strings.selectNextTitle );
 
 			if ( title ) {
@@ -578,25 +592,100 @@ jQuery( function( $ ) {
 				
 				$button.prop( 'disabled', true ).text( novelGameMeta.strings.redirectingMessage );
 
+				// 新しい選択肢を自動追加
+				var $tbody = $( '#novel-choices-table tbody' );
+				var $row = $( '<tr>' );
+
+				$row.append( '<td><input type="text" class="choice-text" value="' + title + '" style="width:98%"></td>' );
+
+				var $select = $( '<select class="choice-next" style="width:98%"></select>' );
+				$select.append( '<option value="">' + novelGameMeta.strings.selectOption + '</option>' );
+
+				scenes.forEach( function( scene ) {
+					$select.append( '<option value="' + scene.ID + '">' + scene.title + ' (ID:' + scene.ID + ')</option>' );
+				} );
+
+				$select.append( '<option value="__new__">' + novelGameMeta.strings.createNew + '</option>' );
+				$row.append( $( '<td>' ).append( $select ) );
+
+				// 削除ボタンを追加
+				$row.append( '<td><button type="button" class="button choice-remove">' + novelGameMeta.strings.remove + '</button></td>' );
+
+				$tbody.append( $row );
+
+				// 新しいシーンを作成
 				$.post( ajaxurl, {
 					action: 'novel_game_create_scene',
 					title: title,
-					auto_redirect: true,
+					auto_redirect: false, // 自動遷移しない
 					current_post_id: novelGameMeta.current_post_id,
 					_ajax_nonce: novelGameMeta.nonce
 				}, function( response ) {
-					if ( response.success && response.data.edit_url ) {
-						// 編集画面に遷移
-						window.location.href = response.data.edit_url;
+					if ( response.success ) {
+						// 新しいシーンを選択肢に追加
+						scenes.push( {
+							ID: response.data.ID,
+							title: response.data.title
+						} );
+
+						// 選択肢の選択欄を更新
+						$select.append( '<option value="' + response.data.ID + '" selected>' + response.data.title + ' (ID:' + response.data.ID + ')</option>' );
+						$select.val( response.data.ID );
+						
+						// 編集リンクを追加
+						var $editLink = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + response.data.ID + '&action=edit" target="_blank" class="button button-small edit-scene-link">編集</a>' );
+						$row.find( 'td:last' ).append( $editLink );
+						
+						// 隠しフィールドを更新
+						updateChoicesHidden();
+						
+						alert( '新しいシーン「' + response.data.title + '」が作成されました。編集リンクから編集できます。' );
 					} else {
 						alert( novelGameMeta.strings.createFailed );
-						$button.prop( 'disabled', false ).text( originalText );
+						$row.remove(); // 失敗時は行を削除
 					}
+
+					$button.prop( 'disabled', false ).text( originalText );
 				} ).fail( function() {
 					alert( novelGameMeta.strings.createFailed );
 					$button.prop( 'disabled', false ).text( originalText );
+					$row.remove(); // 失敗時は行を削除
 				} );
 			}
+		} );
+		
+		/**
+		 * 投稿が保存されているかチェック
+		 */
+		function noveltool_is_post_saved() {
+			// 新規投稿の場合
+			if ( ! novelGameMeta.current_post_id || novelGameMeta.current_post_id === 0 ) {
+				return false;
+			}
+			
+			// 投稿ステータスをチェック
+			var postStatus = $( '#post_status' ).val();
+			if ( postStatus === 'auto-draft' ) {
+				return false;
+			}
+			
+			// フォームの変更をチェック
+			var $form = $( '#post' );
+			if ( $form.length && $form.data( 'changed' ) ) {
+				return false;
+			}
+			
+			return true;
+		}
+		
+		// フォームの変更を追跡
+		$( '#post' ).on( 'change keyup', 'input, textarea, select', function() {
+			$( '#post' ).data( 'changed', true );
+		} );
+		
+		// 投稿保存後はフラグをリセット
+		$( '#post' ).on( 'submit', function() {
+			$( this ).data( 'changed', false );
 		} );
 	}
 

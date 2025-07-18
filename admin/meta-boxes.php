@@ -289,6 +289,7 @@ function noveltool_meta_box_callback( $post ) {
         array(
             'nonce'         => wp_create_nonce( 'novel_game_meta_box_nonce' ),
             'ajaxurl'       => admin_url( 'admin-ajax.php' ),
+            'admin_url'     => admin_url(),
             'current_post_id' => $post->ID,
             'strings'       => $js_strings,
             'dialogue_lines' => $dialogue_lines,
@@ -440,13 +441,38 @@ function noveltool_meta_box_callback( $post ) {
                 <label for="novel_game_title"><?php esc_html_e( 'ゲームタイトル', 'novel-game-plugin' ); ?></label>
             </th>
             <td>
-                <input type="text"
-                       id="novel_game_title"
-                       name="game_title"
-                       value="<?php echo esc_attr( $game_title ); ?>"
-                       class="regular-text"
-                       placeholder="<?php esc_attr_e( 'このシーンが属するゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" />
-                <p class="description"><?php esc_html_e( 'ゲーム全体のタイトルを設定します。', 'novel-game-plugin' ); ?></p>
+                <?php
+                $available_games = noveltool_get_all_games();
+                if ( ! empty( $available_games ) ) :
+                ?>
+                    <select id="novel_game_title" name="game_title" class="regular-text">
+                        <option value=""><?php esc_html_e( '-- ゲームを選択してください --', 'novel-game-plugin' ); ?></option>
+                        <?php foreach ( $available_games as $game ) : ?>
+                            <option value="<?php echo esc_attr( $game['title'] ); ?>" <?php selected( $game_title, $game['title'] ); ?>>
+                                <?php echo esc_html( $game['title'] ); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="description">
+                        <?php esc_html_e( 'このシーンが属するゲームを選択してください。', 'novel-game-plugin' ); ?>
+                        <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" target="_blank">
+                            <?php esc_html_e( 'ゲームを管理', 'novel-game-plugin' ); ?>
+                        </a>
+                    </p>
+                <?php else : ?>
+                    <input type="text"
+                           id="novel_game_title"
+                           name="game_title"
+                           value="<?php echo esc_attr( $game_title ); ?>"
+                           class="regular-text"
+                           placeholder="<?php esc_attr_e( 'このシーンが属するゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" />
+                    <p class="description">
+                        <?php esc_html_e( 'ゲーム全体のタイトルを設定します。', 'novel-game-plugin' ); ?>
+                        <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" target="_blank">
+                            <?php esc_html_e( 'ゲームを管理', 'novel-game-plugin' ); ?>
+                        </a>
+                    </p>
+                <?php endif; ?>
             </td>
         </tr>
 

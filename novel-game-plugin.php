@@ -89,6 +89,149 @@ function noveltool_get_all_game_settings() {
     );
 }
 
+/**
+ * 複数ゲーム設定を取得する関数
+ *
+ * @return array 複数ゲーム設定の配列
+ * @since 1.1.0
+ */
+function noveltool_get_all_games() {
+    $games = get_option( 'noveltool_games', array() );
+    
+    // 後方互換性: 古い単一ゲーム設定が存在する場合は移行
+    if ( empty( $games ) ) {
+        $legacy_title = get_option( 'noveltool_game_title', '' );
+        $legacy_description = get_option( 'noveltool_game_description', '' );
+        $legacy_title_image = get_option( 'noveltool_game_title_image', '' );
+        
+        if ( $legacy_title ) {
+            $games = array(
+                array(
+                    'id'          => 1,
+                    'title'       => $legacy_title,
+                    'description' => $legacy_description,
+                    'title_image' => $legacy_title_image,
+                    'created_at'  => current_time( 'timestamp' ),
+                    'updated_at'  => current_time( 'timestamp' ),
+                )
+            );
+            update_option( 'noveltool_games', $games );
+        }
+    }
+    
+    return $games;
+}
+
+/**
+ * 特定のゲームを取得する関数
+ *
+ * @param int $game_id ゲームID
+ * @return array|null ゲームデータまたはnull
+ * @since 1.1.0
+ */
+function noveltool_get_game_by_id( $game_id ) {
+    $games = noveltool_get_all_games();
+    
+    foreach ( $games as $game ) {
+        if ( $game['id'] == $game_id ) {
+            return $game;
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * ゲームタイトルでゲームを取得する関数
+ *
+ * @param string $title ゲームタイトル
+ * @return array|null ゲームデータまたはnull
+ * @since 1.1.0
+ */
+function noveltool_get_game_by_title( $title ) {
+    $games = noveltool_get_all_games();
+    
+    foreach ( $games as $game ) {
+        if ( $game['title'] === $title ) {
+            return $game;
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * ゲームを保存する関数
+ *
+ * @param array $game_data ゲームデータ
+ * @return int|false ゲームID または false
+ * @since 1.1.0
+ */
+function noveltool_save_game( $game_data ) {
+    $games = noveltool_get_all_games();
+    
+    // 必須フィールドの確認
+    if ( empty( $game_data['title'] ) ) {
+        return false;
+    }
+    
+    // 新規ゲームの場合
+    if ( empty( $game_data['id'] ) ) {
+        $max_id = 0;
+        foreach ( $games as $game ) {
+            if ( $game['id'] > $max_id ) {
+                $max_id = $game['id'];
+            }
+        }
+        
+        $game_data['id'] = $max_id + 1;
+        $game_data['created_at'] = current_time( 'timestamp' );
+        $game_data['updated_at'] = current_time( 'timestamp' );
+        
+        $games[] = $game_data;
+    } else {
+        // 既存ゲームの更新
+        $found = false;
+        for ( $i = 0; $i < count( $games ); $i++ ) {
+            if ( $games[$i]['id'] == $game_data['id'] ) {
+                $game_data['created_at'] = $games[$i]['created_at']; // 作成日時を保持
+                $game_data['updated_at'] = current_time( 'timestamp' );
+                $games[$i] = $game_data;
+                $found = true;
+                break;
+            }
+        }
+        
+        if ( ! $found ) {
+            return false;
+        }
+    }
+    
+    $result = update_option( 'noveltool_games', $games );
+    
+    return $result ? $game_data['id'] : false;
+}
+
+/**
+ * ゲームを削除する関数
+ *
+ * @param int $game_id ゲームID
+ * @return bool 削除成功の場合true
+ * @since 1.1.0
+ */
+function noveltool_delete_game( $game_id ) {
+    $games = noveltool_get_all_games();
+    
+    $filtered_games = array();
+    foreach ( $games as $game ) {
+        if ( $game['id'] != $game_id ) {
+            $filtered_games[] = $game;
+        }
+    }
+    
+    return update_option( 'noveltool_games', $filtered_games );
+}
+
 
 /**
  * カスタム投稿タイプ「novel_game」のコンテンツをノベルゲームビューに置き換える
@@ -357,20 +500,32 @@ function noveltool_game_posts_shortcode( $atts ) {
     // 属性のデフォルト値
     $atts = shortcode_atts( array(
         'game_title' => '',
+        'game_id'    => '',
         'limit'      => -1,
         'orderby'    => 'date',
         'order'      => 'ASC',
         'show_title' => 'true',
         'show_date'  => 'true',
+        'show_navigation' => 'true',
     ), $atts, 'novel_game_posts' );
     
     // パラメータの処理
     $game_title = sanitize_text_field( $atts['game_title'] );
-    $limit      = intval( $atts['limit'] );
-    $orderby    = sanitize_text_field( $atts['orderby'] );
-    $order      = sanitize_text_field( $atts['order'] );
+    $game_id = intval( $atts['game_id'] );
+    $limit = intval( $atts['limit'] );
+    $orderby = sanitize_text_field( $atts['orderby'] );
+    $order = sanitize_text_field( $atts['order'] );
     $show_title = filter_var( $atts['show_title'], FILTER_VALIDATE_BOOLEAN );
-    $show_date  = filter_var( $atts['show_date'], FILTER_VALIDATE_BOOLEAN );
+    $show_date = filter_var( $atts['show_date'], FILTER_VALIDATE_BOOLEAN );
+    $show_navigation = filter_var( $atts['show_navigation'], FILTER_VALIDATE_BOOLEAN );
+    
+    // ゲームIDが指定されている場合、そのゲームのタイトルを取得
+    if ( $game_id && ! $game_title ) {
+        $game = noveltool_get_game_by_id( $game_id );
+        if ( $game ) {
+            $game_title = $game['title'];
+        }
+    }
     
     // ゲームタイトルが指定されていない場合は全ゲームを表示
     if ( empty( $game_title ) ) {
@@ -391,10 +546,18 @@ function noveltool_game_posts_shortcode( $atts ) {
     // 出力の開始
     ob_start();
     
-    echo '<div class="noveltool-game-posts-list">';
+    echo '<div class="noveltool-game-posts-list noveltool-shortcode-container">';
     
     if ( $show_title ) {
         echo '<h3 class="noveltool-game-title">' . esc_html( $game_title ) . '</h3>';
+    }
+    
+    if ( $show_navigation ) {
+        echo '<div class="noveltool-game-start-navigation">';
+        echo '<a href="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $posts[0]->ID ) ) ) . '" class="noveltool-start-button button">';
+        echo esc_html__( 'スタート', 'novel-game-plugin' );
+        echo '</a>';
+        echo '</div>';
     }
     
     echo '<div class="noveltool-posts-grid">';
@@ -415,7 +578,7 @@ function noveltool_game_posts_shortcode( $atts ) {
         
         echo '<div class="noveltool-post-content">';
         echo '<h4 class="noveltool-post-title">';
-        echo '<a href="' . esc_url( get_permalink( $post->ID ) ) . '">' . esc_html( $post->post_title ) . '</a>';
+        echo '<a href="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $post->ID ) ) ) . '">' . esc_html( $post->post_title ) . '</a>';
         echo '</h4>';
         
         if ( $dialogue ) {
@@ -427,7 +590,7 @@ function noveltool_game_posts_shortcode( $atts ) {
             echo '<p class="noveltool-post-date">' . esc_html( get_the_date( 'Y年m月d日', $post->ID ) ) . '</p>';
         }
         
-        echo '<a href="' . esc_url( get_permalink( $post->ID ) ) . '" class="noveltool-post-link button">';
+        echo '<a href="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $post->ID ) ) ) . '" class="noveltool-post-link button">';
         echo esc_html__( 'プレイ', 'novel-game-plugin' );
         echo '</a>';
         
@@ -512,6 +675,44 @@ function noveltool_shortcode_styles() {
     .noveltool-all-games-list {
         margin: 20px 0;
     }
+    
+    .noveltool-game-start-navigation {
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    .noveltool-start-button {
+        display: inline-block;
+        padding: 15px 30px;
+        background: #ff6b6b;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        font-size: 18px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        min-height: 50px;
+        min-width: 150px;
+        box-sizing: border-box;
+        text-align: center;
+        line-height: 1.2;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .noveltool-start-button:hover {
+        background: #ff5252;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .noveltool-start-button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
     .noveltool-posts-grid,
     .noveltool-games-grid {
         display: grid;

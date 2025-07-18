@@ -39,16 +39,15 @@ function noveltool_handle_game_settings_form() {
         return;
     }
 
-    // フォーム送信の処理
-    if ( isset( $_POST['save_game_settings'] ) ) {
-        // 権限チェック
-        if ( ! current_user_can( 'edit_posts' ) ) {
-            wp_die( __( 'このページにアクセスする権限がありません。', 'novel-game-plugin' ) );
-        }
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_die( __( 'このページにアクセスする権限がありません。', 'novel-game-plugin' ) );
+    }
 
+    // ゲーム追加の処理
+    if ( isset( $_POST['add_game'] ) ) {
         // nonceチェック
-        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'save_game_settings' ) ) {
-            // セキュリティエラーのメッセージを設定してリダイレクト
+        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_games' ) ) {
             $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
             wp_safe_redirect( $redirect_url );
             exit;
@@ -59,18 +58,115 @@ function noveltool_handle_game_settings_form() {
         $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
         $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
 
-        // 設定を保存
-        update_option( 'noveltool_game_title', $game_title );
-        update_option( 'noveltool_game_description', $game_description );
-        update_option( 'noveltool_game_title_image', $game_title_image );
-
-        // 既存のシーンのゲームタイトルも更新
-        if ( $game_title ) {
-            noveltool_update_scenes_game_title( $game_title );
+        if ( empty( $game_title ) ) {
+            $redirect_url = add_query_arg( 'error', 'empty_title', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
         }
 
-        // 成功メッセージを設定してリダイレクト
-        $redirect_url = add_query_arg( 'success', '1', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+        // 同じタイトルのゲームが既に存在するかチェック
+        if ( noveltool_get_game_by_title( $game_title ) ) {
+            $redirect_url = add_query_arg( 'error', 'duplicate_title', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        // ゲームを保存
+        $game_data = array(
+            'title'       => $game_title,
+            'description' => $game_description,
+            'title_image' => $game_title_image,
+        );
+
+        $game_id = noveltool_save_game( $game_data );
+
+        if ( $game_id ) {
+            $redirect_url = add_query_arg( 'success', 'added', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+        } else {
+            $redirect_url = add_query_arg( 'error', 'save_failed', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+        }
+
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    // ゲーム更新の処理
+    if ( isset( $_POST['update_game'] ) ) {
+        // nonceチェック
+        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_games' ) ) {
+            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
+        $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
+        $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
+        $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
+        $old_title = isset( $_POST['old_title'] ) ? sanitize_text_field( wp_unslash( $_POST['old_title'] ) ) : '';
+
+        if ( empty( $game_title ) ) {
+            $redirect_url = add_query_arg( array( 'error' => 'empty_title', 'edit' => $game_id ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        // 同じタイトルのゲームが既に存在するかチェック（自分以外）
+        $existing_game = noveltool_get_game_by_title( $game_title );
+        if ( $existing_game && $existing_game['id'] != $game_id ) {
+            $redirect_url = add_query_arg( array( 'error' => 'duplicate_title', 'edit' => $game_id ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        // ゲームを更新
+        $game_data = array(
+            'id'          => $game_id,
+            'title'       => $game_title,
+            'description' => $game_description,
+            'title_image' => $game_title_image,
+        );
+
+        $result = noveltool_save_game( $game_data );
+
+        if ( $result ) {
+            // タイトルが変更された場合は、既存のシーンのゲームタイトルも更新
+            if ( $old_title && $old_title !== $game_title ) {
+                noveltool_update_scenes_game_title( $old_title, $game_title );
+            }
+            
+            $redirect_url = add_query_arg( 'success', 'updated', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+        } else {
+            $redirect_url = add_query_arg( array( 'error' => 'save_failed', 'edit' => $game_id ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+        }
+
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    // ゲーム削除の処理
+    if ( isset( $_POST['delete_game'] ) ) {
+        // nonceチェック
+        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_games' ) ) {
+            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
+
+        if ( $game_id ) {
+            $result = noveltool_delete_game( $game_id );
+
+            if ( $result ) {
+                $redirect_url = add_query_arg( 'success', 'deleted', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            } else {
+                $redirect_url = add_query_arg( 'error', 'delete_failed', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            }
+        } else {
+            $redirect_url = add_query_arg( 'error', 'invalid_id', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+        }
+
         wp_safe_redirect( $redirect_url );
         exit;
     }
@@ -102,20 +198,37 @@ function noveltool_get_current_game_title() {
 /**
  * 既存のシーンのゲームタイトルを更新
  *
- * @param string $new_title 新しいゲームタイトル
+ * @param string $old_title 旧ゲームタイトル  
+ * @param string $new_title 新ゲームタイトル
  * @since 1.1.0
  */
-function noveltool_update_scenes_game_title( $new_title ) {
+function noveltool_update_scenes_game_title( $old_title, $new_title = null ) {
     global $wpdb;
     
-    // novel_game投稿タイプのすべての投稿のゲームタイトルを更新
-    $wpdb->update(
-        $wpdb->postmeta,
-        array( 'meta_value' => $new_title ),
-        array( 'meta_key' => '_game_title' ),
-        array( '%s' ),
-        array( '%s' )
-    );
+    // 単一引数の場合は後方互換性のための処理
+    if ( $new_title === null ) {
+        $new_title = $old_title;
+        // novel_game投稿タイプのすべての投稿のゲームタイトルを更新
+        $wpdb->update(
+            $wpdb->postmeta,
+            array( 'meta_value' => $new_title ),
+            array( 'meta_key' => '_game_title' ),
+            array( '%s' ),
+            array( '%s' )
+        );
+    } else {
+        // 特定のゲームタイトルを持つシーンのみ更新
+        $wpdb->update(
+            $wpdb->postmeta,
+            array( 'meta_value' => $new_title ),
+            array( 
+                'meta_key' => '_game_title',
+                'meta_value' => $old_title
+            ),
+            array( '%s' ),
+            array( '%s', '%s' )
+        );
+    }
 }
 
 /**
@@ -129,11 +242,19 @@ function noveltool_game_settings_page() {
         wp_die( __( 'このページにアクセスする権限がありません。', 'novel-game-plugin' ) );
     }
 
-    // 現在の設定を取得
-    $current_game_title = noveltool_get_current_game_title();
-    $game_title = get_option( 'noveltool_game_title', $current_game_title );
-    $game_description = get_option( 'noveltool_game_description', '' );
-    $game_title_image = get_option( 'noveltool_game_title_image', '' );
+    // 編集モードの確認
+    $edit_mode = isset( $_GET['edit'] ) ? intval( $_GET['edit'] ) : 0;
+    $editing_game = null;
+    
+    if ( $edit_mode ) {
+        $editing_game = noveltool_get_game_by_id( $edit_mode );
+        if ( ! $editing_game ) {
+            $edit_mode = 0;
+        }
+    }
+
+    // 全ゲームの取得
+    $all_games = noveltool_get_all_games();
 
     // URLパラメーターからメッセージを取得
     $error_message = '';
@@ -144,11 +265,36 @@ function noveltool_game_settings_page() {
             case 'security':
                 $error_message = __( 'セキュリティチェックに失敗しました。', 'novel-game-plugin' );
                 break;
+            case 'empty_title':
+                $error_message = __( 'ゲームタイトルを入力してください。', 'novel-game-plugin' );
+                break;
+            case 'duplicate_title':
+                $error_message = __( 'そのタイトルのゲームは既に存在します。', 'novel-game-plugin' );
+                break;
+            case 'save_failed':
+                $error_message = __( 'ゲームの保存に失敗しました。', 'novel-game-plugin' );
+                break;
+            case 'delete_failed':
+                $error_message = __( 'ゲームの削除に失敗しました。', 'novel-game-plugin' );
+                break;
+            case 'invalid_id':
+                $error_message = __( '無効なゲームIDです。', 'novel-game-plugin' );
+                break;
         }
     }
     
-    if ( isset( $_GET['success'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['success'] ) ) ) {
-        $success_message = __( 'ゲーム設定が正常に保存されました。', 'novel-game-plugin' );
+    if ( isset( $_GET['success'] ) ) {
+        switch ( sanitize_text_field( wp_unslash( $_GET['success'] ) ) ) {
+            case 'added':
+                $success_message = __( 'ゲームが正常に追加されました。', 'novel-game-plugin' );
+                break;
+            case 'updated':
+                $success_message = __( 'ゲームが正常に更新されました。', 'novel-game-plugin' );
+                break;
+            case 'deleted':
+                $success_message = __( 'ゲームが正常に削除されました。', 'novel-game-plugin' );
+                break;
+        }
     }
 
     ?>
@@ -167,96 +313,329 @@ function noveltool_game_settings_page() {
             </div>
         <?php endif; ?>
 
-        <div class="noveltool-game-settings-form">
-            <form method="post" action="">
-                <?php wp_nonce_field( 'save_game_settings' ); ?>
-                
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">
-                            <label for="game_title"><?php esc_html_e( 'ゲームタイトル', 'novel-game-plugin' ); ?></label>
-                        </th>
-                        <td>
-                            <input type="text" 
-                                   id="game_title" 
-                                   name="game_title" 
-                                   value="<?php echo esc_attr( $game_title ); ?>" 
-                                   class="regular-text"
-                                   placeholder="<?php esc_attr_e( 'ゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" />
-                            <p class="description">
-                                <?php esc_html_e( 'ノベルゲーム全体のタイトルを設定します。', 'novel-game-plugin' ); ?>
-                            </p>
-                        </td>
-                    </tr>
+        <div class="noveltool-games-container">
+            <?php if ( $edit_mode && $editing_game ) : ?>
+                <!-- ゲーム編集フォーム -->
+                <div class="noveltool-game-edit-form">
+                    <h2><?php esc_html_e( 'ゲームを編集', 'novel-game-plugin' ); ?></h2>
+                    <form method="post" action="">
+                        <?php wp_nonce_field( 'manage_games' ); ?>
+                        <input type="hidden" name="game_id" value="<?php echo esc_attr( $editing_game['id'] ); ?>" />
+                        <input type="hidden" name="old_title" value="<?php echo esc_attr( $editing_game['title'] ); ?>" />
+                        
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">
+                                    <label for="game_title"><?php esc_html_e( 'ゲームタイトル', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" 
+                                           id="game_title" 
+                                           name="game_title" 
+                                           value="<?php echo esc_attr( $editing_game['title'] ); ?>" 
+                                           class="regular-text"
+                                           required
+                                           placeholder="<?php esc_attr_e( 'ゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" />
+                                </td>
+                            </tr>
 
-                    <tr>
-                        <th scope="row">
-                            <label for="game_description"><?php esc_html_e( 'ゲーム概要', 'novel-game-plugin' ); ?></label>
-                        </th>
-                        <td>
-                            <textarea id="game_description" 
-                                      name="game_description" 
-                                      rows="5" 
-                                      cols="50" 
-                                      class="large-text"
-                                      placeholder="<?php esc_attr_e( 'ゲームの概要・説明を入力してください', 'novel-game-plugin' ); ?>"><?php echo esc_textarea( $game_description ); ?></textarea>
-                            <p class="description">
-                                <?php esc_html_e( 'ゲームの内容や特徴を説明してください。', 'novel-game-plugin' ); ?>
-                            </p>
-                        </td>
-                    </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="game_description"><?php esc_html_e( 'ゲーム概要', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <textarea id="game_description" 
+                                              name="game_description" 
+                                              rows="5" 
+                                              cols="50" 
+                                              class="large-text"
+                                              placeholder="<?php esc_attr_e( 'ゲームの概要・説明を入力してください', 'novel-game-plugin' ); ?>"><?php echo esc_textarea( $editing_game['description'] ); ?></textarea>
+                                </td>
+                            </tr>
 
-                    <tr>
-                        <th scope="row">
-                            <label for="game_title_image"><?php esc_html_e( 'タイトル画面画像', 'novel-game-plugin' ); ?></label>
-                        </th>
-                        <td>
-                            <input type="hidden"
-                                   id="game_title_image"
-                                   name="game_title_image"
-                                   value="<?php echo esc_attr( $game_title_image ); ?>" />
-                            <img id="game_title_image_preview"
-                                 src="<?php echo esc_url( $game_title_image ); ?>"
-                                 alt="<?php esc_attr_e( 'タイトル画面画像プレビュー', 'novel-game-plugin' ); ?>"
-                                 style="max-width: 400px; height: auto; display: <?php echo $game_title_image ? 'block' : 'none'; ?>;" />
-                            <p>
-                                <button type="button"
-                                        class="button"
-                                        id="game_title_image_button">
-                                    <?php esc_html_e( 'メディアから選択', 'novel-game-plugin' ); ?>
-                                </button>
-                                <button type="button"
-                                        class="button"
-                                        id="game_title_image_remove"
-                                        style="display: <?php echo $game_title_image ? 'inline-block' : 'none'; ?>;">
-                                    <?php esc_html_e( '画像を削除', 'novel-game-plugin' ); ?>
-                                </button>
-                            </p>
-                            <p class="description">
-                                <?php esc_html_e( 'ゲームのタイトル画面に表示する画像を設定します。', 'novel-game-plugin' ); ?>
-                            </p>
-                        </td>
-                    </tr>
-                </table>
+                            <tr>
+                                <th scope="row">
+                                    <label for="game_title_image"><?php esc_html_e( 'タイトル画面画像', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="hidden"
+                                           id="game_title_image"
+                                           name="game_title_image"
+                                           value="<?php echo esc_attr( $editing_game['title_image'] ); ?>" />
+                                    <img id="game_title_image_preview"
+                                         src="<?php echo esc_url( $editing_game['title_image'] ); ?>"
+                                         alt="<?php esc_attr_e( 'タイトル画面画像プレビュー', 'novel-game-plugin' ); ?>"
+                                         style="max-width: 400px; height: auto; display: <?php echo $editing_game['title_image'] ? 'block' : 'none'; ?>;" />
+                                    <p>
+                                        <button type="button"
+                                                class="button"
+                                                id="game_title_image_button">
+                                            <?php esc_html_e( 'メディアから選択', 'novel-game-plugin' ); ?>
+                                        </button>
+                                        <button type="button"
+                                                class="button"
+                                                id="game_title_image_remove"
+                                                style="display: <?php echo $editing_game['title_image'] ? 'inline-block' : 'none'; ?>;">
+                                            <?php esc_html_e( '画像を削除', 'novel-game-plugin' ); ?>
+                                        </button>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
 
-                <p class="submit">
-                    <input type="submit" 
-                           name="save_game_settings" 
-                           id="submit" 
-                           class="button button-primary" 
-                           value="<?php esc_attr_e( '設定を保存', 'novel-game-plugin' ); ?>" />
-                </p>
-            </form>
+                        <p class="submit">
+                            <input type="submit" 
+                                   name="update_game" 
+                                   class="button button-primary" 
+                                   value="<?php esc_attr_e( 'ゲームを更新', 'novel-game-plugin' ); ?>" />
+                            <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" 
+                               class="button button-secondary"><?php esc_html_e( 'キャンセル', 'novel-game-plugin' ); ?></a>
+                        </p>
+                    </form>
+                </div>
+            <?php else : ?>
+                <!-- ゲーム一覧とフォーム -->
+                <div class="noveltool-games-list">
+                    <h2><?php esc_html_e( 'ゲーム一覧', 'novel-game-plugin' ); ?></h2>
+                    
+                    <?php if ( ! empty( $all_games ) ) : ?>
+                        <div class="noveltool-games-grid">
+                            <?php foreach ( $all_games as $game ) : ?>
+                                <div class="noveltool-game-card">
+                                    <div class="game-info">
+                                        <h3><?php echo esc_html( $game['title'] ); ?></h3>
+                                        <?php if ( $game['description'] ) : ?>
+                                            <p class="game-description"><?php echo esc_html( mb_substr( $game['description'], 0, 100 ) ); ?><?php echo mb_strlen( $game['description'] ) > 100 ? '...' : ''; ?></p>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ( $game['title_image'] ) : ?>
+                                            <div class="game-image">
+                                                <img src="<?php echo esc_url( $game['title_image'] ); ?>" alt="<?php echo esc_attr( $game['title'] ); ?>" />
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <div class="game-meta">
+                                            <span class="game-id">ID: <?php echo esc_html( $game['id'] ); ?></span>
+                                            <?php if ( isset( $game['created_at'] ) ) : ?>
+                                                <span class="game-created"><?php echo esc_html( date_i18n( 'Y年m月d日', $game['created_at'] ) ); ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="game-actions">
+                                        <a href="<?php echo esc_url( add_query_arg( 'edit', $game['id'] ) ); ?>" 
+                                           class="button button-primary"><?php esc_html_e( '編集', 'novel-game-plugin' ); ?></a>
+                                        <form method="post" action="" style="display: inline;">
+                                            <?php wp_nonce_field( 'manage_games' ); ?>
+                                            <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
+                                            <input type="submit" 
+                                                   name="delete_game" 
+                                                   class="button button-secondary" 
+                                                   value="<?php esc_attr_e( '削除', 'novel-game-plugin' ); ?>"
+                                                   onclick="return confirm('<?php esc_attr_e( '本当にこのゲームを削除しますか？', 'novel-game-plugin' ); ?>');" />
+                                        </form>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else : ?>
+                        <div class="no-games-message">
+                            <p><?php esc_html_e( 'まだゲームが作成されていません。', 'novel-game-plugin' ); ?></p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- 新規ゲーム作成フォーム -->
+                <div class="noveltool-add-game-form">
+                    <h2><?php esc_html_e( '新しいゲームを追加', 'novel-game-plugin' ); ?></h2>
+                    <form method="post" action="">
+                        <?php wp_nonce_field( 'manage_games' ); ?>
+                        
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">
+                                    <label for="game_title"><?php esc_html_e( 'ゲームタイトル', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" 
+                                           id="game_title" 
+                                           name="game_title" 
+                                           value="" 
+                                           class="regular-text"
+                                           required
+                                           placeholder="<?php esc_attr_e( 'ゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th scope="row">
+                                    <label for="game_description"><?php esc_html_e( 'ゲーム概要', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <textarea id="game_description" 
+                                              name="game_description" 
+                                              rows="5" 
+                                              cols="50" 
+                                              class="large-text"
+                                              placeholder="<?php esc_attr_e( 'ゲームの概要・説明を入力してください', 'novel-game-plugin' ); ?>"></textarea>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th scope="row">
+                                    <label for="game_title_image"><?php esc_html_e( 'タイトル画面画像', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="hidden"
+                                           id="game_title_image"
+                                           name="game_title_image"
+                                           value="" />
+                                    <img id="game_title_image_preview"
+                                         src=""
+                                         alt="<?php esc_attr_e( 'タイトル画面画像プレビュー', 'novel-game-plugin' ); ?>"
+                                         style="max-width: 400px; height: auto; display: none;" />
+                                    <p>
+                                        <button type="button"
+                                                class="button"
+                                                id="game_title_image_button">
+                                            <?php esc_html_e( 'メディアから選択', 'novel-game-plugin' ); ?>
+                                        </button>
+                                        <button type="button"
+                                                class="button"
+                                                id="game_title_image_remove"
+                                                style="display: none;">
+                                            <?php esc_html_e( '画像を削除', 'novel-game-plugin' ); ?>
+                                        </button>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p class="submit">
+                            <input type="submit" 
+                                   name="add_game" 
+                                   class="button button-primary" 
+                                   value="<?php esc_attr_e( 'ゲームを追加', 'novel-game-plugin' ); ?>" />
+                        </p>
+                    </form>
+                </div>
+            <?php endif; ?>
         </div>
 
         <div class="noveltool-help-section">
             <h3><?php esc_html_e( 'ヘルプ', 'novel-game-plugin' ); ?></h3>
-            <p><?php esc_html_e( 'ここでは、ノベルゲーム全体の基本情報を設定できます。', 'novel-game-plugin' ); ?></p>
-            <p><?php esc_html_e( 'ゲームタイトルは、すべてのシーンで共通して使用されます。', 'novel-game-plugin' ); ?></p>
+            <p><?php esc_html_e( 'ここでは、複数のノベルゲームの基本情報を管理できます。', 'novel-game-plugin' ); ?></p>
+            <p><?php esc_html_e( 'ゲームタイトルは、シーン作成時に選択できます。', 'novel-game-plugin' ); ?></p>
             <p><?php esc_html_e( 'ゲーム概要は、ゲームの紹介やあらすじを記載してください。', 'novel-game-plugin' ); ?></p>
             <p><?php esc_html_e( 'タイトル画面画像は、ゲームの開始時に表示されるメイン画像です。', 'novel-game-plugin' ); ?></p>
         </div>
     </div>
+    
+    <style>
+    .noveltool-games-container {
+        max-width: 1200px;
+        margin-top: 20px;
+    }
+    
+    .noveltool-games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .noveltool-game-card {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .noveltool-game-card h3 {
+        margin: 0 0 10px 0;
+        color: #333;
+    }
+    
+    .game-description {
+        color: #666;
+        margin-bottom: 15px;
+        line-height: 1.4;
+    }
+    
+    .game-image {
+        margin-bottom: 15px;
+    }
+    
+    .game-image img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+    
+    .game-meta {
+        margin-bottom: 15px;
+        font-size: 0.9em;
+        color: #999;
+    }
+    
+    .game-meta span {
+        margin-right: 15px;
+    }
+    
+    .game-actions {
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+    }
+    
+    .game-actions .button {
+        margin-right: 10px;
+    }
+    
+    .noveltool-add-game-form {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+    
+    .noveltool-add-game-form h2 {
+        margin-top: 0;
+        color: #333;
+    }
+    
+    .noveltool-game-edit-form {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .noveltool-game-edit-form h2 {
+        margin-top: 0;
+        color: #333;
+    }
+    
+    .no-games-message {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+    }
+    
+    .noveltool-help-section {
+        margin-top: 40px;
+        padding: 20px;
+        background: #f0f0f0;
+        border-radius: 8px;
+    }
+    
+    .noveltool-help-section h3 {
+        margin-top: 0;
+        color: #333;
+    }
+    </style>
     <?php
 }
 

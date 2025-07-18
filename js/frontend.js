@@ -454,30 +454,97 @@
 				.text( 'おわり' );
 			
 			$choicesContainer.append( $endMessage );
+			
+			// ナビゲーションボタンを追加
+			var $navigationContainer = $( '<div>' ).addClass( 'game-navigation' );
+			
+			// ショートコード使用の検出
+			var isShortcodeUsed = noveltool_is_shortcode_context();
+			
+			if ( isShortcodeUsed ) {
+				// ショートコードの場合は「閉じる」ボタン
+				var $closeButton = $( '<button>' )
+					.addClass( 'game-nav-button close-button' )
+					.text( '閉じる' )
+					.on( 'click', function() {
+						// ショートコードコンテナを非表示にする
+						$gameContainer.closest( '.noveltool-shortcode-container' ).hide();
+						// または親ウィンドウを閉じる
+						if ( window.parent !== window ) {
+							window.parent.postMessage( 'close-game', '*' );
+						}
+					});
+				
+				$navigationContainer.append( $closeButton );
+			} else {
+				// 通常の場合は「ゲーム一覧に戻る」ボタン
+				var $gameListButton = $( '<button>' )
+					.addClass( 'game-nav-button game-list-button' )
+					.text( 'ゲーム一覧に戻る' )
+					.on( 'click', function() {
+						returnToGameList();
+					});
+				
+				$navigationContainer.append( $gameListButton );
+			}
+			
+			$choicesContainer.append( $navigationContainer );
 			$choicesContainer.show();
 			
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
 			
-			// クリック・タッチ・キーボードイベントでアーカイブページに戻る
-			function returnToArchive() {
-				// アーカイブページのURLを取得
-				var archiveUrl = window.location.origin + window.location.pathname.replace( /\/[^\/]+\/?$/, '' );
-				// novel_gameアーカイブページのURLを構築
-				var gameArchiveUrl = archiveUrl.replace( /\/$/, '' ) + '/novel_game/';
-				window.location.href = gameArchiveUrl;
-			}
-			
-			// イベントリスナーの設定
-			$endMessage.on( 'click touchend', returnToArchive );
-			
-			// キーボードイベント
+			// キーボードイベントでもナビゲーション
 			$( document ).on( 'keydown.novel-end', function( e ) {
 				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
 					e.preventDefault();
-					returnToArchive();
+					if ( isShortcodeUsed ) {
+						$closeButton.trigger( 'click' );
+					} else {
+						$gameListButton.trigger( 'click' );
+					}
 				}
 			} );
+		}
+		
+		/**
+		 * ショートコードコンテキストかどうかを判定
+		 */
+		function noveltool_is_shortcode_context() {
+			// URLパラメーターでショートコードかどうかを判定
+			var urlParams = new URLSearchParams( window.location.search );
+			if ( urlParams.get( 'shortcode' ) === '1' ) {
+				return true;
+			}
+			
+			// 親要素にショートコードクラスがあるかチェック
+			if ( $gameContainer.closest( '.noveltool-shortcode-container' ).length > 0 ) {
+				return true;
+			}
+			
+			// リファラーをチェック（同じドメインでない場合はショートコード使用の可能性）
+			var referrer = document.referrer;
+			var currentDomain = window.location.hostname;
+			
+			if ( referrer ) {
+				var referrerDomain = new URL( referrer ).hostname;
+				if ( referrerDomain !== currentDomain ) {
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
+		/**
+		 * ゲーム一覧に戻る
+		 */
+		function returnToGameList() {
+			// アーカイブページのURLを取得
+			var archiveUrl = window.location.origin + window.location.pathname.replace( /\/[^\/]+\/?$/, '' );
+			// novel_gameアーカイブページのURLを構築
+			var gameArchiveUrl = archiveUrl.replace( /\/$/, '' ) + '/novel_game/';
+			window.location.href = gameArchiveUrl;
 		}
 
 		/**
