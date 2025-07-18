@@ -189,13 +189,17 @@
 			// すべてのキャラクターをリセット
 			$( '.novel-character' ).removeClass( 'speaking not-speaking' );
 			
-			if ( activeSpeaker && activeSpeaker !== 'narrator' ) {
-				// 話しているキャラクターを強調
-				$( '.novel-character-' + activeSpeaker ).addClass( 'speaking' );
-				
-				// 他のキャラクターを薄く表示
-				$( '.novel-character' ).not( '.novel-character-' + activeSpeaker ).addClass( 'not-speaking' );
+			// 話者がいない場合（ナレーター）は全キャラクターを通常状態に戻す
+			if ( ! activeSpeaker || activeSpeaker === 'narrator' || activeSpeaker === '' ) {
+				// 全キャラクターを通常状態で表示
+				return;
 			}
+			
+			// 話しているキャラクターを強調
+			$( '.novel-character-' + activeSpeaker ).addClass( 'speaking' );
+			
+			// 他のキャラクターを薄く表示
+			$( '.novel-character' ).not( '.novel-character-' + activeSpeaker ).addClass( 'not-speaking' );
 		}
 		
 		/**
@@ -325,10 +329,12 @@
 		}
 
 		/**
-		 * 選択肢を表示
+		 * 選択肢を表示、選択肢がない場合は「おわり」を表示
 		 */
 		function showChoices() {
 			if ( choices.length === 0 ) {
+				// 選択肢がない場合は「おわり」を表示
+				showGameEnd();
 				return;
 			}
 
@@ -437,6 +443,44 @@
 		}
 
 		/**
+		 * ゲーム終了時の「おわり」画面を表示
+		 */
+		function showGameEnd() {
+			$choicesContainer.empty();
+			
+			// 「おわり」メッセージを表示
+			var $endMessage = $( '<div>' )
+				.addClass( 'game-end-message' )
+				.text( 'おわり' );
+			
+			$choicesContainer.append( $endMessage );
+			$choicesContainer.show();
+			
+			// 継続マーカーを非表示
+			$dialogueContinue.hide();
+			
+			// クリック・タッチ・キーボードイベントでアーカイブページに戻る
+			function returnToArchive() {
+				// アーカイブページのURLを取得
+				var archiveUrl = window.location.origin + window.location.pathname.replace( /\/[^\/]+\/?$/, '' );
+				// novel_gameアーカイブページのURLを構築
+				var gameArchiveUrl = archiveUrl.replace( /\/$/, '' ) + '/novel_game/';
+				window.location.href = gameArchiveUrl;
+			}
+			
+			// イベントリスナーの設定
+			$endMessage.on( 'click touchend', returnToArchive );
+			
+			// キーボードイベント
+			$( document ).on( 'keydown.novel-end', function( e ) {
+				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
+					e.preventDefault();
+					returnToArchive();
+				}
+			} );
+		}
+
+		/**
 		 * ゲームコンテナのクリック/タッチイベント
 		 */
 		function setupGameInteraction() {
@@ -450,6 +494,11 @@
 
 				// 選択肢要素がクリックされた場合も無視
 				if ( $( e.target ).hasClass( 'choice-item' ) || $( e.target ).closest( '.choice-list' ).length > 0 ) {
+					return;
+				}
+				
+				// 「おわり」メッセージがクリックされた場合も無視（別途処理）
+				if ( $( e.target ).hasClass( 'game-end-message' ) ) {
 					return;
 				}
 
@@ -470,12 +519,31 @@
 						return;
 					}
 					
+					// 「おわり」メッセージがタッチされた場合も無視（別途処理）
+					if ( $( e.target ).hasClass( 'game-end-message' ) ) {
+						return;
+					}
+					
 					// タッチフィードバック
 					$( this ).addClass( 'touch-active' );
 				} ).on( 'touchcancel', function() {
 					$( this ).removeClass( 'touch-active' );
 				} );
 			}
+			
+			// キーボードイベント処理（Enter、Space）
+			$( document ).on( 'keydown.novel-dialogue', function( e ) {
+				// 選択肢が表示されている場合はキーボード操作を無視
+				if ( $choicesContainer.is( ':visible' ) ) {
+					return;
+				}
+				
+				// EnterキーまたはSpaceキーでセリフを進める
+				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
+					e.preventDefault();
+					showNextDialogue();
+				}
+			} );
 		}
 
 		/**
