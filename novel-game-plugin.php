@@ -166,7 +166,11 @@ function noveltool_filter_novel_game_content( $content ) {
     // JSONベースのデータが存在する場合はそれを優先
     if ( ! empty( $dialogue_speakers_array ) || ! empty( $dialogue_backgrounds_array ) || ! empty( $dialogue_texts_array ) ) {
         // 新しいJSONベースのシステムを使用
-        $max_count = max( count( $dialogue_speakers_array ), count( $dialogue_backgrounds_array ), count( $dialogue_texts_array ) );
+        $max_count = max(
+            count( (array) $dialogue_speakers_array ),
+            count( (array) $dialogue_backgrounds_array ),
+            count( (array) $dialogue_texts_array )
+        );
         if ( $max_count > 0 ) {
             // 新しいJSONベースのテキストデータが存在する場合は、それを使用
             if ( ! empty( $dialogue_texts_array ) ) {

@@ -205,7 +205,11 @@ function noveltool_meta_box_callback( $post ) {
         }
         
         // セリフテキストは新しいJSONデータを優先し、改行で分割しない
-        $max_count = max( count( $dialogue_speakers_array ), count( $dialogue_backgrounds_array ), count( $dialogue_texts_array ) );
+        $max_count = max(
+            count( (array) $dialogue_speakers_array ),
+            count( (array) $dialogue_backgrounds_array ),
+            count( (array) $dialogue_texts_array )
+        );
         if ( $max_count > 0 ) {
             // 新しいJSONベースのテキストデータが存在する場合は、それを使用
             if ( ! empty( $dialogue_texts_array ) ) {
