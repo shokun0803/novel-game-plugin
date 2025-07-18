@@ -45,13 +45,7 @@ jQuery( function( $ ) {
 		var existingBackgrounds = novelGameMeta.dialogue_backgrounds || [];
 		var existingSpeakers = novelGameMeta.dialogue_speakers || [];
 		
-		// 既存の dialogueData が存在する場合は、それを保持
-		if ( dialogueData && dialogueData.length > 0 ) {
-			// 既存のデータがある場合は、フォームから最新データを同期
-			syncCurrentFormData();
-			return;
-		}
-		
+		// 常に新しいデータでリセット（初期化時）
 		dialogueData = [];
 		
 		// 既存のセリフ行をデータ配列に変換
