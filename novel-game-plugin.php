@@ -698,13 +698,19 @@ function noveltool_shortcode_styles() {
         box-sizing: border-box;
         text-align: center;
         line-height: 1.2;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
     
     .noveltool-start-button:hover {
         background: #ff5252;
         color: white;
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .noveltool-start-button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     
     .noveltool-posts-grid,
