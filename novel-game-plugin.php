@@ -154,20 +154,36 @@ function noveltool_filter_novel_game_content( $content ) {
         $dialogue_backgrounds_array = $dialogue_backgrounds;
     }
     
+    // セリフテキストデータの処理（新しいJSON形式）
+    $dialogue_texts = get_post_meta( $post->ID, '_dialogue_texts', true );
+    $dialogue_texts_array = array();
+    if ( is_string( $dialogue_texts ) ) {
+        $dialogue_texts_array = json_decode( $dialogue_texts, true );
+    } elseif ( is_array( $dialogue_texts ) ) {
+        $dialogue_texts_array = $dialogue_texts;
+    }
+    
     // JSONベースのデータが存在する場合はそれを優先
-    if ( ! empty( $dialogue_speakers_array ) || ! empty( $dialogue_backgrounds_array ) ) {
+    if ( ! empty( $dialogue_speakers_array ) || ! empty( $dialogue_backgrounds_array ) || ! empty( $dialogue_texts_array ) ) {
         // 新しいJSONベースのシステムを使用
-        $max_count = max( count( $dialogue_speakers_array ), count( $dialogue_backgrounds_array ) );
+        $max_count = max( count( $dialogue_speakers_array ), count( $dialogue_backgrounds_array ), count( $dialogue_texts_array ) );
         if ( $max_count > 0 ) {
-            // 古いテキストデータから改行で分割して取得
-            $old_dialogue_lines = array();
-            if ( $dialogue ) {
-                $old_dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
-            }
-            
-            // JSON データの数に合わせてセリフを構築
-            for ( $i = 0; $i < $max_count; $i++ ) {
-                $dialogue_lines[] = isset( $old_dialogue_lines[ $i ] ) ? $old_dialogue_lines[ $i ] : '';
+            // 新しいJSONベースのテキストデータが存在する場合は、それを使用
+            if ( ! empty( $dialogue_texts_array ) ) {
+                for ( $i = 0; $i < $max_count; $i++ ) {
+                    $dialogue_lines[] = isset( $dialogue_texts_array[ $i ] ) ? $dialogue_texts_array[ $i ] : '';
+                }
+            } else {
+                // 古いテキストデータから改行で分割して取得（後方互換性のため）
+                $old_dialogue_lines = array();
+                if ( $dialogue ) {
+                    $old_dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
+                }
+                
+                // JSON データの数に合わせてセリフを構築
+                for ( $i = 0; $i < $max_count; $i++ ) {
+                    $dialogue_lines[] = isset( $old_dialogue_lines[ $i ] ) ? $old_dialogue_lines[ $i ] : '';
+                }
             }
         }
     } else {

@@ -265,6 +265,11 @@ jQuery( function( $ ) {
 			return dialogue.speaker;
 		} );
 		
+		// セリフテキストデータの更新（新しいJSON形式）
+		var texts = dialogueData.map( function( dialogue ) {
+			return dialogue.text;
+		} );
+		
 		// 隠しフィールドに背景データを設定
 		var $existingBackgroundInput = $( 'input[name="dialogue_backgrounds"]' );
 		if ( $existingBackgroundInput.length === 0 ) {
@@ -278,6 +283,13 @@ jQuery( function( $ ) {
 			$( '<input type="hidden" name="dialogue_speakers">' ).appendTo( '#novel-dialogue-container' );
 		}
 		$( 'input[name="dialogue_speakers"]' ).val( JSON.stringify( speakers ) );
+		
+		// 隠しフィールドにテキストデータを設定（新しいJSON形式）
+		var $existingTextInput = $( 'input[name="dialogue_texts"]' );
+		if ( $existingTextInput.length === 0 ) {
+			$( '<input type="hidden" name="dialogue_texts">' ).appendTo( '#novel-dialogue-container' );
+		}
+		$( 'input[name="dialogue_texts"]' ).val( JSON.stringify( texts ) );
 	}
 
 	/**
