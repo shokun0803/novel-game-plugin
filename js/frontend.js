@@ -280,11 +280,12 @@
 				updateCharacterStates( currentPage.speaker );
 				
 				// 継続インジケーターの表示/非表示
-				// 次のページがある場合、または最後のページで選択肢がある場合は表示
-				if ( currentPageIndex < allDialoguePages.length - 1 || ( currentPageIndex === allDialoguePages.length - 1 && choices.length > 0 ) ) {
+				// 次のページがある場合は常に表示
+				if ( currentPageIndex < allDialoguePages.length - 1 ) {
 					$dialogueContinue.show();
 				} else {
-					$dialogueContinue.hide();
+					// 最後のページでも継続マーカーを表示（選択肢がある場合もない場合も）
+					$dialogueContinue.show();
 				}
 				
 				// 新しいセリフの最初のページの場合は背景を変更
@@ -401,7 +402,7 @@
 					$element.on( 'click', function( e ) {
 						e.preventDefault();
 						e.stopPropagation();
-						updateChoiceSelection( index );
+						executeChoice( index );
 					} );
 				} );
 			}

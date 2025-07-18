@@ -45,6 +45,9 @@ jQuery( function( $ ) {
 				speaker: ''
 			} );
 		}
+		
+		// 初期化後に隠しフィールドを更新
+		updateDialogueTextarea();
 	}
 	
 	/**
@@ -444,6 +447,11 @@ jQuery( function( $ ) {
 		// セリフを追加
 		$( '#novel-dialogue-add' ).on( 'click', function() {
 			addDialogue();
+		} );
+		
+		// フォーム送信時に最新のデータを保存
+		$( '#post' ).on( 'submit', function() {
+			updateDialogueTextarea();
 		} );
 
 		// 選択肢を追加

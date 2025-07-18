@@ -117,7 +117,7 @@
 /* 話者名表示 */
 .novel-speaker-name {
     position: absolute;
-    bottom: 150px; /* ダイアログボックスの上に配置 */
+    bottom: 100px; /* ダイアログボックスに半分重ねる位置 */
     left: 20px;
     font-weight: bold;
     color: #ffd700;
@@ -129,6 +129,7 @@
     display: block;
     width: fit-content;
     min-width: 80px;
+    min-height: 20px; /* 空欄時でも高さを維持 */
     text-align: center;
     z-index: 4;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -564,9 +565,10 @@
     }
     
     .novel-speaker-name {
-        bottom: 170px; /* タブレット以上での位置調整 */
+        bottom: 120px; /* タブレット以上での位置調整 */
         font-size: 1em;
         padding: 8px 16px;
+        min-height: 24px; /* 空欄時でも高さを維持 */
     }
     
     .novel-dialogue-text-container {
@@ -627,9 +629,10 @@
     }
     
     .novel-speaker-name {
-        bottom: 190px; /* デスクトップでの位置調整 */
+        bottom: 140px; /* デスクトップでの位置調整 */
         font-size: 1.1em;
         padding: 10px 20px;
+        min-height: 28px; /* 空欄時でも高さを維持 */
     }
     
     .novel-dialogue-text-container {
@@ -702,9 +705,10 @@
     }
     
     .novel-speaker-name {
-        bottom: 110px; /* モバイル縦画面での位置調整 */
+        bottom: 85px; /* モバイル縦画面での位置調整 */
         font-size: 12px;
         padding: 4px 8px;
+        min-height: 16px; /* 空欄時でも高さを維持 */
     }
     
     .novel-dialogue-text-container {
@@ -821,9 +825,10 @@
     }
     
     .novel-speaker-name {
-        bottom: 90px; /* モバイル横画面での位置調整 */
+        bottom: 65px; /* モバイル横画面での位置調整 */
         font-size: 10px;
         padding: 3px 6px;
+        min-height: 14px; /* 空欄時でも高さを維持 */
     }
     
     .novel-dialogue-text-container {
@@ -892,9 +897,10 @@
     }
     
     .novel-speaker-name {
-        bottom: 100px; /* 小画面での位置調整 */
+        bottom: 75px; /* 小画面での位置調整 */
         font-size: 11px;
         padding: 3px 6px;
+        min-height: 15px; /* 空欄時でも高さを維持 */
     }
     
     .novel-dialogue-text-container {
