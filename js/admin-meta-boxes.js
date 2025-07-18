@@ -10,9 +10,208 @@ jQuery( function( $ ) {
 
 	// 投稿一覧を保持する変数
 	var scenes = [];
+	
+	// セリフデータを保持する変数
+	var dialogueData = [];
 
 	// WordPress ajaxurlの設定
 	var ajaxurl = novelGameMeta.ajaxurl;
+	
+	/**
+	 * セリフデータの初期化
+	 */
+	function initializeDialogueData() {
+		// 既存のセリフデータを読み込み
+		var existingLines = novelGameMeta.dialogue_lines || [];
+		var existingBackgrounds = novelGameMeta.dialogue_backgrounds || [];
+		
+		dialogueData = [];
+		
+		// 既存のセリフ行をデータ配列に変換
+		existingLines.forEach( function( line, index ) {
+			dialogueData.push( {
+				text: line,
+				background: existingBackgrounds[index] || ''
+			} );
+		} );
+		
+		// セリフが1つもない場合は空のセリフを1つ追加
+		if ( dialogueData.length === 0 ) {
+			dialogueData.push( {
+				text: '',
+				background: ''
+			} );
+		}
+	}
+	
+	/**
+	 * セリフリストを描画
+	 */
+	function renderDialogueList() {
+		var $container = $( '#novel-dialogue-list' );
+		$container.empty();
+		
+		dialogueData.forEach( function( dialogue, index ) {
+			var $item = $( '<div class="novel-dialogue-item">' );
+			$item.attr( 'data-index', index );
+			
+			// セリフテキスト入力
+			var $textArea = $( '<textarea class="dialogue-text large-text" rows="2" placeholder="セリフを入力してください"></textarea>' );
+			$textArea.val( dialogue.text );
+			$textArea.on( 'input', function() {
+				dialogueData[index].text = $( this ).val();
+				updateDialogueTextarea();
+			} );
+			
+			// 背景画像選択
+			var $imageContainer = $( '<div class="dialogue-background-container">' );
+			var $imageInput = $( '<input type="hidden" class="dialogue-background-input">' );
+			$imageInput.val( dialogue.background );
+			var $imagePreview = $( '<img class="dialogue-background-preview" style="max-width: 100px; height: auto; display: none;">' );
+			if ( dialogue.background ) {
+				$imagePreview.attr( 'src', dialogue.background ).show();
+			}
+			var $imageButton = $( '<button type="button" class="button dialogue-background-button">背景画像を選択</button>' );
+			
+			$imageButton.on( 'click', function() {
+				selectDialogueBackground( index );
+			} );
+			
+			$imageContainer.append( $imageInput, $imagePreview, $imageButton );
+			
+			// 削除ボタン
+			var $deleteButton = $( '<button type="button" class="button dialogue-delete-button">削除</button>' );
+			$deleteButton.on( 'click', function() {
+				deleteDialogue( index );
+			} );
+			
+			// 上下移動ボタン
+			var $moveUpButton = $( '<button type="button" class="button dialogue-move-up">↑</button>' );
+			var $moveDownButton = $( '<button type="button" class="button dialogue-move-down">↓</button>' );
+			
+			$moveUpButton.on( 'click', function() {
+				moveDialogue( index, -1 );
+			} );
+			
+			$moveDownButton.on( 'click', function() {
+				moveDialogue( index, 1 );
+			} );
+			
+			// 要素の組み立て
+			var $controls = $( '<div class="dialogue-controls">' );
+			$controls.append( $moveUpButton, $moveDownButton, $deleteButton );
+			
+			$item.append( '<p><strong>セリフ ' + ( index + 1 ) + '</strong></p>' );
+			$item.append( $textArea );
+			$item.append( '<p><strong>背景画像:</strong></p>' );
+			$item.append( $imageContainer );
+			$item.append( $controls );
+			$item.append( '<hr>' );
+			
+			$container.append( $item );
+		} );
+	}
+	
+	/**
+	 * セリフの削除
+	 */
+	function deleteDialogue( index ) {
+		if ( dialogueData.length <= 1 ) {
+			alert( '最低1つのセリフは必要です。' );
+			return;
+		}
+		
+		if ( confirm( '本当にこのセリフを削除しますか？' ) ) {
+			dialogueData.splice( index, 1 );
+			renderDialogueList();
+			updateDialogueTextarea();
+		}
+	}
+	
+	/**
+	 * セリフの移動
+	 */
+	function moveDialogue( index, direction ) {
+		var newIndex = index + direction;
+		
+		if ( newIndex < 0 || newIndex >= dialogueData.length ) {
+			return;
+		}
+		
+		// 配列の要素を交換
+		var temp = dialogueData[index];
+		dialogueData[index] = dialogueData[newIndex];
+		dialogueData[newIndex] = temp;
+		
+		renderDialogueList();
+		updateDialogueTextarea();
+	}
+	
+	/**
+	 * セリフの追加
+	 */
+	function addDialogue() {
+		dialogueData.push( {
+			text: '',
+			background: ''
+		} );
+		renderDialogueList();
+		updateDialogueTextarea();
+	}
+	
+	/**
+	 * 背景画像の選択
+	 */
+	function selectDialogueBackground( index ) {
+		if ( typeof wp.media === 'undefined' ) {
+			alert( 'メディアライブラリが利用できません。' );
+			return;
+		}
+		
+		var frame = wp.media( {
+			title: '背景画像を選択',
+			multiple: false,
+			library: {
+				type: 'image'
+			},
+			button: {
+				text: 'この画像を使用'
+			}
+		} );
+		
+		frame.on( 'select', function() {
+			var selection = frame.state().get( 'selection' );
+			var attachment = selection.first().toJSON();
+			
+			dialogueData[index].background = attachment.url;
+			renderDialogueList();
+			updateDialogueTextarea();
+		} );
+		
+		frame.open();
+	}
+	
+	/**
+	 * 隠しテキストエリアの更新（後方互換性のため）
+	 */
+	function updateDialogueTextarea() {
+		var textLines = dialogueData.map( function( dialogue ) {
+			return dialogue.text;
+		} );
+		$( '#novel_dialogue_text' ).val( textLines.join( '\n' ) );
+		
+		// 背景データの更新
+		var backgrounds = dialogueData.map( function( dialogue ) {
+			return dialogue.background;
+		} );
+		
+		// 隠しフィールドに背景データを設定
+		var $existingInput = $( 'input[name="dialogue_backgrounds"]' );
+		if ( $existingInput.length === 0 ) {
+			$( '<input type="hidden" name="dialogue_backgrounds">' ).appendTo( '#novel-dialogue-container' );
+		}
+		$( 'input[name="dialogue_backgrounds"]' ).val( JSON.stringify( backgrounds ) );
+	}
 
 	/**
 	 * 選択肢文字列をパースしてオブジェクト配列に変換
@@ -123,8 +322,12 @@ jQuery( function( $ ) {
 	 * 初期化処理
 	 */
 	function initializeMetaBox() {
+		// セリフデータの初期化
+		initializeDialogueData();
+		
 		// 初期描画
 		renderChoicesTable();
+		renderDialogueList();
 
 		// メディアアップローダーの設定
 		setupMediaUploader( '#novel_background_image_button', '#novel_background_image', '#novel_background_image_preview' );
@@ -135,6 +338,11 @@ jQuery( function( $ ) {
 	 * イベントリスナーの設定
 	 */
 	function setupEventListeners() {
+		// セリフを追加
+		$( '#novel-dialogue-add' ).on( 'click', function() {
+			addDialogue();
+		} );
+
 		// 選択肢を追加
 		$( '#novel-choice-add' ).on( 'click', function() {
 			var $tbody = $( '#novel-choices-table tbody' );

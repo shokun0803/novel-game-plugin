@@ -14,7 +14,10 @@
 		// 変数の初期化
 		var dialogueIndex = 0;
 		var dialogues = [];
+		var dialogueData = [];
 		var choices = [];
+		var baseBackground = '';
+		var currentBackground = '';
 		var $gameContainer = $( '#novel-game-container' );
 		var $dialogueText = $( '#novel-dialogue-text' );
 		var $dialogueBox = $( '#novel-dialogue-box' );
@@ -54,15 +57,33 @@
 
 		// データの取得
 		try {
-			var dialogueData = $( '#novel-dialogue-data' ).text();
+			var dialogueDataRaw = $( '#novel-dialogue-data' ).text();
 			var choicesData = $( '#novel-choices-data' ).text();
+			var baseBackgroundData = $( '#novel-base-background' ).text();
 
-			if ( dialogueData ) {
-				dialogues = JSON.parse( dialogueData );
+			if ( dialogueDataRaw ) {
+				dialogueData = JSON.parse( dialogueDataRaw );
+				
+				// 後方互換性のため、文字列配列の場合は変換
+				if ( dialogueData.length > 0 && typeof dialogueData[0] === 'string' ) {
+					dialogueData = dialogueData.map( function( text ) {
+						return { text: text, background: '' };
+					} );
+				}
+				
+				// 旧形式のために dialogues 配列も維持
+				dialogues = dialogueData.map( function( item ) {
+					return item.text;
+				} );
 			}
 
 			if ( choicesData ) {
 				choices = JSON.parse( choicesData );
+			}
+			
+			if ( baseBackgroundData ) {
+				baseBackground = JSON.parse( baseBackgroundData );
+				currentBackground = baseBackground;
 			}
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
@@ -117,9 +138,17 @@
 		function prepareDialoguePages() {
 			allDialoguePages = [];
 			
-			dialogues.forEach( function( dialogue ) {
-				const pages = splitTextIntoPages( dialogue );
-				allDialoguePages = allDialoguePages.concat( pages );
+			dialogueData.forEach( function( dialogue, dialogueIndex ) {
+				const pages = splitTextIntoPages( dialogue.text );
+				
+				pages.forEach( function( pageText, pageIndex ) {
+					allDialoguePages.push( {
+						text: pageText,
+						background: dialogue.background,
+						isFirstPageOfDialogue: pageIndex === 0,
+						dialogueIndex: dialogueIndex
+					} );
+				} );
 			} );
 			
 			currentDialogueIndex = 0;
@@ -127,13 +156,62 @@
 		}
 		
 		/**
+		 * 背景画像を変更する（フェードアニメーション付き）
+		 */
+		function changeBackground( newBackground ) {
+			if ( newBackground === currentBackground ) {
+				return Promise.resolve();
+			}
+			
+			return new Promise( function( resolve ) {
+				// 新しい背景が空の場合は何もしない
+				if ( ! newBackground && ! currentBackground ) {
+					resolve();
+					return;
+				}
+				
+				// 現在の背景が空で、新しい背景が設定されている場合
+				if ( ! currentBackground && newBackground ) {
+					$gameContainer.css( 'background-image', 'url("' + newBackground + '")' );
+					currentBackground = newBackground;
+					resolve();
+					return;
+				}
+				
+				// 現在の背景があり、新しい背景が空の場合は何もしない
+				if ( currentBackground && ! newBackground ) {
+					resolve();
+					return;
+				}
+				
+				// フェードアニメーション
+				$gameContainer.fadeOut( 300, function() {
+					$gameContainer.css( 'background-image', 'url("' + newBackground + '")' );
+					currentBackground = newBackground;
+					$gameContainer.fadeIn( 300, function() {
+						resolve();
+					} );
+				} );
+			} );
+		}
+		
+		/**
 		 * 現在のページを表示する
 		 */
 		function displayCurrentPage() {
 			if ( currentPageIndex < allDialoguePages.length ) {
-				const currentPageText = allDialoguePages[ currentPageIndex ];
-				const formattedText = formatTextForDisplay( currentPageText );
-				$dialogueText.text( formattedText );
+				const currentPage = allDialoguePages[ currentPageIndex ];
+				const formattedText = formatTextForDisplay( currentPage.text );
+				
+				// 新しいセリフの最初のページの場合は背景を変更
+				if ( currentPage.isFirstPageOfDialogue && currentPage.background ) {
+					changeBackground( currentPage.background ).then( function() {
+						$dialogueText.text( formattedText );
+					} );
+				} else {
+					$dialogueText.text( formattedText );
+				}
+				
 				return true;
 			}
 			return false;

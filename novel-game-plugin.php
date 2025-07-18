@@ -116,11 +116,29 @@ function noveltool_filter_novel_game_content( $content ) {
     $dialogue   = get_post_meta( $post->ID, '_dialogue_text', true );
     $choices_raw = get_post_meta( $post->ID, '_choices', true );
     $game_title = get_post_meta( $post->ID, '_game_title', true );
+    $dialogue_backgrounds = get_post_meta( $post->ID, '_dialogue_backgrounds', true );
 
     // セリフの処理
     $dialogue_lines = array();
     if ( $dialogue ) {
         $dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
+    }
+    
+    // セリフ背景の処理
+    $dialogue_backgrounds_array = array();
+    if ( is_string( $dialogue_backgrounds ) ) {
+        $dialogue_backgrounds_array = json_decode( $dialogue_backgrounds, true );
+    } elseif ( is_array( $dialogue_backgrounds ) ) {
+        $dialogue_backgrounds_array = $dialogue_backgrounds;
+    }
+    
+    // セリフと背景を組み合わせた配列を作成
+    $dialogue_data = array();
+    foreach ( $dialogue_lines as $index => $line ) {
+        $dialogue_data[] = array(
+            'text' => $line,
+            'background' => isset( $dialogue_backgrounds_array[ $index ] ) ? $dialogue_backgrounds_array[ $index ] : ''
+        );
     }
 
     // 選択肢の処理
@@ -166,7 +184,11 @@ function noveltool_filter_novel_game_content( $content ) {
         <div id="novel-choices" class="novel-choices"></div>
 
         <script id="novel-dialogue-data" type="application/json">
-            <?php echo wp_json_encode( $dialogue_lines, JSON_UNESCAPED_UNICODE ); ?>
+            <?php echo wp_json_encode( $dialogue_data, JSON_UNESCAPED_UNICODE ); ?>
+        </script>
+        
+        <script id="novel-base-background" type="application/json">
+            <?php echo wp_json_encode( $background, JSON_UNESCAPED_UNICODE ); ?>
         </script>
 
         <script id="novel-choices-data" type="application/json">

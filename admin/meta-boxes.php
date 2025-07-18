@@ -137,6 +137,18 @@ function noveltool_meta_box_callback( $post ) {
     $dialogue    = get_post_meta( $post->ID, '_dialogue_text', true );
     $choices     = get_post_meta( $post->ID, '_choices', true );
     $game_title  = get_post_meta( $post->ID, '_game_title', true );
+    $dialogue_backgrounds = get_post_meta( $post->ID, '_dialogue_backgrounds', true );
+    
+    // 対話背景データが存在しない場合は空の配列で初期化
+    if ( ! is_array( $dialogue_backgrounds ) ) {
+        $dialogue_backgrounds = array();
+    }
+    
+    // 既存のセリフテキストを行に分割
+    $dialogue_lines = array();
+    if ( $dialogue ) {
+        $dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
+    }
 
     // WordPressメディアアップローダー用スクリプトの読み込み
     wp_enqueue_media();
@@ -193,11 +205,64 @@ function noveltool_meta_box_callback( $post ) {
             'ajaxurl'       => admin_url( 'admin-ajax.php' ),
             'current_post_id' => $post->ID,
             'strings'       => $js_strings,
+            'dialogue_lines' => $dialogue_lines,
+            'dialogue_backgrounds' => $dialogue_backgrounds,
         )
     );
 
     // HTMLテンプレートの出力
     ?>
+    <style>
+    .novel-dialogue-item {
+        border: 1px solid #ccd0d4;
+        margin-bottom: 10px;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 4px;
+    }
+    
+    .novel-dialogue-item .dialogue-text {
+        margin-bottom: 10px;
+    }
+    
+    .dialogue-background-container {
+        margin-bottom: 10px;
+    }
+    
+    .dialogue-background-preview {
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .dialogue-controls {
+        margin-top: 10px;
+    }
+    
+    .dialogue-controls .button {
+        margin-right: 5px;
+    }
+    
+    .dialogue-move-up,
+    .dialogue-move-down {
+        font-size: 12px;
+        padding: 2px 8px;
+        height: auto;
+        line-height: 1.2;
+    }
+    
+    .dialogue-delete-button {
+        background: #dc3232;
+        color: white;
+        border-color: #dc3232;
+    }
+    
+    .dialogue-delete-button:hover {
+        background: #c62d2d;
+        border-color: #c62d2d;
+    }
+    </style>
+    
     <table class="form-table">
         <tr>
             <th scope="row">
@@ -264,15 +329,25 @@ function noveltool_meta_box_callback( $post ) {
 
         <tr>
             <th scope="row">
-                <label for="novel_dialogue_text"><?php esc_html_e( 'セリフ', 'novel-game-plugin' ); ?></label>
+                <label><?php esc_html_e( 'セリフ', 'novel-game-plugin' ); ?></label>
             </th>
             <td>
+                <div id="novel-dialogue-container">
+                    <div id="novel-dialogue-list">
+                        <!-- セリフ一覧が動的に生成されます -->
+                    </div>
+                    <p>
+                        <button type="button" class="button" id="novel-dialogue-add">
+                            <?php esc_html_e( '+ セリフを追加', 'novel-game-plugin' ); ?>
+                        </button>
+                    </p>
+                </div>
+                <p class="description"><?php esc_html_e( '各セリフに対して背景画像を設定できます。背景画像が指定されていない場合は、前のシーンの背景が継続されます。', 'novel-game-plugin' ); ?></p>
+                
+                <!-- 後方互換性のために隠しフィールドを維持 -->
                 <textarea id="novel_dialogue_text"
                           name="dialogue_text"
-                          rows="5"
-                          cols="50"
-                          class="large-text"><?php echo esc_textarea( $dialogue ); ?></textarea>
-                <p class="description"><?php esc_html_e( 'セリフを入力してください。改行で分割されます。', 'novel-game-plugin' ); ?></p>
+                          style="display: none;"><?php echo esc_textarea( $dialogue ); ?></textarea>
             </td>
         </tr>
 
@@ -349,6 +424,21 @@ function noveltool_save_meta_box_data( $post_id ) {
         'choices'          => '_choices',
         'game_title'       => '_game_title',
     );
+    
+    // セリフ背景データの保存
+    if ( isset( $_POST['dialogue_backgrounds'] ) ) {
+        $dialogue_backgrounds = wp_unslash( $_POST['dialogue_backgrounds'] );
+        
+        // JSON文字列の場合はそのまま保存
+        if ( is_string( $dialogue_backgrounds ) ) {
+            $dialogue_backgrounds = sanitize_text_field( $dialogue_backgrounds );
+        } elseif ( is_array( $dialogue_backgrounds ) ) {
+            // 配列の場合は各要素をサニタイズ
+            $dialogue_backgrounds = array_map( 'sanitize_text_field', $dialogue_backgrounds );
+        }
+        
+        update_post_meta( $post_id, '_dialogue_backgrounds', $dialogue_backgrounds );
+    }
 
     foreach ( $fields as $field => $meta_key ) {
         if ( isset( $_POST[ $field ] ) ) {
