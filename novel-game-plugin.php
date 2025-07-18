@@ -216,8 +216,9 @@ function noveltool_filter_novel_game_content( $content ) {
             <img id="novel-character" class="novel-character novel-character-center" src="<?php echo esc_url( $character ); ?>" alt="<?php echo esc_attr__( 'キャラクター', 'novel-game-plugin' ); ?>" />
         <?php endif; ?>
 
+        <div id="novel-speaker-name" class="novel-speaker-name"></div>
+        
         <div id="novel-dialogue-box" class="novel-dialogue-box">
-            <div id="novel-speaker-name" class="novel-speaker-name"></div>
             <div id="novel-dialogue-text-container" class="novel-dialogue-text-container">
                 <span id="novel-dialogue-text"></span>
             </div>

@@ -155,12 +155,18 @@ function noveltool_meta_box_callback( $post ) {
         $character_center = $character;
     }
     
-    // 対話背景データが存在しない場合は空の配列で初期化
+    // 対話背景データの処理
+    if ( is_string( $dialogue_backgrounds ) ) {
+        $dialogue_backgrounds = json_decode( $dialogue_backgrounds, true );
+    }
     if ( ! is_array( $dialogue_backgrounds ) ) {
         $dialogue_backgrounds = array();
     }
     
-    // 対話話者データが存在しない場合は空の配列で初期化
+    // 対話話者データの処理
+    if ( is_string( $dialogue_speakers ) ) {
+        $dialogue_speakers = json_decode( $dialogue_speakers, true );
+    }
     if ( ! is_array( $dialogue_speakers ) ) {
         $dialogue_speakers = array();
     }

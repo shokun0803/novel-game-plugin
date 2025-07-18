@@ -280,7 +280,8 @@
 				updateCharacterStates( currentPage.speaker );
 				
 				// 継続インジケーターの表示/非表示
-				if ( currentPageIndex < allDialoguePages.length - 1 ) {
+				// 次のページがある場合、または最後のページで選択肢がある場合は表示
+				if ( currentPageIndex < allDialoguePages.length - 1 || ( currentPageIndex === allDialoguePages.length - 1 && choices.length > 0 ) ) {
 					$dialogueContinue.show();
 				} else {
 					$dialogueContinue.hide();
