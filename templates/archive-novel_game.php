@@ -21,24 +21,42 @@ get_header(); ?>
         // ゲームタイトルごとにグループ化するためのクエリ
         global $wpdb;
         
-        // 重複を除いてゲームタイトルを取得し、各ゲームの最初のシーンIDも取得
-        $games_query = "
-            SELECT 
-                pm.meta_value as game_title,
-                MIN(p.ID) as first_scene_id,
-                COUNT(p.ID) as scene_count
-            FROM {$wpdb->postmeta} pm
-            INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
-            WHERE pm.meta_key = '_game_title' 
-            AND pm.meta_value != ''
-            AND p.post_type = 'novel_game'
-            AND p.post_status = 'publish'
-            GROUP BY pm.meta_value
-            ORDER BY pm.meta_value ASC
-        ";
+        // 新しいマルチゲーム対応のゲーム一覧を取得
+        $games_from_option = noveltool_get_all_games();
         
-        $games = $wpdb->get_results($games_query);
-
+        if ( ! empty( $games_from_option ) ) {
+            // 新しい形式：オプションからゲーム一覧を取得
+            $games = array();
+            foreach ( $games_from_option as $game_data ) {
+                $game_posts = noveltool_get_posts_by_game_title( $game_data['title'], array( 'posts_per_page' => 1 ) );
+                if ( ! empty( $game_posts ) ) {
+                    $total_posts = count( noveltool_get_posts_by_game_title( $game_data['title'] ) );
+                    $games[] = (object) array(
+                        'game_title' => $game_data['title'],
+                        'first_scene_id' => $game_posts[0]->ID,
+                        'scene_count' => $total_posts
+                    );
+                }
+            }
+        } else {
+            // 後方互換性：メタデータからゲームタイトルを取得
+            $games_query = "
+                SELECT 
+                    pm.meta_value as game_title,
+                    MIN(p.ID) as first_scene_id,
+                    COUNT(p.ID) as scene_count
+                FROM {$wpdb->postmeta} pm
+                INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+                WHERE pm.meta_key = '_game_title' 
+                AND pm.meta_value != ''
+                AND p.post_type = 'novel_game'
+                AND p.post_status = 'publish'
+                GROUP BY pm.meta_value
+                ORDER BY pm.meta_value ASC
+            ";
+            $games = $wpdb->get_results($games_query);
+        }
+        
         if ($games) :
             foreach ($games as $game) :
                 // 最初のシーンの情報を取得

@@ -605,8 +605,13 @@ jQuery( function( $ ) {
 			var $tbody = $( '#novel-choices-table tbody' );
 			var $row = $( '<tr>' );
 
+			// ドラッグハンドル列を追加
+			$row.append( '<td class="sort-handle" style="cursor: move; text-align: center; width: 30px;">⋮⋮</td>' );
+
+			// テキスト入力欄
 			$row.append( '<td><input type="text" class="choice-text" value="" style="width:98%"></td>' );
 
+			// 次のシーン選択
 			var $select = $( '<select class="choice-next" style="width:98%"></select>' );
 			$select.append( '<option value="">' + novelGameMeta.strings.selectOption + '</option>' );
 
@@ -617,9 +622,13 @@ jQuery( function( $ ) {
 			$select.append( '<option value="__new__">' + novelGameMeta.strings.createNew + '</option>' );
 			$row.append( $( '<td>' ).append( $select ) );
 
+			// 削除ボタン
 			$row.append( '<td><button type="button" class="button choice-remove">' + novelGameMeta.strings.remove + '</button></td>' );
 
 			$tbody.append( $row );
+
+			// 新しく追加した行にもsortable機能を適用
+			initChoicesSortable();
 		} );
 
 		// 選択肢を削除（データ整合性チェック付き）
@@ -721,6 +730,10 @@ jQuery( function( $ ) {
 				var $tbody = $( '#novel-choices-table tbody' );
 				var $row = $( '<tr>' );
 
+				// ドラッグハンドル列を追加
+				$row.append( '<td class="sort-handle" style="cursor: move; text-align: center; width: 30px;">⋮⋮</td>' );
+
+				// テキスト入力欄
 				$row.append( '<td><input type="text" class="choice-text" value="' + title + '" style="width:98%"></td>' );
 
 				var $select = $( '<select class="choice-next" style="width:98%"></select>' );
