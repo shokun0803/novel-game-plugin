@@ -44,30 +44,16 @@
 			// 画面サイズに応じた設定調整
 			adjustForScreenSize: function() {
 				const screenWidth = window.innerWidth;
-				const screenHeight = window.innerHeight;
 				
 				if ( screenWidth < 480 ) {
 					// 小画面：文字数を調整
-					this.maxCharsPerLine = screenWidth < 400 ? 16 : 18;
-					this.maxLines = 3;
+					this.maxCharsPerLine = 18;
 				} else if ( screenWidth < 768 ) {
-					// モバイル：画面幅に応じて調整
-					this.maxCharsPerLine = Math.floor(screenWidth / 20); // 動的に計算
-					this.maxCharsPerLine = Math.max(18, Math.min(25, this.maxCharsPerLine));
-					this.maxLines = 3;
-				} else if ( screenWidth < 1024 ) {
-					// タブレット：より多くの文字を表示
-					this.maxCharsPerLine = 25;
-					this.maxLines = 3;
+					// モバイル：標準設定
+					this.maxCharsPerLine = 20;
 				} else {
-					// デスクトップ：標準設定
-					this.maxCharsPerLine = 30;
-					this.maxLines = 3;
-				}
-				
-				// 縦向きモバイルでは行数を調整
-				if ( screenWidth < 768 && screenHeight > screenWidth ) {
-					this.maxLines = 3;
+					// タブレット・デスクトップ：標準設定
+					this.maxCharsPerLine = 20;
 				}
 			}
 		};
@@ -111,14 +97,6 @@
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
 			return;
 		}
-
-		// デバッグ情報をコンソールに出力
-		console.log( 'ノベルゲームデータ:', {
-			dialogueData: dialogueData,
-			choices: choices,
-			baseBackground: baseBackground,
-			charactersData: charactersData
-		} );
 
 		/**
 		 * テキストを20文字×3行のページに分割する
@@ -658,7 +636,7 @@
 				// 現在の位置を可能な限り保持
 				if ( currentPageContent ) {
 					const newPageIndex = allDialoguePages.findIndex( function( page ) {
-						return page.text && page.text.includes( currentPageContent.text ? currentPageContent.text.substring( 0, 10 ) : '' );
+						return page.includes( currentPageContent.substring( 0, 10 ) );
 					} );
 					
 					if ( newPageIndex !== -1 ) {
@@ -666,10 +644,7 @@
 					}
 				}
 				
-				// 現在のページを再表示
-				if ( allDialoguePages[ currentPageIndex ] ) {
-					displayCurrentPage();
-				}
+				displayCurrentPage();
 			}
 		}
 
@@ -804,22 +779,11 @@
 
 			// セリフデータがある場合は分割処理を実行
 			if ( dialogues.length > 0 ) {
-				console.log( 'セリフデータを初期化中:', dialogues.length + ' 個のセリフ' );
 				prepareDialoguePages();
-				
-				// ダイアログボックスを表示
-				$dialogueBox.show();
-				
-				// 最初のページを表示
 				displayCurrentPage();
-				
-				console.log( 'ゲーム初期化完了' );
 			} else {
 				// デバッグ用：セリフデータがない場合のメッセージ
-				console.log( 'セリフデータがありません' );
-				
-				// セリフがない場合は選択肢を直接表示
-				showChoices();
+				console.log( 'No dialogue data found' );
 			}
 		}
 
