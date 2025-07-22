@@ -354,8 +354,29 @@ jQuery( function( $ ) {
 			$select.append( '<option value="__new__">' + novelGameMeta.strings.createNew + '</option>' );
 			$row.append( $( '<td>' ).append( $select ) );
 
-			// 削除ボタン
-			$row.append( '<td><button type="button" class="button choice-remove">' + novelGameMeta.strings.remove + '</button></td>' );
+			// 操作エリア（削除ボタン + 編集ボタン）
+			var $actionCell = $( '<td></td>' );
+			var $removeButton = $( '<button type="button" class="button choice-remove">' + novelGameMeta.strings.remove + '</button>' );
+			$actionCell.append( $removeButton );
+			
+			// 次のシーンが選択されている場合は編集ボタンを表示
+			if ( choice.next && choice.next !== '__new__' && choice.next !== '' ) {
+				var $editButton = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + choice.next + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">編集</a>' );
+				$actionCell.append( $editButton );
+				
+				// 編集ボタンにクリックイベントを追加（投稿保存確認）
+				$editButton.on( 'click', function( e ) {
+					if ( ! noveltool_is_post_saved() ) {
+						var confirmMessage = '現在の投稿に未保存の変更があります。\n\n保存せずに編集画面を開きますか？\n\n「キャンセル」を選択すると、まず現在の投稿を保存できます。';
+						if ( ! confirm( confirmMessage ) ) {
+							e.preventDefault();
+							return false;
+						}
+					}
+				} );
+			}
+			
+			$row.append( $actionCell );
 
 			$tbody.append( $row );
 		} );
@@ -622,7 +643,7 @@ jQuery( function( $ ) {
 			$select.append( '<option value="__new__">' + novelGameMeta.strings.createNew + '</option>' );
 			$row.append( $( '<td>' ).append( $select ) );
 
-			// 削除ボタン
+			// 操作エリア（削除ボタンのみ、編集ボタンは選択後に動的追加）
 			$row.append( '<td><button type="button" class="button choice-remove">' + novelGameMeta.strings.remove + '</button></td>' );
 
 			$tbody.append( $row );
@@ -664,6 +685,33 @@ jQuery( function( $ ) {
 		// 入力変更時の処理
 		$( '#novel-choices-table' ).on( 'change', '.choice-text, .choice-next', function() {
 			updateChoicesHidden();
+			
+			// 次のシーンの選択変更時に編集ボタンを更新
+			if ( $( this ).hasClass( 'choice-next' ) ) {
+				var $row = $( this ).closest( 'tr' );
+				var $actionCell = $row.find( 'td:last' );
+				var selectedSceneId = $( this ).val();
+				
+				// 既存の編集ボタンを削除
+				$actionCell.find( '.edit-scene-link' ).remove();
+				
+				// 次のシーンが選択されている場合は編集ボタンを追加
+				if ( selectedSceneId && selectedSceneId !== '__new__' && selectedSceneId !== '' ) {
+					var $editButton = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + selectedSceneId + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">編集</a>' );
+					$actionCell.append( $editButton );
+					
+					// 編集ボタンにクリックイベントを追加（投稿保存確認）
+					$editButton.on( 'click', function( e ) {
+						if ( ! noveltool_is_post_saved() ) {
+							var confirmMessage = '現在の投稿に未保存の変更があります。\n\n保存せずに編集画面を開きますか？\n\n「キャンセル」を選択すると、まず現在の投稿を保存できます。';
+							if ( ! confirm( confirmMessage ) ) {
+								e.preventDefault();
+								return false;
+							}
+						}
+					} );
+				}
+			}
 		} );
 
 		// 新規シーン作成
@@ -770,9 +818,21 @@ jQuery( function( $ ) {
 						$select.append( '<option value="' + response.data.ID + '" selected>' + response.data.title + ' (ID:' + response.data.ID + ')</option>' );
 						$select.val( response.data.ID );
 						
-						// 編集リンクを追加
-						var $editLink = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + response.data.ID + '&action=edit" target="_blank" class="button button-small edit-scene-link">編集</a>' );
-						$row.find( 'td:last' ).append( $editLink );
+						// 編集リンクを削除ボタンと同じセルに追加
+						var $actionCell = $row.find( 'td:last' );
+						var $editLink = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + response.data.ID + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">編集</a>' );
+						$actionCell.append( $editLink );
+						
+						// 編集ボタンにクリックイベントを追加（投稿保存確認）
+						$editLink.on( 'click', function( e ) {
+							if ( ! noveltool_is_post_saved() ) {
+								var confirmMessage = '現在の投稿に未保存の変更があります。\n\n保存せずに編集画面を開きますか？\n\n「キャンセル」を選択すると、まず現在の投稿を保存できます。';
+								if ( ! confirm( confirmMessage ) ) {
+									e.preventDefault();
+									return false;
+								}
+							}
+						} );
 						
 						// 隠しフィールドを更新
 						updateChoicesHidden();
@@ -792,38 +852,65 @@ jQuery( function( $ ) {
 			}
 		} );
 		
-		/**
-		 * 投稿が保存されているかチェック
-		 */
-		function noveltool_is_post_saved() {
-			// 新規投稿の場合
-			if ( ! novelGameMeta.current_post_id || novelGameMeta.current_post_id === 0 ) {
-				return false;
-			}
-			
-			// 投稿ステータスをチェック
-			var postStatus = $( '#post_status' ).val();
-			if ( postStatus === 'auto-draft' ) {
-				return false;
-			}
-			
-			// フォームの変更をチェック
-			var $form = $( '#post' );
-			if ( $form.length && $form.data( 'changed' ) ) {
-				return false;
-			}
-			
-			return true;
+	/**
+	 * 投稿が保存されているかチェック
+	 */
+	function noveltool_is_post_saved() {
+		// 新規投稿の場合
+		if ( ! novelGameMeta.current_post_id || novelGameMeta.current_post_id === 0 ) {
+			return false;
 		}
 		
+		// 投稿ステータスをチェック
+		var postStatus = $( '#post_status' ).val();
+		if ( postStatus === 'auto-draft' ) {
+			return false;
+		}
+		
+		// フォームの変更をチェック
+		var $form = $( '#post' );
+		if ( $form.length && $form.data( 'changed' ) ) {
+			return false;
+		}
+		
+		// WordPressの標準的な変更追跡をチェック
+		if ( typeof wp !== 'undefined' && wp.heartbeat && wp.heartbeat.hasConnectionError && wp.heartbeat.hasConnectionError() ) {
+			return false;
+		}
+		
+		// ページタイトルに * がある場合（未保存の変更）
+		if ( document.title.indexOf( '*' ) !== -1 ) {
+			return false;
+		}
+		
+		return true;
+	}
+		
 		// フォームの変更を追跡
-		$( '#post' ).on( 'change keyup', 'input, textarea, select', function() {
+		$( '#post' ).on( 'input change keyup', 'input, textarea, select', function() {
+			$( '#post' ).data( 'changed', true );
+		} );
+		
+		// 特別にメタボックス内の変更も追跡
+		$( '#novel_dialogue_text, #novel_choices_hidden' ).on( 'change', function() {
+			$( '#post' ).data( 'changed', true );
+		} );
+		
+		// セリフや選択肢の変更を追跡
+		$( document ).on( 'input change', '.dialogue-text, .choice-text, .choice-next', function() {
 			$( '#post' ).data( 'changed', true );
 		} );
 		
 		// 投稿保存後はフラグをリセット
 		$( '#post' ).on( 'submit', function() {
 			$( this ).data( 'changed', false );
+		} );
+		
+		// 公開/更新ボタンクリック時もフラグをリセット
+		$( '#publish, #save-post' ).on( 'click', function() {
+			setTimeout( function() {
+				$( '#post' ).data( 'changed', false );
+			}, 1000 );
 		} );
 	}
 
