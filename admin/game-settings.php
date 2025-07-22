@@ -522,6 +522,116 @@ function noveltool_game_settings_page() {
             <?php endif; ?>
         </div>
 
+        <!-- ショートコードセクション -->
+        <div class="noveltool-shortcode-section">
+            <h3><?php esc_html_e( 'ショートコード', 'novel-game-plugin' ); ?></h3>
+            <p><?php esc_html_e( '固定ページや投稿にゲーム一覧を表示する際に使用するショートコードです。', 'novel-game-plugin' ); ?></p>
+            
+            <div class="noveltool-shortcode-examples">
+                <div class="shortcode-item">
+                    <h4><?php esc_html_e( '全ゲーム一覧を表示（推奨）', 'novel-game-plugin' ); ?></h4>
+                    <div class="shortcode-box">
+                        <code id="shortcode-game-list">[novel_game_list]</code>
+                        <button type="button" class="button button-small copy-shortcode" data-shortcode="[novel_game_list]">
+                            <?php esc_html_e( 'コピー', 'novel-game-plugin' ); ?>
+                        </button>
+                    </div>
+                    <p class="shortcode-description"><?php esc_html_e( '作成された全てのゲームを美しいカード形式で一覧表示します。最も使いやすく推奨のショートコードです。', 'novel-game-plugin' ); ?></p>
+                </div>
+
+                <div class="shortcode-item">
+                    <h4><?php esc_html_e( '全ゲーム一覧を表示（従来版）', 'novel-game-plugin' ); ?></h4>
+                    <div class="shortcode-box">
+                        <code id="shortcode-all-games">[novel_game_posts]</code>
+                        <button type="button" class="button button-small copy-shortcode" data-shortcode="[novel_game_posts]">
+                            <?php esc_html_e( 'コピー', 'novel-game-plugin' ); ?>
+                        </button>
+                    </div>
+                    <p class="shortcode-description"><?php esc_html_e( '作成された全てのゲームをカード形式で一覧表示します。', 'novel-game-plugin' ); ?></p>
+                </div>
+
+                <?php if ( ! empty( $all_games ) ) : ?>
+                    <div class="shortcode-item">
+                        <h4><?php esc_html_e( '特定のゲームを表示', 'novel-game-plugin' ); ?></h4>
+                        <?php foreach ( $all_games as $game ) : ?>
+                            <div class="shortcode-box">
+                                <code id="shortcode-game-<?php echo esc_attr( $game['id'] ); ?>">[novel_game_posts game_title="<?php echo esc_attr( $game['title'] ); ?>"]</code>
+                                <button type="button" class="button button-small copy-shortcode" data-shortcode='[novel_game_posts game_title="<?php echo esc_attr( $game['title'] ); ?>"]'>
+                                    <?php esc_html_e( 'コピー', 'novel-game-plugin' ); ?>
+                                </button>
+                            </div>
+                            <p class="shortcode-description"><?php printf( esc_html__( '「%s」のシーン一覧を表示します。', 'novel-game-plugin' ), esc_html( $game['title'] ) ); ?></p>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="shortcode-item">
+                    <h4><?php esc_html_e( 'オプション付きの使用例', 'novel-game-plugin' ); ?></h4>
+                    <div class="shortcode-box">
+                        <code id="shortcode-with-options">[novel_game_posts limit="5" show_date="false" orderby="title" order="ASC"]</code>
+                        <button type="button" class="button button-small copy-shortcode" data-shortcode='[novel_game_posts limit="5" show_date="false" orderby="title" order="ASC"]'>
+                            <?php esc_html_e( 'コピー', 'novel-game-plugin' ); ?>
+                        </button>
+                    </div>
+                    <p class="shortcode-description"><?php esc_html_e( '表示件数制限、日付非表示、タイトル順ソートなどのオプションが利用できます。', 'novel-game-plugin' ); ?></p>
+                </div>
+            </div>
+
+            <div class="shortcode-options">
+                <h4><?php esc_html_e( 'ゲーム一覧ショートコード（[novel_game_list]）のオプション', 'novel-game-plugin' ); ?></h4>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'show_count', 'novel-game-plugin' ); ?></th>
+                        <td><?php esc_html_e( 'シーン数の表示（true/false、デフォルト: true）', 'novel-game-plugin' ); ?></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'show_description', 'novel-game-plugin' ); ?></th>
+                        <td><?php esc_html_e( 'ゲーム説明の表示（true/false、デフォルト: false）', 'novel-game-plugin' ); ?></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'columns', 'novel-game-plugin' ); ?></th>
+                        <td><?php esc_html_e( '表示列数（1-6、デフォルト: 3）', 'novel-game-plugin' ); ?></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'orderby', 'novel-game-plugin' ); ?></th>
+                        <td><?php esc_html_e( '並び順（title等、デフォルト: title）', 'novel-game-plugin' ); ?></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'order', 'novel-game-plugin' ); ?></th>
+                        <td><?php esc_html_e( '昇順/降順（ASC/DESC、デフォルト: ASC）', 'novel-game-plugin' ); ?></td>
+                    </tr>
+                </table>
+
+                <h4><?php esc_html_e( 'ゲーム投稿ショートコード（[novel_game_posts]）のオプション', 'novel-game-plugin' ); ?></h4>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'game_title', 'novel-game-plugin' ); ?></th>
+                        <td><?php esc_html_e( '特定のゲームタイトルを指定（未指定の場合は全ゲーム表示）', 'novel-game-plugin' ); ?></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'limit', 'novel-game-plugin' ); ?></th>
+                        <td><?php esc_html_e( '表示する投稿数（デフォルト: -1 = 全て）', 'novel-game-plugin' ); ?></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'orderby', 'novel-game-plugin' ); ?></th>
+                        <td><?php esc_html_e( '並び順（date, title等）', 'novel-game-plugin' ); ?></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'order', 'novel-game-plugin' ); ?></th>
+                        <td><?php esc_html_e( '昇順/降順（ASC/DESC）', 'novel-game-plugin' ); ?></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'show_title', 'novel-game-plugin' ); ?></th>
+                        <td><?php esc_html_e( 'ゲームタイトル表示（true/false）', 'novel-game-plugin' ); ?></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'show_date', 'novel-game-plugin' ); ?></th>
+                        <td><?php esc_html_e( '日付表示（true/false）', 'novel-game-plugin' ); ?></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
         <div class="noveltool-help-section">
             <h3><?php esc_html_e( 'ヘルプ', 'novel-game-plugin' ); ?></h3>
             <p><?php esc_html_e( 'ここでは、複数のノベルゲームの基本情報を管理できます。', 'novel-game-plugin' ); ?></p>
@@ -622,6 +732,97 @@ function noveltool_game_settings_page() {
         text-align: center;
         padding: 40px;
         color: #666;
+    }
+    
+    .noveltool-shortcode-section {
+        margin-top: 40px;
+        padding: 20px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    
+    .noveltool-shortcode-section h3 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+    
+    .noveltool-shortcode-examples {
+        margin-bottom: 30px;
+    }
+    
+    .shortcode-item {
+        margin-bottom: 25px;
+        padding: 15px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        background: #f9f9f9;
+    }
+    
+    .shortcode-item h4 {
+        margin: 0 0 10px 0;
+        color: #0073aa;
+    }
+    
+    .shortcode-box {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        padding: 8px;
+    }
+    
+    .shortcode-box code {
+        flex: 1;
+        background: transparent;
+        color: #d63638;
+        font-family: Consolas, Monaco, monospace;
+        font-size: 13px;
+        padding: 0;
+        user-select: all;
+    }
+    
+    .shortcode-box .copy-shortcode {
+        margin-left: 10px;
+        padding: 3px 8px;
+        font-size: 11px;
+        line-height: 1;
+    }
+    
+    .shortcode-description {
+        margin: 5px 0 0 0;
+        font-size: 0.9em;
+        color: #666;
+        font-style: italic;
+    }
+    
+    .shortcode-options {
+        margin-top: 30px;
+    }
+    
+    .shortcode-options h4 {
+        margin: 0 0 15px 0;
+        color: #333;
+    }
+    
+    .shortcode-options .form-table {
+        margin-top: 0;
+    }
+    
+    .shortcode-options .form-table th {
+        font-weight: 600;
+        color: #0073aa;
+        font-family: Consolas, Monaco, monospace;
+        font-size: 13px;
+    }
+    
+    .copy-success {
+        background-color: #00a32a !important;
+        color: white !important;
     }
     
     .noveltool-help-section {

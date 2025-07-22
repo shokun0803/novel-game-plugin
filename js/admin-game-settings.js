@@ -124,6 +124,80 @@ jQuery( function( $ ) {
     }
 
     /**
+     * ショートコードコピー機能
+     */
+    function setupShortcodeCopy() {
+        $( '.copy-shortcode' ).on( 'click', function( e ) {
+            e.preventDefault();
+            
+            var button = $( this );
+            var shortcode = button.data( 'shortcode' );
+            
+            // クリップボードにコピー
+            if ( navigator.clipboard && window.isSecureContext ) {
+                // モダンなClipboard API
+                navigator.clipboard.writeText( shortcode ).then( function() {
+                    showCopySuccess( button );
+                } ).catch( function( err ) {
+                    console.error( 'クリップボードへのコピーに失敗しました:', err );
+                    fallbackCopyText( shortcode, button );
+                } );
+            } else {
+                // フォールバック方式
+                fallbackCopyText( shortcode, button );
+            }
+        } );
+    }
+
+    /**
+     * コピー成功時の視覚フィードバック
+     *
+     * @param {jQuery} button クリックされたボタン
+     */
+    function showCopySuccess( button ) {
+        var originalText = button.text();
+        button.addClass( 'copy-success' );
+        button.text( 'コピーしました！' );
+        
+        setTimeout( function() {
+            button.removeClass( 'copy-success' );
+            button.text( originalText );
+        }, 2000 );
+    }
+
+    /**
+     * フォールバック方式でのテキストコピー
+     *
+     * @param {string} text コピーするテキスト
+     * @param {jQuery} button クリックされたボタン
+     */
+    function fallbackCopyText( text, button ) {
+        // 一時的なテキストエリアを作成
+        var textArea = document.createElement( 'textarea' );
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild( textArea );
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            var success = document.execCommand( 'copy' );
+            if ( success ) {
+                showCopySuccess( button );
+            } else {
+                alert( 'ショートコードのコピーに失敗しました。手動でコピーしてください。' );
+            }
+        } catch ( err ) {
+            console.error( 'フォールバックコピーに失敗しました:', err );
+            alert( 'ショートコードのコピーに失敗しました。手動でコピーしてください。' );
+        } finally {
+            document.body.removeChild( textArea );
+        }
+    }
+
+    /**
      * 初期化処理
      */
     function initialize() {
@@ -137,6 +211,9 @@ jQuery( function( $ ) {
 
         // フォームバリデーションを設定
         setupFormValidation();
+
+        // ショートコードコピー機能を設定
+        setupShortcodeCopy();
 
         // 文字数カウンター（必要に応じて）
         $( '#game_description' ).on( 'input', function() {
