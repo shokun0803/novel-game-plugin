@@ -243,7 +243,7 @@ function noveltool_meta_box_callback( $post ) {
     wp_enqueue_script(
         'novel-game-admin-meta-boxes',
         NOVEL_GAME_PLUGIN_URL . 'js/admin-meta-boxes.js',
-        array( 'jquery', 'media-upload', 'media-views' ),
+        array( 'jquery', 'jquery-ui-sortable', 'media-upload', 'media-views' ),
         NOVEL_GAME_PLUGIN_VERSION,
         true
     );
@@ -289,6 +289,7 @@ function noveltool_meta_box_callback( $post ) {
         array(
             'nonce'         => wp_create_nonce( 'novel_game_meta_box_nonce' ),
             'ajaxurl'       => admin_url( 'admin-ajax.php' ),
+            'admin_url'     => admin_url(),
             'current_post_id' => $post->ID,
             'strings'       => $js_strings,
             'dialogue_lines' => $dialogue_lines,
@@ -423,6 +424,37 @@ function noveltool_meta_box_callback( $post ) {
         border-color: #c62d2d;
     }
     
+    /* 選択肢テーブルのスタイル */
+    #novel-choices-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    #novel-choices-table th,
+    #novel-choices-table td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    
+    .sort-handle {
+        color: #666;
+        font-weight: bold;
+        user-select: none;
+        background: #f9f9f9;
+    }
+    
+    .sort-handle:hover {
+        background: #e9e9e9;
+        color: #333;
+    }
+    
+    .ui-state-highlight {
+        background: #ffffcc;
+        border: 2px dashed #cccccc;
+    }
+    
+    /* レスポンシブデザイン - 768px以下 */
     @media (max-width: 768px) {
         .character-positions-container {
             flex-direction: column;
@@ -430,6 +462,108 @@ function noveltool_meta_box_callback( $post ) {
         
         .character-position-item {
             min-width: auto;
+        }
+        
+        /* 選択肢テーブルのモバイル対応 */
+        #novel-choices-table {
+            font-size: 14px;
+        }
+        
+        #novel-choices-table th,
+        #novel-choices-table td {
+            padding: 6px 4px;
+        }
+        
+        .choice-text,
+        .choice-next {
+            font-size: 14px !important;
+            width: 100% !important;
+        }
+        
+        .sort-handle {
+            font-size: 16px;
+            padding: 8px 4px;
+        }
+        
+        .choice-remove {
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+        
+        /* フォームテーブルのモバイル対応 */
+        .form-table th,
+        .form-table td {
+            display: block;
+            width: 100%;
+            padding: 10px 0;
+        }
+        
+        .form-table th {
+            background: #f9f9f9;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        
+        .regular-text {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
+        /* メタボックス内の画像プレビュー */
+        .dialogue-background-preview,
+        #novel_background_image_preview,
+        #novel_character_left_preview,
+        #novel_character_center_preview,
+        #novel_character_right_preview {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        /* ボタンのモバイル対応 */
+        .button {
+            margin: 2px 0;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        
+        .dialogue-controls .button {
+            margin: 2px 4px 2px 0;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+    }
+    
+    /* さらに小さい画面（480px以下）への追加対応 */
+    @media (max-width: 480px) {
+        #novel-choices-table {
+            font-size: 12px;
+        }
+        
+        .choice-text,
+        .choice-next {
+            font-size: 12px !important;
+        }
+        
+        .choice-remove {
+            font-size: 11px;
+            padding: 3px 6px;
+        }
+        
+        .sort-handle {
+            font-size: 14px;
+        }
+        
+        .dialogue-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        
+        .dialogue-controls .button {
+            flex: 1;
+            min-width: 60px;
+            margin: 2px 0;
+            text-align: center;
         }
     }
     </style>
@@ -440,13 +574,38 @@ function noveltool_meta_box_callback( $post ) {
                 <label for="novel_game_title"><?php esc_html_e( 'ゲームタイトル', 'novel-game-plugin' ); ?></label>
             </th>
             <td>
-                <input type="text"
-                       id="novel_game_title"
-                       name="game_title"
-                       value="<?php echo esc_attr( $game_title ); ?>"
-                       class="regular-text"
-                       placeholder="<?php esc_attr_e( 'このシーンが属するゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" />
-                <p class="description"><?php esc_html_e( 'ゲーム全体のタイトルを設定します。', 'novel-game-plugin' ); ?></p>
+                <?php
+                $available_games = noveltool_get_all_games();
+                if ( ! empty( $available_games ) ) :
+                ?>
+                    <select id="novel_game_title" name="game_title" class="regular-text">
+                        <option value=""><?php esc_html_e( '-- ゲームを選択してください --', 'novel-game-plugin' ); ?></option>
+                        <?php foreach ( $available_games as $game ) : ?>
+                            <option value="<?php echo esc_attr( $game['title'] ); ?>" <?php selected( $game_title, $game['title'] ); ?>>
+                                <?php echo esc_html( $game['title'] ); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="description">
+                        <?php esc_html_e( 'このシーンが属するゲームを選択してください。', 'novel-game-plugin' ); ?>
+                        <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" target="_blank">
+                            <?php esc_html_e( 'ゲームを管理', 'novel-game-plugin' ); ?>
+                        </a>
+                    </p>
+                <?php else : ?>
+                    <input type="text"
+                           id="novel_game_title"
+                           name="game_title"
+                           value="<?php echo esc_attr( $game_title ); ?>"
+                           class="regular-text"
+                           placeholder="<?php esc_attr_e( 'このシーンが属するゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" />
+                    <p class="description">
+                        <?php esc_html_e( 'ゲーム全体のタイトルを設定します。', 'novel-game-plugin' ); ?>
+                        <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" target="_blank">
+                            <?php esc_html_e( 'ゲームを管理', 'novel-game-plugin' ); ?>
+                        </a>
+                    </p>
+                <?php endif; ?>
             </td>
         </tr>
 
@@ -629,6 +788,7 @@ function noveltool_meta_box_callback( $post ) {
                     <table id="novel-choices-table" class="widefat">
                         <thead>
                             <tr>
+                                <th style="width: 30px;"><?php esc_html_e( '順序', 'novel-game-plugin' ); ?></th>
                                 <th><?php esc_html_e( 'テキスト', 'novel-game-plugin' ); ?></th>
                                 <th><?php esc_html_e( '次のシーン', 'novel-game-plugin' ); ?></th>
                                 <th><?php esc_html_e( '操作', 'novel-game-plugin' ); ?></th>

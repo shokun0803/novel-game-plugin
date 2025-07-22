@@ -235,6 +235,13 @@ jQuery( function( $ ) {
 			var selection = frame.state().get( 'selection' );
 			var attachment = selection.first().toJSON();
 			
+			// ファイルバリデーション
+			var validation = validateImageFile( attachment );
+			if ( ! validation.valid ) {
+				alert( validation.message );
+				return;
+			}
+			
 			dialogueData[index].background = attachment.url;
 			renderDialogueList();
 			updateDialogueTextarea();
@@ -325,8 +332,12 @@ jQuery( function( $ ) {
 
 		$tbody.empty();
 
-		choices.forEach( function( choice ) {
+		choices.forEach( function( choice, index ) {
 			var $row = $( '<tr>' );
+			$row.attr( 'data-choice-index', index );
+
+			// ドラッグハンドル
+			$row.append( '<td class="sort-handle" style="cursor: move; text-align: center; width: 30px;">⋮⋮</td>' );
 
 			// テキスト入力欄
 			$row.append( '<td><input type="text" class="choice-text" value="' + choice.text.replace( /"/g, '&quot;' ) + '" style="width:98%"></td>' );
@@ -343,10 +354,60 @@ jQuery( function( $ ) {
 			$select.append( '<option value="__new__">' + novelGameMeta.strings.createNew + '</option>' );
 			$row.append( $( '<td>' ).append( $select ) );
 
-			// 削除ボタン
-			$row.append( '<td><button type="button" class="button choice-remove">' + novelGameMeta.strings.remove + '</button></td>' );
+			// 操作エリア（削除ボタン + 編集ボタン）
+			var $actionCell = $( '<td></td>' );
+			var $removeButton = $( '<button type="button" class="button choice-remove">' + novelGameMeta.strings.remove + '</button>' );
+			$actionCell.append( $removeButton );
+			
+			// 次のシーンが選択されている場合は編集ボタンを表示
+			if ( choice.next && choice.next !== '__new__' && choice.next !== '' ) {
+				var $editButton = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + choice.next + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">編集</a>' );
+				$actionCell.append( $editButton );
+				
+				// 編集ボタンにクリックイベントを追加（投稿保存確認）
+				$editButton.on( 'click', function( e ) {
+					if ( ! noveltool_is_post_saved() ) {
+						var confirmMessage = '現在の投稿に未保存の変更があります。\n\n保存せずに編集画面を開きますか？\n\n「キャンセル」を選択すると、まず現在の投稿を保存できます。';
+						if ( ! confirm( confirmMessage ) ) {
+							e.preventDefault();
+							return false;
+						}
+					}
+				} );
+			}
+			
+			$row.append( $actionCell );
 
 			$tbody.append( $row );
+		} );
+
+		// 並び替え機能を初期化
+		initChoicesSortable();
+	}
+
+	/**
+	 * 選択肢の並び替え機能を初期化
+	 */
+	function initChoicesSortable() {
+		var $tbody = $( '#novel-choices-table tbody' );
+		
+		// 既存のsortableを削除
+		if ( $tbody.hasClass( 'ui-sortable' ) ) {
+			$tbody.sortable( 'destroy' );
+		}
+		
+		// sortableを初期化
+		$tbody.sortable( {
+			handle: '.sort-handle',
+			axis: 'y',
+			helper: 'clone',
+			placeholder: 'ui-state-highlight',
+			update: function( event, ui ) {
+				updateChoicesHidden();
+			},
+			start: function( event, ui ) {
+				ui.placeholder.html( '<td colspan="4" style="height: 40px; background: #f0f0f0; border: 2px dashed #ccc;"></td>' );
+			}
 		} );
 	}
 
@@ -369,6 +430,50 @@ jQuery( function( $ ) {
 	}
 
 	/**
+	 * 画像ファイルのバリデーション
+	 *
+	 * @param {Object} attachment 添付ファイルオブジェクト
+	 * @return {Object} 検証結果 {valid: boolean, message: string}
+	 */
+	function validateImageFile( attachment ) {
+		// 許可する拡張子
+		var allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+		
+		// 最大ファイルサイズ（5MB）
+		var maxSize = 5 * 1024 * 1024;
+		
+		// MIMEタイプチェック
+		var allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+		
+		// 拡張子チェック
+		var extension = attachment.filename ? attachment.filename.split('.').pop().toLowerCase() : '';
+		if ( allowedExtensions.indexOf( extension ) === -1 ) {
+			return {
+				valid: false,
+				message: 'サポートされていないファイル形式です。jpg, jpeg, png, gif, webp のみアップロード可能です。'
+			};
+		}
+		
+		// MIMEタイプチェック
+		if ( allowedMimeTypes.indexOf( attachment.mime ) === -1 ) {
+			return {
+				valid: false,
+				message: 'サポートされていないファイル形式です。画像ファイルのみアップロード可能です。'
+			};
+		}
+		
+		// ファイルサイズチェック
+		if ( attachment.filesizeInBytes > maxSize ) {
+			return {
+				valid: false,
+				message: 'ファイルサイズが大きすぎます。5MB以下のファイルをアップロードしてください。'
+			};
+		}
+		
+		return { valid: true, message: '' };
+	}
+
+	/**
 	 * WordPress メディアアップローダーを設定
 	 *
 	 * @param {string} buttonId  ボタンのID
@@ -384,11 +489,22 @@ jQuery( function( $ ) {
 				button: {
 					text: novelGameMeta.strings.useThisImage
 				},
-				multiple: false
+				multiple: false,
+				library: {
+					type: 'image'
+				}
 			} );
 
 			customUploader.on( 'select', function() {
 				var attachment = customUploader.state().get( 'selection' ).first().toJSON();
+				
+				// ファイルバリデーション
+				var validation = validateImageFile( attachment );
+				if ( ! validation.valid ) {
+					alert( validation.message );
+					return;
+				}
+				
 				$( inputId ).val( attachment.url );
 				$( previewId ).attr( 'src', attachment.url ).show();
 				
@@ -425,6 +541,14 @@ jQuery( function( $ ) {
 
 			customUploader.on( 'select', function() {
 				var attachment = customUploader.state().get( 'selection' ).first().toJSON();
+				
+				// ファイルバリデーション
+				var validation = validateImageFile( attachment );
+				if ( ! validation.valid ) {
+					alert( validation.message );
+					return;
+				}
+				
 				$( '#novel_character_' + position ).val( attachment.url );
 				$( '#novel_character_' + position + '_preview' ).attr( 'src', attachment.url ).show();
 				$( '.character-image-clear[data-position="' + position + '"]' ).show();
@@ -502,8 +626,13 @@ jQuery( function( $ ) {
 			var $tbody = $( '#novel-choices-table tbody' );
 			var $row = $( '<tr>' );
 
+			// ドラッグハンドル列を追加
+			$row.append( '<td class="sort-handle" style="cursor: move; text-align: center; width: 30px;">⋮⋮</td>' );
+
+			// テキスト入力欄
 			$row.append( '<td><input type="text" class="choice-text" value="" style="width:98%"></td>' );
 
+			// 次のシーン選択
 			var $select = $( '<select class="choice-next" style="width:98%"></select>' );
 			$select.append( '<option value="">' + novelGameMeta.strings.selectOption + '</option>' );
 
@@ -514,22 +643,75 @@ jQuery( function( $ ) {
 			$select.append( '<option value="__new__">' + novelGameMeta.strings.createNew + '</option>' );
 			$row.append( $( '<td>' ).append( $select ) );
 
+			// 操作エリア（削除ボタンのみ、編集ボタンは選択後に動的追加）
 			$row.append( '<td><button type="button" class="button choice-remove">' + novelGameMeta.strings.remove + '</button></td>' );
 
 			$tbody.append( $row );
+
+			// 新しく追加した行にもsortable機能を適用
+			initChoicesSortable();
 		} );
 
-		// 選択肢を削除
+		// 選択肢を削除（データ整合性チェック付き）
 		$( '#novel-choices-table' ).on( 'click', '.choice-remove', function() {
-			if ( confirm( novelGameMeta.strings.confirmDelete ) ) {
-				$( this ).closest( 'tr' ).remove();
+			var $row = $( this ).closest( 'tr' );
+			var currentChoiceText = $row.find( '.choice-text' ).val();
+			var currentChoiceNext = $row.find( '.choice-next' ).val();
+			
+			// 削除確認メッセージにより詳細な情報を追加
+			var confirmMessage = novelGameMeta.strings.confirmDelete;
+			if ( currentChoiceText ) {
+				confirmMessage += '\n\n削除対象: 「' + currentChoiceText + '」';
+			}
+			
+			// 他の選択肢への影響をチェック
+			var remainingChoices = $( '#novel-choices-table tbody tr' ).not( $row ).length;
+			if ( remainingChoices === 0 ) {
+				confirmMessage += '\n\n注意: これは最後の選択肢です。削除すると選択肢が無くなります。';
+			}
+			
+			if ( confirm( confirmMessage ) ) {
+				$row.remove();
 				updateChoicesHidden();
+				
+				// 削除後のテーブルが空になった場合の処理
+				if ( $( '#novel-choices-table tbody tr' ).length === 0 ) {
+					// 空のメッセージを表示（オプション）
+					console.log( '選択肢が全て削除されました。' );
+				}
 			}
 		} );
 
 		// 入力変更時の処理
 		$( '#novel-choices-table' ).on( 'change', '.choice-text, .choice-next', function() {
 			updateChoicesHidden();
+			
+			// 次のシーンの選択変更時に編集ボタンを更新
+			if ( $( this ).hasClass( 'choice-next' ) ) {
+				var $row = $( this ).closest( 'tr' );
+				var $actionCell = $row.find( 'td:last' );
+				var selectedSceneId = $( this ).val();
+				
+				// 既存の編集ボタンを削除
+				$actionCell.find( '.edit-scene-link' ).remove();
+				
+				// 次のシーンが選択されている場合は編集ボタンを追加
+				if ( selectedSceneId && selectedSceneId !== '__new__' && selectedSceneId !== '' ) {
+					var $editButton = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + selectedSceneId + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">編集</a>' );
+					$actionCell.append( $editButton );
+					
+					// 編集ボタンにクリックイベントを追加（投稿保存確認）
+					$editButton.on( 'click', function( e ) {
+						if ( ! noveltool_is_post_saved() ) {
+							var confirmMessage = '現在の投稿に未保存の変更があります。\n\n保存せずに編集画面を開きますか？\n\n「キャンセル」を選択すると、まず現在の投稿を保存できます。';
+							if ( ! confirm( confirmMessage ) ) {
+								e.preventDefault();
+								return false;
+							}
+						}
+					} );
+				}
+			}
 		} );
 
 		// 新規シーン作成
@@ -570,6 +752,20 @@ jQuery( function( $ ) {
 
 		// 次のコマンドを新規作成（自動遷移）
 		$( '#novel-create-next-command' ).on( 'click', function() {
+			// 投稿が保存されているかチェック
+			if ( ! noveltool_is_post_saved() ) {
+				if ( confirm( '投稿が保存されていません。保存してから新しいコマンドを作成しますか？' ) ) {
+					// 投稿を保存
+					$( '#publish' ).click();
+					
+					// 保存完了を待ってから再実行
+					setTimeout( function() {
+						$( '#novel-create-next-command' ).trigger( 'click' );
+					}, 2000 );
+				}
+				return;
+			}
+			
 			var title = prompt( novelGameMeta.strings.selectNextTitle );
 
 			if ( title ) {
@@ -578,25 +774,143 @@ jQuery( function( $ ) {
 				
 				$button.prop( 'disabled', true ).text( novelGameMeta.strings.redirectingMessage );
 
+				// 新しい選択肢を自動追加
+				var $tbody = $( '#novel-choices-table tbody' );
+				var $row = $( '<tr>' );
+
+				// ドラッグハンドル列を追加
+				$row.append( '<td class="sort-handle" style="cursor: move; text-align: center; width: 30px;">⋮⋮</td>' );
+
+				// テキスト入力欄
+				$row.append( '<td><input type="text" class="choice-text" value="' + title + '" style="width:98%"></td>' );
+
+				var $select = $( '<select class="choice-next" style="width:98%"></select>' );
+				$select.append( '<option value="">' + novelGameMeta.strings.selectOption + '</option>' );
+
+				scenes.forEach( function( scene ) {
+					$select.append( '<option value="' + scene.ID + '">' + scene.title + ' (ID:' + scene.ID + ')</option>' );
+				} );
+
+				$select.append( '<option value="__new__">' + novelGameMeta.strings.createNew + '</option>' );
+				$row.append( $( '<td>' ).append( $select ) );
+
+				// 削除ボタンを追加
+				$row.append( '<td><button type="button" class="button choice-remove">' + novelGameMeta.strings.remove + '</button></td>' );
+
+				$tbody.append( $row );
+
+				// 新しいシーンを作成
 				$.post( ajaxurl, {
 					action: 'novel_game_create_scene',
 					title: title,
-					auto_redirect: true,
+					auto_redirect: false, // 自動遷移しない
 					current_post_id: novelGameMeta.current_post_id,
 					_ajax_nonce: novelGameMeta.nonce
 				}, function( response ) {
-					if ( response.success && response.data.edit_url ) {
-						// 編集画面に遷移
-						window.location.href = response.data.edit_url;
+					if ( response.success ) {
+						// 新しいシーンを選択肢に追加
+						scenes.push( {
+							ID: response.data.ID,
+							title: response.data.title
+						} );
+
+						// 選択肢の選択欄を更新
+						$select.append( '<option value="' + response.data.ID + '" selected>' + response.data.title + ' (ID:' + response.data.ID + ')</option>' );
+						$select.val( response.data.ID );
+						
+						// 編集リンクを削除ボタンと同じセルに追加
+						var $actionCell = $row.find( 'td:last' );
+						var $editLink = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + response.data.ID + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">編集</a>' );
+						$actionCell.append( $editLink );
+						
+						// 編集ボタンにクリックイベントを追加（投稿保存確認）
+						$editLink.on( 'click', function( e ) {
+							if ( ! noveltool_is_post_saved() ) {
+								var confirmMessage = '現在の投稿に未保存の変更があります。\n\n保存せずに編集画面を開きますか？\n\n「キャンセル」を選択すると、まず現在の投稿を保存できます。';
+								if ( ! confirm( confirmMessage ) ) {
+									e.preventDefault();
+									return false;
+								}
+							}
+						} );
+						
+						// 隠しフィールドを更新
+						updateChoicesHidden();
+						
+						alert( '新しいシーン「' + response.data.title + '」が作成されました。編集リンクから編集できます。' );
 					} else {
 						alert( novelGameMeta.strings.createFailed );
-						$button.prop( 'disabled', false ).text( originalText );
+						$row.remove(); // 失敗時は行を削除
 					}
+
+					$button.prop( 'disabled', false ).text( originalText );
 				} ).fail( function() {
 					alert( novelGameMeta.strings.createFailed );
 					$button.prop( 'disabled', false ).text( originalText );
+					$row.remove(); // 失敗時は行を削除
 				} );
 			}
+		} );
+		
+	/**
+	 * 投稿が保存されているかチェック
+	 */
+	function noveltool_is_post_saved() {
+		// 新規投稿の場合
+		if ( ! novelGameMeta.current_post_id || novelGameMeta.current_post_id === 0 ) {
+			return false;
+		}
+		
+		// 投稿ステータスをチェック
+		var postStatus = $( '#post_status' ).val();
+		if ( postStatus === 'auto-draft' ) {
+			return false;
+		}
+		
+		// フォームの変更をチェック
+		var $form = $( '#post' );
+		if ( $form.length && $form.data( 'changed' ) ) {
+			return false;
+		}
+		
+		// WordPressの標準的な変更追跡をチェック
+		if ( typeof wp !== 'undefined' && wp.heartbeat && wp.heartbeat.hasConnectionError && wp.heartbeat.hasConnectionError() ) {
+			return false;
+		}
+		
+		// ページタイトルに * がある場合（未保存の変更）
+		if ( document.title.indexOf( '*' ) !== -1 ) {
+			return false;
+		}
+		
+		return true;
+	}
+		
+		// フォームの変更を追跡
+		$( '#post' ).on( 'input change keyup', 'input, textarea, select', function() {
+			$( '#post' ).data( 'changed', true );
+		} );
+		
+		// 特別にメタボックス内の変更も追跡
+		$( '#novel_dialogue_text, #novel_choices_hidden' ).on( 'change', function() {
+			$( '#post' ).data( 'changed', true );
+		} );
+		
+		// セリフや選択肢の変更を追跡
+		$( document ).on( 'input change', '.dialogue-text, .choice-text, .choice-next', function() {
+			$( '#post' ).data( 'changed', true );
+		} );
+		
+		// 投稿保存後はフラグをリセット
+		$( '#post' ).on( 'submit', function() {
+			$( this ).data( 'changed', false );
+		} );
+		
+		// 公開/更新ボタンクリック時もフラグをリセット
+		$( '#publish, #save-post' ).on( 'click', function() {
+			setTimeout( function() {
+				$( '#post' ).data( 'changed', false );
+			}, 1000 );
 		} );
 	}
 

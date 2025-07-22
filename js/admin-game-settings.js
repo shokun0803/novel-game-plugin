@@ -9,6 +9,50 @@ jQuery( function( $ ) {
     'use strict';
 
     /**
+     * 画像ファイルのバリデーション
+     *
+     * @param {Object} attachment 添付ファイルオブジェクト
+     * @return {Object} 検証結果 {valid: boolean, message: string}
+     */
+    function validateImageFile( attachment ) {
+        // 許可する拡張子
+        var allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        
+        // 最大ファイルサイズ（5MB）
+        var maxSize = 5 * 1024 * 1024;
+        
+        // MIMEタイプチェック
+        var allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        
+        // 拡張子チェック
+        var extension = attachment.filename ? attachment.filename.split('.').pop().toLowerCase() : '';
+        if ( allowedExtensions.indexOf( extension ) === -1 ) {
+            return {
+                valid: false,
+                message: 'サポートされていないファイル形式です。jpg, jpeg, png, gif, webp のみアップロード可能です。'
+            };
+        }
+        
+        // MIMEタイプチェック
+        if ( allowedMimeTypes.indexOf( attachment.mime ) === -1 ) {
+            return {
+                valid: false,
+                message: 'サポートされていないファイル形式です。画像ファイルのみアップロード可能です。'
+            };
+        }
+        
+        // ファイルサイズチェック
+        if ( attachment.filesizeInBytes > maxSize ) {
+            return {
+                valid: false,
+                message: 'ファイルサイズが大きすぎます。5MB以下のファイルをアップロードしてください。'
+            };
+        }
+        
+        return { valid: true, message: '' };
+    }
+
+    /**
      * WordPress メディアアップローダーを設定
      *
      * @param {string} buttonId  ボタンのID
@@ -34,6 +78,14 @@ jQuery( function( $ ) {
 
             customUploader.on( 'select', function() {
                 var attachment = customUploader.state().get( 'selection' ).first().toJSON();
+                
+                // ファイルバリデーション
+                var validation = validateImageFile( attachment );
+                if ( ! validation.valid ) {
+                    alert( validation.message );
+                    return;
+                }
+                
                 $( inputId ).val( attachment.url );
                 $( previewId ).attr( 'src', attachment.url ).show();
                 $( removeId ).show();

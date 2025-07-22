@@ -81,10 +81,86 @@
     
     .noveltool-game-selector {
         text-align: center;
+        padding: 10px;
     }
     
     .noveltool-game-selector select {
         width: 100%;
         margin: 10px 0;
+        min-width: auto;
+    }
+    
+    .noveltool-game-selector .button {
+        width: 100%;
+        margin: 5px 0;
+        padding: 8px 16px;
+    }
+    
+    /* 投稿リストテーブルの改善 */
+    .wp-list-table {
+        font-size: 14px;
+    }
+    
+    .wp-list-table th,
+    .wp-list-table td {
+        padding: 6px 4px;
+    }
+    
+    /* アクションリンクの改善 */
+    .row-actions {
+        position: static;
+        visibility: visible;
+        padding: 2px 0;
+    }
+    
+    .row-actions span {
+        display: inline-block;
+        margin-right: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .noveltool-game-list-container {
+        padding: 10px;
+    }
+    
+    .noveltool-game-selector {
+        padding: 8px;
+    }
+    
+    .noveltool-game-overview {
+        padding: 15px;
+    }
+    
+    .noveltool-game-summary-item {
+        padding: 12px;
+    }
+    
+    .noveltool-game-summary-item strong {
+        font-size: 1em;
+    }
+    
+    /* 非常に小さい画面での改善 */
+    .wp-list-table {
+        font-size: 12px;
+    }
+    
+    .wp-list-table .column-title {
+        width: auto;
+    }
+    
+    .wp-list-table .column-date {
+        display: none; /* 日付列を非表示 */
+    }
+    
+    /* ボタンのサイズ調整 */
+    .button {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+    
+    .button-small {
+        font-size: 12px;
+        padding: 4px 8px;
     }
 }
