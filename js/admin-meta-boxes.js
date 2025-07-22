@@ -235,6 +235,13 @@ jQuery( function( $ ) {
 			var selection = frame.state().get( 'selection' );
 			var attachment = selection.first().toJSON();
 			
+			// ファイルバリデーション
+			var validation = validateImageFile( attachment );
+			if ( ! validation.valid ) {
+				alert( validation.message );
+				return;
+			}
+			
 			dialogueData[index].background = attachment.url;
 			renderDialogueList();
 			updateDialogueTextarea();
@@ -325,8 +332,12 @@ jQuery( function( $ ) {
 
 		$tbody.empty();
 
-		choices.forEach( function( choice ) {
+		choices.forEach( function( choice, index ) {
 			var $row = $( '<tr>' );
+			$row.attr( 'data-choice-index', index );
+
+			// ドラッグハンドル
+			$row.append( '<td class="sort-handle" style="cursor: move; text-align: center; width: 30px;">⋮⋮</td>' );
 
 			// テキスト入力欄
 			$row.append( '<td><input type="text" class="choice-text" value="' + choice.text.replace( /"/g, '&quot;' ) + '" style="width:98%"></td>' );
@@ -347,6 +358,35 @@ jQuery( function( $ ) {
 			$row.append( '<td><button type="button" class="button choice-remove">' + novelGameMeta.strings.remove + '</button></td>' );
 
 			$tbody.append( $row );
+		} );
+
+		// 並び替え機能を初期化
+		initChoicesSortable();
+	}
+
+	/**
+	 * 選択肢の並び替え機能を初期化
+	 */
+	function initChoicesSortable() {
+		var $tbody = $( '#novel-choices-table tbody' );
+		
+		// 既存のsortableを削除
+		if ( $tbody.hasClass( 'ui-sortable' ) ) {
+			$tbody.sortable( 'destroy' );
+		}
+		
+		// sortableを初期化
+		$tbody.sortable( {
+			handle: '.sort-handle',
+			axis: 'y',
+			helper: 'clone',
+			placeholder: 'ui-state-highlight',
+			update: function( event, ui ) {
+				updateChoicesHidden();
+			},
+			start: function( event, ui ) {
+				ui.placeholder.html( '<td colspan="4" style="height: 40px; background: #f0f0f0; border: 2px dashed #ccc;"></td>' );
+			}
 		} );
 	}
 
@@ -369,6 +409,50 @@ jQuery( function( $ ) {
 	}
 
 	/**
+	 * 画像ファイルのバリデーション
+	 *
+	 * @param {Object} attachment 添付ファイルオブジェクト
+	 * @return {Object} 検証結果 {valid: boolean, message: string}
+	 */
+	function validateImageFile( attachment ) {
+		// 許可する拡張子
+		var allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+		
+		// 最大ファイルサイズ（5MB）
+		var maxSize = 5 * 1024 * 1024;
+		
+		// MIMEタイプチェック
+		var allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+		
+		// 拡張子チェック
+		var extension = attachment.filename ? attachment.filename.split('.').pop().toLowerCase() : '';
+		if ( allowedExtensions.indexOf( extension ) === -1 ) {
+			return {
+				valid: false,
+				message: 'サポートされていないファイル形式です。jpg, jpeg, png, gif, webp のみアップロード可能です。'
+			};
+		}
+		
+		// MIMEタイプチェック
+		if ( allowedMimeTypes.indexOf( attachment.mime ) === -1 ) {
+			return {
+				valid: false,
+				message: 'サポートされていないファイル形式です。画像ファイルのみアップロード可能です。'
+			};
+		}
+		
+		// ファイルサイズチェック
+		if ( attachment.filesizeInBytes > maxSize ) {
+			return {
+				valid: false,
+				message: 'ファイルサイズが大きすぎます。5MB以下のファイルをアップロードしてください。'
+			};
+		}
+		
+		return { valid: true, message: '' };
+	}
+
+	/**
 	 * WordPress メディアアップローダーを設定
 	 *
 	 * @param {string} buttonId  ボタンのID
@@ -384,11 +468,22 @@ jQuery( function( $ ) {
 				button: {
 					text: novelGameMeta.strings.useThisImage
 				},
-				multiple: false
+				multiple: false,
+				library: {
+					type: 'image'
+				}
 			} );
 
 			customUploader.on( 'select', function() {
 				var attachment = customUploader.state().get( 'selection' ).first().toJSON();
+				
+				// ファイルバリデーション
+				var validation = validateImageFile( attachment );
+				if ( ! validation.valid ) {
+					alert( validation.message );
+					return;
+				}
+				
 				$( inputId ).val( attachment.url );
 				$( previewId ).attr( 'src', attachment.url ).show();
 				
@@ -425,6 +520,14 @@ jQuery( function( $ ) {
 
 			customUploader.on( 'select', function() {
 				var attachment = customUploader.state().get( 'selection' ).first().toJSON();
+				
+				// ファイルバリデーション
+				var validation = validateImageFile( attachment );
+				if ( ! validation.valid ) {
+					alert( validation.message );
+					return;
+				}
+				
 				$( '#novel_character_' + position ).val( attachment.url );
 				$( '#novel_character_' + position + '_preview' ).attr( 'src', attachment.url ).show();
 				$( '.character-image-clear[data-position="' + position + '"]' ).show();
@@ -519,11 +622,33 @@ jQuery( function( $ ) {
 			$tbody.append( $row );
 		} );
 
-		// 選択肢を削除
+		// 選択肢を削除（データ整合性チェック付き）
 		$( '#novel-choices-table' ).on( 'click', '.choice-remove', function() {
-			if ( confirm( novelGameMeta.strings.confirmDelete ) ) {
-				$( this ).closest( 'tr' ).remove();
+			var $row = $( this ).closest( 'tr' );
+			var currentChoiceText = $row.find( '.choice-text' ).val();
+			var currentChoiceNext = $row.find( '.choice-next' ).val();
+			
+			// 削除確認メッセージにより詳細な情報を追加
+			var confirmMessage = novelGameMeta.strings.confirmDelete;
+			if ( currentChoiceText ) {
+				confirmMessage += '\n\n削除対象: 「' + currentChoiceText + '」';
+			}
+			
+			// 他の選択肢への影響をチェック
+			var remainingChoices = $( '#novel-choices-table tbody tr' ).not( $row ).length;
+			if ( remainingChoices === 0 ) {
+				confirmMessage += '\n\n注意: これは最後の選択肢です。削除すると選択肢が無くなります。';
+			}
+			
+			if ( confirm( confirmMessage ) ) {
+				$row.remove();
 				updateChoicesHidden();
+				
+				// 削除後のテーブルが空になった場合の処理
+				if ( $( '#novel-choices-table tbody tr' ).length === 0 ) {
+					// 空のメッセージを表示（オプション）
+					console.log( '選択肢が全て削除されました。' );
+				}
 			}
 		} );
 
