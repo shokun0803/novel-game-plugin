@@ -633,27 +633,6 @@
 		function adjustForResponsive() {
 			// ビューポートの高さを取得
 			var viewportHeight = window.innerHeight;
-			var viewportWidth = window.innerWidth;
-			
-			// フルスクリーン化の確保
-			$gameContainer.css({
-				'width': '100vw',
-				'height': '100vh',
-				'position': 'fixed',
-				'top': '0',
-				'left': '0',
-				'right': '0',
-				'bottom': '0',
-				'z-index': '9999'
-			});
-			
-			// HTML と body のスクロールを無効化
-			$('html, body').css({
-				'overflow': 'hidden',
-				'height': '100%',
-				'margin': '0',
-				'padding': '0'
-			});
 			
 			// モバイルブラウザのアドレスバーを考慮してコンテナの高さを調整
 			if ( isTouch && viewportHeight < 500 ) {
@@ -662,15 +641,6 @@
 			
 			// 画面サイズに応じた表示設定の調整
 			displaySettings.adjustForScreenSize();
-			
-			// ダイアログボックスの幅を確実に100%にする
-			$dialogueBox.css({
-				'width': '100%',
-				'left': '0',
-				'right': '0',
-				'margin': '0',
-				'box-sizing': 'border-box'
-			});
 			
 			// 既にセリフが表示されている場合は再分割
 			if ( dialogues.length > 0 && allDialoguePages.length > 0 ) {
@@ -688,7 +658,10 @@
 					}
 				}
 				
-				displayCurrentPage();
+				// 現在のページを再表示
+				if ( allDialoguePages[ currentPageIndex ] ) {
+					displayCurrentPage();
+				}
 			}
 		}
 

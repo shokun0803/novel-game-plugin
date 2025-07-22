@@ -469,9 +469,6 @@ function noveltool_add_body_class( $classes ) {
             <script>
             (function() {
                 document.documentElement.classList.add('novel-game-view');
-                // フルスクリーン表示の確保
-                document.body.style.overflow = 'hidden';
-                document.documentElement.style.overflow = 'hidden';
             })();
             </script>
             <?php
@@ -490,22 +487,6 @@ function noveltool_hide_wp_navigation() {
     if ( is_singular( 'novel_game' ) ) {
         ?>
         <style type="text/css">
-        /* 完全なフルスクリーン化とスクロール無効化 */
-        html.novel-game-view,
-        body.novel-game-view {
-            margin: 0 !important;
-            padding: 0 !important;
-            height: 100% !important;
-            overflow: hidden !important;
-            background: #000 !important;
-            position: fixed !important;
-            width: 100% !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-        }
-        
         /* WordPressナビゲーション要素を非表示 */
         .novel-game-view .post-navigation,
         .novel-game-view .nav-previous,
@@ -574,14 +555,7 @@ function noveltool_hide_wp_navigation() {
             padding: 0 !important;
             margin: 0 !important;
             width: 100% !important;
-            height: 100% !important;
             max-width: none !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            overflow: hidden !important;
         }
         
         /* エントリーコンテンツのスタイルをリセット */
@@ -593,13 +567,6 @@ function noveltool_hide_wp_navigation() {
             padding: 0 !important;
             margin: 0 !important;
             width: 100% !important;
-            height: 100% !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            overflow: hidden !important;
         }
         
         /* ページタイトルを非表示 */
@@ -623,18 +590,17 @@ function noveltool_hide_wp_navigation() {
             padding: 0 !important;
             margin: 0 !important;
             width: 100% !important;
-            height: 100% !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            overflow: hidden !important;
         }
         
         /* 管理バーも非表示 */
         .novel-game-view #wpadminbar {
             display: none !important;
+        }
+        
+        /* ボディのマージン・パディングをリセット */
+        .novel-game-view {
+            margin: 0 !important;
+            padding: 0 !important;
         }
         
         /* ゲームタイトルの調整 */
