@@ -44,16 +44,30 @@
 			// 画面サイズに応じた設定調整
 			adjustForScreenSize: function() {
 				const screenWidth = window.innerWidth;
+				const screenHeight = window.innerHeight;
 				
 				if ( screenWidth < 480 ) {
 					// 小画面：文字数を調整
-					this.maxCharsPerLine = 18;
+					this.maxCharsPerLine = screenWidth < 400 ? 16 : 18;
+					this.maxLines = 3;
 				} else if ( screenWidth < 768 ) {
-					// モバイル：標準設定
-					this.maxCharsPerLine = 20;
+					// モバイル：画面幅に応じて調整
+					this.maxCharsPerLine = Math.floor(screenWidth / 20); // 動的に計算
+					this.maxCharsPerLine = Math.max(18, Math.min(25, this.maxCharsPerLine));
+					this.maxLines = 3;
+				} else if ( screenWidth < 1024 ) {
+					// タブレット：より多くの文字を表示
+					this.maxCharsPerLine = 25;
+					this.maxLines = 3;
 				} else {
-					// タブレット・デスクトップ：標準設定
-					this.maxCharsPerLine = 20;
+					// デスクトップ：標準設定
+					this.maxCharsPerLine = 30;
+					this.maxLines = 3;
+				}
+				
+				// 縦向きモバイルでは行数を調整
+				if ( screenWidth < 768 && screenHeight > screenWidth ) {
+					this.maxLines = 3;
 				}
 			}
 		};
@@ -619,6 +633,27 @@
 		function adjustForResponsive() {
 			// ビューポートの高さを取得
 			var viewportHeight = window.innerHeight;
+			var viewportWidth = window.innerWidth;
+			
+			// フルスクリーン化の確保
+			$gameContainer.css({
+				'width': '100vw',
+				'height': '100vh',
+				'position': 'fixed',
+				'top': '0',
+				'left': '0',
+				'right': '0',
+				'bottom': '0',
+				'z-index': '9999'
+			});
+			
+			// HTML と body のスクロールを無効化
+			$('html, body').css({
+				'overflow': 'hidden',
+				'height': '100%',
+				'margin': '0',
+				'padding': '0'
+			});
 			
 			// モバイルブラウザのアドレスバーを考慮してコンテナの高さを調整
 			if ( isTouch && viewportHeight < 500 ) {
@@ -628,6 +663,15 @@
 			// 画面サイズに応じた表示設定の調整
 			displaySettings.adjustForScreenSize();
 			
+			// ダイアログボックスの幅を確実に100%にする
+			$dialogueBox.css({
+				'width': '100%',
+				'left': '0',
+				'right': '0',
+				'margin': '0',
+				'box-sizing': 'border-box'
+			});
+			
 			// 既にセリフが表示されている場合は再分割
 			if ( dialogues.length > 0 && allDialoguePages.length > 0 ) {
 				const currentPageContent = allDialoguePages[ currentPageIndex ];
@@ -636,7 +680,7 @@
 				// 現在の位置を可能な限り保持
 				if ( currentPageContent ) {
 					const newPageIndex = allDialoguePages.findIndex( function( page ) {
-						return page.includes( currentPageContent.substring( 0, 10 ) );
+						return page.text && page.text.includes( currentPageContent.text ? currentPageContent.text.substring( 0, 10 ) : '' );
 					} );
 					
 					if ( newPageIndex !== -1 ) {
