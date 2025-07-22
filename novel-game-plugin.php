@@ -385,6 +385,11 @@ function noveltool_filter_novel_game_content( $content ) {
     ?>
 
     <div id="novel-game-container" class="novel-game-container" style="background-image: url('<?php echo esc_url( $background ); ?>');">
+        <!-- ゲーム閉じるボタン -->
+        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>">
+            <span class="close-icon">×</span>
+        </button>
+        
         <!-- 3体キャラクター表示 -->
         <?php if ( $character_left ) : ?>
             <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" alt="<?php echo esc_attr__( '左キャラクター', 'novel-game-plugin' ); ?>" />
@@ -445,6 +450,125 @@ function noveltool_filter_novel_game_content( $content ) {
     return ob_get_clean();
 }
 add_filter( 'the_content', 'noveltool_filter_novel_game_content', 20 );
+
+/**
+ * ノベルゲーム表示時にボディクラスを追加
+ *
+ * @param array $classes 既存のボディクラス
+ * @return array 修正されたボディクラス
+ * @since 1.0.0
+ */
+function noveltool_add_body_class( $classes ) {
+    if ( is_singular( 'novel_game' ) ) {
+        $classes[] = 'novel-game-view';
+        $classes[] = 'novel-game-clean-view';
+    }
+    return $classes;
+}
+add_filter( 'body_class', 'noveltool_add_body_class' );
+
+/**
+ * ノベルゲーム表示時にWordPressナビゲーション要素を非表示にする
+ *
+ * @since 1.0.0
+ */
+function noveltool_hide_wp_navigation() {
+    if ( is_singular( 'novel_game' ) ) {
+        ?>
+        <style type="text/css">
+        /* WordPressナビゲーション要素を非表示 */
+        .novel-game-view .post-navigation,
+        .novel-game-view .nav-previous,
+        .novel-game-view .nav-next,
+        .novel-game-view .navigation,
+        .novel-game-view .site-navigation,
+        .novel-game-view .main-navigation,
+        .novel-game-view .primary-navigation,
+        .novel-game-view .secondary-navigation,
+        .novel-game-view .breadcrumb,
+        .novel-game-view .breadcrumbs,
+        .novel-game-view .entry-navigation,
+        .novel-game-view .single-navigation,
+        .novel-game-view .entry-footer,
+        .novel-game-view .entry-meta,
+        .novel-game-view .post-meta,
+        .novel-game-view .author-info,
+        .novel-game-view .author-box,
+        .novel-game-view .related-posts,
+        .novel-game-view .comments-area,
+        .novel-game-view #comments,
+        .novel-game-view .comment-form,
+        .novel-game-view .sidebar,
+        .novel-game-view .widget-area,
+        .novel-game-view .footer-widgets,
+        .novel-game-view .site-footer .widget,
+        .novel-game-view .entry-tags,
+        .novel-game-view .tag-links,
+        .novel-game-view .cat-links,
+        .novel-game-view .edit-link,
+        .novel-game-view .wp-block-post-navigation-link,
+        .novel-game-view .wp-block-navigation {
+            display: none !important;
+        }
+        
+        /* メインコンテンツエリアをフルスクリーンに */
+        .novel-game-view .site-main,
+        .novel-game-view .main,
+        .novel-game-view #main,
+        .novel-game-view .content-area,
+        .novel-game-view #content,
+        .novel-game-view .hfeed,
+        .novel-game-view .site-content {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        /* エントリーコンテンツのスタイルをリセット */
+        .novel-game-view .entry-content,
+        .novel-game-view .post-content {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        /* ページタイトルを非表示 */
+        .novel-game-view .entry-title,
+        .novel-game-view .page-title,
+        .novel-game-view .post-title,
+        .novel-game-view h1.entry-title {
+            display: none !important;
+        }
+        
+        /* 一般的なテーマのヘッダー・フッターを非表示 */
+        .novel-game-view .site-header,
+        .novel-game-view .site-footer,
+        .novel-game-view .header,
+        .novel-game-view .footer,
+        .novel-game-view #header,
+        .novel-game-view #footer {
+            display: none !important;
+        }
+        
+        /* ボディのマージン・パディングをリセット */
+        .novel-game-view {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* コンテナのフルスクリーン設定 */
+        .novel-game-view .container,
+        .novel-game-view .wrap,
+        .novel-game-view .wrapper {
+            max-width: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        </style>
+        <?php
+    }
+}
+add_action( 'wp_head', 'noveltool_hide_wp_navigation' );
 
 /**
  * フロントエンドとバックエンドのスクリプト・スタイルを読み込む
