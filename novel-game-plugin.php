@@ -469,6 +469,23 @@ function noveltool_add_body_class( $classes ) {
             <script>
             (function() {
                 document.documentElement.classList.add('novel-game-view');
+                
+                // ゲームコンテナの確実な表示
+                document.addEventListener('DOMContentLoaded', function() {
+                    var gameContainer = document.getElementById('novel-game-container');
+                    if (gameContainer) {
+                        // ゲームコンテナが確実に表示されるようにする
+                        gameContainer.style.display = 'block';
+                        gameContainer.style.visibility = 'visible';
+                        gameContainer.style.opacity = '1';
+                        
+                        // 背景画像が設定されていない場合のフォールバック
+                        var computedStyle = window.getComputedStyle(gameContainer);
+                        if (!computedStyle.backgroundImage || computedStyle.backgroundImage === 'none') {
+                            gameContainer.style.backgroundColor = '#222';
+                        }
+                    }
+                });
             })();
             </script>
             <?php
@@ -487,6 +504,58 @@ function noveltool_hide_wp_navigation() {
     if ( is_singular( 'novel_game' ) ) {
         ?>
         <style type="text/css">
+        /* ゲーム画面の基本設定 */
+        .novel-game-view #novel-game-container {
+            position: relative;
+            z-index: 10;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            min-height: 100vh !important;
+        }
+        
+        .novel-game-view #novel-dialogue-box,
+        .novel-game-view .novel-dialogue-box {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 3;
+            position: absolute !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+        }
+        
+        .novel-game-view .novel-character {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 0.8 !important;
+            z-index: 2;
+            position: absolute !important;
+        }
+        
+        .novel-game-view .novel-speaker-name {
+            display: block !important;
+            visibility: visible !important;
+            z-index: 4;
+            position: absolute !important;
+        }
+        
+        .novel-game-view #novel-choices,
+        .novel-game-view .novel-choices {
+            z-index: 4;
+            position: absolute !important;
+        }
+        
+        /* ダイアログボックスが非表示の問題を修正 */
+        .novel-game-view .entry-content,
+        .novel-game-view .post-content,
+        .novel-game-view article,
+        .novel-game-view .post {
+            position: relative !important;
+            z-index: 1 !important;
+        }
+        
         /* WordPressナビゲーション要素を非表示 */
         .novel-game-view .post-navigation,
         .novel-game-view .nav-previous,

@@ -112,6 +112,14 @@
 			return;
 		}
 
+		// デバッグ情報をコンソールに出力
+		console.log( 'ノベルゲームデータ:', {
+			dialogueData: dialogueData,
+			choices: choices,
+			baseBackground: baseBackground,
+			charactersData: charactersData
+		} );
+
 		/**
 		 * テキストを20文字×3行のページに分割する
 		 * 改行文字を考慮して分割する
@@ -796,11 +804,22 @@
 
 			// セリフデータがある場合は分割処理を実行
 			if ( dialogues.length > 0 ) {
+				console.log( 'セリフデータを初期化中:', dialogues.length + ' 個のセリフ' );
 				prepareDialoguePages();
+				
+				// ダイアログボックスを表示
+				$dialogueBox.show();
+				
+				// 最初のページを表示
 				displayCurrentPage();
+				
+				console.log( 'ゲーム初期化完了' );
 			} else {
 				// デバッグ用：セリフデータがない場合のメッセージ
-				console.log( 'No dialogue data found' );
+				console.log( 'セリフデータがありません' );
+				
+				// セリフがない場合は選択肢を直接表示
+				showChoices();
 			}
 		}
 
