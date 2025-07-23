@@ -389,8 +389,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // モーダル関数が利用可能になるまで待機
     function waitForModalAndSetupEvents() {
-        if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
-            console.log('Modal functions found, setting up events');
+        if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && window.novelGameModal.isAvailable && window.novelGameModal.isAvailable()) {
+            console.log('Modal functions found and available, setting up events');
+            setupGameCardEvents();
+        } else if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
+            console.log('Modal functions found but not available, setting up events anyway');
             setupGameCardEvents();
         } else {
             console.log('Modal functions not yet available, waiting...');
@@ -409,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const gameTitle = this.getAttribute('data-game-title');
                 console.log('Game card clicked, URL:', gameUrl, 'Title:', gameTitle);
                 
-                if (gameUrl && window.novelGameModal) {
+                if (gameUrl && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
                     console.log('Calling modal open');
                     // モーダルでゲームを開始（ページ遷移せずに）
                     window.novelGameModal.open(gameUrl);

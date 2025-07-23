@@ -1013,7 +1013,9 @@
 				// モーダル要素が存在しない場合はページ遷移
 				if ( $modalOverlay.length === 0 ) {
 					console.log( 'Modal overlay not found, redirecting to:', gameUrl );
-					window.location.href = gameUrl;
+					if ( gameUrl ) {
+						window.location.href = gameUrl;
+					}
 					return;
 				}
 				openModal( gameUrl );
@@ -1024,6 +1026,9 @@
 				if ( $modalOverlay.length > 0 ) {
 					closeModal();
 				}
+			},
+			isAvailable: function() {
+				return $modalOverlay.length > 0;
 			}
 		};
 		
