@@ -656,107 +656,6 @@
 		}
 
 		/**
-		 * 閉じるボタンの設定
-		 */
-		function setupCloseButton() {
-			var $closeButton = $( '#novel-game-close-btn' );
-			
-			if ( $closeButton.length === 0 ) {
-				return;
-			}
-			
-			$closeButton.on( 'click', function( e ) {
-				e.preventDefault();
-				e.stopPropagation();
-				
-				handleGameClose();
-			} );
-			
-			// キーボードショートカット（Escapeキー）
-			$( document ).on( 'keydown.novel-close', function( e ) {
-				if ( e.which === 27 ) { // Escape key
-					e.preventDefault();
-					handleGameClose();
-				}
-			} );
-		}
-		
-		/**
-		 * ゲームクローズ処理
-		 */
-		function handleGameClose() {
-			// ショートコードコンテキストかどうかを判定
-			var isShortcodeContext = noveltool_is_shortcode_context();
-			
-			if ( isShortcodeContext ) {
-				// ショートコードの場合
-				var $shortcodeContainer = $gameContainer.closest( '.noveltool-shortcode-container' );
-				if ( $shortcodeContainer.length > 0 ) {
-					$shortcodeContainer.hide();
-					return;
-				}
-				
-				// 親ウィンドウへのメッセージ送信
-				if ( window.parent !== window ) {
-					window.parent.postMessage( 'close-game', '*' );
-					return;
-				}
-			}
-			
-			// 通常のページからの場合、適切な戻り先を決定
-			var returnUrl = determineReturnUrl();
-			
-			if ( returnUrl ) {
-				window.location.href = returnUrl;
-			} else {
-				// フォールバック：ブラウザの戻るボタン動作
-				if ( window.history.length > 1 ) {
-					window.history.back();
-				} else {
-					// 履歴がない場合はアーカイブページに移動
-					window.location.href = getGameArchiveUrl();
-				}
-			}
-		}
-		
-		/**
-		 * 適切な戻り先URLを決定
-		 */
-		function determineReturnUrl() {
-			// リファラーをチェック
-			var referrer = document.referrer;
-			var currentDomain = window.location.hostname;
-			
-			// 同一ドメインからのアクセスの場合
-			if ( referrer ) {
-				try {
-					var referrerUrl = new URL( referrer );
-					if ( referrerUrl.hostname === currentDomain ) {
-						// 同一ドメインのアーカイブページまたは他のページからの場合
-						return referrer;
-					}
-				} catch ( error ) {
-					console.log( 'Invalid referrer URL:', error );
-				}
-			}
-			
-			// フォールバック：ゲームアーカイブページ
-			return getGameArchiveUrl();
-		}
-		
-		/**
-		 * ゲームアーカイブページのURLを取得
-		 */
-		function getGameArchiveUrl() {
-			// 現在のURLから推定
-			var currentPath = window.location.pathname;
-			var basePath = currentPath.replace( /\/[^\/]+\/?$/, '' );
-			
-			// novel_gameアーカイブページのURL
-			return window.location.origin + basePath + '/novel_game/';
-		}
-
-		/**
 		 * 初期化処理
 		 */
 		function initializeGame() {
@@ -767,9 +666,6 @@
 
 			// イベントリスナーの設定
 			setupGameInteraction();
-			
-			// 閉じるボタンの設定
-			setupCloseButton();
 
 			// リサイズイベントの設定
 			$( window ).on( 'resize orientationchange', handleResize );
