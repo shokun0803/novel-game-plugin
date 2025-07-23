@@ -387,27 +387,42 @@ document.addEventListener('DOMContentLoaded', function() {
     // ゲームカードのクリックイベント
     const gameCards = document.querySelectorAll('.novel-game-card');
     
-    gameCards.forEach(function(card) {
-        card.addEventListener('click', function() {
-            const gameUrl = this.getAttribute('data-game-url');
-            if (gameUrl && window.novelGameModal) {
-                // モーダルでゲームを開始
-                window.novelGameModal.open(gameUrl);
-            } else if (gameUrl) {
-                // フォールバック：ページ遷移
-                window.location.href = gameUrl;
-            }
+    // モーダル関数が利用可能になるまで待機
+    function waitForModalAndSetupEvents() {
+        if (window.novelGameModal) {
+            setupGameCardEvents();
+        } else {
+            // jQuery が読み込まれるまで少し待機
+            setTimeout(waitForModalAndSetupEvents, 100);
+        }
+    }
+    
+    function setupGameCardEvents() {
+        gameCards.forEach(function(card) {
+            card.addEventListener('click', function() {
+                const gameUrl = this.getAttribute('data-game-url');
+                if (gameUrl && window.novelGameModal) {
+                    // モーダルでゲームを開始
+                    window.novelGameModal.open(gameUrl);
+                } else if (gameUrl) {
+                    // フォールバック：ページ遷移
+                    window.location.href = gameUrl;
+                }
+            });
+            
+            // ホバー効果
+            card.addEventListener('mouseenter', function() {
+                this.classList.add('hovered');
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.classList.remove('hovered');
+            });
         });
-        
-        // ホバー効果
-        card.addEventListener('mouseenter', function() {
-            this.classList.add('hovered');
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.classList.remove('hovered');
-        });
-    });
+    }
+    
+    // モーダル関数の準備を待機
+    waitForModalAndSetupEvents();
 });
 </script>
 

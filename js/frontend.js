@@ -122,46 +122,83 @@
 							var $response = $( response );
 							
 							// セリフデータを取得
-							var dialogueDataText = $response.find( '#novel-dialogue-data' ).text();
-							if ( dialogueDataText ) {
-								dialogueData = JSON.parse( dialogueDataText );
-								
-								// 後方互換性のため、文字列配列の場合は変換
-								if ( dialogueData.length > 0 && typeof dialogueData[0] === 'string' ) {
-									dialogueData = dialogueData.map( function( text ) {
-										return { text: text, background: '', speaker: '' };
+							var dialogueDataScript = $response.filter( 'script#novel-dialogue-data' );
+							if ( dialogueDataScript.length === 0 ) {
+								dialogueDataScript = $response.find( '#novel-dialogue-data' );
+							}
+							
+							if ( dialogueDataScript.length > 0 ) {
+								var dialogueDataText = dialogueDataScript.text() || dialogueDataScript.html();
+								if ( dialogueDataText ) {
+									dialogueData = JSON.parse( dialogueDataText );
+									
+									// 後方互換性のため、文字列配列の場合は変換
+									if ( dialogueData.length > 0 && typeof dialogueData[0] === 'string' ) {
+										dialogueData = dialogueData.map( function( text ) {
+											return { text: text, background: '', speaker: '' };
+										} );
+									}
+									
+									// 旧形式のために dialogues 配列も維持
+									dialogues = dialogueData.map( function( item ) {
+										return item.text;
 									} );
 								}
-								
-								// 旧形式のために dialogues 配列も維持
-								dialogues = dialogueData.map( function( item ) {
-									return item.text;
-								} );
 							}
 							
 							// 選択肢データを取得
-							var choicesDataText = $response.find( '#novel-choices-data' ).text();
-							if ( choicesDataText ) {
-								choices = JSON.parse( choicesDataText );
+							var choicesDataScript = $response.filter( 'script#novel-choices-data' );
+							if ( choicesDataScript.length === 0 ) {
+								choicesDataScript = $response.find( '#novel-choices-data' );
+							}
+							
+							if ( choicesDataScript.length > 0 ) {
+								var choicesDataText = choicesDataScript.text() || choicesDataScript.html();
+								if ( choicesDataText ) {
+									choices = JSON.parse( choicesDataText );
+								}
 							}
 							
 							// 背景データを取得
-							var backgroundDataText = $response.find( '#novel-base-background' ).text();
-							if ( backgroundDataText ) {
-								baseBackground = JSON.parse( backgroundDataText );
-								currentBackground = baseBackground;
+							var backgroundDataScript = $response.filter( 'script#novel-base-background' );
+							if ( backgroundDataScript.length === 0 ) {
+								backgroundDataScript = $response.find( '#novel-base-background' );
+							}
+							
+							if ( backgroundDataScript.length > 0 ) {
+								var backgroundDataText = backgroundDataScript.text() || backgroundDataScript.html();
+								if ( backgroundDataText ) {
+									baseBackground = JSON.parse( backgroundDataText );
+									currentBackground = baseBackground;
+								}
 							}
 							
 							// キャラクターデータを取得
-							var charactersDataText = $response.find( '#novel-characters-data' ).text();
-							if ( charactersDataText ) {
-								charactersData = JSON.parse( charactersDataText );
+							var charactersDataScript = $response.filter( 'script#novel-characters-data' );
+							if ( charactersDataScript.length === 0 ) {
+								charactersDataScript = $response.find( '#novel-characters-data' );
+							}
+							
+							if ( charactersDataScript.length > 0 ) {
+								var charactersDataText = charactersDataScript.text() || charactersDataScript.html();
+								if ( charactersDataText ) {
+									charactersData = JSON.parse( charactersDataText );
+								}
 							}
 							
 							// ゲームコンテナの内容を更新
-							var $gameContent = $response.find( '#novel-game-container' ).html();
-							if ( $gameContent ) {
-								$gameContainer.html( $gameContent );
+							var $gameContentElement = $response.filter( '#novel-game-container' );
+							if ( $gameContentElement.length === 0 ) {
+								$gameContentElement = $response.find( '#novel-game-container' );
+							}
+							
+							if ( $gameContentElement.length > 0 ) {
+								$gameContainer.html( $gameContentElement.html() );
+								
+								// 背景画像を設定
+								if ( baseBackground ) {
+									$gameContainer.css( 'background-image', 'url("' + baseBackground + '")' );
+								}
 								
 								// 必要なDOM要素を再取得
 								$dialogueText = $( '#novel-dialogue-text' );
