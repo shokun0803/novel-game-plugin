@@ -107,18 +107,25 @@ body.modal-open {
     justify-content: center !important;
     animation: slideUp 0.4s ease-out;
     box-sizing: border-box !important;
+    /* モーダルコンテンツ自体は最小限のサイズに */
+    width: auto;
+    height: auto;
 }
 
 /* ゲームエリア（中央配置用） */
 .novel-game-modal-content .novel-game-container {
-    width: 90%;
-    height: 90%;
+    width: 90vw;
+    height: 90vh;
     max-width: 1200px;
     max-height: 800px;
     background: #000;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    position: relative;
+    /* ゲームコンテンツが確実に表示されるよう */
+    min-width: 300px;
+    min-height: 200px;
 }
 
 @keyframes slideUp {
@@ -135,11 +142,13 @@ body.modal-open {
 /* モバイル対応：小画面では全画面モーダル */
 @media (max-width: 768px) {
     .novel-game-modal-content .novel-game-container {
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
         max-width: none;
         max-height: none;
         border-radius: 0;
+        min-width: auto;
+        min-height: auto;
     }
     
     .novel-game-start-btn {
@@ -152,8 +161,8 @@ body.modal-open {
 /* タブレット対応 */
 @media (min-width: 769px) and (max-width: 1024px) {
     .novel-game-modal-content .novel-game-container {
-        width: 95%;
-        height: 95%;
+        width: 95vw;
+        height: 95vh;
         max-width: 1000px;
         max-height: 700px;
     }
@@ -162,8 +171,8 @@ body.modal-open {
 /* 大画面対応 */
 @media (min-width: 1025px) {
     .novel-game-modal-content .novel-game-container {
-        width: 80%;
-        height: 80%;
+        width: 80vw;
+        height: 80vh;
         max-width: 1200px;
         max-height: 800px;
     }

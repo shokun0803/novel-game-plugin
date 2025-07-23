@@ -112,25 +112,31 @@
 		 * @param {string} gameUrl ゲームのURL
 		 */
 		function loadGameData( gameUrl ) {
+			console.log( 'loadGameData called with URL:', gameUrl );
 			return new Promise( function( resolve, reject ) {
 				$.ajax( {
 					url: gameUrl,
 					type: 'GET',
 					success: function( response ) {
+						console.log( 'AJAX response received, response length:', response.length );
 						try {
 							// レスポンスからゲームデータを抽出
 							var $response = $( response );
+							console.log( 'Response parsed as jQuery object, elements count:', $response.length );
 							
 							// セリフデータを取得
 							var dialogueDataScript = $response.filter( 'script#novel-dialogue-data' );
 							if ( dialogueDataScript.length === 0 ) {
 								dialogueDataScript = $response.find( '#novel-dialogue-data' );
 							}
+							console.log( 'Dialogue data script found:', dialogueDataScript.length );
 							
 							if ( dialogueDataScript.length > 0 ) {
 								var dialogueDataText = dialogueDataScript.text() || dialogueDataScript.html();
+								console.log( 'Dialogue data text length:', dialogueDataText ? dialogueDataText.length : 0 );
 								if ( dialogueDataText ) {
 									dialogueData = JSON.parse( dialogueDataText );
+									console.log( 'Parsed dialogue data:', dialogueData.length );
 									
 									// 後方互換性のため、文字列配列の場合は変換
 									if ( dialogueData.length > 0 && typeof dialogueData[0] === 'string' ) {
@@ -143,6 +149,7 @@
 									dialogues = dialogueData.map( function( item ) {
 										return item.text;
 									} );
+									console.log( 'Dialogues array updated, length:', dialogues.length );
 								}
 							}
 							
@@ -151,11 +158,13 @@
 							if ( choicesDataScript.length === 0 ) {
 								choicesDataScript = $response.find( '#novel-choices-data' );
 							}
+							console.log( 'Choices data script found:', choicesDataScript.length );
 							
 							if ( choicesDataScript.length > 0 ) {
 								var choicesDataText = choicesDataScript.text() || choicesDataScript.html();
 								if ( choicesDataText ) {
 									choices = JSON.parse( choicesDataText );
+									console.log( 'Parsed choices data:', choices.length );
 								}
 							}
 							
@@ -164,12 +173,14 @@
 							if ( backgroundDataScript.length === 0 ) {
 								backgroundDataScript = $response.find( '#novel-base-background' );
 							}
+							console.log( 'Background data script found:', backgroundDataScript.length );
 							
 							if ( backgroundDataScript.length > 0 ) {
 								var backgroundDataText = backgroundDataScript.text() || backgroundDataScript.html();
 								if ( backgroundDataText ) {
 									baseBackground = JSON.parse( backgroundDataText );
 									currentBackground = baseBackground;
+									console.log( 'Parsed background data:', baseBackground );
 								}
 							}
 							
@@ -178,26 +189,61 @@
 							if ( charactersDataScript.length === 0 ) {
 								charactersDataScript = $response.find( '#novel-characters-data' );
 							}
+							console.log( 'Characters data script found:', charactersDataScript.length );
 							
 							if ( charactersDataScript.length > 0 ) {
 								var charactersDataText = charactersDataScript.text() || charactersDataScript.html();
 								if ( charactersDataText ) {
 									charactersData = JSON.parse( charactersDataText );
+									console.log( 'Parsed characters data:', charactersData );
 								}
 							}
 							
 							// ゲームコンテナの内容を更新
-							var $gameContentElement = $response.filter( '#novel-game-container' );
-							if ( $gameContentElement.length === 0 ) {
-								$gameContentElement = $response.find( '#novel-game-container' );
+							// モーダル内のゲームコンテナではなく、実際のゲームページのコンテナを探す
+							var $gameContentElement = null;
+							
+							// まず、モーダル以外のゲームコンテナを探す
+							var $allGameContainers = $response.find( '#novel-game-container' );
+							console.log( 'Found game containers:', $allGameContainers.length );
+							$allGameContainers.each( function( index ) {
+								var $container = $( this );
+								var containerHtml = $container.html();
+								console.log( 'Container ' + index + ' HTML length:', containerHtml ? containerHtml.length : 0 );
+								console.log( 'Container ' + index + ' is in modal:', $container.closest( '.novel-game-modal-overlay' ).length > 0 );
+								console.log( 'Container ' + index + ' content preview:', containerHtml ? containerHtml.substring( 0, 100 ) : 'empty' );
+								
+								// モーダル内のコンテナ（空の場合）は除外
+								if ( $container.closest( '.novel-game-modal-overlay' ).length === 0 && 
+									 containerHtml && containerHtml.trim() !== '' && 
+									 containerHtml.indexOf( 'ゲーム内容は動的に読み込まれます' ) === -1 ) {
+									$gameContentElement = $container;
+									console.log( 'Selected container ' + index + ' as game content' );
+									return false; // break
+								}
+							} );
+							
+							// 見つからない場合は、フィルタで直接探す
+							if ( ! $gameContentElement || $gameContentElement.length === 0 ) {
+								console.log( 'No valid container found in find, trying filter' );
+								$gameContentElement = $response.filter( '#novel-game-container' ).first();
+								// それでも見つからない場合は、最初に見つかったものを使用
+								if ( $gameContentElement.length === 0 ) {
+									console.log( 'No container found in filter, using first found' );
+									$gameContentElement = $response.find( '#novel-game-container' ).first();
+								}
 							}
 							
-							if ( $gameContentElement.length > 0 ) {
-								$gameContainer.html( $gameContentElement.html() );
+							if ( $gameContentElement && $gameContentElement.length > 0 ) {
+								console.log( 'Found game content element, updating container' );
+								var newContent = $gameContentElement.html();
+								console.log( 'New content length:', newContent ? newContent.length : 0 );
+								$gameContainer.html( newContent );
 								
 								// 背景画像を設定
 								if ( baseBackground ) {
 									$gameContainer.css( 'background-image', 'url("' + baseBackground + '")' );
+									console.log( 'Background image set:', baseBackground );
 								}
 								
 								// 必要なDOM要素を再取得
@@ -206,6 +252,10 @@
 								$speakerName = $( '#novel-speaker-name' );
 								$dialogueContinue = $( '#novel-dialogue-continue' );
 								$choicesContainer = $( '#novel-choices' );
+								
+								console.log( 'Game content loaded successfully' );
+							} else {
+								console.error( 'No valid game content found in response' );
 							}
 							
 							resolve();
@@ -953,10 +1003,31 @@
 		 * ゲームコンテンツの初期化処理（モーダル内で実行）
 		 */
 		function initializeGameContent() {
+			console.log( 'initializeGameContent called' );
+			console.log( 'Game container exists:', $gameContainer.length > 0 );
+			console.log( 'Dialogue data length:', dialogueData.length );
+			console.log( 'Dialogues length:', dialogues.length );
+			
 			// ゲームコンテナが存在しない場合は処理を中断
 			if ( $gameContainer.length === 0 ) {
+				console.error( 'Game container not found' );
 				return;
 			}
+			
+			// DOM要素を再取得（動的読み込み後に必要）
+			$dialogueText = $( '#novel-dialogue-text' );
+			$dialogueBox = $( '#novel-dialogue-box' );
+			$speakerName = $( '#novel-speaker-name' );
+			$dialogueContinue = $( '#novel-dialogue-continue' );
+			$choicesContainer = $( '#novel-choices' );
+			
+			console.log( 'Dialogue elements found:', {
+				text: $dialogueText.length,
+				box: $dialogueBox.length,
+				speaker: $speakerName.length,
+				continue: $dialogueContinue.length,
+				choices: $choicesContainer.length
+			} );
 
 			// イベントリスナーの設定
 			setupGameInteraction();
@@ -968,12 +1039,18 @@
 			adjustForResponsive();
 
 			// セリフデータがある場合は分割処理を実行
-			if ( dialogues.length > 0 ) {
+			if ( dialogues.length > 0 || dialogueData.length > 0 ) {
+				console.log( 'Preparing dialogue pages' );
 				prepareDialoguePages();
 				displayCurrentPage();
 			} else {
 				// デバッグ用：セリフデータがない場合のメッセージ
 				console.log( 'No dialogue data found' );
+				
+				// ゲームコンテナに何かコンテンツがあるかチェック
+				var containerContent = $gameContainer.html();
+				console.log( 'Game container content length:', containerContent ? containerContent.length : 0 );
+				console.log( 'Game container content (first 200 chars):', containerContent ? containerContent.substring( 0, 200 ) : 'empty' );
 			}
 		}
 
