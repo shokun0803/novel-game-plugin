@@ -297,13 +297,19 @@
 			
 			isModalOpen = true;
 			
-			// ボディのスクロールを無効化
-			$( 'body' ).addClass( 'modal-open' ).css( 'overflow', 'hidden' );
+			// ボディとHTMLのスクロールを無効化
+			$( 'html, body' ).addClass( 'modal-open' ).css( 'overflow', 'hidden' );
 			
 			// オーバーレイの表示を確実にする
 			$modalOverlay.removeClass( 'show' ).css( {
 				'display': 'flex',
-				'opacity': '0'
+				'opacity': '0',
+				'position': 'fixed',
+				'top': '0',
+				'left': '0',
+				'width': '100vw',
+				'height': '100vh',
+				'z-index': '2147483647'
 			} ).animate( { opacity: 1 }, 300, function() {
 				$modalOverlay.addClass( 'show' );
 			} );
@@ -353,8 +359,8 @@
 			
 			isModalOpen = false;
 			
-			// ボディのスクロールを復元
-			$( 'body' ).removeClass( 'modal-open' ).css( 'overflow', '' );
+			// ボディとHTMLのスクロールを復元
+			$( 'html, body' ).removeClass( 'modal-open' ).css( 'overflow', '' );
 			
 			// オーバーレイを非表示
 			$modalOverlay.removeClass( 'show' ).animate( { opacity: 0 }, 300, function() {

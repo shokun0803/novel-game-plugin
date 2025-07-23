@@ -12,7 +12,17 @@
 /* モーダル開放時のボディスタイル */
 body.modal-open {
     overflow: hidden !important;
-    height: 100%;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* モーダル開放時のHTMLスタイル */
+html.modal-open {
+    overflow: hidden !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* ゲーム開始ボタンコンテナ */
@@ -63,7 +73,7 @@ body.modal-open {
     right: 0 !important;
     bottom: 0 !important;
     background: rgba(0, 0, 0, 0.8) !important;
-    z-index: 9999 !important;
+    z-index: 2147483647 !important; /* 最大値のz-index */
     display: none !important;
     align-items: center !important;
     justify-content: center !important;
@@ -73,6 +83,15 @@ body.modal-open {
     /* 確実にフルスクリーンにする */
     margin: 0 !important;
     padding: 0 !important;
+    /* WordPressの管理バーよりも前面に */
+    overflow: hidden !important;
+}
+
+/* WordPress管理バーを強制的に隠す */
+body.modal-open #wpadminbar {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
 }
 
 /* モーダルが表示されている時のオーバーレイ */
@@ -90,9 +109,10 @@ body.modal-open {
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 9999 !important;
+    z-index: 2147483647 !important; /* 最大値のz-index */
     margin: 0 !important;
     padding: 0 !important;
+    overflow: hidden !important;
 }
 
 @keyframes fadeIn {
@@ -121,8 +141,8 @@ body.modal-open {
 
 /* ゲームエリア（中央配置用） */
 .novel-game-modal-content .novel-game-container {
-    width: 90vw;
-    height: 90vh;
+    width: 80vw;
+    height: 80vh;
     max-width: 1200px;
     max-height: 800px;
     background: #000;
@@ -135,6 +155,8 @@ body.modal-open {
     min-height: 200px;
     /* flexbox内で中央配置 */
     flex-shrink: 0;
+    /* 強制的に中央配置 */
+    margin: auto !important;
 }
 
 @keyframes slideUp {
@@ -191,6 +213,31 @@ body.modal-open {
     }
 }
 
+/* モーダル表示時の全要素を制御 */
+body.modal-open * {
+    box-sizing: border-box !important;
+}
+
+/* WordPress管理バーなどの重要な要素を強制的に隠す */
+body.modal-open #wpadminbar,
+body.modal-open .wp-admin-bar,
+body.modal-open header,
+body.modal-open nav,
+body.modal-open footer {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    z-index: -1 !important;
+}
+
+/* モーダル以外のページコンテンツを背景に */
+body.modal-open #page,
+body.modal-open #main,
+body.modal-open .site-content,
+body.modal-open .main-content {
+    z-index: 1 !important;
+}
+
 /* モーダル表示時のHTML/Bodyスタイル */
 body.modal-open,
 html.modal-open {
@@ -204,7 +251,7 @@ html.modal-open {
 /* モーダル要素のz-index確保 */
 .novel-game-modal-overlay,
 #novel-game-modal-overlay {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* 最大値のz-index */
 }
 
 /* 追加のオーバーレイ強制ルール */
@@ -217,7 +264,7 @@ html.modal-open {
     width: 100vw !important;
     height: 100vh !important;
     background: rgba(0, 0, 0, 0.8) !important;
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* 最大値のz-index */
 }
 
 /* ゲーム全体のコンテナ */
