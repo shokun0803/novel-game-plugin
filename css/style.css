@@ -9,6 +9,12 @@
    ベーススタイル
    ============================================================================= */
 
+/* モーダル開放時のボディスタイル */
+body.modal-open {
+    overflow: hidden !important;
+    height: 100%;
+}
+
 /* ゲーム開始ボタンコンテナ */
 .novel-game-start-container {
     text-align: center;
@@ -106,6 +112,32 @@
         max-width: none;
         max-height: none;
         border-radius: 0;
+    }
+    
+    .novel-game-start-btn {
+        padding: 15px 30px;
+        font-size: 20px;
+        min-width: 180px;
+    }
+}
+
+/* タブレット対応 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .novel-game-modal-content {
+        width: 95%;
+        height: 95%;
+        max-width: 1000px;
+        max-height: 700px;
+    }
+}
+
+/* 大画面対応 */
+@media (min-width: 1025px) {
+    .novel-game-modal-content {
+        width: 80%;
+        height: 80%;
+        max-width: 1200px;
+        max-height: 800px;
     }
 }
 

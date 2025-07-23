@@ -115,6 +115,10 @@
 			}
 			
 			isModalOpen = true;
+			
+			// ボディのスクロールを無効化
+			$( 'body' ).addClass( 'modal-open' ).css( 'overflow', 'hidden' );
+			
 			$modalOverlay.fadeIn( 300 );
 			
 			// モーダル表示後にゲームを初期化
@@ -139,11 +143,16 @@
 			}
 			
 			isModalOpen = false;
+			
+			// ボディのスクロールを復元
+			$( 'body' ).removeClass( 'modal-open' ).css( 'overflow', '' );
+			
 			$modalOverlay.fadeOut( 300 );
 			
 			// イベントリスナーをクリーンアップ
 			$( document ).off( 'keydown.modal' );
 			$( document ).off( 'keydown.novel-dialogue' );
+			$( window ).off( 'resize.game orientationchange.game' );
 			
 			// ゲーム状態をリセット
 			resetGameState();
@@ -187,6 +196,13 @@
 					closeModal();
 				}
 			} );
+		}
+
+		/**
+		 * ショートコードからのアクセスかどうかを判定
+		 */
+		function isShortcodeContext() {
+			return window.location.search.indexOf( 'shortcode=1' ) !== -1;
 		}
 
 		/**
