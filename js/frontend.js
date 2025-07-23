@@ -227,7 +227,21 @@
 		 * @param {string} gameUrl （オプション）ゲームのURL
 		 */
 		function openModal( gameUrl ) {
+			console.log( 'openModal called with URL:', gameUrl );
+			console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
+			console.log( 'isModalOpen:', isModalOpen );
+			
 			if ( isModalOpen ) {
+				console.log( 'Modal already open, ignoring' );
+				return;
+			}
+			
+			// モーダル要素が存在しない場合はページ遷移
+			if ( $modalOverlay.length === 0 ) {
+				console.log( 'Modal overlay not found, redirecting to:', gameUrl );
+				if ( gameUrl ) {
+					window.location.href = gameUrl;
+				}
 				return;
 			}
 			
@@ -236,11 +250,21 @@
 			// ボディのスクロールを無効化
 			$( 'body' ).addClass( 'modal-open' ).css( 'overflow', 'hidden' );
 			
-			$modalOverlay.fadeIn( 300 );
+			// オーバーレイの表示を確実にする
+			$modalOverlay.removeClass( 'show' ).css( {
+				'display': 'flex',
+				'opacity': '0'
+			} ).animate( { opacity: 1 }, 300, function() {
+				$modalOverlay.addClass( 'show' );
+			} );
+			
+			console.log( 'Modal overlay display set to flex' );
 			
 			// ゲームデータの読み込み（URLが指定されている場合）
 			if ( gameUrl ) {
+				console.log( 'Loading game data from URL:', gameUrl );
 				loadGameData( gameUrl ).then( function() {
+					console.log( 'Game data loaded successfully' );
 					// モーダル表示後にゲームを初期化
 					setTimeout( function() {
 						initializeGameContent();
@@ -250,6 +274,7 @@
 					closeModal();
 				} );
 			} else {
+				console.log( 'No game URL provided, initializing existing content' );
 				// モーダル表示後にゲームを初期化
 				setTimeout( function() {
 					initializeGameContent();
@@ -259,6 +284,7 @@
 			// ESCキーでモーダルを閉じる
 			$( document ).on( 'keydown.modal', function( e ) {
 				if ( e.which === 27 ) { // ESC key
+					console.log( 'ESC key pressed, closing modal' );
 					closeModal();
 				}
 			} );
@@ -268,7 +294,10 @@
 		 * モーダルを閉じる
 		 */
 		function closeModal() {
+			console.log( 'closeModal called, isModalOpen:', isModalOpen );
+			
 			if ( ! isModalOpen ) {
+				console.log( 'Modal already closed, ignoring' );
 				return;
 			}
 			
@@ -277,7 +306,12 @@
 			// ボディのスクロールを復元
 			$( 'body' ).removeClass( 'modal-open' ).css( 'overflow', '' );
 			
-			$modalOverlay.fadeOut( 300 );
+			// オーバーレイを非表示
+			$modalOverlay.removeClass( 'show' ).animate( { opacity: 0 }, 300, function() {
+				$modalOverlay.css( 'display', 'none' );
+			} );
+			
+			console.log( 'Modal overlay hidden' );
 			
 			// イベントリスナーをクリーンアップ
 			$( document ).off( 'keydown.modal' );
@@ -308,15 +342,28 @@
 		 * モーダルイベントハンドラーの設定
 		 */
 		function setupModalEvents() {
+			console.log( 'Setting up modal events' );
+			console.log( 'Start button exists:', $startButton.length > 0 );
+			console.log( 'Close button exists:', $closeButton.length > 0 );
+			
 			// 開始ボタンクリックイベント
 			$startButton.on( 'click', function( e ) {
 				e.preventDefault();
+				console.log( 'Start button clicked' );
 				openModal();
 			} );
 
 			// 閉じるボタンクリックイベント
 			$closeButton.on( 'click', function( e ) {
 				e.preventDefault();
+				console.log( 'Close button clicked' );
+				closeModal();
+			} );
+			
+			// モーダル内のクローズボタンイベントも設定（動的生成対応）
+			$( document ).on( 'click', '.novel-game-close-btn', function( e ) {
+				e.preventDefault();
+				console.log( 'Dynamic close button clicked' );
 				closeModal();
 			} );
 
@@ -934,6 +981,11 @@
 		 * 初期化処理
 		 */
 		function initializeGame() {
+			console.log( 'Initializing game...' );
+			console.log( 'Modal overlay found:', $modalOverlay.length > 0 );
+			console.log( 'Start button found:', $startButton.length > 0 );
+			console.log( 'Close button found:', $closeButton.length > 0 );
+			
 			// モーダル要素が存在する場合のみモーダルイベントを設定
 			if ( $modalOverlay.length > 0 ) {
 				// モーダルイベントの設定
@@ -941,6 +993,10 @@
 				
 				// 初期状態はモーダルを非表示
 				$modalOverlay.hide();
+				
+				console.log( 'Modal events set up successfully' );
+			} else {
+				console.log( 'No modal overlay found, skipping modal setup' );
 			}
 		}
 

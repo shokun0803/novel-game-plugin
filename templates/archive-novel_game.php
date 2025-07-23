@@ -113,7 +113,7 @@ get_header(); ?>
                     $game_image = get_post_meta($game->first_scene_id, '_background_image', true);
                 }
                 ?>
-                <div class="novel-game-card" data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>">
+                <div class="novel-game-card" data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>" data-game-title="<?php echo esc_attr($game_title); ?>">
                     <div class="game-thumbnail">
                         <?php if ($game_image) : ?>
                             <img src="<?php echo esc_url($game_image); ?>" alt="<?php echo esc_attr($game_title); ?>" class="game-bg-image">
@@ -401,13 +401,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function setupGameCardEvents() {
         gameCards.forEach(function(card) {
-            card.addEventListener('click', function() {
+            card.addEventListener('click', function(e) {
+                e.preventDefault(); // ページ遷移を防ぐ
+                e.stopPropagation();
+                
                 const gameUrl = this.getAttribute('data-game-url');
-                console.log('Game card clicked, URL:', gameUrl);
+                const gameTitle = this.getAttribute('data-game-title');
+                console.log('Game card clicked, URL:', gameUrl, 'Title:', gameTitle);
                 
                 if (gameUrl && window.novelGameModal) {
                     console.log('Calling modal open');
-                    // モーダルでゲームを開始
+                    // モーダルでゲームを開始（ページ遷移せずに）
                     window.novelGameModal.open(gameUrl);
                 } else if (gameUrl) {
                     console.log('Modal not available, using page navigation');
