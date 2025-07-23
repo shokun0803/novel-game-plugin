@@ -107,9 +107,89 @@
 		}
 
 		/**
-		 * モーダルを開く
+		 * ゲームデータを動的に読み込む
+		 *
+		 * @param {string} gameUrl ゲームのURL
 		 */
-		function openModal() {
+		function loadGameData( gameUrl ) {
+			return new Promise( function( resolve, reject ) {
+				$.ajax( {
+					url: gameUrl,
+					type: 'GET',
+					success: function( response ) {
+						try {
+							// レスポンスからゲームデータを抽出
+							var $response = $( response );
+							
+							// セリフデータを取得
+							var dialogueDataText = $response.find( '#novel-dialogue-data' ).text();
+							if ( dialogueDataText ) {
+								dialogueData = JSON.parse( dialogueDataText );
+								
+								// 後方互換性のため、文字列配列の場合は変換
+								if ( dialogueData.length > 0 && typeof dialogueData[0] === 'string' ) {
+									dialogueData = dialogueData.map( function( text ) {
+										return { text: text, background: '', speaker: '' };
+									} );
+								}
+								
+								// 旧形式のために dialogues 配列も維持
+								dialogues = dialogueData.map( function( item ) {
+									return item.text;
+								} );
+							}
+							
+							// 選択肢データを取得
+							var choicesDataText = $response.find( '#novel-choices-data' ).text();
+							if ( choicesDataText ) {
+								choices = JSON.parse( choicesDataText );
+							}
+							
+							// 背景データを取得
+							var backgroundDataText = $response.find( '#novel-base-background' ).text();
+							if ( backgroundDataText ) {
+								baseBackground = JSON.parse( backgroundDataText );
+								currentBackground = baseBackground;
+							}
+							
+							// キャラクターデータを取得
+							var charactersDataText = $response.find( '#novel-characters-data' ).text();
+							if ( charactersDataText ) {
+								charactersData = JSON.parse( charactersDataText );
+							}
+							
+							// ゲームコンテナの内容を更新
+							var $gameContent = $response.find( '#novel-game-container' ).html();
+							if ( $gameContent ) {
+								$gameContainer.html( $gameContent );
+								
+								// 必要なDOM要素を再取得
+								$dialogueText = $( '#novel-dialogue-text' );
+								$dialogueBox = $( '#novel-dialogue-box' );
+								$speakerName = $( '#novel-speaker-name' );
+								$dialogueContinue = $( '#novel-dialogue-continue' );
+								$choicesContainer = $( '#novel-choices' );
+							}
+							
+							resolve();
+						} catch ( error ) {
+							console.error( 'ゲームデータの解析に失敗しました:', error );
+							reject( error );
+						}
+					},
+					error: function( xhr, status, error ) {
+						console.error( 'ゲームデータの読み込みに失敗しました:', error );
+						reject( error );
+					}
+				} );
+			} );
+		}
+		/**
+		 * モーダルを開く
+		 *
+		 * @param {string} gameUrl （オプション）ゲームのURL
+		 */
+		function openModal( gameUrl ) {
 			if ( isModalOpen ) {
 				return;
 			}
@@ -121,10 +201,23 @@
 			
 			$modalOverlay.fadeIn( 300 );
 			
-			// モーダル表示後にゲームを初期化
-			setTimeout( function() {
-				initializeGameContent();
-			}, 100 );
+			// ゲームデータの読み込み（URLが指定されている場合）
+			if ( gameUrl ) {
+				loadGameData( gameUrl ).then( function() {
+					// モーダル表示後にゲームを初期化
+					setTimeout( function() {
+						initializeGameContent();
+					}, 100 );
+				} ).catch( function( error ) {
+					console.error( 'ゲームの読み込みに失敗しました:', error );
+					closeModal();
+				} );
+			} else {
+				// モーダル表示後にゲームを初期化
+				setTimeout( function() {
+					initializeGameContent();
+				}, 100 );
+			}
 			
 			// ESCキーでモーダルを閉じる
 			$( document ).on( 'keydown.modal', function( e ) {
@@ -190,12 +283,8 @@
 				closeModal();
 			} );
 
-			// オーバーレイクリックで閉じる（モーダルコンテンツ外をクリック時）
-			$modalOverlay.on( 'click', function( e ) {
-				if ( e.target === this ) {
-					closeModal();
-				}
-			} );
+			// オーバーレイクリックでは閉じない（意図しない終了を防止）
+			// コメントアウト：オーバーレイクリックによる終了を無効化
 		}
 
 		/**
@@ -490,7 +579,18 @@
 			function executeChoice( index ) {
 				var nextScene = displayChoices[ index ].nextScene;
 				if ( nextScene ) {
-					window.location.href = nextScene;
+					// ページ遷移ではなく、モーダル内でゲームを継続
+					loadGameData( nextScene ).then( function() {
+						// ゲーム状態をリセット
+						resetGameState();
+						
+						// ゲームコンテンツを初期化
+						initializeGameContent();
+					} ).catch( function( error ) {
+						console.error( '次のシーンの読み込みに失敗しました:', error );
+						// フォールバック：ページ遷移
+						window.location.href = nextScene;
+					} );
 				}
 			}
 			
@@ -797,15 +897,26 @@
 		 * 初期化処理
 		 */
 		function initializeGame() {
-			// モーダルイベントの設定
-			setupModalEvents();
-			
-			// 初期状態はモーダルを非表示
-			$modalOverlay.hide();
+			// モーダル要素が存在する場合のみモーダルイベントを設定
+			if ( $modalOverlay.length > 0 ) {
+				// モーダルイベントの設定
+				setupModalEvents();
+				
+				// 初期状態はモーダルを非表示
+				$modalOverlay.hide();
+			}
 		}
 
 		// ゲームの初期化
 		initializeGame();
+		
+		// グローバル関数として登録（モーダル要素が存在する場合のみ）
+		if ( $modalOverlay.length > 0 ) {
+			window.novelGameModal = {
+				open: openModal,
+				close: closeModal
+			};
+		}
 	} );
 
 } )( jQuery );

@@ -153,6 +153,22 @@ get_header(); ?>
     </div>
 </div>
 
+<!-- モーダルオーバーレイ（ゲーム表示用） -->
+<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">
+    <!-- モーダルコンテンツ -->
+    <div id="novel-game-modal-content" class="novel-game-modal-content">
+        <!-- ゲーム閉じるボタン -->
+        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>">
+            <span class="close-icon">×</span>
+        </button>
+        
+        <!-- ゲームコンテナ -->
+        <div id="novel-game-container" class="novel-game-container">
+            <!-- ゲーム内容は動的に読み込まれます -->
+        </div>
+    </div>
+</div>
+
 <style>
 .novel-game-archive-container {
     max-width: 1200px;
@@ -374,8 +390,11 @@ document.addEventListener('DOMContentLoaded', function() {
     gameCards.forEach(function(card) {
         card.addEventListener('click', function() {
             const gameUrl = this.getAttribute('data-game-url');
-            if (gameUrl) {
-                // 最初のシーンのパーマリンクに遷移
+            if (gameUrl && window.novelGameModal) {
+                // モーダルでゲームを開始
+                window.novelGameModal.open(gameUrl);
+            } else if (gameUrl) {
+                // フォールバック：ページ遷移
                 window.location.href = gameUrl;
             }
         });
