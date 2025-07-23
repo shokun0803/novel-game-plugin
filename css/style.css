@@ -102,9 +102,6 @@ body.modal-open {
 /* モーダルコンテンツ */
 .novel-game-modal-content {
     position: relative !important;
-    width: 100% !important;
-    height: 100% !important;
-    background: #000 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -118,6 +115,7 @@ body.modal-open {
     height: 90%;
     max-width: 1200px;
     max-height: 800px;
+    background: #000;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
