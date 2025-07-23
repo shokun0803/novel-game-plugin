@@ -947,13 +947,32 @@
 		// ゲームの初期化
 		initializeGame();
 		
-		// グローバル関数として登録（モーダル要素が存在する場合のみ）
-		if ( $modalOverlay.length > 0 ) {
-			window.novelGameModal = {
-				open: openModal,
-				close: closeModal
-			};
-		}
+		// モーダル機能をグローバルに常に公開
+		// archive-novel_game.phpからの呼び出しに対応するため
+		window.novelGameModal = {
+			open: function( gameUrl ) {
+				console.log( 'novelGameModal.open called with URL:', gameUrl );
+				console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
+				
+				// モーダル要素が存在しない場合はページ遷移
+				if ( $modalOverlay.length === 0 ) {
+					console.log( 'Modal overlay not found, redirecting to:', gameUrl );
+					window.location.href = gameUrl;
+					return;
+				}
+				openModal( gameUrl );
+			},
+			close: function() {
+				console.log( 'novelGameModal.close called' );
+				// モーダル要素が存在する場合のみ閉じる処理
+				if ( $modalOverlay.length > 0 ) {
+					closeModal();
+				}
+			}
+		};
+		
+		// デバッグ情報を出力
+		console.log( 'Novel Game Modal initialized. Modal overlay found:', $modalOverlay.length > 0 );
 	} );
 
 } )( jQuery );

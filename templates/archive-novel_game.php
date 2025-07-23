@@ -389,9 +389,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // モーダル関数が利用可能になるまで待機
     function waitForModalAndSetupEvents() {
-        if (window.novelGameModal) {
+        if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
+            console.log('Modal functions found, setting up events');
             setupGameCardEvents();
         } else {
+            console.log('Modal functions not yet available, waiting...');
             // jQuery が読み込まれるまで少し待機
             setTimeout(waitForModalAndSetupEvents, 100);
         }
@@ -401,12 +403,18 @@ document.addEventListener('DOMContentLoaded', function() {
         gameCards.forEach(function(card) {
             card.addEventListener('click', function() {
                 const gameUrl = this.getAttribute('data-game-url');
+                console.log('Game card clicked, URL:', gameUrl);
+                
                 if (gameUrl && window.novelGameModal) {
+                    console.log('Calling modal open');
                     // モーダルでゲームを開始
                     window.novelGameModal.open(gameUrl);
                 } else if (gameUrl) {
+                    console.log('Modal not available, using page navigation');
                     // フォールバック：ページ遷移
                     window.location.href = gameUrl;
+                } else {
+                    console.error('No game URL found on card');
                 }
             });
             
