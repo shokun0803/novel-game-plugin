@@ -11,6 +11,14 @@
 	// DOMの読み込み完了を待つ
 	$( document ).ready( function() {
 
+		// モーダル関連の変数
+		var $modalOverlay = $( '#novel-game-modal-overlay' );
+		var $startButton = $( '#novel-game-start-btn' );
+		var $closeButton = $( '#novel-game-close-btn' );
+		
+		// モーダル表示フラグ
+		var isModalOpen = false;
+
 		// 変数の初期化
 		var dialogueIndex = 0;
 		var dialogues = [];
@@ -96,6 +104,89 @@
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
 			return;
+		}
+
+		/**
+		 * モーダルを開く
+		 */
+		function openModal() {
+			if ( isModalOpen ) {
+				return;
+			}
+			
+			isModalOpen = true;
+			$modalOverlay.fadeIn( 300 );
+			
+			// モーダル表示後にゲームを初期化
+			setTimeout( function() {
+				initializeGameContent();
+			}, 100 );
+			
+			// ESCキーでモーダルを閉じる
+			$( document ).on( 'keydown.modal', function( e ) {
+				if ( e.which === 27 ) { // ESC key
+					closeModal();
+				}
+			} );
+		}
+
+		/**
+		 * モーダルを閉じる
+		 */
+		function closeModal() {
+			if ( ! isModalOpen ) {
+				return;
+			}
+			
+			isModalOpen = false;
+			$modalOverlay.fadeOut( 300 );
+			
+			// イベントリスナーをクリーンアップ
+			$( document ).off( 'keydown.modal' );
+			$( document ).off( 'keydown.novel-dialogue' );
+			
+			// ゲーム状態をリセット
+			resetGameState();
+		}
+
+		/**
+		 * ゲーム状態をリセット
+		 */
+		function resetGameState() {
+			currentDialogueIndex = 0;
+			currentPageIndex = 0;
+			currentDialoguePages = [];
+			allDialoguePages = [];
+			
+			// 表示をリセット
+			$dialogueText.text( '' );
+			$speakerName.text( '' );
+			$choicesContainer.empty().hide();
+			$dialogueContinue.hide();
+		}
+
+		/**
+		 * モーダルイベントハンドラーの設定
+		 */
+		function setupModalEvents() {
+			// 開始ボタンクリックイベント
+			$startButton.on( 'click', function( e ) {
+				e.preventDefault();
+				openModal();
+			} );
+
+			// 閉じるボタンクリックイベント
+			$closeButton.on( 'click', function( e ) {
+				e.preventDefault();
+				closeModal();
+			} );
+
+			// オーバーレイクリックで閉じる（モーダルコンテンツ外をクリック時）
+			$modalOverlay.on( 'click', function( e ) {
+				if ( e.target === this ) {
+					closeModal();
+				}
+			} );
 		}
 
 		/**
@@ -652,13 +743,16 @@
 		 * リサイズイベントの処理
 		 */
 		function handleResize() {
-			adjustForResponsive();
+			// モーダルが開いている時のみ処理
+			if ( isModalOpen ) {
+				adjustForResponsive();
+			}
 		}
 
 		/**
-		 * 初期化処理
+		 * ゲームコンテンツの初期化処理（モーダル内で実行）
 		 */
-		function initializeGame() {
+		function initializeGameContent() {
 			// ゲームコンテナが存在しない場合は処理を中断
 			if ( $gameContainer.length === 0 ) {
 				return;
@@ -668,7 +762,7 @@
 			setupGameInteraction();
 
 			// リサイズイベントの設定
-			$( window ).on( 'resize orientationchange', handleResize );
+			$( window ).on( 'resize.game orientationchange.game', handleResize );
 
 			// 初期調整
 			adjustForResponsive();
@@ -681,6 +775,17 @@
 				// デバッグ用：セリフデータがない場合のメッセージ
 				console.log( 'No dialogue data found' );
 			}
+		}
+
+		/**
+		 * 初期化処理
+		 */
+		function initializeGame() {
+			// モーダルイベントの設定
+			setupModalEvents();
+			
+			// 初期状態はモーダルを非表示
+			$modalOverlay.hide();
 		}
 
 		// ゲームの初期化
