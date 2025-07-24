@@ -41,6 +41,9 @@
 		var currentDialoguePages = [];
 		var allDialoguePages = [];
 		
+		// ゲーム設定
+		var gameSettings = {};
+		
 		// 表示設定
 		var displaySettings = {
 			maxCharsPerLine: 20,
@@ -72,6 +75,7 @@
 			var choicesData = $( '#novel-choices-data' ).text();
 			var baseBackgroundData = $( '#novel-base-background' ).text();
 			var charactersDataRaw = $( '#novel-characters-data' ).text();
+			var gameSettingsData = $( '#novel-game-settings' ).text();
 
 			if ( dialogueDataRaw ) {
 				dialogueData = JSON.parse( dialogueDataRaw );
@@ -100,6 +104,17 @@
 			
 			if ( charactersDataRaw ) {
 				charactersData = JSON.parse( charactersDataRaw );
+			}
+			
+			if ( gameSettingsData ) {
+				gameSettings = JSON.parse( gameSettingsData );
+			} else {
+				// デフォルト設定
+				gameSettings = {
+					title: '',
+					description: '',
+					ending_message: 'おわり'
+				};
 			}
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
@@ -197,6 +212,28 @@
 									charactersData = JSON.parse( charactersDataText );
 									console.log( 'Parsed characters data:', charactersData );
 								}
+							}
+							
+							// ゲーム設定データを取得
+							var gameSettingsScript = $response.filter( 'script#novel-game-settings' );
+							if ( gameSettingsScript.length === 0 ) {
+								gameSettingsScript = $response.find( '#novel-game-settings' );
+							}
+							console.log( 'Game settings script found:', gameSettingsScript.length );
+							
+							if ( gameSettingsScript.length > 0 ) {
+								var gameSettingsText = gameSettingsScript.text() || gameSettingsScript.html();
+								if ( gameSettingsText ) {
+									gameSettings = JSON.parse( gameSettingsText );
+									console.log( 'Parsed game settings:', gameSettings );
+								}
+							} else {
+								// デフォルト設定
+								gameSettings = {
+									title: '',
+									description: '',
+									ending_message: 'おわり'
+								};
 							}
 							
 							// ゲームコンテナの内容を更新
@@ -802,15 +839,18 @@
 		}
 
 		/**
-		 * ゲーム終了時の「おわり」画面を表示
+		 * ゲーム終了時のエンディング画面を表示
 		 */
 		function showGameEnd() {
 			$choicesContainer.empty();
 			
-			// 「おわり」メッセージを表示（クリック可能にする）
+			// カスタムエンディングメッセージを使用（デフォルトは「おわり」）
+			var endingMessage = gameSettings && gameSettings.ending_message ? gameSettings.ending_message : 'おわり';
+			
+			// エンディングメッセージを表示（クリック可能にする）
 			var $endMessage = $( '<div>' )
 				.addClass( 'game-end-message clickable-ending' )
-				.text( 'おわり' )
+				.text( endingMessage )
 				.attr( 'title', 'クリックでタイトル画面に戻る' );
 			
 			// エンディング画面クリックイベントを追加
