@@ -113,7 +113,7 @@ get_header(); ?>
                     $game_image = get_post_meta($game->first_scene_id, '_background_image', true);
                 }
                 ?>
-                <div class="novel-game-card" data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>">
+                <div class="novel-game-card" data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>" data-game-title="<?php echo esc_attr($game_title); ?>">
                     <div class="game-thumbnail">
                         <?php if ($game_image) : ?>
                             <img src="<?php echo esc_url($game_image); ?>" alt="<?php echo esc_attr($game_title); ?>" class="game-bg-image">
@@ -150,6 +150,22 @@ get_header(); ?>
             <?php
         endif;
         ?>
+    </div>
+</div>
+
+<!-- モーダルオーバーレイ（ゲーム表示用） -->
+<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">
+    <!-- モーダルコンテンツ -->
+    <div id="novel-game-modal-content" class="novel-game-modal-content">
+        <!-- ゲーム閉じるボタン -->
+        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>">
+            <span class="close-icon">×</span>
+        </button>
+        
+        <!-- ゲームコンテナ -->
+        <div id="novel-game-container" class="novel-game-container">
+            <!-- ゲーム内容は動的に読み込まれます -->
+        </div>
     </div>
 </div>
 
@@ -371,24 +387,57 @@ document.addEventListener('DOMContentLoaded', function() {
     // ゲームカードのクリックイベント
     const gameCards = document.querySelectorAll('.novel-game-card');
     
-    gameCards.forEach(function(card) {
-        card.addEventListener('click', function() {
-            const gameUrl = this.getAttribute('data-game-url');
-            if (gameUrl) {
-                // 最初のシーンのパーマリンクに遷移
-                window.location.href = gameUrl;
-            }
+    // モーダル関数が利用可能になるまで待機
+    function waitForModalAndSetupEvents() {
+        if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && window.novelGameModal.isAvailable && window.novelGameModal.isAvailable()) {
+            console.log('Modal functions found and available, setting up events');
+            setupGameCardEvents();
+        } else if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
+            console.log('Modal functions found but not available, setting up events anyway');
+            setupGameCardEvents();
+        } else {
+            console.log('Modal functions not yet available, waiting...');
+            // jQuery が読み込まれるまで少し待機
+            setTimeout(waitForModalAndSetupEvents, 100);
+        }
+    }
+    
+    function setupGameCardEvents() {
+        gameCards.forEach(function(card) {
+            card.addEventListener('click', function(e) {
+                e.preventDefault(); // ページ遷移を防ぐ
+                e.stopPropagation();
+                
+                const gameUrl = this.getAttribute('data-game-url');
+                const gameTitle = this.getAttribute('data-game-title');
+                console.log('Game card clicked, URL:', gameUrl, 'Title:', gameTitle);
+                
+                if (gameUrl && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
+                    console.log('Calling modal open');
+                    // モーダルでゲームを開始（ページ遷移せずに）
+                    window.novelGameModal.open(gameUrl);
+                } else if (gameUrl) {
+                    console.log('Modal not available, using page navigation');
+                    // フォールバック：ページ遷移
+                    window.location.href = gameUrl;
+                } else {
+                    console.error('No game URL found on card');
+                }
+            });
+            
+            // ホバー効果
+            card.addEventListener('mouseenter', function() {
+                this.classList.add('hovered');
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.classList.remove('hovered');
+            });
         });
-        
-        // ホバー効果
-        card.addEventListener('mouseenter', function() {
-            this.classList.add('hovered');
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.classList.remove('hovered');
-        });
-    });
+    }
+    
+    // モーダル関数の準備を待機
+    waitForModalAndSetupEvents();
 });
 </script>
 

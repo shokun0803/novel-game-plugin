@@ -11,6 +11,14 @@
 	// DOMの読み込み完了を待つ
 	$( document ).ready( function() {
 
+		// モーダル関連の変数
+		var $modalOverlay = $( '#novel-game-modal-overlay' );
+		var $startButton = $( '#novel-game-start-btn' );
+		var $closeButton = $( '#novel-game-close-btn' );
+		
+		// モーダル表示フラグ
+		var isModalOpen = false;
+
 		// 変数の初期化
 		var dialogueIndex = 0;
 		var dialogues = [];
@@ -96,6 +104,346 @@
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
 			return;
+		}
+
+		/**
+		 * ゲームデータを動的に読み込む
+		 *
+		 * @param {string} gameUrl ゲームのURL
+		 */
+		function loadGameData( gameUrl ) {
+			console.log( 'loadGameData called with URL:', gameUrl );
+			return new Promise( function( resolve, reject ) {
+				$.ajax( {
+					url: gameUrl,
+					type: 'GET',
+					success: function( response ) {
+						console.log( 'AJAX response received, response length:', response.length );
+						try {
+							// レスポンスからゲームデータを抽出
+							var $response = $( response );
+							console.log( 'Response parsed as jQuery object, elements count:', $response.length );
+							
+							// セリフデータを取得
+							var dialogueDataScript = $response.filter( 'script#novel-dialogue-data' );
+							if ( dialogueDataScript.length === 0 ) {
+								dialogueDataScript = $response.find( '#novel-dialogue-data' );
+							}
+							console.log( 'Dialogue data script found:', dialogueDataScript.length );
+							
+							if ( dialogueDataScript.length > 0 ) {
+								var dialogueDataText = dialogueDataScript.text() || dialogueDataScript.html();
+								console.log( 'Dialogue data text length:', dialogueDataText ? dialogueDataText.length : 0 );
+								if ( dialogueDataText ) {
+									dialogueData = JSON.parse( dialogueDataText );
+									console.log( 'Parsed dialogue data:', dialogueData.length );
+									
+									// 後方互換性のため、文字列配列の場合は変換
+									if ( dialogueData.length > 0 && typeof dialogueData[0] === 'string' ) {
+										dialogueData = dialogueData.map( function( text ) {
+											return { text: text, background: '', speaker: '' };
+										} );
+									}
+									
+									// 旧形式のために dialogues 配列も維持
+									dialogues = dialogueData.map( function( item ) {
+										return item.text;
+									} );
+									console.log( 'Dialogues array updated, length:', dialogues.length );
+								}
+							}
+							
+							// 選択肢データを取得
+							var choicesDataScript = $response.filter( 'script#novel-choices-data' );
+							if ( choicesDataScript.length === 0 ) {
+								choicesDataScript = $response.find( '#novel-choices-data' );
+							}
+							console.log( 'Choices data script found:', choicesDataScript.length );
+							
+							if ( choicesDataScript.length > 0 ) {
+								var choicesDataText = choicesDataScript.text() || choicesDataScript.html();
+								if ( choicesDataText ) {
+									choices = JSON.parse( choicesDataText );
+									console.log( 'Parsed choices data:', choices.length );
+								}
+							}
+							
+							// 背景データを取得
+							var backgroundDataScript = $response.filter( 'script#novel-base-background' );
+							if ( backgroundDataScript.length === 0 ) {
+								backgroundDataScript = $response.find( '#novel-base-background' );
+							}
+							console.log( 'Background data script found:', backgroundDataScript.length );
+							
+							if ( backgroundDataScript.length > 0 ) {
+								var backgroundDataText = backgroundDataScript.text() || backgroundDataScript.html();
+								if ( backgroundDataText ) {
+									baseBackground = JSON.parse( backgroundDataText );
+									currentBackground = baseBackground;
+									console.log( 'Parsed background data:', baseBackground );
+								}
+							}
+							
+							// キャラクターデータを取得
+							var charactersDataScript = $response.filter( 'script#novel-characters-data' );
+							if ( charactersDataScript.length === 0 ) {
+								charactersDataScript = $response.find( '#novel-characters-data' );
+							}
+							console.log( 'Characters data script found:', charactersDataScript.length );
+							
+							if ( charactersDataScript.length > 0 ) {
+								var charactersDataText = charactersDataScript.text() || charactersDataScript.html();
+								if ( charactersDataText ) {
+									charactersData = JSON.parse( charactersDataText );
+									console.log( 'Parsed characters data:', charactersData );
+								}
+							}
+							
+							// ゲームコンテナの内容を更新
+							// モーダル内のゲームコンテナではなく、実際のゲームページのコンテナを探す
+							var $gameContentElement = null;
+							
+							// まず、モーダル以外のゲームコンテナを探す
+							var $allGameContainers = $response.find( '#novel-game-container' );
+							console.log( 'Found game containers:', $allGameContainers.length );
+							$allGameContainers.each( function( index ) {
+								var $container = $( this );
+								var containerHtml = $container.html();
+								console.log( 'Container ' + index + ' HTML length:', containerHtml ? containerHtml.length : 0 );
+								console.log( 'Container ' + index + ' is in modal:', $container.closest( '.novel-game-modal-overlay' ).length > 0 );
+								console.log( 'Container ' + index + ' content preview:', containerHtml ? containerHtml.substring( 0, 100 ) : 'empty' );
+								
+								// モーダル内のコンテナ（空の場合）は除外
+								if ( $container.closest( '.novel-game-modal-overlay' ).length === 0 && 
+									 containerHtml && containerHtml.trim() !== '' && 
+									 containerHtml.indexOf( 'ゲーム内容は動的に読み込まれます' ) === -1 ) {
+									$gameContentElement = $container;
+									console.log( 'Selected container ' + index + ' as game content' );
+									return false; // break
+								}
+							} );
+							
+							// 見つからない場合は、フィルタで直接探す
+							if ( ! $gameContentElement || $gameContentElement.length === 0 ) {
+								console.log( 'No valid container found in find, trying filter' );
+								$gameContentElement = $response.filter( '#novel-game-container' ).first();
+								// それでも見つからない場合は、最初に見つかったものを使用
+								if ( $gameContentElement.length === 0 ) {
+									console.log( 'No container found in filter, using first found' );
+									$gameContentElement = $response.find( '#novel-game-container' ).first();
+								}
+							}
+							
+							if ( $gameContentElement && $gameContentElement.length > 0 ) {
+								console.log( 'Found game content element, updating container' );
+								var newContent = $gameContentElement.html();
+								console.log( 'New content length:', newContent ? newContent.length : 0 );
+								$gameContainer.html( newContent );
+								
+								// 背景画像を設定
+								if ( baseBackground ) {
+									$gameContainer.css( 'background-image', 'url("' + baseBackground + '")' );
+									console.log( 'Background image set:', baseBackground );
+								}
+								
+								// 必要なDOM要素を再取得
+								$dialogueText = $( '#novel-dialogue-text' );
+								$dialogueBox = $( '#novel-dialogue-box' );
+								$speakerName = $( '#novel-speaker-name' );
+								$dialogueContinue = $( '#novel-dialogue-continue' );
+								$choicesContainer = $( '#novel-choices' );
+								
+								console.log( 'Game content loaded successfully' );
+							} else {
+								console.error( 'No valid game content found in response' );
+							}
+							
+							resolve();
+						} catch ( error ) {
+							console.error( 'ゲームデータの解析に失敗しました:', error );
+							reject( error );
+						}
+					},
+					error: function( xhr, status, error ) {
+						console.error( 'ゲームデータの読み込みに失敗しました:', error );
+						reject( error );
+					}
+				} );
+			} );
+		}
+		/**
+		 * モーダルを開く
+		 *
+		 * @param {string} gameUrl （オプション）ゲームのURL
+		 */
+		function openModal( gameUrl ) {
+			console.log( 'openModal called with URL:', gameUrl );
+			console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
+			console.log( 'isModalOpen:', isModalOpen );
+			
+			if ( isModalOpen ) {
+				console.log( 'Modal already open, ignoring' );
+				return;
+			}
+			
+			// モーダル要素が存在しない場合はページ遷移
+			if ( $modalOverlay.length === 0 ) {
+				console.log( 'Modal overlay not found, redirecting to:', gameUrl );
+				if ( gameUrl ) {
+					window.location.href = gameUrl;
+				}
+				return;
+			}
+			
+			isModalOpen = true;
+			
+			// ボディとHTMLのスクロールを無効化
+			$( 'html, body' ).addClass( 'modal-open' ).css( 'overflow', 'hidden' );
+			
+			// オーバーレイの表示を確実にする（WordPress レイアウト制約を回避）
+			$modalOverlay.removeClass( 'show' ).css( {
+				'display': 'flex',
+				'opacity': '0',
+				'position': 'fixed',
+				'top': '0',
+				'left': '0',
+				'width': '100vw',
+				'height': '100vh',
+				'z-index': '2147483647',
+				// WordPress レイアウト制約を強制的に回避
+				'max-width': 'none',
+				'margin': '0',
+				'margin-left': '0',
+				'margin-right': '0',
+				'padding': '0',
+				'right': '0',
+				'bottom': '0',
+				'inset': '0',
+				// 追加の配置制御
+				'transform': 'none',
+				'box-sizing': 'border-box'
+			} ).animate( { opacity: 1 }, 300, function() {
+				$modalOverlay.addClass( 'show' );
+			} );
+			
+			console.log( 'Modal overlay display set to flex' );
+			
+			// ゲームデータの読み込み（URLが指定されている場合）
+			if ( gameUrl ) {
+				console.log( 'Loading game data from URL:', gameUrl );
+				loadGameData( gameUrl ).then( function() {
+					console.log( 'Game data loaded successfully' );
+					// モーダル表示後にゲームを初期化
+					setTimeout( function() {
+						initializeGameContent();
+					}, 100 );
+				} ).catch( function( error ) {
+					console.error( 'ゲームの読み込みに失敗しました:', error );
+					closeModal();
+				} );
+			} else {
+				console.log( 'No game URL provided, initializing existing content' );
+				// モーダル表示後にゲームを初期化
+				setTimeout( function() {
+					initializeGameContent();
+				}, 100 );
+			}
+			
+			// ESCキーでモーダルを閉じる
+			$( document ).on( 'keydown.modal', function( e ) {
+				if ( e.which === 27 ) { // ESC key
+					console.log( 'ESC key pressed, closing modal' );
+					closeModal();
+				}
+			} );
+		}
+
+		/**
+		 * モーダルを閉じる
+		 */
+		function closeModal() {
+			console.log( 'closeModal called, isModalOpen:', isModalOpen );
+			
+			if ( ! isModalOpen ) {
+				console.log( 'Modal already closed, ignoring' );
+				return;
+			}
+			
+			isModalOpen = false;
+			
+			// ボディとHTMLのスクロールを復元
+			$( 'html, body' ).removeClass( 'modal-open' ).css( 'overflow', '' );
+			
+			// オーバーレイを非表示
+			$modalOverlay.removeClass( 'show' ).animate( { opacity: 0 }, 300, function() {
+				$modalOverlay.css( 'display', 'none' );
+			} );
+			
+			console.log( 'Modal overlay hidden' );
+			
+			// イベントリスナーをクリーンアップ
+			$( document ).off( 'keydown.modal' );
+			$( document ).off( 'keydown.novel-dialogue' );
+			$( window ).off( 'resize.game orientationchange.game' );
+			
+			// ゲーム状態をリセット
+			resetGameState();
+		}
+
+		/**
+		 * ゲーム状態をリセット
+		 */
+		function resetGameState() {
+			currentDialogueIndex = 0;
+			currentPageIndex = 0;
+			currentDialoguePages = [];
+			allDialoguePages = [];
+			
+			// 表示をリセット
+			$dialogueText.text( '' );
+			$speakerName.text( '' );
+			$choicesContainer.empty().hide();
+			$dialogueContinue.hide();
+		}
+
+		/**
+		 * モーダルイベントハンドラーの設定
+		 */
+		function setupModalEvents() {
+			console.log( 'Setting up modal events' );
+			console.log( 'Start button exists:', $startButton.length > 0 );
+			console.log( 'Close button exists:', $closeButton.length > 0 );
+			
+			// 開始ボタンクリックイベント
+			$startButton.on( 'click', function( e ) {
+				e.preventDefault();
+				console.log( 'Start button clicked' );
+				openModal();
+			} );
+
+			// 閉じるボタンクリックイベント
+			$closeButton.on( 'click', function( e ) {
+				e.preventDefault();
+				console.log( 'Close button clicked' );
+				closeModal();
+			} );
+			
+			// モーダル内のクローズボタンイベントも設定（動的生成対応）
+			$( document ).on( 'click', '.novel-game-close-btn', function( e ) {
+				e.preventDefault();
+				console.log( 'Dynamic close button clicked' );
+				closeModal();
+			} );
+
+			// オーバーレイクリックでは閉じない（意図しない終了を防止）
+			// コメントアウト：オーバーレイクリックによる終了を無効化
+		}
+
+		/**
+		 * ショートコードからのアクセスかどうかを判定
+		 */
+		function isShortcodeContext() {
+			return window.location.search.indexOf( 'shortcode=1' ) !== -1;
 		}
 
 		/**
@@ -383,7 +731,18 @@
 			function executeChoice( index ) {
 				var nextScene = displayChoices[ index ].nextScene;
 				if ( nextScene ) {
-					window.location.href = nextScene;
+					// ページ遷移ではなく、モーダル内でゲームを継続
+					loadGameData( nextScene ).then( function() {
+						// ゲーム状態をリセット
+						resetGameState();
+						
+						// ゲームコンテンツを初期化
+						initializeGameContent();
+					} ).catch( function( error ) {
+						console.error( '次のシーンの読み込みに失敗しました:', error );
+						// フォールバック：ページ遷移
+						window.location.href = nextScene;
+					} );
 				}
 			}
 			
@@ -652,39 +1011,124 @@
 		 * リサイズイベントの処理
 		 */
 		function handleResize() {
+			// モーダルが開いている時のみ処理
+			if ( isModalOpen ) {
+				adjustForResponsive();
+			}
+		}
+
+		/**
+		 * ゲームコンテンツの初期化処理（モーダル内で実行）
+		 */
+		function initializeGameContent() {
+			console.log( 'initializeGameContent called' );
+			console.log( 'Game container exists:', $gameContainer.length > 0 );
+			console.log( 'Dialogue data length:', dialogueData.length );
+			console.log( 'Dialogues length:', dialogues.length );
+			
+			// ゲームコンテナが存在しない場合は処理を中断
+			if ( $gameContainer.length === 0 ) {
+				console.error( 'Game container not found' );
+				return;
+			}
+			
+			// DOM要素を再取得（動的読み込み後に必要）
+			$dialogueText = $( '#novel-dialogue-text' );
+			$dialogueBox = $( '#novel-dialogue-box' );
+			$speakerName = $( '#novel-speaker-name' );
+			$dialogueContinue = $( '#novel-dialogue-continue' );
+			$choicesContainer = $( '#novel-choices' );
+			
+			console.log( 'Dialogue elements found:', {
+				text: $dialogueText.length,
+				box: $dialogueBox.length,
+				speaker: $speakerName.length,
+				continue: $dialogueContinue.length,
+				choices: $choicesContainer.length
+			} );
+
+			// イベントリスナーの設定
+			setupGameInteraction();
+
+			// リサイズイベントの設定
+			$( window ).on( 'resize.game orientationchange.game', handleResize );
+
+			// 初期調整
 			adjustForResponsive();
+
+			// セリフデータがある場合は分割処理を実行
+			if ( dialogues.length > 0 || dialogueData.length > 0 ) {
+				console.log( 'Preparing dialogue pages' );
+				prepareDialoguePages();
+				displayCurrentPage();
+			} else {
+				// デバッグ用：セリフデータがない場合のメッセージ
+				console.log( 'No dialogue data found' );
+				
+				// ゲームコンテナに何かコンテンツがあるかチェック
+				var containerContent = $gameContainer.html();
+				console.log( 'Game container content length:', containerContent ? containerContent.length : 0 );
+				console.log( 'Game container content (first 200 chars):', containerContent ? containerContent.substring( 0, 200 ) : 'empty' );
+			}
 		}
 
 		/**
 		 * 初期化処理
 		 */
 		function initializeGame() {
-			// ゲームコンテナが存在しない場合は処理を中断
-			if ( $gameContainer.length === 0 ) {
-				return;
-			}
-
-			// イベントリスナーの設定
-			setupGameInteraction();
-
-			// リサイズイベントの設定
-			$( window ).on( 'resize orientationchange', handleResize );
-
-			// 初期調整
-			adjustForResponsive();
-
-			// セリフデータがある場合は分割処理を実行
-			if ( dialogues.length > 0 ) {
-				prepareDialoguePages();
-				displayCurrentPage();
+			console.log( 'Initializing game...' );
+			console.log( 'Modal overlay found:', $modalOverlay.length > 0 );
+			console.log( 'Start button found:', $startButton.length > 0 );
+			console.log( 'Close button found:', $closeButton.length > 0 );
+			
+			// モーダル要素が存在する場合のみモーダルイベントを設定
+			if ( $modalOverlay.length > 0 ) {
+				// モーダルイベントの設定
+				setupModalEvents();
+				
+				// 初期状態はモーダルを非表示
+				$modalOverlay.hide();
+				
+				console.log( 'Modal events set up successfully' );
 			} else {
-				// デバッグ用：セリフデータがない場合のメッセージ
-				console.log( 'No dialogue data found' );
+				console.log( 'No modal overlay found, skipping modal setup' );
 			}
 		}
 
 		// ゲームの初期化
 		initializeGame();
+		
+		// モーダル機能をグローバルに常に公開
+		// archive-novel_game.phpからの呼び出しに対応するため
+		window.novelGameModal = {
+			open: function( gameUrl ) {
+				console.log( 'novelGameModal.open called with URL:', gameUrl );
+				console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
+				
+				// モーダル要素が存在しない場合はページ遷移
+				if ( $modalOverlay.length === 0 ) {
+					console.log( 'Modal overlay not found, redirecting to:', gameUrl );
+					if ( gameUrl ) {
+						window.location.href = gameUrl;
+					}
+					return;
+				}
+				openModal( gameUrl );
+			},
+			close: function() {
+				console.log( 'novelGameModal.close called' );
+				// モーダル要素が存在する場合のみ閉じる処理
+				if ( $modalOverlay.length > 0 ) {
+					closeModal();
+				}
+			},
+			isAvailable: function() {
+				return $modalOverlay.length > 0;
+			}
+		};
+		
+		// デバッグ情報を出力
+		console.log( 'Novel Game Modal initialized. Modal overlay found:', $modalOverlay.length > 0 );
 	} );
 
 } )( jQuery );

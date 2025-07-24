@@ -384,61 +384,80 @@ function noveltool_filter_novel_game_content( $content ) {
     endif;
     ?>
 
-    <div id="novel-game-container" class="novel-game-container" style="background-image: url('<?php echo esc_url( $background ); ?>');">
-        <!-- 3体キャラクター表示 -->
-        <?php if ( $character_left ) : ?>
-            <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" alt="<?php echo esc_attr__( '左キャラクター', 'novel-game-plugin' ); ?>" />
-        <?php endif; ?>
-        
-        <?php if ( $character_center ) : ?>
-            <img id="novel-character-center" class="novel-character novel-character-center" src="<?php echo esc_url( $character_center ); ?>" alt="<?php echo esc_attr__( '中央キャラクター', 'novel-game-plugin' ); ?>" />
-        <?php endif; ?>
-        
-        <?php if ( $character_right ) : ?>
-            <img id="novel-character-right" class="novel-character novel-character-right" src="<?php echo esc_url( $character_right ); ?>" alt="<?php echo esc_attr__( '右キャラクター', 'novel-game-plugin' ); ?>" />
-        <?php endif; ?>
-        
-        <!-- 後方互換性のための旧キャラクター表示 -->
-        <?php if ( $character && ! $character_center ) : ?>
-            <img id="novel-character" class="novel-character novel-character-center" src="<?php echo esc_url( $character ); ?>" alt="<?php echo esc_attr__( 'キャラクター', 'novel-game-plugin' ); ?>" />
-        <?php endif; ?>
+    <!-- ゲーム開始ボタン -->
+    <div id="novel-game-start-container" class="novel-game-start-container">
+        <button id="novel-game-start-btn" class="novel-game-start-btn">
+            <?php echo esc_html__( 'ゲームを開始', 'novel-game-plugin' ); ?>
+        </button>
+    </div>
 
-        <div id="novel-speaker-name" class="novel-speaker-name"></div>
-        
-        <div id="novel-dialogue-box" class="novel-dialogue-box">
-            <div id="novel-dialogue-text-container" class="novel-dialogue-text-container">
-                <span id="novel-dialogue-text"></span>
-            </div>
-            <div id="novel-dialogue-continue" class="novel-dialogue-continue" style="display: none;">
-                <span class="continue-indicator">▼</span>
+    <!-- モーダルオーバーレイ -->
+    <div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">
+        <!-- モーダルコンテンツ -->
+        <div id="novel-game-modal-content" class="novel-game-modal-content">
+            <!-- ゲーム閉じるボタン -->
+            <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>">
+                <span class="close-icon">×</span>
+            </button>
+            
+            <!-- ゲームコンテナ -->
+            <div id="novel-game-container" class="novel-game-container" style="background-image: url('<?php echo esc_url( $background ); ?>');">
+                <!-- 3体キャラクター表示 -->
+                <?php if ( $character_left ) : ?>
+                    <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" alt="<?php echo esc_attr__( '左キャラクター', 'novel-game-plugin' ); ?>" />
+                <?php endif; ?>
+                
+                <?php if ( $character_center ) : ?>
+                    <img id="novel-character-center" class="novel-character novel-character-center" src="<?php echo esc_url( $character_center ); ?>" alt="<?php echo esc_attr__( '中央キャラクター', 'novel-game-plugin' ); ?>" />
+                <?php endif; ?>
+                
+                <?php if ( $character_right ) : ?>
+                    <img id="novel-character-right" class="novel-character novel-character-right" src="<?php echo esc_url( $character_right ); ?>" alt="<?php echo esc_attr__( '右キャラクター', 'novel-game-plugin' ); ?>" />
+                <?php endif; ?>
+                
+                <!-- 後方互換性のための旧キャラクター表示 -->
+                <?php if ( $character && ! $character_center ) : ?>
+                    <img id="novel-character" class="novel-character novel-character-center" src="<?php echo esc_url( $character ); ?>" alt="<?php echo esc_attr__( 'キャラクター', 'novel-game-plugin' ); ?>" />
+                <?php endif; ?>
+
+                <div id="novel-speaker-name" class="novel-speaker-name"></div>
+                
+                <div id="novel-dialogue-box" class="novel-dialogue-box">
+                    <div id="novel-dialogue-text-container" class="novel-dialogue-text-container">
+                        <span id="novel-dialogue-text"></span>
+                    </div>
+                    <div id="novel-dialogue-continue" class="novel-dialogue-continue" style="display: none;">
+                        <span class="continue-indicator">▼</span>
+                    </div>
+                </div>
+
+                <div id="novel-choices" class="novel-choices"></div>
+
+                <script id="novel-dialogue-data" type="application/json">
+                    <?php echo wp_json_encode( $dialogue_data, JSON_UNESCAPED_UNICODE ); ?>
+                </script>
+                
+                <script id="novel-base-background" type="application/json">
+                    <?php echo wp_json_encode( $background, JSON_UNESCAPED_UNICODE ); ?>
+                </script>
+                
+                <script id="novel-characters-data" type="application/json">
+                    <?php echo wp_json_encode( array(
+                        'left' => $character_left,
+                        'center' => $character_center,
+                        'right' => $character_right,
+                        'legacy' => $character, // 後方互換性のため
+                        'left_name' => $character_left_name,
+                        'center_name' => $character_center_name,
+                        'right_name' => $character_right_name,
+                    ), JSON_UNESCAPED_UNICODE ); ?>
+                </script>
+
+                <script id="novel-choices-data" type="application/json">
+                    <?php echo wp_json_encode( $choices, JSON_UNESCAPED_UNICODE ); ?>
+                </script>
             </div>
         </div>
-
-        <div id="novel-choices" class="novel-choices"></div>
-
-        <script id="novel-dialogue-data" type="application/json">
-            <?php echo wp_json_encode( $dialogue_data, JSON_UNESCAPED_UNICODE ); ?>
-        </script>
-        
-        <script id="novel-base-background" type="application/json">
-            <?php echo wp_json_encode( $background, JSON_UNESCAPED_UNICODE ); ?>
-        </script>
-        
-        <script id="novel-characters-data" type="application/json">
-            <?php echo wp_json_encode( array(
-                'left' => $character_left,
-                'center' => $character_center,
-                'right' => $character_right,
-                'legacy' => $character, // 後方互換性のため
-                'left_name' => $character_left_name,
-                'center_name' => $character_center_name,
-                'right_name' => $character_right_name,
-            ), JSON_UNESCAPED_UNICODE ); ?>
-        </script>
-
-        <script id="novel-choices-data" type="application/json">
-            <?php echo wp_json_encode( $choices, JSON_UNESCAPED_UNICODE ); ?>
-        </script>
     </div>
 
     <?php
@@ -583,9 +602,9 @@ function noveltool_game_list_shortcode( $atts ) {
         }
         
         echo '<div class="noveltool-game-actions">';
-        echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '" class="noveltool-play-button">';
+        echo '<button class="noveltool-play-button" data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" data-game-title="' . esc_attr( $game_title ) . '">';
         echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
-        echo '</a>';
+        echo '</button>';
         echo '</div>';
         
         echo '</div>'; // .noveltool-game-content
@@ -593,6 +612,70 @@ function noveltool_game_list_shortcode( $atts ) {
     }
     
     echo '</div>'; // .noveltool-game-list-grid
+    
+    // モーダルオーバーレイを追加（ゲーム表示用）
+    echo '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">';
+    echo '    <div id="novel-game-modal-content" class="novel-game-modal-content">';
+    echo '        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '" title="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '">';
+    echo '            <span class="close-icon">×</span>';
+    echo '        </button>';
+    echo '        <div id="novel-game-container" class="novel-game-container">';
+    echo '            <!-- ゲーム内容は動的に読み込まれます -->';
+    echo '        </div>';
+    echo '    </div>';
+    echo '</div>';
+    
+    // JavaScript event handling を追加
+    ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // プレイボタンのクリックイベント
+        const playButtons = document.querySelectorAll('.noveltool-play-button');
+        
+        // モーダル関数が利用可能になるまで待機
+        function waitForModalAndSetupEvents() {
+            if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && window.novelGameModal.isAvailable && window.novelGameModal.isAvailable()) {
+                console.log('Modal functions found and available, setting up shortcode events');
+                setupPlayButtonEvents();
+            } else if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
+                console.log('Modal functions found but not available, setting up shortcode events anyway');
+                setupPlayButtonEvents();
+            } else {
+                console.log('Modal functions not yet available for shortcode, waiting...');
+                setTimeout(waitForModalAndSetupEvents, 100);
+            }
+        }
+        
+        function setupPlayButtonEvents() {
+            playButtons.forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault(); // デフォルト動作を防ぐ
+                    e.stopPropagation();
+                    
+                    const gameUrl = this.getAttribute('data-game-url');
+                    const gameTitle = this.getAttribute('data-game-title');
+                    console.log('Play button clicked in shortcode, URL:', gameUrl, 'Title:', gameTitle);
+                    
+                    if (gameUrl && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
+                        console.log('Calling modal open from shortcode');
+                        // モーダルでゲームを開始（ページ遷移せずに）
+                        window.novelGameModal.open(gameUrl);
+                    } else if (gameUrl) {
+                        console.log('Modal not available, using page navigation from shortcode');
+                        // フォールバック：ページ遷移
+                        window.location.href = gameUrl;
+                    } else {
+                        console.error('No game URL found on button');
+                    }
+                });
+            });
+        }
+        
+        // モーダル関数の準備を待機
+        waitForModalAndSetupEvents();
+    });
+    </script>
+    <?php
     
     return ob_get_clean();
 }
