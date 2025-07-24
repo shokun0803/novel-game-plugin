@@ -220,9 +220,9 @@ body #novel-game-modal-overlay .novel-game-modal-content {
     justify-content: center;
     animation: slideUp 0.4s ease-out;
     box-sizing: border-box;
-    /* フルサイズにしてcentered contentとして動作 */
-    width: 100%;
-    height: 100%;
+    /* オーバーレイ領域を確保しつつゲームエリアの中央配置 */
+    width: auto;
+    height: auto;
     /* flexboxでゲームエリアを中央配置 */
     padding: 20px;
     /* WordPress レイアウト制約を回避 */
