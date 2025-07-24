@@ -6,6 +6,63 @@
  */
 
 /* =============================================================================
+   WordPress レイアウト制約対応 - 特別なオーバーライド
+   ============================================================================= */
+
+/* WordPress の .is-layout-constrained による制約を回避 */
+.is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay {
+    /* WordPress のレイアウト制約を完全に無効化 */
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* ビューポート全体をカバー */
+    transform: none;
+    /* 配置を強制 */
+    inset: 0;
+}
+
+/* ブロックエディターのコンテンツ制約を回避 */
+.wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none;
+    inset: 0;
+}
+
+/* 追加の WordPress テーマ制約を回避 */
+.wp-site-blocks #novel-game-modal-overlay.novel-game-modal-overlay,
+.wp-container #novel-game-modal-overlay.novel-game-modal-overlay,
+.entry-content #novel-game-modal-overlay.novel-game-modal-overlay {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none;
+    inset: 0;
+}
+
+/* =============================================================================
    ベーススタイル
    ============================================================================= */
 
@@ -63,7 +120,9 @@ html.modal-open {
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
 }
 
-/* モーダルオーバーレイ */
+/* モーダルオーバーレイ - WordPress レイアウト制約を回避 */
+.is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay,
+.wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay,
 body #novel-game-modal-overlay.novel-game-modal-overlay {
     position: fixed;
     top: 0;
@@ -80,11 +139,17 @@ body #novel-game-modal-overlay.novel-game-modal-overlay {
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     box-sizing: border-box;
-    /* 確実にフルスクリーンにする */
+    /* WordPress レイアウト制約を明示的に回避 */
     margin: 0;
     padding: 0;
+    max-width: none;
     /* WordPressの管理バーよりも前面に */
     overflow: hidden;
+    /* レイアウト制約をリセット */
+    left: 0;
+    right: 0;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 /* WordPress管理バーを強制的に隠す */
@@ -94,13 +159,28 @@ html.modal-open body.modal-open #wpadminbar {
     opacity: 0;
 }
 
-/* モーダルが表示されている時のオーバーレイ */
+/* モーダルが表示されている時のオーバーレイ - WordPress レイアウト制約を回避 */
+.is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay.show,
+.wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay.show,
 body #novel-game-modal-overlay.novel-game-modal-overlay.show {
     display: flex;
     animation: fadeIn 0.3s ease-out;
+    /* WordPress レイアウト制約を強制的に回避 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
 }
 
-/* モーダルの強制表示（JavaScript用） */
+/* モーダルの強制表示（JavaScript用） - WordPress レイアウト制約を回避 */
+.is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"],
+.wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"],
 body #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"] {
     display: flex;
     background: rgba(0, 0, 0, 0.8);
@@ -113,6 +193,12 @@ body #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"] 
     margin: 0;
     padding: 0;
     overflow: hidden;
+    /* WordPress レイアウト制約を明示的に回避 */
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+    left: 0;
+    right: 0;
 }
 
 @keyframes fadeIn {
@@ -124,7 +210,9 @@ body #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"] 
     }
 }
 
-/* モーダルコンテンツ */
+/* モーダルコンテンツ - WordPress レイアウト制約を回避 */
+.is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content,
+.wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content,
 body #novel-game-modal-overlay .novel-game-modal-content {
     position: relative;
     display: flex;
@@ -137,9 +225,16 @@ body #novel-game-modal-overlay .novel-game-modal-content {
     height: 100%;
     /* flexboxでゲームエリアを中央配置 */
     padding: 20px;
+    /* WordPress レイアウト制約を回避 */
+    margin: 0;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
 }
 
-/* ゲームエリア（中央配置用） */
+/* ゲームエリア（中央配置用） - WordPress レイアウト制約を回避 */
+.is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
+.wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
 body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
     width: 80vw;
     height: 80vh;
@@ -157,6 +252,9 @@ body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
     flex-shrink: 0;
     /* 強制的に中央配置 */
     margin: auto;
+    /* WordPress レイアウト制約を回避 */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 @keyframes slideUp {
@@ -170,8 +268,10 @@ body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
     }
 }
 
-/* モバイル対応：小画面では全画面モーダル */
+/* モバイル対応：小画面では全画面モーダル - WordPress レイアウト制約を回避 */
 @media (max-width: 768px) {
+    .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
+    .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
     body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
         width: 100vw;
         height: 100vh;
@@ -180,10 +280,21 @@ body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
         border-radius: 0;
         min-width: auto;
         min-height: auto;
+        /* WordPress レイアウト制約を回避 */
+        margin: 0;
+        margin-left: 0;
+        margin-right: 0;
     }
     
+    .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content,
+    .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content,
     body #novel-game-modal-overlay .novel-game-modal-content {
         padding: 0;
+        /* WordPress レイアウト制約を回避 */
+        margin: 0;
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
     }
     
     .novel-game-start-btn {
@@ -193,23 +304,35 @@ body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
     }
 }
 
-/* タブレット対応 */
+/* タブレット対応 - WordPress レイアウト制約を回避 */
 @media (min-width: 769px) and (max-width: 1024px) {
+    .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
+    .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
     body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
         width: 95vw;
         height: 95vh;
         max-width: 1000px;
         max-height: 700px;
+        /* WordPress レイアウト制約を回避 */
+        margin: auto;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
 
-/* 大画面対応 */
+/* 大画面対応 - WordPress レイアウト制約を回避 */
 @media (min-width: 1025px) {
+    .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
+    .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
     body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
         width: 80vw;
         height: 80vh;
         max-width: 1200px;
         max-height: 800px;
+        /* WordPress レイアウト制約を回避 */
+        margin: auto;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
 
@@ -248,12 +371,27 @@ html.modal-open {
     height: 100%;
 }
 
-/* モーダル要素のz-index確保 */
+/* モーダル要素のz-index確保 - WordPress レイアウト制約を回避 */
+.is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay,
+.wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay,
 body #novel-game-modal-overlay.novel-game-modal-overlay {
     z-index: 2147483647; /* 最大値のz-index */
+    /* WordPress レイアウト制約を強制的に回避 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
 }
 
-/* 追加のオーバーレイ強制ルール */
+/* 追加のオーバーレイ強制ルール - WordPress レイアウト制約を回避 */
+.is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay.show,
+.wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay.show,
 body #novel-game-modal-overlay.novel-game-modal-overlay.show {
     display: flex;
     position: fixed;
@@ -263,6 +401,14 @@ body #novel-game-modal-overlay.novel-game-modal-overlay.show {
     height: 100vh;
     background: rgba(0, 0, 0, 0.8);
     z-index: 2147483647; /* 最大値のz-index */
+    /* WordPress レイアウト制約を強制的に回避 */
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+    left: 0;
+    right: 0;
 }
 
 /* ゲーム全体のコンテナ */

@@ -300,7 +300,7 @@
 			// ボディとHTMLのスクロールを無効化
 			$( 'html, body' ).addClass( 'modal-open' ).css( 'overflow', 'hidden' );
 			
-			// オーバーレイの表示を確実にする
+			// オーバーレイの表示を確実にする（WordPress レイアウト制約を回避）
 			$modalOverlay.removeClass( 'show' ).css( {
 				'display': 'flex',
 				'opacity': '0',
@@ -309,7 +309,19 @@
 				'left': '0',
 				'width': '100vw',
 				'height': '100vh',
-				'z-index': '2147483647'
+				'z-index': '2147483647',
+				// WordPress レイアウト制約を強制的に回避
+				'max-width': 'none',
+				'margin': '0',
+				'margin-left': '0',
+				'margin-right': '0',
+				'padding': '0',
+				'right': '0',
+				'bottom': '0',
+				'inset': '0',
+				// 追加の配置制御
+				'transform': 'none',
+				'box-sizing': 'border-box'
 			} ).animate( { opacity: 1 }, 300, function() {
 				$modalOverlay.addClass( 'show' );
 			} );
