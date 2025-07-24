@@ -10,19 +10,19 @@
    ============================================================================= */
 
 /* モーダル開放時のボディスタイル */
-body.modal-open {
-    overflow: hidden !important;
-    height: 100vh !important;
-    margin: 0 !important;
-    padding: 0 !important;
+html.modal-open body.modal-open {
+    overflow: hidden;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
 }
 
 /* モーダル開放時のHTMLスタイル */
 html.modal-open {
-    overflow: hidden !important;
-    height: 100vh !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    overflow: hidden;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
 }
 
 /* ゲーム開始ボタンコンテナ */
@@ -64,55 +64,55 @@ html.modal-open {
 }
 
 /* モーダルオーバーレイ */
-.novel-game-modal-overlay {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background: rgba(0, 0, 0, 0.8) !important;
-    z-index: 2147483647 !important; /* 最大値のz-index */
-    display: none !important;
-    align-items: center !important;
-    justify-content: center !important;
+body #novel-game-modal-overlay.novel-game-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2147483647; /* 最大値のz-index */
+    display: none;
+    align-items: center;
+    justify-content: center;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    box-sizing: border-box !important;
+    box-sizing: border-box;
     /* 確実にフルスクリーンにする */
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0;
+    padding: 0;
     /* WordPressの管理バーよりも前面に */
-    overflow: hidden !important;
+    overflow: hidden;
 }
 
 /* WordPress管理バーを強制的に隠す */
-body.modal-open #wpadminbar {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
+html.modal-open body.modal-open #wpadminbar {
+    display: none;
+    visibility: hidden;
+    opacity: 0;
 }
 
 /* モーダルが表示されている時のオーバーレイ */
-.novel-game-modal-overlay.show {
-    display: flex !important;
+body #novel-game-modal-overlay.novel-game-modal-overlay.show {
+    display: flex;
     animation: fadeIn 0.3s ease-out;
 }
 
 /* モーダルの強制表示（JavaScript用） */
-.novel-game-modal-overlay[style*="display: flex"] {
-    display: flex !important;
-    background: rgba(0, 0, 0, 0.8) !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 2147483647 !important; /* 最大値のz-index */
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
+body #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"] {
+    display: flex;
+    background: rgba(0, 0, 0, 0.8);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2147483647; /* 最大値のz-index */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -125,22 +125,22 @@ body.modal-open #wpadminbar {
 }
 
 /* モーダルコンテンツ */
-.novel-game-modal-content {
-    position: relative !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+body #novel-game-modal-overlay .novel-game-modal-content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     animation: slideUp 0.4s ease-out;
-    box-sizing: border-box !important;
+    box-sizing: border-box;
     /* フルサイズにしてcentered contentとして動作 */
-    width: 100% !important;
-    height: 100% !important;
+    width: 100%;
+    height: 100%;
     /* flexboxでゲームエリアを中央配置 */
     padding: 20px;
 }
 
 /* ゲームエリア（中央配置用） */
-.novel-game-modal-content .novel-game-container {
+body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
     width: 80vw;
     height: 80vh;
     max-width: 1200px;
@@ -156,7 +156,7 @@ body.modal-open #wpadminbar {
     /* flexbox内で中央配置 */
     flex-shrink: 0;
     /* 強制的に中央配置 */
-    margin: auto !important;
+    margin: auto;
 }
 
 @keyframes slideUp {
@@ -172,18 +172,18 @@ body.modal-open #wpadminbar {
 
 /* モバイル対応：小画面では全画面モーダル */
 @media (max-width: 768px) {
-    .novel-game-modal-content .novel-game-container {
-        width: 100vw !important;
-        height: 100vh !important;
-        max-width: none !important;
-        max-height: none !important;
-        border-radius: 0 !important;
-        min-width: auto !important;
-        min-height: auto !important;
+    body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
+        width: 100vw;
+        height: 100vh;
+        max-width: none;
+        max-height: none;
+        border-radius: 0;
+        min-width: auto;
+        min-height: auto;
     }
     
-    .novel-game-modal-content {
-        padding: 0 !important;
+    body #novel-game-modal-overlay .novel-game-modal-content {
+        padding: 0;
     }
     
     .novel-game-start-btn {
@@ -195,76 +195,74 @@ body.modal-open #wpadminbar {
 
 /* タブレット対応 */
 @media (min-width: 769px) and (max-width: 1024px) {
-    .novel-game-modal-content .novel-game-container {
-        width: 95vw !important;
-        height: 95vh !important;
-        max-width: 1000px !important;
-        max-height: 700px !important;
+    body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
+        width: 95vw;
+        height: 95vh;
+        max-width: 1000px;
+        max-height: 700px;
     }
 }
 
 /* 大画面対応 */
 @media (min-width: 1025px) {
-    .novel-game-modal-content .novel-game-container {
-        width: 80vw !important;
-        height: 80vh !important;
-        max-width: 1200px !important;
-        max-height: 800px !important;
+    body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
+        width: 80vw;
+        height: 80vh;
+        max-width: 1200px;
+        max-height: 800px;
     }
 }
 
 /* モーダル表示時の全要素を制御 */
-body.modal-open * {
-    box-sizing: border-box !important;
+html.modal-open body.modal-open * {
+    box-sizing: border-box;
 }
 
 /* WordPress管理バーなどの重要な要素を強制的に隠す */
-body.modal-open #wpadminbar,
-body.modal-open .wp-admin-bar,
-body.modal-open header,
-body.modal-open nav,
-body.modal-open footer {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    z-index: -1 !important;
+html.modal-open body.modal-open #wpadminbar,
+html.modal-open body.modal-open .wp-admin-bar,
+html.modal-open body.modal-open header,
+html.modal-open body.modal-open nav,
+html.modal-open body.modal-open footer {
+    display: none;
+    visibility: hidden;
+    opacity: 0;
+    z-index: -1;
 }
 
 /* モーダル以外のページコンテンツを背景に */
-body.modal-open #page,
-body.modal-open #main,
-body.modal-open .site-content,
-body.modal-open .main-content {
-    z-index: 1 !important;
+html.modal-open body.modal-open #page,
+html.modal-open body.modal-open #main,
+html.modal-open body.modal-open .site-content,
+html.modal-open body.modal-open .main-content {
+    z-index: 1;
 }
 
 /* モーダル表示時のHTML/Bodyスタイル */
-body.modal-open,
+html.modal-open body.modal-open,
 html.modal-open {
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
 }
 
 /* モーダル要素のz-index確保 */
-.novel-game-modal-overlay,
-#novel-game-modal-overlay {
-    z-index: 2147483647 !important; /* 最大値のz-index */
+body #novel-game-modal-overlay.novel-game-modal-overlay {
+    z-index: 2147483647; /* 最大値のz-index */
 }
 
 /* 追加のオーバーレイ強制ルール */
-.novel-game-modal-overlay.show,
-#novel-game-modal-overlay.show {
-    display: flex !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    background: rgba(0, 0, 0, 0.8) !important;
-    z-index: 2147483647 !important; /* 最大値のz-index */
+body #novel-game-modal-overlay.novel-game-modal-overlay.show {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2147483647; /* 最大値のz-index */
 }
 
 /* ゲーム全体のコンテナ */
@@ -280,14 +278,14 @@ html.modal-open {
 }
 
 /* モーダル内のゲームコンテナのスタイル強化 */
-.novel-game-modal-overlay #novel-game-container {
-    width: 100% !important;
-    height: 100% !important;
-    background-size: cover !important;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-    position: relative !important;
-    overflow: hidden !important;
+body #novel-game-modal-overlay #novel-game-container {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
 }
 
 /* ゲーム閉じるボタン */
@@ -446,18 +444,18 @@ html.modal-open {
 }
 
 /* モーダル内のセリフボックススタイル強化 */
-.novel-game-modal-overlay #novel-dialogue-box,
-.novel-game-modal-overlay .novel-dialogue-box {
-    position: absolute !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    background: rgba(0, 0, 0, 0.8) !important;
-    color: #fff !important;
-    z-index: 3 !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
+body #novel-game-modal-overlay #novel-dialogue-box,
+body #novel-game-modal-overlay .novel-dialogue-box {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    z-index: 3;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 /* 話者名表示 */
