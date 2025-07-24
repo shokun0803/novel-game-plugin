@@ -806,6 +806,32 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     -ms-user-select: none;
 }
 
+/* クリック可能なエンディングメッセージのスタイル */
+.game-end-message.clickable-ending {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.game-end-message.clickable-ending::after {
+    content: 'クリックでタイトル画面に戻る';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(12px, 2vw, 16px);
+    color: #ccc;
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+.game-end-message.clickable-ending:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+    border-color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+}
+
 /* ゲームナビゲーションボタン */
 .game-navigation {
     margin-top: 20px;
@@ -876,6 +902,11 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         min-height: 100px;
     }
     
+    .game-end-message.clickable-ending::after {
+        bottom: -40px;
+        font-size: clamp(14px, 3vw, 18px);
+    }
+    
     .game-nav-button {
         padding: 20px 40px;
         font-size: clamp(18px, 4vw, 24px);
@@ -891,6 +922,11 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         padding: 30px;
         font-size: clamp(20px, 5vw, 28px);
         min-height: 60px;
+    }
+    
+    .game-end-message.clickable-ending::after {
+        bottom: -35px;
+        font-size: clamp(10px, 2.5vw, 14px);
     }
     
     .game-nav-button {
