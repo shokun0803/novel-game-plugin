@@ -415,6 +415,11 @@ function noveltool_filter_novel_game_content( $content ) {
                 <span class="close-icon">×</span>
             </button>
             
+            <!-- 進捗リセットボタン -->
+            <button id="novel-progress-clear-btn" class="novel-progress-clear-btn" aria-label="<?php echo esc_attr__( '進捗をリセット', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( '進捗をリセット', 'novel-game-plugin' ); ?>" style="display: none;">
+                <span class="reset-icon">↺</span>
+            </button>
+            
             <!-- ゲームコンテナ -->
             <div id="novel-game-container" class="novel-game-container" style="background-image: url('<?php echo esc_url( $background ); ?>');">
                 <!-- 3体キャラクター表示 -->
