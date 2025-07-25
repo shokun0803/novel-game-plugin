@@ -57,6 +57,12 @@ function noveltool_handle_game_settings_form() {
         $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
         $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
         $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
+        $game_ending_message = isset( $_POST['game_ending_message'] ) ? sanitize_text_field( wp_unslash( $_POST['game_ending_message'] ) ) : '';
+        
+        // エンディングメッセージが空の場合はデフォルトの「おわり」を設定
+        if ( empty( $game_ending_message ) ) {
+            $game_ending_message = 'おわり';
+        }
 
         if ( empty( $game_title ) ) {
             $redirect_url = add_query_arg( 'error', 'empty_title', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
@@ -73,9 +79,10 @@ function noveltool_handle_game_settings_form() {
 
         // ゲームを保存
         $game_data = array(
-            'title'       => $game_title,
-            'description' => $game_description,
-            'title_image' => $game_title_image,
+            'title'          => $game_title,
+            'description'    => $game_description,
+            'title_image'    => $game_title_image,
+            'ending_message' => $game_ending_message,
         );
 
         $game_id = noveltool_save_game( $game_data );
@@ -103,7 +110,13 @@ function noveltool_handle_game_settings_form() {
         $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
         $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
         $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
+        $game_ending_message = isset( $_POST['game_ending_message'] ) ? sanitize_text_field( wp_unslash( $_POST['game_ending_message'] ) ) : '';
         $old_title = isset( $_POST['old_title'] ) ? sanitize_text_field( wp_unslash( $_POST['old_title'] ) ) : '';
+        
+        // エンディングメッセージが空の場合はデフォルトの「おわり」を設定
+        if ( empty( $game_ending_message ) ) {
+            $game_ending_message = 'おわり';
+        }
 
         if ( empty( $game_title ) ) {
             $redirect_url = add_query_arg( array( 'error' => 'empty_title', 'edit' => $game_id ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
@@ -121,10 +134,11 @@ function noveltool_handle_game_settings_form() {
 
         // ゲームを更新
         $game_data = array(
-            'id'          => $game_id,
-            'title'       => $game_title,
-            'description' => $game_description,
-            'title_image' => $game_title_image,
+            'id'             => $game_id,
+            'title'          => $game_title,
+            'description'    => $game_description,
+            'title_image'    => $game_title_image,
+            'ending_message' => $game_ending_message,
         );
 
         $result = noveltool_save_game( $game_data );
@@ -381,6 +395,21 @@ function noveltool_game_settings_page() {
                                     </p>
                                 </td>
                             </tr>
+
+                            <tr>
+                                <th scope="row">
+                                    <label for="game_ending_message"><?php esc_html_e( 'エンディングメッセージ', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" 
+                                           id="game_ending_message" 
+                                           name="game_ending_message" 
+                                           value="<?php echo esc_attr( ! empty( $editing_game['ending_message'] ) ? $editing_game['ending_message'] : 'おわり' ); ?>" 
+                                           class="regular-text"
+                                           placeholder="<?php esc_attr_e( 'おわり', 'novel-game-plugin' ); ?>" />
+                                    <p class="description"><?php esc_html_e( 'ゲーム終了時に表示される文言です。空欄の場合は「おわり」が表示されます。', 'novel-game-plugin' ); ?></p>
+                                </td>
+                            </tr>
                         </table>
 
                         <p class="submit">
@@ -507,6 +536,21 @@ function noveltool_game_settings_page() {
                                             <?php esc_html_e( '画像を削除', 'novel-game-plugin' ); ?>
                                         </button>
                                     </p>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th scope="row">
+                                    <label for="new_game_ending_message"><?php esc_html_e( 'エンディングメッセージ', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" 
+                                           id="new_game_ending_message" 
+                                           name="game_ending_message" 
+                                           value="" 
+                                           class="regular-text"
+                                           placeholder="<?php esc_attr_e( 'おわり', 'novel-game-plugin' ); ?>" />
+                                    <p class="description"><?php esc_html_e( 'ゲーム終了時に表示される文言です。空欄の場合は「おわり」が表示されます。', 'novel-game-plugin' ); ?></p>
                                 </td>
                             </tr>
                         </table>

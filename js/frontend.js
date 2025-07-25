@@ -41,6 +41,9 @@
 		var currentDialoguePages = [];
 		var allDialoguePages = [];
 		
+		// ゲーム設定
+		var gameSettings = {};
+		
 		// 表示設定
 		var displaySettings = {
 			maxCharsPerLine: 20,
@@ -72,6 +75,7 @@
 			var choicesData = $( '#novel-choices-data' ).text();
 			var baseBackgroundData = $( '#novel-base-background' ).text();
 			var charactersDataRaw = $( '#novel-characters-data' ).text();
+			var gameSettingsData = $( '#novel-game-settings' ).text();
 
 			if ( dialogueDataRaw ) {
 				dialogueData = JSON.parse( dialogueDataRaw );
@@ -100,6 +104,17 @@
 			
 			if ( charactersDataRaw ) {
 				charactersData = JSON.parse( charactersDataRaw );
+			}
+			
+			if ( gameSettingsData ) {
+				gameSettings = JSON.parse( gameSettingsData );
+			} else {
+				// デフォルト設定
+				gameSettings = {
+					title: '',
+					description: '',
+					ending_message: 'おわり'
+				};
 			}
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
@@ -197,6 +212,28 @@
 									charactersData = JSON.parse( charactersDataText );
 									console.log( 'Parsed characters data:', charactersData );
 								}
+							}
+							
+							// ゲーム設定データを取得
+							var gameSettingsScript = $response.filter( 'script#novel-game-settings' );
+							if ( gameSettingsScript.length === 0 ) {
+								gameSettingsScript = $response.find( '#novel-game-settings' );
+							}
+							console.log( 'Game settings script found:', gameSettingsScript.length );
+							
+							if ( gameSettingsScript.length > 0 ) {
+								var gameSettingsText = gameSettingsScript.text() || gameSettingsScript.html();
+								if ( gameSettingsText ) {
+									gameSettings = JSON.parse( gameSettingsText );
+									console.log( 'Parsed game settings:', gameSettings );
+								}
+							} else {
+								// デフォルト設定
+								gameSettings = {
+									title: '',
+									description: '',
+									ending_message: 'おわり'
+								};
 							}
 							
 							// ゲームコンテナの内容を更新
@@ -802,19 +839,39 @@
 		}
 
 		/**
-		 * ゲーム終了時の「おわり」画面を表示
+		 * ゲーム終了時のエンディング画面を表示
 		 */
 		function showGameEnd() {
 			$choicesContainer.empty();
 			
-			// 「おわり」メッセージを表示
+			// カスタムエンディングメッセージを使用（デフォルトは「おわり」）
+			var endingMessage = gameSettings && gameSettings.ending_message ? gameSettings.ending_message : 'おわり';
+			
+			// エンディングメッセージを表示（クリック可能にする）
 			var $endMessage = $( '<div>' )
-				.addClass( 'game-end-message' )
-				.text( 'おわり' );
+				.addClass( 'game-end-message clickable-ending' )
+				.text( endingMessage )
+				.attr( 'title', 'クリックでタイトル画面に戻る' );
+			
+			// エンディング画面クリックイベントを追加
+			$endMessage.on( 'click', function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
+				returnToTitleScreen();
+			} );
+			
+			// タッチデバイス対応
+			if ( isTouch ) {
+				$endMessage.on( 'touchend', function( e ) {
+					e.preventDefault();
+					e.stopPropagation();
+					returnToTitleScreen();
+				} );
+			}
 			
 			$choicesContainer.append( $endMessage );
 			
-			// ナビゲーションボタンを追加
+			// ナビゲーションボタンを追加（従来の機能も残す）
 			var $navigationContainer = $( '<div>' ).addClass( 'game-navigation' );
 			
 			// ショートコード使用の検出
@@ -853,10 +910,15 @@
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
 			
-			// キーボードイベントでもナビゲーション
+			// キーボードイベントでエンディング画面の操作
 			$( document ).on( 'keydown.novel-end', function( e ) {
 				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
 					e.preventDefault();
+					// メインアクションはタイトル画面に戻る
+					returnToTitleScreen();
+				} else if ( e.which === 27 ) { // ESC
+					e.preventDefault();
+					// ESCキーでは従来の動作（閉じる/ゲーム一覧）
 					if ( isShortcodeUsed ) {
 						$closeButton.trigger( 'click' );
 					} else {
@@ -896,6 +958,24 @@
 		}
 		
 		/**
+		 * タイトル画面に戻る（モーダルを閉じてゲーム開始前の状態に戻す）
+		 */
+		function returnToTitleScreen() {
+			console.log( 'Returning to title screen' );
+			
+			// モーダルを閉じる
+			closeModal();
+			
+			// 必要に応じてページのタイトル部分にスクロール
+			var $titleContainer = $( '#novel-game-title, .novel-game-title' );
+			if ( $titleContainer.length > 0 ) {
+				$( 'html, body' ).animate( {
+					scrollTop: $titleContainer.offset().top - 100
+				}, 500 );
+			}
+		}
+		
+		/**
 		 * ゲーム一覧に戻る
 		 */
 		function returnToGameList() {
@@ -915,6 +995,10 @@
 			$gameContainer.on( eventType, function( e ) {
 				// 選択肢が表示されている場合はクリックを無視
 				if ( $choicesContainer.is( ':visible' ) ) {
+					// ただし、クリック可能なエンディングメッセージの場合は許可
+					if ( $( e.target ).hasClass( 'clickable-ending' ) ) {
+						return; // エンディングメッセージのクリックは処理される
+					}
 					return;
 				}
 
@@ -923,8 +1007,8 @@
 					return;
 				}
 				
-				// 「おわり」メッセージがクリックされた場合も無視（別途処理）
-				if ( $( e.target ).hasClass( 'game-end-message' ) ) {
+				// クリック可能な「おわり」メッセージの場合は個別に処理されるため無視
+				if ( $( e.target ).hasClass( 'clickable-ending' ) ) {
 					return;
 				}
 
@@ -937,6 +1021,10 @@
 				$gameContainer.on( 'touchstart', function( e ) {
 					// 選択肢が表示されている場合はタッチを無視
 					if ( $choicesContainer.is( ':visible' ) ) {
+						// ただし、クリック可能なエンディングメッセージの場合は許可
+						if ( $( e.target ).hasClass( 'clickable-ending' ) ) {
+							return; // エンディングメッセージのタッチは処理される
+						}
 						return;
 					}
 					
@@ -945,8 +1033,8 @@
 						return;
 					}
 					
-					// 「おわり」メッセージがタッチされた場合も無視（別途処理）
-					if ( $( e.target ).hasClass( 'game-end-message' ) ) {
+					// クリック可能な「おわり」メッセージの場合は個別に処理されるため無視
+					if ( $( e.target ).hasClass( 'clickable-ending' ) ) {
 						return;
 					}
 					
