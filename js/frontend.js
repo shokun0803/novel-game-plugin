@@ -48,12 +48,14 @@
 		var gameProgress = {
 			storageKey: 'noveltool_game_progress',
 			_saveDisabled: false,  // 進捗保存を一時的に無効化するフラグ
+			_wasCleared: false,     // 進捗が手動でクリアされたかのフラグ
 			
 			/**
 			 * 進捗保存を無効化する
 			 */
 			disableSave: function() {
 				this._saveDisabled = true;
+				console.log( 'Game progress saving disabled' );
 			},
 			
 			/**
@@ -61,6 +63,8 @@
 			 */
 			enableSave: function() {
 				this._saveDisabled = false;
+				this._wasCleared = false;  // 新しいセッション開始時にクリア状態をリセット
+				console.log( 'Game progress saving enabled' );
 			},
 			
 			/**
@@ -145,7 +149,16 @@
 			clear: function() {
 				try {
 					localStorage.removeItem( this.storageKey );
-					console.log( 'Game progress cleared' );
+					this._wasCleared = true;  // クリア状態をマーク
+					console.log( 'Game progress cleared successfully' );
+					
+					// クリア後にデータが確実に削除されたかチェック
+					var checkData = localStorage.getItem( this.storageKey );
+					if ( checkData ) {
+						console.warn( 'Warning: Progress data still exists after clear attempt' );
+					} else {
+						console.log( 'Confirmed: Progress data has been removed' );
+					}
 				} catch ( error ) {
 					console.warn( 'Failed to clear game progress:', error );
 				}
@@ -1255,6 +1268,13 @@
 		 * 進捗チェックと復帰確認
 		 */
 		function checkAndOfferResume() {
+			// 進捗が手動でクリアされた場合は復帰確認をスキップ
+			if ( gameProgress._wasCleared ) {
+				console.log( 'Progress was manually cleared, skipping resume check' );
+				initializeGameContent();
+				return;
+			}
+			
 			// 現在のゲームタイトルを取得
 			var currentGameTitle = gameSettings.title;
 			if ( ! currentGameTitle ) {
@@ -1306,6 +1326,7 @@
 				.text( '続きから始める' )
 				.on( 'click', function() {
 					console.log( 'Resume selected, loading saved scene' );
+					console.log( 'Saved progress details:', savedProgress );
 					hideResumeDialog();
 					loadGameFromSavedProgress( savedProgress );
 				} );
@@ -1316,11 +1337,16 @@
 				.text( '最初から始める' )
 				.on( 'click', function() {
 					console.log( 'Restart selected, clearing progress' );
+					// 進捗保存を一時無効化してクリア
+					gameProgress.disableSave();
 					gameProgress.clear();
-					// 進捗保存を再有効化（新しいゲームセッション用）
-					gameProgress.enableSave();
-					hideResumeDialog();
-					initializeGameContent();
+					
+					// 少し待機してから進捗保存を再有効化（新しいゲームセッション用）
+					setTimeout( function() {
+						gameProgress.enableSave();
+						hideResumeDialog();
+						initializeGameContent();
+					}, 100 );
 				} );
 			
 			// 進捗を削除して閉じるボタン
@@ -1333,7 +1359,11 @@
 					gameProgress.disableSave();
 					gameProgress.clear();
 					hideResumeDialog();
-					closeModal();
+					
+					// モーダルを閉じる前に少し待機して確実に削除されるようにする
+					setTimeout( function() {
+						closeModal();
+					}, 100 );
 				} );
 			
 			$buttonContainer.append( $resumeButton );
@@ -1384,22 +1414,7 @@
 		function loadGameFromSavedProgress( savedProgress ) {
 			console.log( 'Loading game from saved progress:', savedProgress );
 			
-			// 現在のURLと保存されたURLが同じ場合は、シーンロードをスキップして位置復元のみ
-			if ( savedProgress.sceneUrl === window.location.href ) {
-				console.log( 'Same scene as current, restoring position only' );
-				// ゲームコンテンツを初期化
-				initializeGameContent();
-				
-				// 保存された位置まで進める
-				if ( savedProgress.dialogueIndex > 0 || savedProgress.pageIndex > 0 ) {
-					setTimeout( function() {
-						restoreGamePosition( savedProgress.dialogueIndex, savedProgress.pageIndex );
-					}, 200 );
-				}
-				return;
-			}
-			
-			// 保存されたシーンを読み込む
+			// 保存されたシーンを読み込む（常にシーンを読み込んでから位置復元）
 			loadGameData( savedProgress.sceneUrl ).then( function() {
 				console.log( 'Saved scene loaded successfully' );
 				
@@ -1433,11 +1448,22 @@
 			
 			// 目標位置まで進める
 			if ( targetPageIndex < allDialoguePages.length ) {
+				// ページインデックスと対応するセリフインデックスを設定
 				currentPageIndex = targetPageIndex;
+				
+				// 対応するページのセリフインデックスも更新
+				if ( allDialoguePages[ targetPageIndex ] ) {
+					currentDialogueIndex = allDialoguePages[ targetPageIndex ].dialogueIndex;
+				} else {
+					currentDialogueIndex = targetDialogueIndex;
+				}
+				
+				console.log( 'Position restored - DialogueIndex:', currentDialogueIndex, 'PageIndex:', currentPageIndex );
 				displayCurrentPage();
 				console.log( 'Game position restored successfully' );
 			} else {
 				console.warn( 'Target position is out of range, starting from beginning' );
+				currentDialogueIndex = 0;
 				currentPageIndex = 0;
 				displayCurrentPage();
 			}
