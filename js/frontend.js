@@ -47,6 +47,21 @@
 		// 進捗保存システム
 		var gameProgress = {
 			storageKey: 'noveltool_game_progress',
+			_saveDisabled: false,  // 進捗保存を一時的に無効化するフラグ
+			
+			/**
+			 * 進捗保存を無効化する
+			 */
+			disableSave: function() {
+				this._saveDisabled = true;
+			},
+			
+			/**
+			 * 進捗保存を有効化する
+			 */
+			enableSave: function() {
+				this._saveDisabled = false;
+			},
 			
 			/**
 			 * 現在の進捗を保存する
@@ -57,6 +72,12 @@
 			 * @param {number} pageIndex ページインデックス
 			 */
 			save: function( sceneUrl, gameTitle, dialogueIndex, pageIndex ) {
+				// 保存が無効化されている場合はスキップ
+				if ( this._saveDisabled ) {
+					console.log( 'Game progress save disabled, skipping' );
+					return;
+				}
+				
 				if ( ! sceneUrl || ! gameTitle ) {
 					return;
 				}
@@ -435,6 +456,9 @@
 			}
 			
 			isModalOpen = true;
+			
+			// 進捗保存を有効化（新しいセッション開始）
+			gameProgress.enableSave();
 			
 			// ボディとHTMLのスクロールを無効化
 			$( 'html, body' ).addClass( 'modal-open' ).css( 'overflow', 'hidden' );
@@ -1249,14 +1273,7 @@
 			
 			console.log( 'Saved progress found:', savedProgress );
 			
-			// 現在のURLと保存されたURLが同じ場合は通常の初期化
-			if ( savedProgress.sceneUrl === window.location.href ) {
-				console.log( 'Same scene as saved, initializing normally' );
-				initializeGameContent();
-				return;
-			}
-			
-			// 復帰確認UIを表示
+			// 復帰確認UIを表示（保存されたシーンが異なる場合でも復帰オプションを提供）
 			showResumeDialog( savedProgress );
 		}
 		
@@ -1300,6 +1317,8 @@
 				.on( 'click', function() {
 					console.log( 'Restart selected, clearing progress' );
 					gameProgress.clear();
+					// 進捗保存を再有効化（新しいゲームセッション用）
+					gameProgress.enableSave();
 					hideResumeDialog();
 					initializeGameContent();
 				} );
@@ -1310,6 +1329,8 @@
 				.text( '進捗を削除して閉じる' )
 				.on( 'click', function() {
 					console.log( 'Clear and close selected' );
+					// 進捗保存を無効化してから削除
+					gameProgress.disableSave();
 					gameProgress.clear();
 					hideResumeDialog();
 					closeModal();
@@ -1362,6 +1383,21 @@
 		 */
 		function loadGameFromSavedProgress( savedProgress ) {
 			console.log( 'Loading game from saved progress:', savedProgress );
+			
+			// 現在のURLと保存されたURLが同じ場合は、シーンロードをスキップして位置復元のみ
+			if ( savedProgress.sceneUrl === window.location.href ) {
+				console.log( 'Same scene as current, restoring position only' );
+				// ゲームコンテンツを初期化
+				initializeGameContent();
+				
+				// 保存された位置まで進める
+				if ( savedProgress.dialogueIndex > 0 || savedProgress.pageIndex > 0 ) {
+					setTimeout( function() {
+						restoreGamePosition( savedProgress.dialogueIndex, savedProgress.pageIndex );
+					}, 200 );
+				}
+				return;
+			}
 			
 			// 保存されたシーンを読み込む
 			loadGameData( savedProgress.sceneUrl ).then( function() {
