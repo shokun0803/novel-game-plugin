@@ -420,6 +420,26 @@ function noveltool_filter_novel_game_content( $content ) {
                 <span class="reset-icon">↺</span>
             </button>
             
+            <!-- 復帰確認ダイアログ -->
+            <div id="novel-resume-dialog" class="novel-resume-dialog" style="display: none;">
+                <div class="novel-resume-content">
+                    <h3><?php echo esc_html__( 'ゲームを途中から再開しますか？', 'novel-game-plugin' ); ?></h3>
+                    <p><?php echo esc_html__( '前回の続きから始めることができます。', 'novel-game-plugin' ); ?></p>
+                    <div class="novel-resume-info">
+                        <p><strong><?php echo esc_html__( 'ゲーム:', 'novel-game-plugin' ); ?></strong> <span id="novel-resume-game-title"></span></p>
+                        <p><strong><?php echo esc_html__( '最後にプレイした日時:', 'novel-game-plugin' ); ?></strong> <span id="novel-resume-last-played"></span></p>
+                    </div>
+                    <div class="novel-resume-buttons">
+                        <button id="novel-resume-continue" class="novel-resume-button novel-resume-primary"><?php echo esc_html__( '続きから始める', 'novel-game-plugin' ); ?></button>
+                        <button id="novel-resume-restart" class="novel-resume-button novel-resume-secondary"><?php echo esc_html__( '最初から始める', 'novel-game-plugin' ); ?></button>
+                        <button id="novel-resume-clear" class="novel-resume-button novel-resume-tertiary"><?php echo esc_html__( '進捗を削除して閉じる', 'novel-game-plugin' ); ?></button>
+                    </div>
+                    <div class="novel-resume-help">
+                        <small><?php echo esc_html__( 'キーボード操作: Enter（続きから）/ ESC（最初から）/ Ctrl+D（削除して閉じる）', 'novel-game-plugin' ); ?></small>
+                    </div>
+                </div>
+            </div>
+            
             <!-- ゲームコンテナ -->
             <div id="novel-game-container" class="novel-game-container" style="background-image: url('<?php echo esc_url( $background ); ?>');">
                 <!-- 3体キャラクター表示 -->
@@ -667,6 +687,27 @@ function noveltool_game_list_shortcode( $atts ) {
     echo '        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '" title="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '">';
     echo '            <span class="close-icon">×</span>';
     echo '        </button>';
+    echo '        <button id="novel-progress-clear-btn" class="novel-progress-clear-btn" aria-label="' . esc_attr__( '進捗をリセット', 'novel-game-plugin' ) . '" title="' . esc_attr__( '進捗をリセット', 'novel-game-plugin' ) . '" style="display: none;">';
+    echo '            <span class="reset-icon">↺</span>';
+    echo '        </button>';
+    echo '        <div id="novel-resume-dialog" class="novel-resume-dialog" style="display: none;">';
+    echo '            <div class="novel-resume-content">';
+    echo '                <h3>' . esc_html__( 'ゲームを途中から再開しますか？', 'novel-game-plugin' ) . '</h3>';
+    echo '                <p>' . esc_html__( '前回の続きから始めることができます。', 'novel-game-plugin' ) . '</p>';
+    echo '                <div class="novel-resume-info">';
+    echo '                    <p><strong>' . esc_html__( 'ゲーム:', 'novel-game-plugin' ) . '</strong> <span id="novel-resume-game-title"></span></p>';
+    echo '                    <p><strong>' . esc_html__( '最後にプレイした日時:', 'novel-game-plugin' ) . '</strong> <span id="novel-resume-last-played"></span></p>';
+    echo '                </div>';
+    echo '                <div class="novel-resume-buttons">';
+    echo '                    <button id="novel-resume-continue" class="novel-resume-button novel-resume-primary">' . esc_html__( '続きから始める', 'novel-game-plugin' ) . '</button>';
+    echo '                    <button id="novel-resume-restart" class="novel-resume-button novel-resume-secondary">' . esc_html__( '最初から始める', 'novel-game-plugin' ) . '</button>';
+    echo '                    <button id="novel-resume-clear" class="novel-resume-button novel-resume-tertiary">' . esc_html__( '進捗を削除して閉じる', 'novel-game-plugin' ) . '</button>';
+    echo '                </div>';
+    echo '                <div class="novel-resume-help">';
+    echo '                    <small>' . esc_html__( 'キーボード操作: Enter（続きから）/ ESC（最初から）/ Ctrl+D（削除して閉じる）', 'novel-game-plugin' ) . '</small>';
+    echo '                </div>';
+    echo '            </div>';
+    echo '        </div>';
     echo '        <div id="novel-game-container" class="novel-game-container">';
     echo '            <!-- ゲーム内容は動的に読み込まれます -->';
     echo '        </div>';
