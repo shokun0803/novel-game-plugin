@@ -44,15 +44,18 @@
 		// ゲーム設定
 		var gameSettings = {};
 		
-		// 進捗保存システム（シンプル版）
+		// 進捗保存システム
 		var gameProgress = {
 			storageKey: 'noveltool_game_progress',
+			_saveEnabled: true,  // 進捗保存の有効/無効フラグ
+			_wasCleared: false,  // 進捗が明示的にクリアされたかのフラグ
 			
 			/**
 			 * 現在の進捗を保存する
 			 */
 			save: function( gameTitle, dialogueIndex, pageIndex ) {
-				if ( ! gameTitle ) {
+				// 保存が無効化されている場合は何もしない
+				if ( ! this._saveEnabled || this._wasCleared || ! gameTitle ) {
 					return;
 				}
 				
@@ -115,6 +118,7 @@
 			clear: function() {
 				try {
 					localStorage.removeItem( this.storageKey );
+					this._wasCleared = true;  // クリア済みフラグを設定
 					console.log( 'Game progress cleared' );
 				} catch ( error ) {
 					console.warn( 'Failed to clear game progress:', error );
@@ -126,6 +130,21 @@
 			 */
 			exists: function( gameTitle ) {
 				return this.load( gameTitle ) !== null;
+			},
+			
+			/**
+			 * 進捗保存を無効化する
+			 */
+			disableSave: function() {
+				this._saveEnabled = false;
+			},
+			
+			/**
+			 * 進捗保存を有効化する
+			 */
+			enableSave: function() {
+				this._saveEnabled = true;
+				this._wasCleared = false;
 			}
 		};
 		
@@ -521,11 +540,22 @@
 			currentDialoguePages = [];
 			allDialoguePages = [];
 			
+			// 進捗保存フラグもリセット
+			gameProgress.enableSave();
+			
 			// 表示をリセット
-			$dialogueText.text( '' );
-			$speakerName.text( '' );
-			$choicesContainer.empty().hide();
-			$dialogueContinue.hide();
+			if ( $dialogueText.length > 0 ) {
+				$dialogueText.text( '' );
+			}
+			if ( $speakerName.length > 0 ) {
+				$speakerName.text( '' );
+			}
+			if ( $choicesContainer.length > 0 ) {
+				$choicesContainer.empty().hide();
+			}
+			if ( $dialogueContinue.length > 0 ) {
+				$dialogueContinue.hide();
+			}
 		}
 
 		/**
@@ -771,9 +801,12 @@
 					$dialogueText.text( currentPage.text );
 				}
 				
-				// 進捗を自動保存（ページ進行時）
-				if ( gameSettings.title ) {
-					gameProgress.save( gameSettings.title, currentDialogueIndex, currentPageIndex );
+				// 進捗を自動保存（ページ進行時、条件付き）
+				if ( gameSettings.title && gameProgress._saveEnabled && ! gameProgress._wasCleared ) {
+					// 実際のゲーム進行中のみ保存（dialogueIndex > 0 または pageIndex > 0）
+					if ( currentDialogueIndex > 0 || currentPageIndex > 0 ) {
+						gameProgress.save( gameSettings.title, currentDialogueIndex, currentPageIndex );
+					}
 					// 進捗クリアボタンの表示制御
 					updateProgressClearButtonVisibility();
 				}
@@ -860,6 +893,14 @@
 			function executeChoice( index ) {
 				var nextScene = displayChoices[ index ].nextScene;
 				if ( nextScene ) {
+					console.log( 'Executing choice, transitioning to:', nextScene );
+					
+					// 進捗を一旦クリアして新しいシーンの開始を準備
+					if ( gameSettings.title ) {
+						gameProgress.clear();
+						gameProgress.disableSave();
+					}
+					
 					// ページ遷移ではなく、モーダル内でゲームを継続
 					loadGameData( nextScene ).then( function() {
 						// ゲーム状態をリセット
@@ -1245,8 +1286,14 @@
 			// 進捗クリアボタンのイベント設定
 			setupProgressClearButton();
 
-			// 進捗チェックと復帰確認
-			checkAndOfferResume();
+			// 進捗保存が無効化されている場合は通常開始
+			if ( gameProgress._wasCleared || ! gameProgress._saveEnabled ) {
+				console.log( 'Progress was cleared or saving disabled, starting normally' );
+				startGame();
+			} else {
+				// 進捗チェックと復帰確認
+				checkAndOfferResume();
+			}
 		}
 		
 		/**
@@ -1299,7 +1346,9 @@
 			);
 			
 			if ( confirmed ) {
+				// 進捗をクリアして一時的に保存を無効化
 				gameProgress.clear();
+				gameProgress.disableSave();
 				console.log( 'Progress cleared by user request' );
 				
 				// 進捗クリアボタンを非表示
@@ -1307,6 +1356,11 @@
 				
 				// 確認メッセージを表示
 				showTemporaryMessage( '進捗が削除されました' );
+				
+				// 3秒後に保存を再有効化
+				setTimeout( function() {
+					gameProgress.enableSave();
+				}, 3000 );
 			}
 		}
 		
@@ -1396,9 +1450,16 @@
 				.text( '最初から始める' )
 				.on( 'click', function() {
 					console.log( 'Restart selected' );
+					// 進捗をクリアしてフラグを設定
 					gameProgress.clear();
+					// 一時的に保存を無効化
+					gameProgress.disableSave();
 					hideResumeDialog();
 					startGame();
+					// 少し遅延してから保存を再有効化（新規ゲーム開始後）
+					setTimeout( function() {
+						gameProgress.enableSave();
+					}, 1000 );
 				} );
 			
 			// 進捗を削除して閉じるボタン
@@ -1407,9 +1468,14 @@
 				.text( '進捗を削除して閉じる' )
 				.on( 'click', function() {
 					console.log( 'Clear and close selected' );
+					// 進捗をクリアして明示的にフラグを設定
 					gameProgress.clear();
+					gameProgress.disableSave();
 					hideResumeDialog();
-					closeModal();
+					// モーダルを閉じる前に少し待機
+					setTimeout( function() {
+						closeModal();
+					}, 100 );
 				} );
 			
 			$buttonContainer.append( $resumeButton );
@@ -1456,9 +1522,21 @@
 		 * ゲームを開始する（最初から）
 		 */
 		function startGame() {
+			console.log( 'Starting game from beginning' );
+			
+			// ゲーム状態を完全にリセット
+			currentDialogueIndex = 0;
+			currentPageIndex = 0;
+			currentDialoguePages = [];
+			allDialoguePages = [];
+			
+			// UI状態をリセット
+			$dialogueBox.show();
+			$choicesContainer.empty().hide();
+			$dialogueContinue.hide();
+			
 			// セリフデータがある場合は分割処理を実行
 			if ( dialogues.length > 0 || dialogueData.length > 0 ) {
-				console.log( 'Starting game from beginning' );
 				prepareDialoguePages();
 				displayCurrentPage();
 			} else {
@@ -1478,21 +1556,34 @@
 		function resumeGame( savedProgress ) {
 			console.log( 'Resuming game from saved progress:', savedProgress );
 			
+			// UI状態をリセット
+			$dialogueBox.show();
+			$choicesContainer.empty().hide();
+			$dialogueContinue.hide();
+			
 			// セリフデータがある場合は分割処理を実行
 			if ( dialogues.length > 0 || dialogueData.length > 0 ) {
 				prepareDialoguePages();
 				
 				// 保存された位置まで復帰
 				var targetPageIndex = savedProgress.pageIndex || 0;
-				if ( targetPageIndex < allDialoguePages.length ) {
+				var targetDialogueIndex = savedProgress.dialogueIndex || 0;
+				
+				// インデックスの有効性をチェック
+				if ( targetPageIndex >= 0 && targetPageIndex < allDialoguePages.length ) {
 					currentPageIndex = targetPageIndex;
-					currentDialogueIndex = savedProgress.dialogueIndex || 0;
+					currentDialogueIndex = targetDialogueIndex;
 					console.log( 'Restored to dialogue index:', currentDialogueIndex, 'page index:', currentPageIndex );
 					displayCurrentPage();
 				} else {
 					console.warn( 'Saved position out of range, starting from beginning' );
+					currentDialogueIndex = 0;
+					currentPageIndex = 0;
 					displayCurrentPage();
 				}
+				
+				// 復帰後は進捗保存を再開
+				gameProgress.enableSave();
 			} else {
 				console.log( 'No dialogue data found for resume' );
 			}
