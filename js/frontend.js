@@ -537,9 +537,6 @@
 			$closeButton.on( 'click', function( e ) {
 				e.preventDefault();
 				console.log( 'Close button clicked' );
-				
-				// モーダルを閉じる前に進捗を保存
-				saveGameProgress();
 				closeModal();
 			} );
 			
@@ -550,9 +547,6 @@
 			$( document ).on( 'click', '.novel-game-close-btn', function( e ) {
 				e.preventDefault();
 				console.log( 'Dynamic close button clicked' );
-				
-				// モーダルを閉じる前に進捗を保存
-				saveGameProgress();
 				closeModal();
 			} );
 
@@ -787,8 +781,8 @@
 				currentPageIndex++;
 				displayCurrentPage();
 				
-				// 進捗を保存
-				saveGameProgress();
+				// シンプルな進捗保存（バックグラウンド処理）
+				saveGameProgressSimple();
 			} else {
 				// すべてのセリフが終わったら選択肢を表示
 				$dialogueBox.hide();
@@ -855,6 +849,9 @@
 			function executeChoice( index ) {
 				var nextScene = displayChoices[ index ].nextScene;
 				if ( nextScene ) {
+					// シーン変更時に進捗保存（バックグラウンド処理）
+					saveGameProgressSimple();
+					
 					// ページ遷移ではなく、モーダル内でゲームを継続
 					loadGameData( nextScene ).then( function() {
 						// ゲーム状態をリセット
@@ -1290,17 +1287,35 @@
 		 * 保存された進捗から復帰
 		 */
 		function resumeFromProgress( savedProgress ) {
-			// 進捗データから位置を復元
-			currentDialogueIndex = savedProgress.dialogueIndex || 0;
-			currentPageIndex = savedProgress.pageIndex || 0;
-			
-			console.log( 'Resuming from progress:', {
-				dialogueIndex: currentDialogueIndex,
-				pageIndex: currentPageIndex
-			} );
-			
-			// ゲームコンテンツを初期化
+			// ゲームコンテンツを初期化してから進捗を復元
 			initializeGameContent();
+			
+			// 初期化完了後に位置を復元
+			setTimeout( function() {
+				// 進捗データから位置を復元
+				currentDialogueIndex = savedProgress.dialogueIndex || 0;
+				currentPageIndex = savedProgress.pageIndex || 0;
+				
+				console.log( 'Resuming from progress:', {
+					dialogueIndex: currentDialogueIndex,
+					pageIndex: currentPageIndex
+				} );
+				
+				// 現在のページを表示
+				if ( currentPageIndex < allDialoguePages.length ) {
+					displayCurrentPage();
+				}
+			}, 100 );
+		}
+
+		/**
+		 * ゲーム進捗を保存（シンプル版 - バックグラウンド処理）
+		 */
+		function saveGameProgressSimple() {
+			var gameTitle = gameSettings.title || '';
+			if ( gameTitle ) {
+				gameProgress.save( gameTitle, currentDialogueIndex, currentPageIndex );
+			}
 		}
 
 		/**

@@ -1793,111 +1793,6 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 /* =============================================================================
-   ゲーム復帰ダイアログスタイル
-   ============================================================================= */
-
-.novel-resume-dialog {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.95);
-    color: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    max-width: 500px;
-    width: 90%;
-    z-index: 1000;
-    text-align: center;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.novel-resume-dialog h3 {
-    margin: 0 0 15px 0;
-    font-size: 1.5em;
-    color: #ff6b6b;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.novel-resume-dialog p {
-    margin: 0 0 10px 0;
-    line-height: 1.6;
-    color: #e0e0e0;
-}
-
-.progress-info {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 8px;
-    margin: 20px 0;
-    text-align: left;
-}
-
-.progress-info p {
-    margin: 8px 0;
-    font-size: 0.9em;
-}
-
-.progress-info strong {
-    color: #4fc3f7;
-}
-
-.resume-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 25px;
-}
-
-.resume-buttons button {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-height: 45px;
-}
-
-.resume-button.primary {
-    background: linear-gradient(45deg, #4fc3f7, #29b6f6);
-    color: white;
-    box-shadow: 0 4px 15px rgba(79, 195, 247, 0.3);
-}
-
-.resume-button.primary:hover {
-    background: linear-gradient(45deg, #29b6f6, #0288d1);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(79, 195, 247, 0.4);
-}
-
-.restart-button.secondary {
-    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-    color: white;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-}
-
-.restart-button.secondary:hover {
-    background: linear-gradient(45deg, #ee5a24, #c44569);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-}
-
-.clear-button.tertiary {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ccc;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.clear-button.tertiary:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    transform: translateY(-1px);
-}
-
-/* =============================================================================
    進捗クリアボタンスタイル
    ============================================================================= */
 
@@ -1951,16 +1846,16 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 
 /* 復帰確認ダイアログ */
 .novel-resume-dialog {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     background: rgba(0, 0, 0, 0.8);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1500;
+    z-index: 2147483647;
 }
 
 .novel-resume-content {
