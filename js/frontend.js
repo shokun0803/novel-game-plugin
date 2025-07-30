@@ -56,7 +56,6 @@
 				try {
 					var progressData = {
 						gameTitle: this.gameTitle,
-						dialogueIndex: currentDialogueIndex,
 						pageIndex: currentPageIndex,
 						timestamp: Date.now(),
 						version: '1.0'
@@ -618,6 +617,7 @@
 				} );
 			} );
 			
+			// 常に初期位置からスタート（復帰は別途処理）
 			currentDialogueIndex = 0;
 			currentPageIndex = 0;
 		}
@@ -1289,10 +1289,22 @@
 		 * 保存された進捗から復帰
 		 */
 		function resumeFromProgress(savedProgress) {
-			currentDialogueIndex = savedProgress.dialogueIndex || 0;
-			currentPageIndex = savedProgress.pageIndex || 0;
-			
+			// まず通常の初期化を行う
 			initializeGameNormally();
+			
+			// その後で保存された位置に移動
+			var savedPageIndex = savedProgress.pageIndex || 0;
+			if (savedPageIndex >= 0 && savedPageIndex < allDialoguePages.length) {
+				currentPageIndex = savedPageIndex;
+				
+				// 現在のページから対応するdialogueIndexを計算
+				if (allDialoguePages[currentPageIndex]) {
+					currentDialogueIndex = allDialoguePages[currentPageIndex].dialogueIndex || 0;
+				}
+				
+				// 位置を復帰して表示
+				displayCurrentPage();
+			}
 		}
 		
 		/**
