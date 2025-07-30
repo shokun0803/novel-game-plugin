@@ -44,6 +44,63 @@
 		// ゲーム設定
 		var gameSettings = {};
 		
+		// 進捗保存システム（最小限・バックグラウンド処理のみ）
+		var gameProgress = {
+			storageKey: 'noveltool_game_progress',
+			gameTitle: '',
+			
+			// 進捗を保存する（バックグラウンド処理のみ、ゲーム進行に一切影響しない）
+			save: function() {
+				if (!this.gameTitle) return;
+				
+				try {
+					var progressData = {
+						gameTitle: this.gameTitle,
+						pageIndex: currentPageIndex,
+						dialogueIndex: currentDialogueIndex,
+						timestamp: Date.now(),
+						version: '1.0'
+					};
+					localStorage.setItem(this.storageKey, JSON.stringify(progressData));
+				} catch (error) {
+					// エラーは警告のみ、ゲーム進行には影響しない
+					console.warn('進捗保存に失敗:', error);
+				}
+			},
+			
+			// 保存された進捗を取得する
+			load: function() {
+				try {
+					var savedData = localStorage.getItem(this.storageKey);
+					if (!savedData) return null;
+					
+					var progressData = JSON.parse(savedData);
+					if (!progressData.gameTitle || !progressData.timestamp) return null;
+					
+					// 7日以上古いデータは削除
+					var weekInMilliseconds = 7 * 24 * 60 * 60 * 1000;
+					if (Date.now() - progressData.timestamp > weekInMilliseconds) {
+						this.clear();
+						return null;
+					}
+					
+					return progressData;
+				} catch (error) {
+					console.warn('進捗読み込みに失敗:', error);
+					return null;
+				}
+			},
+			
+			// 進捗をクリアする
+			clear: function() {
+				try {
+					localStorage.removeItem(this.storageKey);
+				} catch (error) {
+					console.warn('進捗削除に失敗:', error);
+				}
+			}
+		};
+		
 		// 表示設定
 		var displaySettings = {
 			maxCharsPerLine: 20,
@@ -711,6 +768,9 @@
 				}
 				
 				displayCurrentPage();
+				
+				// 進捗を保存（バックグラウンド処理のみ、ゲーム進行に影響しない）
+				gameProgress.save();
 			} else {
 				// すべてのセリフが終わったら選択肢を表示
 				$dialogueBox.hide();
@@ -731,6 +791,9 @@
 				showGameEnd();
 				return;
 			}
+			
+			// 選択肢表示時も進捗を保存（バックグラウンド処理のみ）
+			gameProgress.save();
 
 			// 最大4つの選択肢に制限
 			const displayChoices = choices.slice( 0, 4 );
@@ -784,6 +847,9 @@
 						
 						// ゲームコンテンツを初期化
 						initializeGameContent();
+						
+						// シーン変更後に進捗を保存（バックグラウンド処理のみ）
+						gameProgress.save();
 					} ).catch( function( error ) {
 						console.error( '次のシーンの読み込みに失敗しました:', error );
 						// フォールバック：ページ遷移
@@ -852,6 +918,9 @@
 		 */
 		function showGameEnd() {
 			$choicesContainer.empty();
+			
+			// エンディング到達時は進捗をクリア（バックグラウンド処理）
+			gameProgress.clear();
 			
 			// カスタムエンディングメッセージを使用（デフォルトは「おわり」）
 			var endingMessage = gameSettings && gameSettings.ending_message ? gameSettings.ending_message : 'おわり';
@@ -1129,6 +1198,9 @@
 				return;
 			}
 			
+			// ゲームタイトルを設定（進捗保存用）
+			gameProgress.gameTitle = gameSettings.title || 'Unknown Game';
+			
 			// DOM要素を再取得（動的読み込み後に必要）
 			$dialogueText = $( '#novel-dialogue-text' );
 			$dialogueBox = $( '#novel-dialogue-box' );
@@ -1157,7 +1229,9 @@
 			if ( dialogues.length > 0 || dialogueData.length > 0 ) {
 				console.log( 'Preparing dialogue pages' );
 				prepareDialoguePages();
-				displayCurrentPage();
+				
+				// 保存された進捗をチェックして復帰ダイアログを表示（ゲーム開始時のみ）
+				checkForResumeDialog();
 			} else {
 				// デバッグ用：セリフデータがない場合のメッセージ
 				console.log( 'No dialogue data found' );
@@ -1166,6 +1240,92 @@
 				var containerContent = $gameContainer.html();
 				console.log( 'Game container content length:', containerContent ? containerContent.length : 0 );
 				console.log( 'Game container content (first 200 chars):', containerContent ? containerContent.substring( 0, 200 ) : 'empty' );
+			}
+		}
+		
+		/**
+		 * 保存された進捗をチェックして復帰ダイアログを表示（ゲーム開始時のみ）
+		 */
+		function checkForResumeDialog() {
+			var savedProgress = gameProgress.load();
+			if (savedProgress && savedProgress.gameTitle === gameProgress.gameTitle) {
+				showResumeDialog(savedProgress);
+			} else {
+				// 保存された進捗がない場合は通常の初期化
+				displayCurrentPage();
+			}
+		}
+		
+		/**
+		 * 復帰ダイアログを表示
+		 */
+		function showResumeDialog(savedProgress) {
+			var lastPlayDate = new Date(savedProgress.timestamp).toLocaleString('ja-JP');
+			
+			var resumeHtml = 
+				'<div id="resume-dialog-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2147483647; display: flex; align-items: center; justify-content: center;">' +
+					'<div style="background: white; padding: 30px; border-radius: 10px; max-width: 400px; text-align: center; font-family: Arial, sans-serif;">' +
+						'<h3 style="margin-top: 0; color: #333;">ゲームを途中から再開しますか？</h3>' +
+						'<p style="color: #666; margin: 15px 0;">前回の続きから始めることができます。</p>' +
+						'<div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px;">' +
+							'<div style="font-weight: bold; color: #333;">ゲーム: ' + escapeHtml(savedProgress.gameTitle) + '</div>' +
+							'<div style="color: #666; font-size: 14px; margin-top: 5px;">最後にプレイした日時: ' + lastPlayDate + '</div>' +
+						'</div>' +
+						'<div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">' +
+							'<button id="resume-continue" style="padding: 10px 20px; background: #007cba; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">続きから始める</button>' +
+							'<button id="resume-restart" style="padding: 10px 20px; background: #666; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">最初から始める</button>' +
+							'<button id="resume-clear" style="padding: 10px 20px; background: #dc3232; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">進捗を削除して閉じる</button>' +
+						'</div>' +
+					'</div>' +
+				'</div>';
+			
+			$('body').append(resumeHtml);
+			
+			// イベントハンドラを設定
+			$('#resume-continue').on('click', function() {
+				$('#resume-dialog-overlay').remove();
+				resumeFromProgress(savedProgress);
+			});
+			
+			$('#resume-restart').on('click', function() {
+				$('#resume-dialog-overlay').remove();
+				gameProgress.clear();
+				displayCurrentPage();
+			});
+			
+			$('#resume-clear').on('click', function() {
+				$('#resume-dialog-overlay').remove();
+				gameProgress.clear();
+				closeModal(); // ゲーム終了
+			});
+		}
+		
+		/**
+		 * HTMLエスケープ関数
+		 */
+		function escapeHtml(text) {
+			var div = document.createElement('div');
+			div.textContent = text;
+			return div.innerHTML;
+		}
+		
+		/**
+		 * 保存された進捗から復帰
+		 */
+		function resumeFromProgress(savedProgress) {
+			// 保存された位置に移動
+			var savedPageIndex = savedProgress.pageIndex || 0;
+			var savedDialogueIndex = savedProgress.dialogueIndex || 0;
+			
+			if (savedPageIndex >= 0 && savedPageIndex < allDialoguePages.length) {
+				currentPageIndex = savedPageIndex;
+				currentDialogueIndex = savedDialogueIndex;
+				
+				// 位置を復帰して表示
+				displayCurrentPage();
+			} else {
+				// 保存位置が無効な場合は最初から
+				displayCurrentPage();
 			}
 		}
 
