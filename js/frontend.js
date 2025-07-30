@@ -761,12 +761,7 @@
 			// 次のページがある場合
 			if ( currentPageIndex < allDialoguePages.length - 1 ) {
 				currentPageIndex++;
-				
-				// currentDialogueIndexを現在のページの対応するdialogueIndexに更新
-				if ( allDialoguePages[ currentPageIndex ] ) {
-					currentDialogueIndex = allDialoguePages[ currentPageIndex ].dialogueIndex;
-				}
-				
+				currentDialogueIndex = allDialoguePages[ currentPageIndex ].dialogueIndex;
 				displayCurrentPage();
 				
 				// 進捗を保存（バックグラウンド処理のみ、ゲーム進行に影響しない）
