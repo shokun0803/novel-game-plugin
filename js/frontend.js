@@ -49,7 +49,7 @@
 			storageKey: 'noveltool_game_progress',
 			gameTitle: '',
 			
-			// 進捗を保存する（バックグラウンド処理）
+			// 進捗を保存する（バックグラウンド処理のみ）
 			save: function() {
 				if (!this.gameTitle) return;
 				
@@ -63,6 +63,7 @@
 					};
 					localStorage.setItem(this.storageKey, JSON.stringify(progressData));
 				} catch (error) {
+					// エラーは警告のみ、ゲーム進行には影響しない
 					console.warn('進捗保存に失敗:', error);
 				}
 			},
@@ -781,7 +782,7 @@
 				return;
 			}
 			
-			// 選択肢表示時も進捗を保存
+			// 選択肢表示時も進捗を保存（バックグラウンド処理）
 			gameProgress.save();
 
 			// 最大4つの選択肢に制限
@@ -837,7 +838,7 @@
 						// ゲームコンテンツを初期化
 						initializeGameContent();
 						
-						// シーン変更時に進捗を保存
+						// シーン変更後に進捗を保存（バックグラウンド処理）
 						gameProgress.save();
 					} ).catch( function( error ) {
 						console.error( '次のシーンの読み込みに失敗しました:', error );
@@ -908,7 +909,7 @@
 		function showGameEnd() {
 			$choicesContainer.empty();
 			
-			// エンディング到達時は進捗をクリア
+			// エンディング到達時は進捗をクリア（バックグラウンド処理）
 			gameProgress.clear();
 			
 			// カスタムエンディングメッセージを使用（デフォルトは「おわり」）
@@ -1187,7 +1188,7 @@
 				return;
 			}
 			
-			// ゲームタイトルを設定
+			// ゲームタイトルを設定（進捗保存用）
 			gameProgress.gameTitle = gameSettings.title || 'Unknown Game';
 			
 			// DOM要素を再取得（動的読み込み後に必要）
@@ -1214,12 +1215,12 @@
 			// 初期調整
 			adjustForResponsive();
 			
-			// 保存された進捗をチェックして復帰ダイアログを表示
+			// 保存された進捗をチェックして復帰ダイアログを表示（ゲーム開始時のみ）
 			checkForResumeDialog();
 		}
 		
 		/**
-		 * 保存された進捗をチェックして復帰ダイアログを表示
+		 * 保存された進捗をチェックして復帰ダイアログを表示（ゲーム開始時のみ）
 		 */
 		function checkForResumeDialog() {
 			var savedProgress = gameProgress.load();
