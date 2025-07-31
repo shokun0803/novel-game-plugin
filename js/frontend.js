@@ -114,14 +114,6 @@
 		function loadGameData( gameUrl ) {
 			console.log( 'loadGameData called with URL:', gameUrl );
 			
-			// データ読み込み前に既存データを完全にクリア
-			dialogueData = [];
-			dialogues = [];
-			choices = [];
-			baseBackground = '';
-			currentBackground = '';
-			charactersData = {};
-			
 			return new Promise( function( resolve, reject ) {
 				$.ajax( {
 					url: gameUrl,
@@ -400,12 +392,12 @@
 		}
 
 		/**
-		 * ゲーム状態をリセット
+		 * ゲーム状態をリセット（表示状態のみ、データはクリアしない）
 		 */
 		function resetGameState() {
-			console.log( 'Resetting game state...' );
+			console.log( 'Resetting game display state...' );
 			
-			// セリフ関連の状態をリセット
+			// セリフ関連の表示状態をリセット
 			currentDialogueIndex = 0;
 			currentPageIndex = 0;
 			currentDialoguePages = [];
@@ -414,7 +406,7 @@
 			// セリフ表示インデックスをリセット
 			dialogueIndex = 0;
 			
-			// 背景データをリセット
+			// 背景表示の状態をリセット（データは保持）
 			if ( baseBackground ) {
 				currentBackground = baseBackground;
 			}
@@ -439,10 +431,10 @@
 			// キャラクターの状態をリセット
 			$( '.novel-character' ).removeClass( 'speaking not-speaking' );
 			
-			// イベントハンドラーをクリーンアップ
-			$( document ).off( 'keydown.novel-dialogue keydown.novel-choices keydown.novel-end' );
+			// イベントハンドラーをクリーンアップ（選択肢以外）
+			$( document ).off( 'keydown.novel-dialogue keydown.novel-end' );
 			
-			console.log( 'Game state reset completed' );
+			console.log( 'Game display state reset completed' );
 		}
 
 		/**
@@ -773,12 +765,20 @@
 					// 既存のイベントハンドラーをクリーンアップ
 					$( document ).off( 'keydown.novel-choices' );
 					
-					// ゲーム状態をリセット（新しいデータ読み込み前に実行）
+					// 1. まず古いデータを完全にクリア
+					dialogueData = [];
+					dialogues = [];
+					choices = [];
+					baseBackground = '';
+					currentBackground = '';
+					charactersData = {};
+					
+					// 2. 表示状態をリセット
 					resetGameState();
 					
-					// ページ遷移ではなく、モーダル内でゲームを継続
+					// 3. 新しいシーンのデータを読み込み
 					loadGameData( nextScene ).then( function() {
-						// ゲームコンテンツを初期化
+						// 4. ゲームコンテンツを初期化
 						initializeGameContent();
 					} ).catch( function( error ) {
 						console.error( '次のシーンの読み込みに失敗しました:', error );
