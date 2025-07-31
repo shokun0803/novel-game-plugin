@@ -132,12 +132,53 @@
 					version: '1.2.0'
 				};
 				
-				var storageKey = 'noveltool_progress_' + btoa( currentGameTitle ).replace( /[^a-zA-Z0-9]/g, '' );
+				var storageKey = generateStorageKey( currentGameTitle );
 				localStorage.setItem( storageKey, JSON.stringify( progressData ) );
 				
 				console.log( 'ゲーム進捗を自動保存しました:', progressData );
 			} catch ( error ) {
 				console.warn( 'ゲーム進捗の保存に失敗しました:', error );
+			}
+		}
+		
+		/**
+		 * ユニークなストレージキーを生成する
+		 * サイトのホスト名とパスを含めて他サイトとの競合を防ぐ
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {string} ストレージキー
+		 * @since 1.2.0
+		 */
+		function generateStorageKey( gameTitle ) {
+			if ( ! gameTitle ) {
+				return '';
+			}
+			
+			try {
+				// サイトのホスト名とパスを取得
+				var hostname = window.location.hostname || 'localhost';
+				var pathname = window.location.pathname || '/';
+				
+				// ホスト名とパスからディレクトリ部分を抽出（ファイル名は除外）
+				var pathDir = pathname.substring( 0, pathname.lastIndexOf( '/' ) + 1 );
+				
+				// サイト識別子を作成
+				var siteId = hostname + pathDir;
+				
+				// ゲームタイトルをBase64エンコードして安全な文字列に変換
+				var encodedTitle = btoa( unescape( encodeURIComponent( gameTitle ) ) ).replace( /[^a-zA-Z0-9]/g, '' );
+				
+				// サイトIDもBase64エンコードして安全な文字列に変換
+				var encodedSiteId = btoa( unescape( encodeURIComponent( siteId ) ) ).replace( /[^a-zA-Z0-9]/g, '' );
+				
+				// ユニークなストレージキーを生成
+				var storageKey = 'noveltool_progress_' + encodedSiteId + '_' + encodedTitle;
+				
+				return storageKey;
+			} catch ( error ) {
+				console.warn( 'ストレージキーの生成に失敗しました:', error );
+				// フォールバック：従来の方式
+				return 'noveltool_progress_' + btoa( gameTitle ).replace( /[^a-zA-Z0-9]/g, '' );
 			}
 		}
 		
@@ -154,16 +195,16 @@
 			}
 			
 			try {
-				var storageKey = 'noveltool_progress_' + btoa( gameTitle ).replace( /[^a-zA-Z0-9]/g, '' );
+				var storageKey = generateStorageKey( gameTitle );
 				var savedData = localStorage.getItem( storageKey );
 				
 				if ( savedData ) {
 					var progressData = JSON.parse( savedData );
 					
-					// データの有効性をチェック（24時間以内のデータのみ有効）
+					// データの有効性をチェック（30日以内のデータのみ有効）
 					var currentTime = Date.now();
 					var savedTime = progressData.timestamp || 0;
-					var maxAge = 24 * 60 * 60 * 1000; // 24時間（ミリ秒）
+					var maxAge = 30 * 24 * 60 * 60 * 1000; // 30日（ミリ秒）
 					
 					if ( currentTime - savedTime > maxAge ) {
 						console.log( '保存されたゲーム進捗が古いため削除します' );
@@ -193,7 +234,7 @@
 			}
 			
 			try {
-				var storageKey = 'noveltool_progress_' + btoa( gameTitle ).replace( /[^a-zA-Z0-9]/g, '' );
+				var storageKey = generateStorageKey( gameTitle );
 				localStorage.removeItem( storageKey );
 				console.log( 'ゲーム進捗をクリアしました:', gameTitle );
 			} catch ( error ) {
