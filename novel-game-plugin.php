@@ -83,10 +83,9 @@ function noveltool_get_game_setting( $key ) {
  */
 function noveltool_get_all_game_settings() {
     return array(
-        'title'         => get_option( 'noveltool_game_title', '' ),
-        'description'   => get_option( 'noveltool_game_description', '' ),
-        'title_image'   => get_option( 'noveltool_game_title_image', '' ),
-        'ending_message' => get_option( 'noveltool_game_ending_message', 'おわり' ),
+        'title'       => get_option( 'noveltool_game_title', '' ),
+        'description' => get_option( 'noveltool_game_description', '' ),
+        'title_image' => get_option( 'noveltool_game_title_image', '' ),
     );
 }
 
@@ -104,28 +103,19 @@ function noveltool_get_all_games() {
         $legacy_title = get_option( 'noveltool_game_title', '' );
         $legacy_description = get_option( 'noveltool_game_description', '' );
         $legacy_title_image = get_option( 'noveltool_game_title_image', '' );
-        $legacy_ending_message = get_option( 'noveltool_game_ending_message', 'おわり' );
         
         if ( $legacy_title ) {
             $games = array(
                 array(
-                    'id'             => 1,
-                    'title'          => $legacy_title,
-                    'description'    => $legacy_description,
-                    'title_image'    => $legacy_title_image,
-                    'ending_message' => $legacy_ending_message,
-                    'created_at'     => current_time( 'timestamp' ),
-                    'updated_at'     => current_time( 'timestamp' ),
+                    'id'          => 1,
+                    'title'       => $legacy_title,
+                    'description' => $legacy_description,
+                    'title_image' => $legacy_title_image,
+                    'created_at'  => current_time( 'timestamp' ),
+                    'updated_at'  => current_time( 'timestamp' ),
                 )
             );
             update_option( 'noveltool_games', $games );
-        }
-    }
-    
-    // 後方互換性: ending_message フィールドが存在しない場合はデフォルト値を追加
-    foreach ( $games as &$game ) {
-        if ( ! isset( $game['ending_message'] ) ) {
-            $game['ending_message'] = 'おわり';
         }
     }
     
@@ -183,11 +173,6 @@ function noveltool_save_game( $game_data ) {
     // 必須フィールドの確認
     if ( empty( $game_data['title'] ) ) {
         return false;
-    }
-    
-    // ending_message のデフォルト値を設定
-    if ( ! isset( $game_data['ending_message'] ) || empty( $game_data['ending_message'] ) ) {
-        $game_data['ending_message'] = 'おわり';
     }
     
     // 新規ゲームの場合
@@ -470,34 +455,6 @@ function noveltool_filter_novel_game_content( $content ) {
 
                 <script id="novel-choices-data" type="application/json">
                     <?php echo wp_json_encode( $choices, JSON_UNESCAPED_UNICODE ); ?>
-                </script>
-
-                <script id="novel-game-settings" type="application/json">
-                    <?php 
-                    // ゲーム設定を取得
-                    $game_settings = array();
-                    if ( $game_title ) {
-                        $game_data = noveltool_get_game_by_title( $game_title );
-                        if ( $game_data ) {
-                            $game_settings = array(
-                                'title' => $game_data['title'],
-                                'description' => isset( $game_data['description'] ) ? $game_data['description'] : '',
-                                'ending_message' => isset( $game_data['ending_message'] ) ? $game_data['ending_message'] : 'おわり',
-                            );
-                        }
-                    }
-                    
-                    // デフォルト設定
-                    if ( empty( $game_settings ) ) {
-                        $game_settings = array(
-                            'title' => '',
-                            'description' => '',
-                            'ending_message' => 'おわり',
-                        );
-                    }
-                    
-                    echo wp_json_encode( $game_settings, JSON_UNESCAPED_UNICODE ); 
-                    ?>
                 </script>
             </div>
         </div>
