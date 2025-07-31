@@ -113,6 +113,7 @@
 		 */
 		function loadGameData( gameUrl ) {
 			console.log( 'loadGameData called with URL:', gameUrl );
+			
 			return new Promise( function( resolve, reject ) {
 				$.ajax( {
 					url: gameUrl,
@@ -391,19 +392,49 @@
 		}
 
 		/**
-		 * ゲーム状態をリセット
+		 * ゲーム状態をリセット（表示状態のみ、データはクリアしない）
 		 */
 		function resetGameState() {
+			console.log( 'Resetting game display state...' );
+			
+			// セリフ関連の表示状態をリセット
 			currentDialogueIndex = 0;
 			currentPageIndex = 0;
 			currentDialoguePages = [];
 			allDialoguePages = [];
 			
-			// 表示をリセット
-			$dialogueText.text( '' );
-			$speakerName.text( '' );
-			$choicesContainer.empty().hide();
-			$dialogueContinue.hide();
+			// セリフ表示インデックスをリセット
+			dialogueIndex = 0;
+			
+			// 背景表示の状態をリセット（データは保持）
+			if ( baseBackground ) {
+				currentBackground = baseBackground;
+			}
+			
+			// DOM要素の表示をリセット
+			if ( $dialogueText && $dialogueText.length > 0 ) {
+				$dialogueText.text( '' );
+			}
+			if ( $speakerName && $speakerName.length > 0 ) {
+				$speakerName.text( '' );
+			}
+			if ( $choicesContainer && $choicesContainer.length > 0 ) {
+				$choicesContainer.empty().hide();
+			}
+			if ( $dialogueContinue && $dialogueContinue.length > 0 ) {
+				$dialogueContinue.hide();
+			}
+			if ( $dialogueBox && $dialogueBox.length > 0 ) {
+				$dialogueBox.show();
+			}
+			
+			// キャラクターの状態をリセット
+			$( '.novel-character' ).removeClass( 'speaking not-speaking' );
+			
+			// イベントハンドラーをクリーンアップ（選択肢以外）
+			$( document ).off( 'keydown.novel-dialogue keydown.novel-end' );
+			
+			console.log( 'Game display state reset completed' );
 		}
 
 		/**
@@ -731,12 +762,23 @@
 			function executeChoice( index ) {
 				var nextScene = displayChoices[ index ].nextScene;
 				if ( nextScene ) {
-					// ページ遷移ではなく、モーダル内でゲームを継続
+					// 既存のイベントハンドラーをクリーンアップ
+					$( document ).off( 'keydown.novel-choices' );
+					
+					// 1. まず古いデータを完全にクリア
+					dialogueData = [];
+					dialogues = [];
+					choices = [];
+					baseBackground = '';
+					currentBackground = '';
+					charactersData = {};
+					
+					// 2. 表示状態をリセット
+					resetGameState();
+					
+					// 3. 新しいシーンのデータを読み込み
 					loadGameData( nextScene ).then( function() {
-						// ゲーム状態をリセット
-						resetGameState();
-						
-						// ゲームコンテンツを初期化
+						// 4. ゲームコンテンツを初期化
 						initializeGameContent();
 					} ).catch( function( error ) {
 						console.error( '次のシーンの読み込みに失敗しました:', error );
@@ -912,7 +954,10 @@
 		function setupGameInteraction() {
 			var eventType = isTouch ? 'touchend' : 'click';
 			
-			$gameContainer.on( eventType, function( e ) {
+			// 既存のイベントハンドラーをクリーンアップしてから設定
+			$gameContainer.off( 'click.novel-game touchend.novel-game touchstart.novel-game touchcancel.novel-game' );
+			
+			$gameContainer.on( eventType + '.novel-game', function( e ) {
 				// 選択肢が表示されている場合はクリックを無視
 				if ( $choicesContainer.is( ':visible' ) ) {
 					return;
@@ -934,7 +979,7 @@
 
 			// タッチデバイス用の追加イベント
 			if ( isTouch ) {
-				$gameContainer.on( 'touchstart', function( e ) {
+				$gameContainer.on( 'touchstart.novel-game', function( e ) {
 					// 選択肢が表示されている場合はタッチを無視
 					if ( $choicesContainer.is( ':visible' ) ) {
 						return;
@@ -952,12 +997,14 @@
 					
 					// タッチフィードバック
 					$( this ).addClass( 'touch-active' );
-				} ).on( 'touchcancel', function() {
+				} ).on( 'touchcancel.novel-game', function() {
 					$( this ).removeClass( 'touch-active' );
 				} );
 			}
 			
 			// キーボードイベント処理（Enter、Space）
+			// 既存のキーボードイベントをクリーンアップしてから設定
+			$( document ).off( 'keydown.novel-dialogue' );
 			$( document ).on( 'keydown.novel-dialogue', function( e ) {
 				// 選択肢が表示されている場合はキーボード操作を無視
 				if ( $choicesContainer.is( ':visible' ) ) {
@@ -1046,6 +1093,10 @@
 				continue: $dialogueContinue.length,
 				choices: $choicesContainer.length
 			} );
+			
+			// 以前のイベントハンドラーをクリーンアップ
+			$( window ).off( 'resize.game orientationchange.game' );
+			$gameContainer.off( '.novel-game' );
 
 			// イベントリスナーの設定
 			setupGameInteraction();
@@ -1059,6 +1110,28 @@
 			// セリフデータがある場合は分割処理を実行
 			if ( dialogues.length > 0 || dialogueData.length > 0 ) {
 				console.log( 'Preparing dialogue pages' );
+				
+				// データの検証とクリーンアップ
+				if ( dialogueData.length === 0 && dialogues.length > 0 ) {
+					// 古い形式のdialogues配列からdialogueDataを再構築
+					dialogueData = dialogues.map( function( text ) {
+						return { text: text, background: '', speaker: '' };
+					} );
+					console.log( 'Rebuilt dialogueData from legacy dialogues array' );
+				}
+				
+				// 空のセリフをフィルタリング
+				dialogueData = dialogueData.filter( function( item ) {
+					return item && item.text && item.text.trim() !== '';
+				} );
+				
+				// dialogues配列も更新
+				dialogues = dialogueData.map( function( item ) {
+					return item.text;
+				} );
+				
+				console.log( 'Cleaned dialogue data, final length:', dialogueData.length );
+				
 				prepareDialoguePages();
 				displayCurrentPage();
 			} else {
