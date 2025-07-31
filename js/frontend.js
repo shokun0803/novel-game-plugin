@@ -411,11 +411,8 @@
 			currentDialoguePages = [];
 			allDialoguePages = [];
 			
-			// コアデータをリセット
+			// セリフ表示インデックスをリセット
 			dialogueIndex = 0;
-			dialogues = [];
-			dialogueData = [];
-			choices = [];
 			
 			// 背景データをリセット
 			if ( baseBackground ) {
@@ -776,11 +773,11 @@
 					// 既存のイベントハンドラーをクリーンアップ
 					$( document ).off( 'keydown.novel-choices' );
 					
+					// ゲーム状態をリセット（新しいデータ読み込み前に実行）
+					resetGameState();
+					
 					// ページ遷移ではなく、モーダル内でゲームを継続
 					loadGameData( nextScene ).then( function() {
-						// ゲーム状態をリセット
-						resetGameState();
-						
 						// ゲームコンテンツを初期化
 						initializeGameContent();
 					} ).catch( function( error ) {
