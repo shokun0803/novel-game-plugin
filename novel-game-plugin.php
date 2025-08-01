@@ -632,6 +632,40 @@ function noveltool_game_list_shortcode( $atts ) {
     echo '</div>'; // .novel-games-grid
     echo '</div>'; // .noveltool-columns-{n}
     
+    // ゲーム選択モーダル HTML を追加
+    ?>
+    <div id="game-selection-modal-overlay" class="game-selection-modal-overlay" style="display: none;">
+        <div id="game-selection-modal-content" class="game-selection-modal-content">
+            <button id="game-selection-close-btn" class="game-selection-close-btn" aria-label="<?php echo esc_attr__( '閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( '閉じる', 'novel-game-plugin' ); ?>">
+                <span class="close-icon">×</span>
+            </button>
+            
+            <div class="game-selection-header">
+                <div id="game-selection-image" class="game-selection-image"></div>
+                <div class="game-selection-info">
+                    <h2 id="game-selection-title" class="game-selection-title"></h2>
+                    <p id="game-selection-description" class="game-selection-description"></p>
+                    <p id="game-selection-scene-count" class="game-selection-scene-count"></p>
+                </div>
+            </div>
+            
+            <div class="game-selection-actions">
+                <button id="game-start-new-btn" class="game-action-btn game-start-btn">
+                    <span class="btn-icon">▶</span>
+                    <span class="btn-text"><?php _e('ゲーム開始', 'novel-game-plugin'); ?></span>
+                    <small class="btn-subtext"><?php _e('最初から始める', 'novel-game-plugin'); ?></small>
+                </button>
+                
+                <button id="game-resume-btn" class="game-action-btn game-resume-btn" style="display: none;">
+                    <span class="btn-icon">⏯</span>
+                    <span class="btn-text"><?php _e('途中から始める', 'novel-game-plugin'); ?></span>
+                    <small class="btn-subtext"><?php _e('前回の続きから', 'novel-game-plugin'); ?></small>
+                </button>
+            </div>
+        </div>
+    </div>
+    <?php
+    
     // ゲーム選択モーダル CSS を追加
     ?>
     <style>
@@ -1124,47 +1158,6 @@ function noveltool_game_list_shortcode( $atts ) {
     }
     </style>
     <?php
-    
-    // モーダルオーバーレイを追加（ゲーム表示用）
-    echo '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">';
-    echo '    <div id="novel-game-modal-content" class="novel-game-modal-content">';
-    echo '        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '" title="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '">';
-    echo '            <span class="close-icon">×</span>';
-    echo '        </button>';
-    echo '        <div id="novel-game-container" class="novel-game-container">';
-    echo '            <!-- ゲーム内容は動的に読み込まれます -->';
-    echo '        </div>';
-    echo '    </div>';
-    echo '</div>';
-    
-    // ゲーム選択モーダル
-    echo '<div id="game-selection-modal-overlay" class="game-selection-modal-overlay" style="display: none;">';
-    echo '    <div id="game-selection-modal-content" class="game-selection-modal-content">';
-    echo '        <button id="game-selection-close-btn" class="game-selection-close-btn" aria-label="' . esc_attr__( '閉じる', 'novel-game-plugin' ) . '" title="' . esc_attr__( '閉じる', 'novel-game-plugin' ) . '">';
-    echo '            <span class="close-icon">×</span>';
-    echo '        </button>';
-    echo '        <div class="game-selection-header">';
-    echo '            <div id="game-selection-image" class="game-selection-image"></div>';
-    echo '            <div class="game-selection-info">';
-    echo '                <h2 id="game-selection-title" class="game-selection-title"></h2>';
-    echo '                <p id="game-selection-description" class="game-selection-description"></p>';
-    echo '                <p id="game-selection-scene-count" class="game-selection-scene-count"></p>';
-    echo '            </div>';
-    echo '        </div>';
-    echo '        <div class="game-selection-actions">';
-    echo '            <button id="game-start-new-btn" class="game-action-btn game-start-btn">';
-    echo '                <span class="btn-icon">▶</span>';
-    echo '                <span class="btn-text">' . esc_html__( 'ゲーム開始', 'novel-game-plugin' ) . '</span>';
-    echo '                <small class="btn-subtext">' . esc_html__( '最初から始める', 'novel-game-plugin' ) . '</small>';
-    echo '            </button>';
-    echo '            <button id="game-resume-btn" class="game-action-btn game-resume-btn" style="display: none;">';
-    echo '                <span class="btn-icon">⏯</span>';
-    echo '                <span class="btn-text">' . esc_html__( '途中から始める', 'novel-game-plugin' ) . '</span>';
-    echo '                <small class="btn-subtext">' . esc_html__( '前回の続きから', 'novel-game-plugin' ) . '</small>';
-    echo '            </button>';
-    echo '        </div>';
-    echo '    </div>';
-    echo '</div>';
     
     // ゲーム選択モーダル JavaScript を追加
     ?>
