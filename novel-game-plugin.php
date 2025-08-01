@@ -555,7 +555,8 @@ function noveltool_game_list_shortcode( $atts ) {
     
     ob_start();
     
-    echo '<div class="noveltool-game-list-grid noveltool-columns-' . esc_attr( $columns ) . '">';
+    echo '<div class="noveltool-columns-' . esc_attr( $columns ) . '">';
+    echo '<div class="novel-games-grid">';
     
     foreach ( $game_titles as $game_title ) {
         $posts = noveltool_get_posts_by_game_title( $game_title, array( 'posts_per_page' => 1 ) );
@@ -570,60 +571,229 @@ function noveltool_game_list_shortcode( $atts ) {
         
         // ゲーム説明の取得（新しいゲーム管理システムから）
         $game_description = '';
-        if ( $show_description ) {
-            $game = noveltool_get_game_by_title( $game_title );
-            if ( $game && ! empty( $game['description'] ) ) {
-                $game_description = $game['description'];
-            }
+        $game = noveltool_get_game_by_title( $game_title );
+        if ( $game && ! empty( $game['description'] ) ) {
+            $game_description = $game['description'];
         }
         
-        echo '<div class="noveltool-game-list-item">';
-        
-        if ( $background ) {
-            echo '<div class="noveltool-game-thumbnail">';
-            echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '">';
-            echo '<img src="' . esc_url( $background ) . '" alt="' . esc_attr( $game_title ) . '" />';
-            echo '</a>';
-            echo '</div>';
-        }
-        
-        echo '<div class="noveltool-game-content">';
-        echo '<h3 class="noveltool-game-title">';
-        echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '">' . esc_html( $game_title ) . '</a>';
-        echo '</h3>';
-        
-        if ( $show_description && $game_description ) {
-            echo '<p class="noveltool-game-description">' . esc_html( mb_substr( $game_description, 0, 120 ) );
-            if ( mb_strlen( $game_description ) > 120 ) {
-                echo '...';
-            }
-            echo '</p>';
-        }
-        
-        if ( $show_count ) {
-            echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
-        }
-        
-        echo '<div class="noveltool-game-actions">';
-        echo '<button class="noveltool-play-button" ';
+        // アーカイブテンプレートと同じHTML構造を使用
+        echo '<div class="novel-game-card" ';
         echo 'data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" ';
         echo 'data-game-title="' . esc_attr( $game_title ) . '" ';
         echo 'data-game-description="' . esc_attr( $game_description ) . '" ';
         echo 'data-game-image="' . esc_attr( $background ) . '" ';
         echo 'data-scene-count="' . esc_attr( $post_count ) . '">';
-        echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
-        echo '</button>';
-        echo '</div>';
         
-        echo '</div>'; // .noveltool-game-content
-        echo '</div>'; // .noveltool-game-list-item
+        echo '<div class="game-thumbnail">';
+        if ( $background ) {
+            echo '<img src="' . esc_url( $background ) . '" alt="' . esc_attr( $game_title ) . '" class="game-bg-image">';
+        } else {
+            echo '<div class="game-placeholder">';
+            echo '<span class="placeholder-text">' . esc_html__( 'No Image', 'novel-game-plugin' ) . '</span>';
+            echo '</div>';
+        }
+        
+        echo '<div class="game-overlay">';
+        echo '<div class="game-info">';
+        echo '<h3 class="game-title">' . esc_html( $game_title ) . '</h3>';
+        
+        if ( $show_description && $game_description ) {
+            $short_description = wp_trim_words( $game_description, 20, '...' );
+            echo '<p class="game-description">' . esc_html( $short_description ) . '</p>';
+        }
+        
+        if ( $show_count ) {
+            echo '<p class="scene-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
+        }
+        
+        echo '</div>'; // .game-info
+        echo '<div class="play-button">';
+        echo '<span>' . esc_html__( '選択', 'novel-game-plugin' ) . '</span>';
+        echo '</div>'; // .play-button
+        echo '</div>'; // .game-overlay
+        echo '</div>'; // .game-thumbnail
+        echo '</div>'; // .novel-game-card
     }
     
-    echo '</div>'; // .noveltool-game-list-grid
+    echo '</div>'; // .novel-games-grid
+    echo '</div>'; // .noveltool-columns-{n}
     
     // ゲーム選択モーダル CSS を追加
     ?>
     <style>
+    /* ショートコード用 novel-games-grid スタイル */
+    .novel-games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 30px;
+        margin: 20px 0;
+    }
+
+    /* columns パラメータ対応 */
+    .noveltool-columns-1 .novel-games-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .noveltool-columns-2 .novel-games-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+    
+    .noveltool-columns-3 .novel-games-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    
+    .noveltool-columns-4 .novel-games-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    
+    .noveltool-columns-5 .novel-games-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+    
+    .noveltool-columns-6 .novel-games-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    /* アーカイブテンプレートからのスタイル統一 */
+    .novel-game-card {
+        cursor: pointer;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        background: #fff;
+    }
+
+    .novel-game-card:hover,
+    .novel-game-card.hovered {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .game-thumbnail {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .game-bg-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .novel-game-card:hover .game-bg-image,
+    .novel-game-card.hovered .game-bg-image {
+        transform: scale(1.05);
+    }
+
+    .game-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .placeholder-text {
+        color: white;
+        font-size: 1.1em;
+        font-weight: bold;
+    }
+
+    .game-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .game-info {
+        flex: 1;
+    }
+
+    .game-title {
+        font-size: 1.4em;
+        margin: 0 0 8px 0;
+        font-weight: bold;
+        line-height: 1.2;
+    }
+
+    .game-description {
+        font-size: 0.9em;
+        margin: 0 0 8px 0;
+        opacity: 0.9;
+        line-height: 1.3;
+    }
+
+    .scene-count {
+        font-size: 0.85em;
+        margin: 2px 0;
+        opacity: 0.8;
+    }
+
+    .play-button {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid white;
+        border-radius: 25px;
+        padding: 8px 16px;
+        font-weight: bold;
+        font-size: 0.9em;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .novel-game-card:hover .play-button,
+    .novel-game-card.hovered .play-button {
+        background: white;
+        color: #333;
+        transform: scale(1.05);
+    }
+
+    /* レスポンシブデザイン */
+    @media (max-width: 768px) {
+        .novel-games-grid {
+            grid-template-columns: 1fr !important;
+            gap: 20px;
+        }
+        
+        .game-thumbnail {
+            height: 180px;
+        }
+        
+        .game-overlay {
+            padding: 15px;
+        }
+        
+        .game-title {
+            font-size: 1.2em;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .game-thumbnail {
+            height: 160px;
+        }
+        
+        .game-overlay {
+            padding: 12px;
+        }
+        
+        .play-button {
+            padding: 6px 12px;
+            font-size: 0.8em;
+        }
+    }
+
     /* ゲーム選択モーダル */
     .game-selection-modal-overlay {
         position: fixed;
@@ -986,8 +1156,8 @@ function noveltool_game_list_shortcode( $atts ) {
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // プレイボタンのクリックイベント
-        const playButtons = document.querySelectorAll('.noveltool-play-button');
+        // ゲームカードのクリックイベント（アーカイブテンプレートと統一）
+        const gameCards = document.querySelectorAll('.novel-game-card');
         
         // ゲーム選択モーダル要素
         const gameSelectionOverlay = document.getElementById('game-selection-modal-overlay');
@@ -1130,9 +1300,9 @@ function noveltool_game_list_shortcode( $atts ) {
             }
         }
         
-        // プレイボタンのクリックイベント設定
-        playButtons.forEach(function(button) {
-            button.addEventListener('click', function(e) {
+        // ゲームカードのクリックイベント設定（アーカイブテンプレートと同じ処理）
+        gameCards.forEach(function(card) {
+            card.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -1145,6 +1315,15 @@ function noveltool_game_list_shortcode( $atts ) {
                 };
                 
                 showGameSelectionModal(gameData);
+            });
+            
+            // ホバー効果
+            card.addEventListener('mouseenter', function() {
+                this.classList.add('hovered');
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.classList.remove('hovered');
             });
         });
         
@@ -1408,66 +1587,6 @@ function noveltool_shortcode_styles() {
         margin-top: 15px;
     }
     
-    /* 新しいゲーム一覧グリッド */
-    .noveltool-game-list-grid {
-        display: grid;
-        gap: 20px;
-        margin: 20px 0;
-    }
-    
-    .noveltool-game-list-grid.noveltool-columns-1 {
-        grid-template-columns: 1fr;
-    }
-    
-    .noveltool-game-list-grid.noveltool-columns-2 {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    }
-    
-    .noveltool-game-list-grid.noveltool-columns-3 {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    }
-    
-    .noveltool-game-list-grid.noveltool-columns-4 {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    }
-    
-    .noveltool-game-list-grid.noveltool-columns-5 {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    }
-    
-    .noveltool-game-list-grid.noveltool-columns-6 {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    }
-    
-    @media (max-width: 768px) {
-        .noveltool-game-list-grid {
-            grid-template-columns: 1fr !important;
-        }
-    }
-    
-    .noveltool-game-list-item {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .noveltool-game-list-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .noveltool-no-games {
-        text-align: center;
-        padding: 40px;
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        color: #666;
-    }
-    
     .noveltool-post-item,
     .noveltool-game-item {
         border: 1px solid #ddd;
@@ -1487,14 +1606,6 @@ function noveltool_shortcode_styles() {
         height: 100%;
         object-fit: cover;
         transition: transform 0.3s ease;
-    }
-    
-    .noveltool-game-list-item .noveltool-game-thumbnail img {
-        height: 180px;
-    }
-    
-    .noveltool-game-list-item:hover .noveltool-game-thumbnail img {
-        transform: scale(1.05);
     }
     
     .noveltool-post-content,
@@ -1523,13 +1634,6 @@ function noveltool_shortcode_styles() {
         margin-bottom: 10px;
     }
     
-    .noveltool-game-description {
-        color: #666;
-        font-size: 0.9em;
-        margin-bottom: 10px;
-        line-height: 1.4;
-    }
-    
     .noveltool-post-date,
     .noveltool-game-count {
         color: #999;
@@ -1551,29 +1655,6 @@ function noveltool_shortcode_styles() {
     .noveltool-game-link:hover {
         background: #005a87;
         color: white;
-    }
-    
-    .noveltool-play-button {
-        display: inline-block;
-        padding: 10px 20px;
-        background: #ff6b6b;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-    
-    .noveltool-play-button:hover {
-        background: #ff5252;
-        color: white;
-        transform: translateY(-1px);
-    }
-    
-    .noveltool-game-actions {
-        text-align: center;
-        margin-top: 10px;
     }
     </style>
     <?php
