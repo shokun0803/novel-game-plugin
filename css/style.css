@@ -63,6 +63,140 @@
 }
 
 /* =============================================================================
+   ゲーム再開ダイアログ スタイル
+   ============================================================================= */
+
+/* 再開ダイアログオーバーレイ */
+.novel-resume-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2147483648;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+/* 再開ダイアログ本体 */
+.novel-resume-dialog {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: resume-dialog-appear 0.3s ease-out;
+}
+
+@keyframes resume-dialog-appear {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* ダイアログタイトル */
+.novel-resume-dialog h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+/* ダイアログメッセージ */
+.novel-resume-dialog p {
+    margin: 0 0 25px 0;
+    color: #666;
+    line-height: 1.6;
+    font-size: 1em;
+}
+
+.novel-resume-dialog small {
+    color: #999;
+    font-size: 0.9em;
+}
+
+/* ボタンコンテナ */
+.novel-resume-dialog > div:last-child {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ダイアログボタン */
+.novel-resume-dialog button {
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    min-width: 120px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+/* 再開ボタン */
+.novel-resume-dialog button:first-of-type {
+    background: #4CAF50;
+    color: white;
+}
+
+.novel-resume-dialog button:first-of-type:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+/* 最初からボタン */
+.novel-resume-dialog button:last-of-type {
+    background: #f44336;
+    color: white;
+}
+
+.novel-resume-dialog button:last-of-type:hover {
+    background: #da190b;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+}
+
+/* ボタン押下効果 */
+.novel-resume-dialog button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* モバイル対応 */
+@media (max-width: 480px) {
+    .novel-resume-dialog {
+        padding: 20px;
+        margin: 20px;
+        max-width: none;
+        width: calc(100% - 40px);
+    }
+    
+    .novel-resume-dialog > div:last-child {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .novel-resume-dialog button {
+        min-width: 100%;
+        padding: 15px 20px;
+        font-size: 16px;
+    }
+}
+
+/* =============================================================================
    ベーススタイル
    ============================================================================= */
 
@@ -98,6 +232,95 @@ html.modal-open {
     color: white;
     border: none;
     padding: 20px 40px;
+    border-radius: 50px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 10px 10px 0;
+    display: inline-block;
+}
+
+.novel-game-start-btn:hover {
+    background: linear-gradient(45deg, #ff5252, #d84315);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+}
+
+.novel-game-start-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.5);
+}
+
+/* 進捗クリアボタン */
+.novel-game-clear-progress-btn {
+    background: linear-gradient(45deg, #6c757d, #495057);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 10px 10px 0;
+    display: inline-block;
+    opacity: 0.8;
+}
+
+.novel-game-clear-progress-btn:hover {
+    background: linear-gradient(45deg, #5a6268, #343a40);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    opacity: 1;
+}
+
+.novel-game-clear-progress-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(108, 117, 125, 0.3);
+}
+
+/* ボタンコンテナのレスポンシブ調整 */
+.novel-game-start-container {
+    text-align: center;
+    margin: 20px 0;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 480px) {
+    .novel-game-start-container {
+        padding: 30px 15px;
+    }
+    
+    .novel-game-start-btn,
+    .novel-game-clear-progress-btn {
+        display: block;
+        width: 100%;
+        margin: 0 0 10px 0;
+        max-width: 280px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .novel-game-start-btn {
+        font-size: 16px;
+        padding: 18px 30px;
+    }
+    
+    .novel-game-clear-progress-btn {
+        font-size: 13px;
+        padding: 12px 20px;
+    }
+}
     font-size: 24px;
     font-weight: bold;
     border-radius: 50px;

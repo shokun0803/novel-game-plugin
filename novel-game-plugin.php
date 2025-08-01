@@ -389,6 +389,9 @@ function noveltool_filter_novel_game_content( $content ) {
         <button id="novel-game-start-btn" class="novel-game-start-btn">
             <?php echo esc_html__( 'ゲームを開始', 'novel-game-plugin' ); ?>
         </button>
+        <button id="novel-game-clear-progress-btn" class="novel-game-clear-progress-btn" style="display: none;">
+            <?php echo esc_html__( '進捗をクリア', 'novel-game-plugin' ); ?>
+        </button>
     </div>
 
     <!-- モーダルオーバーレイ -->
