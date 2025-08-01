@@ -566,14 +566,28 @@ function noveltool_game_list_shortcode( $atts ) {
         }
         
         $first_post = $posts[0];
-        $background = get_post_meta( $first_post->ID, '_background_image', true );
         $post_count = count( noveltool_get_posts_by_game_title( $game_title ) );
         
-        // ゲーム説明の取得（新しいゲーム管理システムから）
+        // ゲーム情報の取得（新しいゲーム管理システムから）
         $game_description = '';
+        $game_title_image = '';
         $game = noveltool_get_game_by_title( $game_title );
-        if ( $game && ! empty( $game['description'] ) ) {
-            $game_description = $game['description'];
+        if ( $game ) {
+            if ( ! empty( $game['description'] ) ) {
+                $game_description = $game['description'];
+            }
+            if ( ! empty( $game['title_image'] ) ) {
+                $game_title_image = $game['title_image'];
+            }
+        }
+        
+        // 画像の優先順位：ゲーム専用タイトル画像 > 最初のシーンの背景画像
+        $game_image = '';
+        if ( ! empty( $game_title_image ) ) {
+            $game_image = $game_title_image;
+        } else {
+            // タイトル画像がない場合のみ最初のシーンの背景画像を使用
+            $game_image = get_post_meta( $first_post->ID, '_background_image', true );
         }
         
         // アーカイブテンプレートと同じHTML構造を使用
@@ -581,12 +595,12 @@ function noveltool_game_list_shortcode( $atts ) {
         echo 'data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" ';
         echo 'data-game-title="' . esc_attr( $game_title ) . '" ';
         echo 'data-game-description="' . esc_attr( $game_description ) . '" ';
-        echo 'data-game-image="' . esc_attr( $background ) . '" ';
+        echo 'data-game-image="' . esc_attr( $game_image ) . '" ';
         echo 'data-scene-count="' . esc_attr( $post_count ) . '">';
         
         echo '<div class="game-thumbnail">';
-        if ( $background ) {
-            echo '<img src="' . esc_url( $background ) . '" alt="' . esc_attr( $game_title ) . '" class="game-bg-image">';
+        if ( $game_image ) {
+            echo '<img src="' . esc_url( $game_image ) . '" alt="' . esc_attr( $game_title ) . '" class="game-bg-image">';
         } else {
             echo '<div class="game-placeholder">';
             echo '<span class="placeholder-text">' . esc_html__( 'No Image', 'novel-game-plugin' ) . '</span>';
@@ -1155,22 +1169,31 @@ function noveltool_game_list_shortcode( $atts ) {
     // ゲーム選択モーダル JavaScript を追加
     ?>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // ゲームカードのクリックイベント（アーカイブテンプレートと統一）
-        const gameCards = document.querySelectorAll('.novel-game-card');
+    (function() {
+        'use strict';
         
-        // ゲーム選択モーダル要素
-        const gameSelectionOverlay = document.getElementById('game-selection-modal-overlay');
-        const gameSelectionTitle = document.getElementById('game-selection-title');
-        const gameSelectionDescription = document.getElementById('game-selection-description');
-        const gameSelectionSceneCount = document.getElementById('game-selection-scene-count');
-        const gameSelectionImage = document.getElementById('game-selection-image');
-        const gameStartNewBtn = document.getElementById('game-start-new-btn');
-        const gameResumeBtn = document.getElementById('game-resume-btn');
-        const gameSelectionCloseBtn = document.getElementById('game-selection-close-btn');
-        
-        // 現在選択されているゲーム情報
-        let currentGameData = null;
+        function initGameSelectionModal() {
+            // ゲームカードのクリックイベント（アーカイブテンプレートと統一）
+            const gameCards = document.querySelectorAll('.novel-game-card');
+            
+            // ゲーム選択モーダル要素
+            const gameSelectionOverlay = document.getElementById('game-selection-modal-overlay');
+            const gameSelectionTitle = document.getElementById('game-selection-title');
+            const gameSelectionDescription = document.getElementById('game-selection-description');
+            const gameSelectionSceneCount = document.getElementById('game-selection-scene-count');
+            const gameSelectionImage = document.getElementById('game-selection-image');
+            const gameStartNewBtn = document.getElementById('game-start-new-btn');
+            const gameResumeBtn = document.getElementById('game-resume-btn');
+            const gameSelectionCloseBtn = document.getElementById('game-selection-close-btn');
+            
+            // モーダル要素が存在しない場合は処理を停止
+            if (!gameSelectionOverlay) {
+                console.warn('ゲーム選択モーダル要素が見つかりません');
+                return;
+            }
+            
+            // 現在選択されているゲーム情報
+            let currentGameData = null;
         
         /**
          * ゲーム選択モーダルを表示
@@ -1302,29 +1325,35 @@ function noveltool_game_list_shortcode( $atts ) {
         
         // ゲームカードのクリックイベント設定（アーカイブテンプレートと同じ処理）
         gameCards.forEach(function(card) {
-            card.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
+            // 重複イベント防止のためのチェック
+            if (!card.dataset.gameListenerAttached) {
+                card.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const gameData = {
+                        url: this.getAttribute('data-game-url'),
+                        title: this.getAttribute('data-game-title'),
+                        description: this.getAttribute('data-game-description'),
+                        image: this.getAttribute('data-game-image'),
+                        sceneCount: this.getAttribute('data-scene-count')
+                    };
+                    
+                    showGameSelectionModal(gameData);
+                });
                 
-                const gameData = {
-                    url: this.getAttribute('data-game-url'),
-                    title: this.getAttribute('data-game-title'),
-                    description: this.getAttribute('data-game-description'),
-                    image: this.getAttribute('data-game-image'),
-                    sceneCount: this.getAttribute('data-scene-count')
-                };
+                // ホバー効果
+                card.addEventListener('mouseenter', function() {
+                    this.classList.add('hovered');
+                });
                 
-                showGameSelectionModal(gameData);
-            });
-            
-            // ホバー効果
-            card.addEventListener('mouseenter', function() {
-                this.classList.add('hovered');
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.classList.remove('hovered');
-            });
+                card.addEventListener('mouseleave', function() {
+                    this.classList.remove('hovered');
+                });
+                
+                // リスナーが追加されたことをマーク
+                card.dataset.gameListenerAttached = 'true';
+            }
         });
         
         // ボタンイベント設定
@@ -1347,7 +1376,19 @@ function noveltool_game_list_shortcode( $atts ) {
                 }
             });
         }
-    });
+    }
+    
+    // DOM読み込み完了後またはすぐに実行
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initGameSelectionModal);
+    } else {
+        // DOMが既に読み込み済みの場合は即座に実行
+        initGameSelectionModal();
+    }
+    
+    // ページに動的にコンテンツが追加された場合への対応
+    setTimeout(initGameSelectionModal, 100);
+    })();
     </script>
     <?php
     
