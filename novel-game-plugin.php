@@ -605,7 +605,12 @@ function noveltool_game_list_shortcode( $atts ) {
         }
         
         echo '<div class="noveltool-game-actions">';
-        echo '<button class="noveltool-play-button" data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" data-game-title="' . esc_attr( $game_title ) . '">';
+        echo '<button class="noveltool-play-button" ';
+        echo 'data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" ';
+        echo 'data-game-title="' . esc_attr( $game_title ) . '" ';
+        echo 'data-game-description="' . esc_attr( $game_description ) . '" ';
+        echo 'data-game-image="' . esc_attr( $background ) . '" ';
+        echo 'data-scene-count="' . esc_attr( $post_count ) . '">';
         echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
         echo '</button>';
         echo '</div>';
@@ -615,6 +620,326 @@ function noveltool_game_list_shortcode( $atts ) {
     }
     
     echo '</div>'; // .noveltool-game-list-grid
+    
+    // ゲーム選択モーダル CSS を追加
+    ?>
+    <style>
+    /* ゲーム選択モーダル */
+    .game-selection-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 2147483646; /* ゲームモーダルより少し低い */
+        display: none;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(5px);
+        transition: opacity 0.3s ease;
+    }
+
+    /* ゲーム選択モーダルコンテンツ */
+    .game-selection-modal-content {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 20px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        position: relative;
+        animation: game-selection-appear 0.4s ease-out;
+    }
+
+    @keyframes game-selection-appear {
+        from {
+            opacity: 0;
+            transform: scale(0.9) translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    /* 閉じるボタン */
+    .game-selection-close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        background: rgba(0, 0, 0, 0.1);
+        border: none;
+        border-radius: 50%;
+        color: #666;
+        font-size: 18px;
+        cursor: pointer;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .game-selection-close-btn:hover {
+        background: rgba(0, 0, 0, 0.2);
+        color: #333;
+        transform: scale(1.1);
+    }
+
+    /* ゲーム選択ヘッダー */
+    .game-selection-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 30px 30px 20px 30px;
+        text-align: center;
+    }
+
+    /* ゲーム選択画像 */
+    .game-selection-image {
+        width: 100%;
+        max-width: 300px;
+        height: 180px;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .game-selection-bg-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .game-selection-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    /* ゲーム選択情報 */
+    .game-selection-info {
+        width: 100%;
+    }
+
+    .game-selection-title {
+        font-size: clamp(1.4em, 4vw, 2em);
+        font-weight: bold;
+        color: #333;
+        margin: 0 0 15px 0;
+        line-height: 1.3;
+    }
+
+    .game-selection-description {
+        font-size: clamp(0.9em, 2.5vw, 1.1em);
+        color: #666;
+        line-height: 1.6;
+        margin: 0 0 15px 0;
+        max-height: 100px;
+        overflow-y: auto;
+    }
+
+    .game-selection-scene-count {
+        font-size: clamp(0.8em, 2vw, 1em);
+        color: #888;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    /* ゲーム選択アクション */
+    .game-selection-actions {
+        padding: 20px 30px 30px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* ゲームアクションボタン */
+    .game-action-btn {
+        display: flex;
+        align-items: center;
+        padding: 20px 25px;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        position: relative;
+        overflow: hidden;
+        min-height: 70px;
+        text-align: left;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .game-action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .game-action-btn:active {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    /* ゲーム開始ボタン */
+    .game-start-btn {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+    }
+
+    .game-start-btn:hover {
+        box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+    }
+
+    .game-start-btn:active {
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+    }
+
+    /* ゲーム再開ボタン */
+    .game-resume-btn {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+    }
+
+    .game-resume-btn:hover {
+        box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
+    }
+
+    .game-resume-btn:active {
+        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+    }
+
+    /* ボタン内のアイコン */
+    .btn-icon {
+        font-size: 1.5em;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    /* ボタンテキストコンテナ */
+    .game-action-btn .btn-text,
+    .game-action-btn .btn-subtext {
+        display: block;
+        margin: 0;
+    }
+
+    .btn-text {
+        font-size: clamp(1.1em, 3vw, 1.3em);
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .btn-subtext {
+        font-size: clamp(0.8em, 2vw, 0.9em);
+        opacity: 0.9;
+        font-weight: normal;
+    }
+
+    /* レスポンシブ対応: ゲーム選択モーダル */
+    @media (max-width: 768px) {
+        .game-selection-modal-content {
+            width: 95%;
+            max-height: 90vh;
+            border-radius: 15px;
+        }
+        
+        .game-selection-header {
+            padding: 25px 20px 15px 20px;
+        }
+        
+        .game-selection-image {
+            height: 150px;
+            margin-bottom: 15px;
+        }
+        
+        .game-selection-actions {
+            padding: 15px 20px 25px 20px;
+            gap: 12px;
+        }
+        
+        .game-action-btn {
+            min-height: 60px;
+            padding: 15px 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .game-selection-modal-content {
+            width: 95%;
+            max-height: 95vh;
+            border-radius: 12px;
+        }
+        
+        .game-selection-header {
+            padding: 20px 15px 10px 15px;
+        }
+        
+        .game-selection-image {
+            height: 120px;
+            margin-bottom: 12px;
+        }
+        
+        .game-selection-actions {
+            padding: 10px 15px 20px 15px;
+            gap: 10px;
+        }
+        
+        .game-action-btn {
+            min-height: 55px;
+            padding: 12px 15px;
+        }
+        
+        .btn-icon {
+            margin-right: 10px;
+        }
+    }
+
+    /* 高コントラストモードへの対応 */
+    @media (prefers-contrast: high) {
+        .game-selection-modal-content {
+            background: #ffffff;
+            border: 3px solid #000000;
+        }
+        
+        .game-action-btn {
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .game-selection-close-btn {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #666;
+        }
+    }
+
+    /* 動きを減らす設定への対応 */
+    @media (prefers-reduced-motion: reduce) {
+        .game-selection-modal-content {
+            animation: none;
+        }
+        
+        .game-action-btn:hover {
+            transform: none;
+        }
+        
+        .game-action-btn:active {
+            transform: none;
+        }
+    }
+    </style>
+    <?php
     
     // モーダルオーバーレイを追加（ゲーム表示用）
     echo '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">';
@@ -628,54 +953,221 @@ function noveltool_game_list_shortcode( $atts ) {
     echo '    </div>';
     echo '</div>';
     
-    // JavaScript event handling を追加
+    // ゲーム選択モーダル
+    echo '<div id="game-selection-modal-overlay" class="game-selection-modal-overlay" style="display: none;">';
+    echo '    <div id="game-selection-modal-content" class="game-selection-modal-content">';
+    echo '        <button id="game-selection-close-btn" class="game-selection-close-btn" aria-label="' . esc_attr__( '閉じる', 'novel-game-plugin' ) . '" title="' . esc_attr__( '閉じる', 'novel-game-plugin' ) . '">';
+    echo '            <span class="close-icon">×</span>';
+    echo '        </button>';
+    echo '        <div class="game-selection-header">';
+    echo '            <div id="game-selection-image" class="game-selection-image"></div>';
+    echo '            <div class="game-selection-info">';
+    echo '                <h2 id="game-selection-title" class="game-selection-title"></h2>';
+    echo '                <p id="game-selection-description" class="game-selection-description"></p>';
+    echo '                <p id="game-selection-scene-count" class="game-selection-scene-count"></p>';
+    echo '            </div>';
+    echo '        </div>';
+    echo '        <div class="game-selection-actions">';
+    echo '            <button id="game-start-new-btn" class="game-action-btn game-start-btn">';
+    echo '                <span class="btn-icon">▶</span>';
+    echo '                <span class="btn-text">' . esc_html__( 'ゲーム開始', 'novel-game-plugin' ) . '</span>';
+    echo '                <small class="btn-subtext">' . esc_html__( '最初から始める', 'novel-game-plugin' ) . '</small>';
+    echo '            </button>';
+    echo '            <button id="game-resume-btn" class="game-action-btn game-resume-btn" style="display: none;">';
+    echo '                <span class="btn-icon">⏯</span>';
+    echo '                <span class="btn-text">' . esc_html__( '途中から始める', 'novel-game-plugin' ) . '</span>';
+    echo '                <small class="btn-subtext">' . esc_html__( '前回の続きから', 'novel-game-plugin' ) . '</small>';
+    echo '            </button>';
+    echo '        </div>';
+    echo '    </div>';
+    echo '</div>';
+    
+    // ゲーム選択モーダル JavaScript を追加
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // プレイボタンのクリックイベント
         const playButtons = document.querySelectorAll('.noveltool-play-button');
         
-        // モーダル関数が利用可能になるまで待機
-        function waitForModalAndSetupEvents() {
-            if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && window.novelGameModal.isAvailable && window.novelGameModal.isAvailable()) {
-                console.log('Modal functions found and available, setting up shortcode events');
-                setupPlayButtonEvents();
-            } else if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
-                console.log('Modal functions found but not available, setting up shortcode events anyway');
-                setupPlayButtonEvents();
+        // ゲーム選択モーダル要素
+        const gameSelectionOverlay = document.getElementById('game-selection-modal-overlay');
+        const gameSelectionTitle = document.getElementById('game-selection-title');
+        const gameSelectionDescription = document.getElementById('game-selection-description');
+        const gameSelectionSceneCount = document.getElementById('game-selection-scene-count');
+        const gameSelectionImage = document.getElementById('game-selection-image');
+        const gameStartNewBtn = document.getElementById('game-start-new-btn');
+        const gameResumeBtn = document.getElementById('game-resume-btn');
+        const gameSelectionCloseBtn = document.getElementById('game-selection-close-btn');
+        
+        // 現在選択されているゲーム情報
+        let currentGameData = null;
+        
+        /**
+         * ゲーム選択モーダルを表示
+         */
+        function showGameSelectionModal(gameData) {
+            currentGameData = gameData;
+            
+            // ゲーム情報を設定
+            gameSelectionTitle.textContent = gameData.title;
+            gameSelectionDescription.textContent = gameData.description || '<?php echo esc_js(__("ゲームの説明はありません。", "novel-game-plugin")); ?>';
+            gameSelectionSceneCount.textContent = gameData.sceneCount + ' <?php echo esc_js(__("シーン", "novel-game-plugin")); ?>';
+            
+            // ゲーム画像を設定
+            if (gameData.image) {
+                gameSelectionImage.innerHTML = '<img src="' + gameData.image + '" alt="' + gameData.title + '" class="game-selection-bg-image">';
             } else {
-                console.log('Modal functions not yet available for shortcode, waiting...');
-                setTimeout(waitForModalAndSetupEvents, 100);
+                gameSelectionImage.innerHTML = '<div class="game-selection-placeholder"><span><?php echo esc_js(__("No Image", "novel-game-plugin")); ?></span></div>';
+            }
+            
+            // 保存された進捗をチェック
+            checkGameProgress(gameData.title);
+            
+            // モーダルを表示
+            gameSelectionOverlay.style.display = 'flex';
+            gameSelectionOverlay.style.opacity = '0';
+            setTimeout(() => {
+                gameSelectionOverlay.style.opacity = '1';
+            }, 10);
+            
+            // ボディのスクロールを無効化
+            document.body.style.overflow = 'hidden';
+        }
+        
+        /**
+         * ゲーム選択モーダルを閉じる
+         */
+        function closeGameSelectionModal() {
+            gameSelectionOverlay.style.opacity = '0';
+            setTimeout(() => {
+                gameSelectionOverlay.style.display = 'none';
+                document.body.style.overflow = '';
+            }, 300);
+            currentGameData = null;
+        }
+        
+        /**
+         * ゲームの進捗をチェックして「途中から始める」ボタンの表示を制御
+         */
+        function checkGameProgress(gameTitle) {
+            try {
+                // ストレージキーを生成（frontend.jsと同じ方式）
+                const hostname = window.location.hostname || 'localhost';
+                const pathname = window.location.pathname || '/';
+                const pathDir = pathname.substring(0, pathname.lastIndexOf('/') + 1);
+                const siteId = hostname + pathDir;
+                const encodedTitle = btoa(unescape(encodeURIComponent(gameTitle))).replace(/[^a-zA-Z0-9]/g, '');
+                const encodedSiteId = btoa(unescape(encodeURIComponent(siteId))).replace(/[^a-zA-Z0-9]/g, '');
+                const storageKey = 'noveltool_progress_' + encodedSiteId + '_' + encodedTitle;
+                
+                const savedData = localStorage.getItem(storageKey);
+                
+                if (savedData) {
+                    const progressData = JSON.parse(savedData);
+                    const currentTime = Date.now();
+                    const savedTime = progressData.timestamp || 0;
+                    const maxAge = 30 * 24 * 60 * 60 * 1000; // 30日
+                    
+                    if (currentTime - savedTime <= maxAge) {
+                        // 有効な進捗データがある場合は「途中から始める」ボタンを表示
+                        gameResumeBtn.style.display = 'block';
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.warn('進捗チェックに失敗:', error);
+            }
+            
+            // 進捗データがない場合は「途中から始める」ボタンを非表示
+            gameResumeBtn.style.display = 'none';
+        }
+        
+        /**
+         * ゲームを開始（新規）
+         */
+        function startNewGame() {
+            if (!currentGameData) return;
+            
+            // 保存された進捗をクリア
+            try {
+                const hostname = window.location.hostname || 'localhost';
+                const pathname = window.location.pathname || '/';
+                const pathDir = pathname.substring(0, pathname.lastIndexOf('/') + 1);
+                const siteId = hostname + pathDir;
+                const encodedTitle = btoa(unescape(encodeURIComponent(currentGameData.title))).replace(/[^a-zA-Z0-9]/g, '');
+                const encodedSiteId = btoa(unescape(encodeURIComponent(siteId))).replace(/[^a-zA-Z0-9]/g, '');
+                const storageKey = 'noveltool_progress_' + encodedSiteId + '_' + encodedTitle;
+                localStorage.removeItem(storageKey);
+            } catch (error) {
+                console.warn('進捗クリアに失敗:', error);
+            }
+            
+            closeGameSelectionModal();
+            
+            // ゲームをモーダルで開始
+            if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
+                window.novelGameModal.open(currentGameData.url);
+            } else {
+                // フォールバック：ページ遷移
+                window.location.href = currentGameData.url;
             }
         }
         
-        function setupPlayButtonEvents() {
-            playButtons.forEach(function(button) {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault(); // デフォルト動作を防ぐ
-                    e.stopPropagation();
-                    
-                    const gameUrl = this.getAttribute('data-game-url');
-                    const gameTitle = this.getAttribute('data-game-title');
-                    console.log('Play button clicked in shortcode, URL:', gameUrl, 'Title:', gameTitle);
-                    
-                    if (gameUrl && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
-                        console.log('Calling modal open from shortcode');
-                        // モーダルでゲームを開始（ページ遷移せずに）
-                        window.novelGameModal.open(gameUrl);
-                    } else if (gameUrl) {
-                        console.log('Modal not available, using page navigation from shortcode');
-                        // フォールバック：ページ遷移
-                        window.location.href = gameUrl;
-                    } else {
-                        console.error('No game URL found on button');
-                    }
-                });
-            });
+        /**
+         * ゲームを再開
+         */
+        function resumeGame() {
+            if (!currentGameData) return;
+            
+            closeGameSelectionModal();
+            
+            // ゲームをモーダルで再開
+            if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
+                window.novelGameModal.open(currentGameData.url);
+            } else {
+                // フォールバック：ページ遷移
+                window.location.href = currentGameData.url;
+            }
         }
         
-        // モーダル関数の準備を待機
-        waitForModalAndSetupEvents();
+        // プレイボタンのクリックイベント設定
+        playButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const gameData = {
+                    url: this.getAttribute('data-game-url'),
+                    title: this.getAttribute('data-game-title'),
+                    description: this.getAttribute('data-game-description'),
+                    image: this.getAttribute('data-game-image'),
+                    sceneCount: this.getAttribute('data-scene-count')
+                };
+                
+                showGameSelectionModal(gameData);
+            });
+        });
+        
+        // ボタンイベント設定
+        if (gameStartNewBtn) gameStartNewBtn.addEventListener('click', startNewGame);
+        if (gameResumeBtn) gameResumeBtn.addEventListener('click', resumeGame);
+        if (gameSelectionCloseBtn) gameSelectionCloseBtn.addEventListener('click', closeGameSelectionModal);
+        
+        // ESCキーで閉じる
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && gameSelectionOverlay && gameSelectionOverlay.style.display === 'flex') {
+                closeGameSelectionModal();
+            }
+        });
+        
+        // オーバーレイクリックで閉じる（モーダル外をクリック）
+        if (gameSelectionOverlay) {
+            gameSelectionOverlay.addEventListener('click', function(e) {
+                if (e.target === gameSelectionOverlay) {
+                    closeGameSelectionModal();
+                }
+            });
+        }
     });
     </script>
     <?php
