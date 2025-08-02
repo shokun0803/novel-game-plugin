@@ -182,6 +182,9 @@
 			}
 		}
 		
+		// 進捗管理関数をグローバルスコープに公開
+		window.generateStorageKey = generateStorageKey;
+		
 		/**
 		 * 保存されたゲーム進捗を取得する
 		 *
@@ -222,6 +225,9 @@
 			return null;
 		}
 		
+		// 進捗管理関数をグローバルスコープに公開
+		window.getSavedGameProgress = getSavedGameProgress;
+		
 		/**
 		 * 特定のゲームの進捗を削除する
 		 *
@@ -241,6 +247,9 @@
 				console.warn( 'ゲーム進捗のクリアに失敗しました:', error );
 			}
 		}
+		
+		// 進捗管理関数をグローバルスコープに公開
+		window.clearGameProgress = clearGameProgress;
 		
 		/**
 		 * 現在のゲーム情報を設定する
@@ -1914,7 +1923,7 @@
 				return;
 			}
 			
-			var savedProgress = getSavedGameProgress( gameTitle );
+			var savedProgress = window.getSavedGameProgress( gameTitle );
 			var $gameResumeBtn = $( '#game-resume-btn' );
 			
 			if ( savedProgress && $gameResumeBtn.length > 0 ) {
@@ -1936,7 +1945,7 @@
 			console.log( 'Starting new game:', currentGameData.title );
 			
 			// 保存された進捗をクリア
-			clearGameProgress( currentGameData.title );
+			window.clearGameProgress( currentGameData.title );
 			
 			// モーダルを閉じる
 			closeGameSelectionModal();
