@@ -698,6 +698,219 @@ function noveltool_game_list_shortcode( $atts ) {
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     }
     
+    /* ゲーム選択モーダル CSS */
+    .game-selection-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 2147483646;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(5px);
+        transition: opacity 0.3s ease;
+    }
+    
+    .game-selection-modal-content {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 20px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        position: relative;
+        animation: game-selection-appear 0.4s ease-out;
+    }
+    
+    @keyframes game-selection-appear {
+        from {
+            opacity: 0;
+            transform: scale(0.8) translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+    
+    .game-selection-close-btn {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 20px;
+        color: #666;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+    
+    .game-selection-close-btn:hover {
+        background: rgba(255, 255, 255, 1);
+        color: #333;
+        transform: scale(1.05);
+    }
+    
+    .game-selection-header {
+        padding: 30px 30px 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .game-selection-image {
+        width: 100%;
+        height: 200px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .game-selection-bg-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .game-selection-placeholder {
+        color: #999;
+        font-size: 14px;
+    }
+    
+    .game-selection-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0 0 12px 0;
+        line-height: 1.3;
+    }
+    
+    .game-selection-description {
+        font-size: 16px;
+        color: #5a6c7d;
+        line-height: 1.6;
+        margin: 0 0 10px 0;
+    }
+    
+    .game-selection-scene-count {
+        font-size: 14px;
+        color: #7f8c8d;
+        margin: 0;
+        font-weight: 500;
+    }
+    
+    .game-selection-actions {
+        padding: 20px 30px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .game-action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 18px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .game-start-btn {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    }
+    
+    .game-start-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+    }
+    
+    .game-resume-btn {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+    }
+    
+    .game-resume-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+    }
+    
+    .btn-icon {
+        font-size: 18px;
+        margin-right: 12px;
+        opacity: 0.9;
+    }
+    
+    .btn-text {
+        font-size: 16px;
+        margin-right: auto;
+    }
+    
+    .btn-subtext {
+        font-size: 12px;
+        opacity: 0.8;
+        font-weight: 400;
+        margin-left: 8px;
+    }
+    
+    /* レスポンシブ対応 */
+    @media (max-width: 768px) {
+        .game-selection-modal-content {
+            margin: 20px;
+            width: calc(100% - 40px);
+            max-height: calc(100vh - 40px);
+        }
+        
+        .game-selection-header {
+            padding: 20px 20px 15px;
+        }
+        
+        .game-selection-actions {
+            padding: 15px 20px 20px;
+        }
+        
+        .game-selection-title {
+            font-size: 20px;
+        }
+        
+        .game-action-btn {
+            padding: 15px 20px;
+            font-size: 15px;
+        }
+        
+        .btn-text {
+            font-size: 15px;
+        }
+        
+        .btn-subtext {
+            font-size: 11px;
+        }
+    }
+    </style>
+    
     .noveltool-columns-6 .novel-games-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
