@@ -664,6 +664,44 @@ function noveltool_game_list_shortcode( $atts ) {
             </div>
         </div>
     </div>
+    
+    <!-- ゲームプレイ用モーダル HTML を追加 -->
+    <div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">
+        <!-- モーダルコンテンツ -->
+        <div id="novel-game-modal-content" class="novel-game-modal-content">
+            <!-- ゲーム閉じるボタン -->
+            <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>">
+                <span class="close-icon">×</span>
+            </button>
+            
+            <!-- ゲームコンテナ -->
+            <div id="novel-game-container" class="novel-game-container">
+                <!-- キャラクター表示エリア -->
+                <img id="novel-character-left" class="novel-character novel-character-left" style="display: none;" alt="<?php echo esc_attr__( '左キャラクター', 'novel-game-plugin' ); ?>" />
+                <img id="novel-character-center" class="novel-character novel-character-center" style="display: none;" alt="<?php echo esc_attr__( '中央キャラクター', 'novel-game-plugin' ); ?>" />
+                <img id="novel-character-right" class="novel-character novel-character-right" style="display: none;" alt="<?php echo esc_attr__( '右キャラクター', 'novel-game-plugin' ); ?>" />
+                <img id="novel-character" class="novel-character novel-character-center" style="display: none;" alt="<?php echo esc_attr__( 'キャラクター', 'novel-game-plugin' ); ?>" />
+
+                <div id="novel-speaker-name" class="novel-speaker-name"></div>
+                
+                <div id="novel-dialogue-box" class="novel-dialogue-box">
+                    <div id="novel-dialogue-text-container" class="novel-dialogue-text-container">
+                        <span id="novel-dialogue-text"></span>
+                    </div>
+                    <div id="novel-dialogue-continue" class="novel-dialogue-continue" style="display: none;">
+                        <span class="continue-indicator">▼</span>
+                    </div>
+                </div>
+
+                <div id="novel-choices" class="novel-choices"></div>
+
+                <script id="novel-dialogue-data" type="application/json">[]</script>
+                <script id="novel-base-background" type="application/json">""</script>
+                <script id="novel-characters-data" type="application/json">{}</script>
+                <script id="novel-choices-data" type="application/json">[]</script>
+            </div>
+        </div>
+    </div>
     <?php
     
     // ゲーム選択モーダル CSS を追加
@@ -696,6 +734,203 @@ function noveltool_game_list_shortcode( $atts ) {
     
     .noveltool-columns-5 .novel-games-grid {
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+    
+    /* ゲームプレイ用モーダル CSS */
+    .novel-game-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 2147483647;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .novel-game-modal-content {
+        width: 100%;
+        height: 100%;
+        background: #000;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .novel-game-close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        background: rgba(0, 0, 0, 0.8);
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        color: #fff;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    
+    .novel-game-close-btn:hover {
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+        border-color: #333;
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+    }
+    
+    #novel-game-container {
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: relative;
+        overflow: hidden;
+        touch-action: manipulation;
+    }
+    
+    .novel-character {
+        position: absolute;
+        max-height: 80%;
+        width: auto;
+        bottom: 0;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+    
+    .novel-character-left {
+        left: 10%;
+        transform: scaleX(-1);
+    }
+    
+    .novel-character-center {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .novel-character-right {
+        right: 10%;
+    }
+    
+    .novel-speaker-name {
+        position: absolute;
+        bottom: 100px;
+        left: 20px;
+        font-weight: bold;
+        color: #ffd700;
+        font-size: 0.9em;
+        opacity: 0.9;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 6px 12px;
+        border-radius: 4px;
+        display: block;
+        width: fit-content;
+        min-width: 80px;
+        min-height: 20px;
+        text-align: center;
+        z-index: 4;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    #novel-dialogue-box {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        z-index: 3;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        min-height: 120px;
+    }
+    
+    .novel-dialogue-text-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+    }
+    
+    #novel-dialogue-text {
+        white-space: pre-wrap;
+        word-break: break-all;
+        font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'Meiryo', 'メイリオ', sans-serif;
+        letter-spacing: 0.05em;
+        overflow-wrap: break-word;
+        max-height: calc(1.6em * 3);
+        overflow: hidden;
+        width: 100%;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+    
+    .novel-dialogue-continue {
+        position: absolute;
+        bottom: 10px;
+        right: 20px;
+        color: #fff;
+        font-size: 14px;
+        animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    #novel-choices {
+        position: absolute;
+        bottom: 140px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 5;
+        max-width: 80%;
+        width: auto;
+    }
+    
+    .novel-choice {
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        border: 2px solid #555;
+        border-radius: 8px;
+        padding: 12px 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        min-width: 200px;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    
+    .novel-choice:hover {
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+        border-color: #333;
+        transform: scale(1.05);
     }
     
     /* ゲーム選択モーダル CSS */
