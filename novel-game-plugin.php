@@ -909,7 +909,6 @@ function noveltool_game_list_shortcode( $atts ) {
             font-size: 11px;
         }
     }
-    </style>
     
     .noveltool-columns-6 .novel-games-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
