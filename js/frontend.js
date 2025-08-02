@@ -1947,15 +1947,16 @@
 			// 保存された進捗をクリア
 			window.clearGameProgress( currentGameData.title );
 			
-			// モーダルを閉じる
+			// モーダルを閉じる前にゲームURLを退避
+			var gameUrl = currentGameData.url;
 			closeGameSelectionModal();
 			
 			// ゲームをモーダルで開始
 			if ( typeof window.novelGameModal !== 'undefined' && window.novelGameModal && typeof window.novelGameModal.open === 'function' ) {
-				window.novelGameModal.open( currentGameData.url );
+				window.novelGameModal.open( gameUrl );
 			} else {
 				// フォールバック：ページ遷移
-				window.location.href = currentGameData.url;
+				window.location.href = gameUrl;
 			}
 		}
 		
@@ -1970,15 +1971,16 @@
 			
 			console.log( 'Resuming game:', currentGameData.title );
 			
-			// モーダルを閉じる
+			// モーダルを閉じる前にゲームURLを退避
+			var gameUrl = currentGameData.url;
 			closeGameSelectionModal();
 			
 			// ゲームをモーダルで再開
 			if ( typeof window.novelGameModal !== 'undefined' && window.novelGameModal && typeof window.novelGameModal.open === 'function' ) {
-				window.novelGameModal.open( currentGameData.url );
+				window.novelGameModal.open( gameUrl );
 			} else {
 				// フォールバック：ページ遷移
-				window.location.href = currentGameData.url;
+				window.location.href = gameUrl;
 			}
 		}
 		
