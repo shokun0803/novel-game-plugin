@@ -182,6 +182,9 @@
 			}
 		}
 		
+		// 進捗管理関数をグローバルスコープに公開
+		window.generateStorageKey = generateStorageKey;
+		
 		/**
 		 * 保存されたゲーム進捗を取得する
 		 *
@@ -222,6 +225,9 @@
 			return null;
 		}
 		
+		// 進捗管理関数をグローバルスコープに公開
+		window.getSavedGameProgress = getSavedGameProgress;
+		
 		/**
 		 * 特定のゲームの進捗を削除する
 		 *
@@ -241,6 +247,9 @@
 				console.warn( 'ゲーム進捗のクリアに失敗しました:', error );
 			}
 		}
+		
+		// 進捗管理関数をグローバルスコープに公開
+		window.clearGameProgress = clearGameProgress;
 		
 		/**
 		 * 現在のゲーム情報を設定する
@@ -492,7 +501,10 @@
 		 */
 		function openModal( gameUrl ) {
 			console.log( 'openModal called with URL:', gameUrl );
-			console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
+			
+			// モーダル要素を動的に再取得（ショートコード対応）
+			$modalOverlay = $( '#novel-game-modal-overlay' );
+			console.log( 'Modal overlay exists (re-checked):', $modalOverlay.length > 0 );
 			console.log( 'isModalOpen:', isModalOpen );
 			
 			if ( isModalOpen ) {
@@ -502,7 +514,7 @@
 			
 			// モーダル要素が存在しない場合はページ遷移
 			if ( $modalOverlay.length === 0 ) {
-				console.log( 'Modal overlay not found, redirecting to:', gameUrl );
+				console.log( 'Modal overlay not found after re-check, redirecting to:', gameUrl );
 				if ( gameUrl ) {
 					window.location.href = gameUrl;
 				}
@@ -1714,32 +1726,364 @@
 		window.novelGameModal = {
 			open: function( gameUrl ) {
 				console.log( 'novelGameModal.open called with URL:', gameUrl );
-				console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
+				
+				// モーダル要素を動的に検索（ショートコード対応）
+				var $currentModalOverlay = $( '#novel-game-modal-overlay' );
+				console.log( 'Modal overlay exists (dynamic check):', $currentModalOverlay.length > 0 );
 				
 				// モーダル要素が存在しない場合はページ遷移
-				if ( $modalOverlay.length === 0 ) {
+				if ( $currentModalOverlay.length === 0 ) {
 					console.log( 'Modal overlay not found, redirecting to:', gameUrl );
 					if ( gameUrl ) {
 						window.location.href = gameUrl;
 					}
 					return;
 				}
+				
+				// モーダル変数を更新してからオープン
+				$modalOverlay = $currentModalOverlay;
 				openModal( gameUrl );
 			},
 			close: function() {
 				console.log( 'novelGameModal.close called' );
+				// モーダル要素を動的に検索
+				var $currentModalOverlay = $( '#novel-game-modal-overlay' );
 				// モーダル要素が存在する場合のみ閉じる処理
-				if ( $modalOverlay.length > 0 ) {
+				if ( $currentModalOverlay.length > 0 ) {
+					$modalOverlay = $currentModalOverlay;
 					closeModal();
 				}
 			},
 			isAvailable: function() {
-				return $modalOverlay.length > 0;
+				var $currentModalOverlay = $( '#novel-game-modal-overlay' );
+				return $currentModalOverlay.length > 0;
 			}
 		};
 		
 		// デバッグ情報を出力
 		console.log( 'Novel Game Modal initialized. Modal overlay found:', $modalOverlay.length > 0 );
+		
+		// ゲーム選択モーダル機能の初期化
+		initializeGameSelectionModal();
 	} );
+	
+	/**
+	 * ゲーム選択モーダルの初期化
+	 * アーカイブページとショートコードの両方で動作する統一されたモーダル機能
+	 */
+	function initializeGameSelectionModal() {
+		console.log( 'Initializing game selection modal...' );
+		
+		// 現在のゲームデータ
+		var currentGameData = null;
+		
+		/**
+		 * モーダル要素を取得または作成
+		 */
+		function getOrCreateModalOverlay() {
+			var $gameSelectionOverlay = $( '#game-selection-modal-overlay' );
+			if ( $gameSelectionOverlay.length === 0 ) {
+				// モーダルHTMLが存在しない場合は動的に作成
+				createGameSelectionModalHTML();
+				$gameSelectionOverlay = $( '#game-selection-modal-overlay' );
+			}
+			return $gameSelectionOverlay;
+		}
+		
+		/**
+		 * ゲーム選択モーダルHTMLを動的に作成
+		 */
+		function createGameSelectionModalHTML() {
+			var modalHTML = `
+				<div id="game-selection-modal-overlay" class="game-selection-modal-overlay" style="display: none;">
+					<div id="game-selection-modal-content" class="game-selection-modal-content">
+						<button id="game-selection-close-btn" class="game-selection-close-btn" aria-label="閉じる" title="閉じる">
+							<span class="close-icon">×</span>
+						</button>
+						
+						<div class="game-selection-header">
+							<div id="game-selection-image" class="game-selection-image"></div>
+							<div class="game-selection-info">
+								<h2 id="game-selection-title" class="game-selection-title"></h2>
+								<p id="game-selection-description" class="game-selection-description"></p>
+								<p id="game-selection-scene-count" class="game-selection-scene-count"></p>
+							</div>
+						</div>
+						
+						<div class="game-selection-actions">
+							<button id="game-start-new-btn" class="game-action-btn game-start-btn">
+								<span class="btn-icon">▶</span>
+								<span class="btn-text">ゲーム開始</span>
+								<small class="btn-subtext">最初から始める</small>
+							</button>
+							
+							<button id="game-resume-btn" class="game-action-btn game-resume-btn" style="display: none;">
+								<span class="btn-icon">⏯</span>
+								<span class="btn-text">途中から始める</span>
+								<small class="btn-subtext">前回の続きから</small>
+							</button>
+						</div>
+					</div>
+				</div>
+			`;
+			
+			$( 'body' ).append( modalHTML );
+		}
+		
+		/**
+		 * ゲーム選択モーダルを表示
+		 */
+		function showGameSelectionModal( gameData ) {
+			if ( ! gameData ) {
+				console.error( 'Game data is required to show selection modal' );
+				return;
+			}
+			
+			console.log( 'Showing game selection modal for:', gameData.title );
+			console.log( 'Game data:', gameData );
+			
+			// 現在のゲームデータを保存
+			currentGameData = gameData;
+			
+			// モーダル要素を取得または作成
+			var $gameSelectionOverlay = getOrCreateModalOverlay();
+			
+			if ( $gameSelectionOverlay.length === 0 ) {
+				console.error( 'Failed to create or find modal overlay' );
+				return;
+			}
+			
+			console.log( 'Modal overlay found:', $gameSelectionOverlay.length );
+			
+			// モーダル内の情報を更新
+			var $title = $( '#game-selection-title' );
+			var $description = $( '#game-selection-description' );
+			var $sceneCount = $( '#game-selection-scene-count' );
+			
+			console.log( 'Modal elements found:', {
+				title: $title.length,
+				description: $description.length,
+				sceneCount: $sceneCount.length
+			} );
+			
+			$title.text( gameData.title || '' );
+			$description.text( gameData.description || '' );
+			$sceneCount.text( ( gameData.sceneCount || '0' ) + ' シーン' );
+			
+			// ゲーム画像を設定
+			var $gameSelectionImage = $( '#game-selection-image' );
+			if ( gameData.image ) {
+				$gameSelectionImage.html( '<img src="' + gameData.image + '" alt="' + gameData.title + '" class="game-selection-bg-image">' );
+			} else {
+				$gameSelectionImage.html( '<div class="game-selection-placeholder"><span>No Image</span></div>' );
+			}
+			
+			// 保存された進捗をチェック
+			checkGameProgress( gameData.title );
+			
+			console.log( 'Displaying modal...' );
+			
+			// モーダルを表示
+			$gameSelectionOverlay.css( {
+				'display': 'flex',
+				'opacity': '0',
+				'position': 'fixed',
+				'top': '0',
+				'left': '0',
+				'width': '100vw',
+				'height': '100vh',
+				'z-index': '2147483646'
+			} );
+			
+			setTimeout( function() {
+				$gameSelectionOverlay.css( 'opacity', '1' );
+				console.log( 'Modal should now be visible' );
+			}, 10 );
+			
+			// ボディのスクロールを無効化
+			$( 'body' ).css( 'overflow', 'hidden' );
+		}
+		
+		/**
+		 * ゲーム選択モーダルを閉じる
+		 */
+		function closeGameSelectionModal() {
+			console.log( 'Closing game selection modal' );
+			
+			var $gameSelectionOverlay = $( '#game-selection-modal-overlay' );
+			
+			if ( $gameSelectionOverlay.length === 0 ) {
+				console.log( 'Modal overlay not found, nothing to close' );
+				return;
+			}
+			
+			$gameSelectionOverlay.css( 'opacity', '0' );
+			
+			setTimeout( function() {
+				$gameSelectionOverlay.css( 'display', 'none' );
+				$( 'body' ).css( 'overflow', '' );
+			}, 300 );
+			
+			currentGameData = null;
+		}
+		
+		/**
+		 * ゲームの進捗をチェック
+		 */
+		function checkGameProgress( gameTitle ) {
+			if ( ! gameTitle ) {
+				$( '#game-resume-btn' ).hide();
+				return;
+			}
+			
+			var savedProgress = window.getSavedGameProgress( gameTitle );
+			var $gameResumeBtn = $( '#game-resume-btn' );
+			
+			if ( savedProgress && $gameResumeBtn.length > 0 ) {
+				$gameResumeBtn.show();
+			} else {
+				$gameResumeBtn.hide();
+			}
+		}
+		
+		/**
+		 * ゲームを新規開始
+		 */
+		function startNewGame() {
+			if ( ! currentGameData ) {
+				console.error( 'No current game data available' );
+				return;
+			}
+			
+			console.log( 'Starting new game:', currentGameData.title );
+			
+			// 保存された進捗をクリア
+			window.clearGameProgress( currentGameData.title );
+			
+			// モーダルを閉じる前にゲームURLを退避
+			var gameUrl = currentGameData.url;
+			closeGameSelectionModal();
+			
+			// ゲームをモーダルで開始
+			if ( typeof window.novelGameModal !== 'undefined' && window.novelGameModal && typeof window.novelGameModal.open === 'function' ) {
+				window.novelGameModal.open( gameUrl );
+			} else {
+				// フォールバック：ページ遷移
+				window.location.href = gameUrl;
+			}
+		}
+		
+		/**
+		 * ゲームを再開
+		 */
+		function resumeGame() {
+			if ( ! currentGameData ) {
+				console.error( 'No current game data available' );
+				return;
+			}
+			
+			console.log( 'Resuming game:', currentGameData.title );
+			
+			// モーダルを閉じる前にゲームURLを退避
+			var gameUrl = currentGameData.url;
+			closeGameSelectionModal();
+			
+			// ゲームをモーダルで再開
+			if ( typeof window.novelGameModal !== 'undefined' && window.novelGameModal && typeof window.novelGameModal.open === 'function' ) {
+				window.novelGameModal.open( gameUrl );
+			} else {
+				// フォールバック：ページ遷移
+				window.location.href = gameUrl;
+			}
+		}
+		
+		// イベントハンドラーの設定
+		function setupGameSelectionEvents() {
+			// デバッグ: イベント設定の確認
+			console.log( 'Setting up game selection events...' );
+			
+			// ゲームカードのクリックイベント（委譲イベント）
+			$( document ).on( 'click', '.novel-game-card', function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				console.log( 'Game card clicked:', $( this ).attr( 'data-game-title' ) );
+				console.log( 'Element classes:', $( this ).attr( 'class' ) );
+				console.log( 'All data attributes:', {
+					url: $( this ).attr( 'data-game-url' ),
+					title: $( this ).attr( 'data-game-title' ),
+					description: $( this ).attr( 'data-game-description' ),
+					image: $( this ).attr( 'data-game-image' ),
+					sceneCount: $( this ).attr( 'data-scene-count' )
+				} );
+				
+				var gameData = {
+					url: $( this ).attr( 'data-game-url' ),
+					title: $( this ).attr( 'data-game-title' ),
+					description: $( this ).attr( 'data-game-description' ) || '',
+					image: $( this ).attr( 'data-game-image' ) || '',
+					sceneCount: $( this ).attr( 'data-scene-count' ) || '0'
+				};
+				
+				if ( gameData.url && gameData.title ) {
+					console.log( 'Valid game data found, showing modal...' );
+					showGameSelectionModal( gameData );
+				} else {
+					console.error( 'Invalid game data:', gameData );
+				}
+			} );
+			
+			// ボタンイベント（委譲イベント）
+			$( document ).on( 'click', '#game-start-new-btn', function( e ) {
+				e.preventDefault();
+				console.log( 'Start new game button clicked' );
+				startNewGame();
+			} );
+			
+			$( document ).on( 'click', '#game-resume-btn', function( e ) {
+				e.preventDefault();
+				console.log( 'Resume game button clicked' );
+				resumeGame();
+			} );
+			
+			$( document ).on( 'click', '#game-selection-close-btn', function( e ) {
+				e.preventDefault();
+				console.log( 'Close modal button clicked' );
+				closeGameSelectionModal();
+			} );
+			
+			// ESCキーで閉じる
+			$( document ).on( 'keydown', function( e ) {
+				if ( e.which === 27 && $( '#game-selection-modal-overlay' ).is( ':visible' ) ) { // ESC key
+					console.log( 'ESC key pressed, closing modal' );
+					closeGameSelectionModal();
+				}
+			} );
+			
+			// オーバーレイクリックで閉じる
+			$( document ).on( 'click', '#game-selection-modal-overlay', function( e ) {
+				if ( e.target === this ) {
+					console.log( 'Overlay clicked, closing modal' );
+					closeGameSelectionModal();
+				}
+			} );
+			
+			console.log( 'Game selection events set up successfully' );
+		}
+		
+		// イベント設定
+		setupGameSelectionEvents();
+		
+		console.log( 'Game selection modal initialized successfully' );
+		
+		// グローバル関数として公開
+		window.novelGameSelectionModal = {
+			show: showGameSelectionModal,
+			close: closeGameSelectionModal,
+			isAvailable: function() {
+				return $( '#game-selection-modal-overlay' ).length > 0;
+			}
+		};
+	}
 
 } )( jQuery );
