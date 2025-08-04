@@ -469,31 +469,7 @@
 									console.log( 'Background image set:', baseBackground );
 								}
 								
-								// DOM更新完了後に要素を再取得（setTimeoutで確実に待機）
-								setTimeout( function() {
-									// 必要なDOM要素を再取得
-									$dialogueText = $( '#novel-dialogue-text' );
-									$dialogueBox = $( '#novel-dialogue-box' );
-									$speakerName = $( '#novel-speaker-name' );
-									$dialogueContinue = $( '#novel-dialogue-continue' );
-									$choicesContainer = $( '#novel-choices' );
-									
-									console.log( 'DOM elements re-obtained after content update:', {
-										text: $dialogueText.length,
-										box: $dialogueBox.length,
-										speaker: $speakerName.length,
-										continue: $dialogueContinue.length,
-										choices: $choicesContainer.length
-									} );
-									
-									// 動的コンテンツ読み込み後に選択肢を確実に非表示にする
-									if ( $choicesContainer && $choicesContainer.length > 0 ) {
-										$choicesContainer.hide();
-										console.log( 'Choices container hidden after dynamic content loading' );
-									}
-									
-									console.log( 'Game content loaded successfully' );
-								}, 10 ); // 短い遅延でDOM更新を確実に待つ
+								console.log( 'Game content loaded successfully' );
 							} else {
 								console.error( 'No valid game content found in response' );
 							}
@@ -579,10 +555,8 @@
 					
 					// 保存された進捗をチェック
 					checkAndOfferResumeOption().then( function() {
-						// モーダル表示後にゲームを初期化
-						setTimeout( function() {
-							initializeGameContent();
-						}, 100 );
+						// ゲームを初期化
+						initializeGameContent();
 					} );
 				} ).catch( function( error ) {
 					console.error( 'ゲームの読み込みに失敗しました:', error );
@@ -599,10 +573,8 @@
 				
 				// 保存された進捗をチェック
 				checkAndOfferResumeOption().then( function() {
-					// モーダル表示後にゲームを初期化
-					setTimeout( function() {
-						initializeGameContent();
-					}, 100 );
+					// ゲームを初期化
+					initializeGameContent();
 				} );
 			}
 			
@@ -1280,9 +1252,9 @@
 					// 既存のイベントハンドラーをクリーンアップ
 					$( document ).off( 'keydown.novel-choices' );
 					
-					// 選択後に選択肢を確実に非表示にする
+					// 選択後に選択肢を非表示にする
 					if ( $choicesContainer && $choicesContainer.length > 0 ) {
-						$choicesContainer.empty().hide();
+						$choicesContainer.hide();
 						console.log( 'Choices container hidden after choice selection' );
 					}
 					
@@ -1656,49 +1628,31 @@
 				return;
 			}
 			
-			// DOM要素を確実に再取得（動的読み込み後に必要）
-			// setTimeoutを使用してDOM更新の完了を待つ
-			setTimeout( function() {
-				$dialogueText = $( '#novel-dialogue-text' );
-				$dialogueBox = $( '#novel-dialogue-box' );
-				$speakerName = $( '#novel-speaker-name' );
-				$dialogueContinue = $( '#novel-dialogue-continue' );
-				$choicesContainer = $( '#novel-choices' );
-				
-				console.log( 'Dialogue elements found after DOM update:', {
-					text: $dialogueText.length,
-					box: $dialogueBox.length,
-					speaker: $speakerName.length,
-					continue: $dialogueContinue.length,
-					choices: $choicesContainer.length
-				} );
-				
-				// 以前のイベントハンドラーをクリーンアップ
-				$( window ).off( 'resize.game orientationchange.game' );
-				$gameContainer.off( '.novel-game' );
-				$( document ).off( 'keydown.novel-dialogue' );
+			// 以前のイベントハンドラーをクリーンアップ
+			$( window ).off( 'resize.game orientationchange.game' );
+			$gameContainer.off( '.novel-game' );
+			$( document ).off( 'keydown.novel-dialogue' );
 
-				// イベントリスナーの設定（DOM更新後に確実に実行）
-				setupGameInteraction();
+			// イベントリスナーの設定
+			setupGameInteraction();
 
-				// リサイズイベントの設定
-				$( window ).on( 'resize.game orientationchange.game', handleResize );
+			// リサイズイベントの設定
+			$( window ).on( 'resize.game orientationchange.game', handleResize );
 
-				// 初期調整
-				adjustForResponsive();
-				
-				// セリフデータがある場合は分割処理を実行
-				initializeDialogueContent();
-			}, 50 ); // DOM更新を待つため短い遅延を追加
+			// 初期調整
+			adjustForResponsive();
+			
+			// セリフデータがある場合は分割処理を実行
+			initializeDialogueContent();
 		}
 		
 		/**
 		 * セリフコンテンツの初期化処理を分離
 		 */
 		function initializeDialogueContent() {
-			// 初期化時に選択肢を確実に非表示にする
+			// 初期化時に選択肢を非表示にする
 			if ( $choicesContainer && $choicesContainer.length > 0 ) {
-				$choicesContainer.empty().hide();
+				$choicesContainer.hide();
 				console.log( 'Choices container hidden during initialization' );
 			}
 
@@ -1965,19 +1919,14 @@
 			// モーダルを表示
 			$gameSelectionOverlay.css( {
 				'display': 'flex',
-				'opacity': '0',
+				'opacity': '1',
 				'position': 'fixed',
 				'top': '0',
 				'left': '0',
 				'width': '100vw',
 				'height': '100vh',
-				'z-index': '2147483646'
+				'z-index': '2147483600'
 			} );
-			
-			setTimeout( function() {
-				$gameSelectionOverlay.css( 'opacity', '1' );
-				console.log( 'Modal should now be visible' );
-			}, 10 );
 			
 			// ボディのスクロールを無効化
 			$( 'body' ).css( 'overflow', 'hidden' );
@@ -1996,12 +1945,11 @@
 				return;
 			}
 			
-			$gameSelectionOverlay.css( 'opacity', '0' );
-			
-			setTimeout( function() {
-				$gameSelectionOverlay.css( 'display', 'none' );
-				$( 'body' ).css( 'overflow', '' );
-			}, 300 );
+			$gameSelectionOverlay.css( {
+				'display': 'none',
+				'opacity': '0'
+			} );
+			$( 'body' ).css( 'overflow', '' );
 			
 			currentGameData = null;
 		}

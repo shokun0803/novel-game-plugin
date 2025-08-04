@@ -74,7 +74,7 @@
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.85);
-    z-index: 2147483646; /* ゲームモーダルより少し低い */
+    z-index: 2147483600; /* ゲームモーダルより少し低い */
     display: none;
     align-items: center;
     justify-content: center;
@@ -2371,7 +2371,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.85);
-    z-index: 2147483646; /* ゲームモーダルより少し低い */
+    z-index: 2147483600; /* ゲームモーダルより少し低い */
     display: none;
     align-items: center;
     justify-content: center;
