@@ -469,14 +469,25 @@
 									console.log( 'Background image set:', baseBackground );
 								}
 								
-								// 必要なDOM要素を再取得
-								$dialogueText = $( '#novel-dialogue-text' );
-								$dialogueBox = $( '#novel-dialogue-box' );
-								$speakerName = $( '#novel-speaker-name' );
-								$dialogueContinue = $( '#novel-dialogue-continue' );
-								$choicesContainer = $( '#novel-choices' );
-								
-								console.log( 'Game content loaded successfully' );
+								// DOM更新完了後に要素を再取得（setTimeoutで確実に待機）
+								setTimeout( function() {
+									// 必要なDOM要素を再取得
+									$dialogueText = $( '#novel-dialogue-text' );
+									$dialogueBox = $( '#novel-dialogue-box' );
+									$speakerName = $( '#novel-speaker-name' );
+									$dialogueContinue = $( '#novel-dialogue-continue' );
+									$choicesContainer = $( '#novel-choices' );
+									
+									console.log( 'DOM elements re-obtained after content update:', {
+										text: $dialogueText.length,
+										box: $dialogueBox.length,
+										speaker: $speakerName.length,
+										continue: $dialogueContinue.length,
+										choices: $choicesContainer.length
+									} );
+									
+									console.log( 'Game content loaded successfully' );
+								}, 10 ); // 短い遅延でDOM更新を確実に待つ
 							} else {
 								console.error( 'No valid game content found in response' );
 							}
@@ -1474,27 +1485,45 @@
 		 * ゲームコンテナのクリック/タッチイベント
 		 */
 		function setupGameInteraction() {
+			console.log( 'Setting up game interaction events...' );
+			console.log( 'Game container exists:', $gameContainer.length > 0 );
+			console.log( 'Touch device:', isTouch );
+			
 			var eventType = isTouch ? 'touchend' : 'click';
 			
 			// 既存のイベントハンドラーをクリーンアップしてから設定
 			$gameContainer.off( 'click.novel-game touchend.novel-game touchstart.novel-game touchcancel.novel-game' );
+			$( document ).off( 'keydown.novel-dialogue' );
 			
+			// ゲームコンテナが存在しない場合は処理を中断
+			if ( $gameContainer.length === 0 ) {
+				console.error( 'Game container not found, cannot set up interaction' );
+				return;
+			}
+			
+			// クリック/タッチイベントの設定
 			$gameContainer.on( eventType + '.novel-game', function( e ) {
+				console.log( 'Game container interaction triggered:', e.type );
+				
 				// 選択肢が表示されている場合はクリックを無視
 				if ( $choicesContainer.is( ':visible' ) ) {
+					console.log( 'Choices visible, ignoring interaction' );
 					return;
 				}
 
 				// 選択肢要素がクリックされた場合も無視
 				if ( $( e.target ).hasClass( 'choice-item' ) || $( e.target ).closest( '.choice-list' ).length > 0 ) {
+					console.log( 'Choice item clicked, ignoring' );
 					return;
 				}
 				
 				// 「おわり」メッセージがクリックされた場合も無視（別途処理）
 				if ( $( e.target ).hasClass( 'game-end-message' ) ) {
+					console.log( 'End message clicked, ignoring' );
 					return;
 				}
 
+				console.log( 'Proceeding to next dialogue...' );
 				// 次のセリフを表示
 				showNextDialogue();
 			} );
@@ -1525,9 +1554,13 @@
 			}
 			
 			// キーボードイベント処理（Enter、Space）
-			// 既存のキーボードイベントをクリーンアップしてから設定
-			$( document ).off( 'keydown.novel-dialogue' );
+			// documentに委譲イベントで設定することで、DOM変更後も動作する
 			$( document ).on( 'keydown.novel-dialogue', function( e ) {
+				// モーダルが開いている時のみ処理
+				if ( ! isModalOpen ) {
+					return;
+				}
+				
 				// 選択肢が表示されている場合はキーボード操作を無視
 				if ( $choicesContainer.is( ':visible' ) ) {
 					return;
@@ -1536,9 +1569,12 @@
 				// EnterキーまたはSpaceキーでセリフを進める
 				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
 					e.preventDefault();
+					console.log( 'Keyboard interaction triggered:', e.which === 13 ? 'Enter' : 'Space' );
 					showNextDialogue();
 				}
 			} );
+			
+			console.log( 'Game interaction events set up successfully' );
 		}
 
 		/**
@@ -1601,33 +1637,46 @@
 				return;
 			}
 			
-			// DOM要素を再取得（動的読み込み後に必要）
-			$dialogueText = $( '#novel-dialogue-text' );
-			$dialogueBox = $( '#novel-dialogue-box' );
-			$speakerName = $( '#novel-speaker-name' );
-			$dialogueContinue = $( '#novel-dialogue-continue' );
-			$choicesContainer = $( '#novel-choices' );
-			
-			console.log( 'Dialogue elements found:', {
-				text: $dialogueText.length,
-				box: $dialogueBox.length,
-				speaker: $speakerName.length,
-				continue: $dialogueContinue.length,
-				choices: $choicesContainer.length
-			} );
-			
-			// 以前のイベントハンドラーをクリーンアップ
-			$( window ).off( 'resize.game orientationchange.game' );
-			$gameContainer.off( '.novel-game' );
+			// DOM要素を確実に再取得（動的読み込み後に必要）
+			// setTimeoutを使用してDOM更新の完了を待つ
+			setTimeout( function() {
+				$dialogueText = $( '#novel-dialogue-text' );
+				$dialogueBox = $( '#novel-dialogue-box' );
+				$speakerName = $( '#novel-speaker-name' );
+				$dialogueContinue = $( '#novel-dialogue-continue' );
+				$choicesContainer = $( '#novel-choices' );
+				
+				console.log( 'Dialogue elements found after DOM update:', {
+					text: $dialogueText.length,
+					box: $dialogueBox.length,
+					speaker: $speakerName.length,
+					continue: $dialogueContinue.length,
+					choices: $choicesContainer.length
+				} );
+				
+				// 以前のイベントハンドラーをクリーンアップ
+				$( window ).off( 'resize.game orientationchange.game' );
+				$gameContainer.off( '.novel-game' );
+				$( document ).off( 'keydown.novel-dialogue' );
 
-			// イベントリスナーの設定
-			setupGameInteraction();
+				// イベントリスナーの設定（DOM更新後に確実に実行）
+				setupGameInteraction();
 
-			// リサイズイベントの設定
-			$( window ).on( 'resize.game orientationchange.game', handleResize );
+				// リサイズイベントの設定
+				$( window ).on( 'resize.game orientationchange.game', handleResize );
 
-			// 初期調整
-			adjustForResponsive();
+				// 初期調整
+				adjustForResponsive();
+				
+				// セリフデータがある場合は分割処理を実行
+				initializeDialogueContent();
+			}, 50 ); // DOM更新を待つため短い遅延を追加
+		}
+		
+		/**
+		 * セリフコンテンツの初期化処理を分離
+		 */
+		function initializeDialogueContent() {
 
 			// セリフデータがある場合は分割処理を実行
 			if ( dialogues.length > 0 || dialogueData.length > 0 ) {
