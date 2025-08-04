@@ -486,6 +486,12 @@
 										choices: $choicesContainer.length
 									} );
 									
+									// 動的コンテンツ読み込み後に選択肢を確実に非表示にする
+									if ( $choicesContainer && $choicesContainer.length > 0 ) {
+										$choicesContainer.hide();
+										console.log( 'Choices container hidden after dynamic content loading' );
+									}
+									
 									console.log( 'Game content loaded successfully' );
 								}, 10 ); // 短い遅延でDOM更新を確実に待つ
 							} else {
@@ -1191,6 +1197,13 @@
 			// 次のページがある場合
 			if ( currentPageIndex < allDialoguePages.length - 1 ) {
 				currentPageIndex++;
+				
+				// セリフ送り中は選択肢を確実に非表示にする
+				if ( $choicesContainer && $choicesContainer.length > 0 ) {
+					$choicesContainer.hide();
+					console.log( 'Choices container hidden during dialogue progression' );
+				}
+				
 				displayCurrentPage();
 				
 				// 進捗を自動保存
@@ -1266,6 +1279,12 @@
 				if ( nextScene ) {
 					// 既存のイベントハンドラーをクリーンアップ
 					$( document ).off( 'keydown.novel-choices' );
+					
+					// 選択後に選択肢を確実に非表示にする
+					if ( $choicesContainer && $choicesContainer.length > 0 ) {
+						$choicesContainer.empty().hide();
+						console.log( 'Choices container hidden after choice selection' );
+					}
 					
 					// 1. まず古いデータを完全にクリア
 					dialogueData = [];
@@ -1677,6 +1696,11 @@
 		 * セリフコンテンツの初期化処理を分離
 		 */
 		function initializeDialogueContent() {
+			// 初期化時に選択肢を確実に非表示にする
+			if ( $choicesContainer && $choicesContainer.length > 0 ) {
+				$choicesContainer.empty().hide();
+				console.log( 'Choices container hidden during initialization' );
+			}
 
 			// セリフデータがある場合は分割処理を実行
 			if ( dialogues.length > 0 || dialogueData.length > 0 ) {
@@ -1714,6 +1738,12 @@
 					currentPageIndex = 0;
 					currentDialogueIndex = 0;
 					displayCurrentPage();
+				}
+				
+				// セリフ表示開始時に選択肢を確実に非表示にする
+				if ( $choicesContainer && $choicesContainer.length > 0 ) {
+					$choicesContainer.hide();
+					console.log( 'Choices container hidden after dialogue start' );
 				}
 				
 				// 現在のゲーム情報を設定（まだ設定されていない場合）
