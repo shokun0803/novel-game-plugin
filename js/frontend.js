@@ -1013,10 +1013,15 @@
 		 * すべてのセリフをページに分割して準備する
 		 */
 		function prepareDialoguePages() {
+			console.log( '=== prepareDialoguePages start ===' );
+			console.log( 'dialogueData input:', dialogueData );
+			
 			allDialoguePages = [];
 			
 			dialogueData.forEach( function( dialogue, dialogueIndex ) {
+				console.log( 'Processing dialogue', dialogueIndex, ':', dialogue );
 				const pages = splitTextIntoPages( dialogue.text );
+				console.log( 'Split into', pages.length, 'pages:', pages );
 				
 				pages.forEach( function( pageText, pageIndex ) {
 					allDialoguePages.push( {
@@ -1031,6 +1036,12 @@
 			
 			currentDialogueIndex = 0;
 			currentPageIndex = 0;
+			
+			console.log( 'prepareDialoguePages complete:' );
+			console.log( '- allDialoguePages.length:', allDialoguePages.length );
+			console.log( '- currentDialogueIndex:', currentDialogueIndex );
+			console.log( '- currentPageIndex:', currentPageIndex );
+			console.log( '=== prepareDialoguePages end ===' );
 		}
 		
 		/**
@@ -1127,8 +1138,17 @@
 		 * 現在のページを表示する
 		 */
 		function displayCurrentPage() {
+			console.log( '=== displayCurrentPage start ===' );
+			console.log( 'currentPageIndex:', currentPageIndex );
+			console.log( 'allDialoguePages.length:', allDialoguePages.length );
+			console.log( 'DOM elements status:' );
+			console.log( '- $dialogueText.length:', $dialogueText.length );
+			console.log( '- $speakerName.length:', $speakerName.length );
+			console.log( '- $dialogueContinue.length:', $dialogueContinue.length );
+			
 			if ( currentPageIndex < allDialoguePages.length ) {
 				const currentPage = allDialoguePages[ currentPageIndex ];
+				console.log( 'Current page:', currentPage );
 				
 				// 話者名を表示
 				displaySpeakerName( currentPage.speaker );
@@ -1148,14 +1168,18 @@
 				// 新しいセリフの最初のページの場合は背景を変更
 				if ( currentPage.isFirstPageOfDialogue && currentPage.background ) {
 					changeBackground( currentPage.background ).then( function() {
+						console.log( 'Setting dialogue text:', currentPage.text );
 						$dialogueText.text( currentPage.text );
 					} );
 				} else {
+					console.log( 'Setting dialogue text:', currentPage.text );
 					$dialogueText.text( currentPage.text );
 				}
 				
+				console.log( '=== displayCurrentPage end (success) ===' );
 				return true;
 			}
+			console.log( '=== displayCurrentPage end (no more pages) ===' );
 			return false;
 		}
 		
@@ -1163,12 +1187,17 @@
 		 * 次のページまたは選択肢を表示
 		 */
 		function showNextDialogue() {
+			console.log( '=== showNextDialogue start ===' );
+			console.log( 'currentPageIndex before:', currentPageIndex );
+			console.log( 'allDialoguePages.length:', allDialoguePages.length );
+			
 			// キーボードイベントリスナーをクリーンアップ
 			$( document ).off( 'keydown.novel-choices' );
 			
 			// 次のページがある場合
 			if ( currentPageIndex < allDialoguePages.length - 1 ) {
 				currentPageIndex++;
+				console.log( 'Moving to next page:', currentPageIndex );
 				
 				// セリフ送り中は選択肢を確実に非表示にする
 				if ( $choicesContainer && $choicesContainer.length > 0 ) {
@@ -1181,6 +1210,7 @@
 				// 進捗を自動保存
 				autoSaveGameProgress();
 			} else {
+				console.log( 'All dialogue finished, showing choices' );
 				// すべてのセリフが終わったら選択肢を表示
 				$dialogueBox.hide();
 				
@@ -1192,6 +1222,8 @@
 				
 				showChoices();
 			}
+			
+			console.log( '=== showNextDialogue end ===' );
 		}
 
 		/**
@@ -1633,6 +1665,9 @@
 			$gameContainer.off( '.novel-game' );
 			$( document ).off( 'keydown.novel-dialogue' );
 
+			// モーダルでコンテンツが動的に読み込まれた場合、DOM要素を再取得
+			reObtainDOMElements();
+
 			// イベントリスナーの設定
 			setupGameInteraction();
 
@@ -1647,9 +1682,32 @@
 		}
 		
 		/**
+		 * DOM要素を再取得する（コンテンツ動的読み込み後に使用）
+		 */
+		function reObtainDOMElements() {
+			console.log( 'Re-obtaining DOM elements after content update...' );
+			
+			// 新しく読み込まれたコンテンツから DOM要素を再取得
+			$dialogueText = $( '#novel-dialogue-text' );
+			$dialogueBox = $( '#novel-dialogue-box' );
+			$speakerName = $( '#novel-speaker-name' );
+			$dialogueContinue = $( '#novel-dialogue-continue' );
+			$choicesContainer = $( '#novel-choices' );
+			
+			console.log( 'DOM elements after re-obtaining:' );
+			console.log( '- dialogueText:', $dialogueText.length );
+			console.log( '- dialogueBox:', $dialogueBox.length );
+			console.log( '- speakerName:', $speakerName.length );
+			console.log( '- dialogueContinue:', $dialogueContinue.length );
+			console.log( '- choicesContainer:', $choicesContainer.length );
+		}
+
+		/**
 		 * セリフコンテンツの初期化処理を分離
 		 */
 		function initializeDialogueContent() {
+			console.log( '=== initializeDialogueContent start ===' );
+			
 			// 初期化時に選択肢を非表示にする
 			if ( $choicesContainer && $choicesContainer.length > 0 ) {
 				$choicesContainer.hide();
@@ -1659,6 +1717,8 @@
 			// セリフデータがある場合は分割処理を実行
 			if ( dialogues.length > 0 || dialogueData.length > 0 ) {
 				console.log( 'Preparing dialogue pages' );
+				console.log( 'dialogueData.length:', dialogueData.length );
+				console.log( 'dialogues.length:', dialogues.length );
 				
 				// データの検証とクリーンアップ
 				if ( dialogueData.length === 0 && dialogues.length > 0 ) {
@@ -1682,6 +1742,12 @@
 				console.log( 'Cleaned dialogue data, final length:', dialogueData.length );
 				
 				prepareDialoguePages();
+				
+				console.log( 'After prepareDialoguePages:' );
+				console.log( '- allDialoguePages.length:', allDialoguePages.length );
+				console.log( '- currentPageIndex:', currentPageIndex );
+				console.log( '- currentDialogueIndex:', currentDialogueIndex );
+				console.log( '- allDialoguePages content preview:', allDialoguePages.slice( 0, 3 ) );
 				
 				// 保存された進捗がある場合はその位置から開始、なければ最初から
 				if ( currentPageIndex > 0 && currentPageIndex < allDialoguePages.length ) {
@@ -1719,6 +1785,8 @@
 				console.log( 'Game container content length:', containerContent ? containerContent.length : 0 );
 				console.log( 'Game container content (first 200 chars):', containerContent ? containerContent.substring( 0, 200 ) : 'empty' );
 			}
+			
+			console.log( '=== initializeDialogueContent end ===' );
 		}
 
 		/**
