@@ -246,50 +246,6 @@
 		window.getSavedGameProgress = getSavedGameProgress;
 		window.clearGameProgress = clearGameProgress;
 		window.generateStorageKey = generateStorageKey;
-				
-				if ( savedData ) {
-					var progressData = JSON.parse( savedData );
-					
-					// データの有効性をチェック（30日以内のデータのみ有効）
-					var currentTime = Date.now();
-					var savedTime = progressData.timestamp || 0;
-					var maxAge = 30 * 24 * 60 * 60 * 1000; // 30日（ミリ秒）
-					
-					if ( currentTime - savedTime > maxAge ) {
-						console.log( '保存されたゲーム進捗が古いため削除します' );
-						localStorage.removeItem( storageKey );
-						return null;
-					}
-					
-					console.log( '保存されたゲーム進捗を取得しました:', progressData );
-					return progressData;
-				}
-			} catch ( error ) {
-				console.warn( 'ゲーム進捗の取得に失敗しました:', error );
-			}
-			
-			return null;
-		}
-		
-		/**
-		 * 特定のゲームの進捗を削除する
-		 *
-		 * @param {string} gameTitle ゲームタイトル
-		 * @since 1.2.0
-		 */
-		function clearGameProgress( gameTitle ) {
-			if ( ! gameTitle ) {
-				return;
-			}
-			
-			try {
-				var storageKey = generateStorageKey( gameTitle );
-				localStorage.removeItem( storageKey );
-				console.log( 'ゲーム進捗をクリアしました:', gameTitle );
-			} catch ( error ) {
-				console.warn( 'ゲーム進捗のクリアに失敗しました:', error );
-			}
-		}
 		
 		/**
 		 * 現在のゲーム情報を設定する
