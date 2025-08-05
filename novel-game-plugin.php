@@ -577,7 +577,7 @@ function noveltool_game_list_shortcode( $atts ) {
             }
         }
         
-        echo '<div class="noveltool-game-list-item">';
+        echo '<div class="noveltool-game-list-item noveltool-game-item">';
         
         if ( $background ) {
             echo '<div class="noveltool-game-thumbnail">';
@@ -605,7 +605,11 @@ function noveltool_game_list_shortcode( $atts ) {
         }
         
         echo '<div class="noveltool-game-actions">';
-        echo '<button class="noveltool-play-button" data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" data-game-title="' . esc_attr( $game_title ) . '">';
+        echo '<button class="noveltool-play-button" ' .
+             'data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" ' .
+             'data-game-title="' . esc_attr( $game_title ) . '" ' .
+             'data-game-description="' . esc_attr( $game_description ) . '" ' .
+             'data-game-subtitle="">';
         echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
         echo '</button>';
         echo '</div>';
@@ -615,6 +619,28 @@ function noveltool_game_list_shortcode( $atts ) {
     }
     
     echo '</div>'; // .noveltool-game-list-grid
+    
+    // ゲーム選択モーダルを追加
+    echo '<div id="novel-game-selection-modal-overlay" class="novel-game-selection-modal-overlay" style="display: none;">';
+    echo '    <div class="novel-game-selection-modal">';
+    echo '        <div class="novel-game-selection-modal-header">';
+    echo '            <button class="novel-game-selection-modal-close" aria-label="' . esc_attr__('閉じる', 'novel-game-plugin') . '">×</button>';
+    echo '            <h2 class="novel-game-selection-modal-title" id="novel-game-selection-title"></h2>';
+    echo '            <p class="novel-game-selection-modal-subtitle" id="novel-game-selection-subtitle"></p>';
+    echo '            <p class="novel-game-selection-modal-description" id="novel-game-selection-description"></p>';
+    echo '        </div>';
+    echo '        <div class="novel-game-selection-modal-body">';
+    echo '            <div class="novel-game-selection-modal-buttons">';
+    echo '                <button class="novel-game-selection-modal-btn novel-game-selection-start-btn" id="novel-game-selection-start">';
+    echo                      esc_html__('ゲーム開始', 'novel-game-plugin');
+    echo '                </button>';
+    echo '                <button class="novel-game-selection-modal-btn novel-game-selection-continue-btn hidden" id="novel-game-selection-continue">';
+    echo                      esc_html__('途中から始める', 'novel-game-plugin');
+    echo '                </button>';
+    echo '            </div>';
+    echo '        </div>';
+    echo '    </div>';
+    echo '</div>';
     
     // モーダルオーバーレイを追加（ゲーム表示用）
     echo '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">';
@@ -627,58 +653,6 @@ function noveltool_game_list_shortcode( $atts ) {
     echo '        </div>';
     echo '    </div>';
     echo '</div>';
-    
-    // JavaScript event handling を追加
-    ?>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // プレイボタンのクリックイベント
-        const playButtons = document.querySelectorAll('.noveltool-play-button');
-        
-        // モーダル関数が利用可能になるまで待機
-        function waitForModalAndSetupEvents() {
-            if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && window.novelGameModal.isAvailable && window.novelGameModal.isAvailable()) {
-                console.log('Modal functions found and available, setting up shortcode events');
-                setupPlayButtonEvents();
-            } else if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
-                console.log('Modal functions found but not available, setting up shortcode events anyway');
-                setupPlayButtonEvents();
-            } else {
-                console.log('Modal functions not yet available for shortcode, waiting...');
-                setTimeout(waitForModalAndSetupEvents, 100);
-            }
-        }
-        
-        function setupPlayButtonEvents() {
-            playButtons.forEach(function(button) {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault(); // デフォルト動作を防ぐ
-                    e.stopPropagation();
-                    
-                    const gameUrl = this.getAttribute('data-game-url');
-                    const gameTitle = this.getAttribute('data-game-title');
-                    console.log('Play button clicked in shortcode, URL:', gameUrl, 'Title:', gameTitle);
-                    
-                    if (gameUrl && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
-                        console.log('Calling modal open from shortcode');
-                        // モーダルでゲームを開始（ページ遷移せずに）
-                        window.novelGameModal.open(gameUrl);
-                    } else if (gameUrl) {
-                        console.log('Modal not available, using page navigation from shortcode');
-                        // フォールバック：ページ遷移
-                        window.location.href = gameUrl;
-                    } else {
-                        console.error('No game URL found on button');
-                    }
-                });
-            });
-        }
-        
-        // モーダル関数の準備を待機
-        waitForModalAndSetupEvents();
-    });
-    </script>
-    <?php
     
     return ob_get_clean();
 }
