@@ -13,14 +13,21 @@
 
 		// モーダル関連の変数
 		var $modalOverlay = $( '#novel-game-modal-overlay' );
-		var $selectionModalOverlay = $( '#novel-game-selection-modal-overlay' );
 		var $startButton = $( '#novel-game-start-btn' );
 		var $clearProgressButton = $( '#novel-game-clear-progress-btn' );
 		var $closeButton = $( '#novel-game-close-btn' );
 		
+		// タイトル画面関連の変数
+		var $titleScreen = $( '#novel-title-screen' );
+		var $titleMain = $( '#novel-title-main' );
+		var $titleSubtitle = $( '#novel-title-subtitle' );
+		var $titleDescription = $( '#novel-title-description' );
+		var $titleStartBtn = $( '#novel-title-start-new' );
+		var $titleContinueBtn = $( '#novel-title-continue' );
+		
 		// モーダル表示フラグ
 		var isModalOpen = false;
-		var isSelectionModalOpen = false;
+		var isTitleScreenVisible = false;
 
 		// 変数の初期化
 		var dialogueIndex = 0;
@@ -310,36 +317,24 @@
 		}
 
 		/**
-		 * ゲーム選択モーダルを開く
+		 * タイトル画面を表示する
 		 *
 		 * @param {object} gameData ゲームデータ（title, description, subtitle, url等）
 		 */
-		function openGameSelectionModal( gameData ) {
-			console.log( 'openGameSelectionModal called with:', gameData );
+		function showTitleScreen( gameData ) {
+			console.log( 'showTitleScreen called with:', gameData );
 			
-			if ( isSelectionModalOpen ) {
-				console.log( 'Selection modal already open, ignoring' );
+			if ( isTitleScreenVisible ) {
+				console.log( 'Title screen already visible, ignoring' );
 				return;
 			}
 			
-			// 選択モーダル要素が存在しない場合はゲーム開始（フォールバック）
-			if ( $selectionModalOverlay.length === 0 ) {
-				console.log( 'Selection modal overlay not found, opening game directly' );
-				if ( gameData.url ) {
-					openModal( gameData.url );
-				}
-				return;
-			}
+			isTitleScreenVisible = true;
 			
-			isSelectionModalOpen = true;
-			
-			// ボディとHTMLのスクロールを無効化
-			$( 'html, body' ).addClass( 'modal-open' ).css( 'overflow', 'hidden' );
-			
-			// モーダルの内容を設定
-			$( '#novel-game-selection-title' ).text( gameData.title || '' );
-			$( '#novel-game-selection-subtitle' ).text( gameData.subtitle || '' ).toggle( !!gameData.subtitle );
-			$( '#novel-game-selection-description' ).text( gameData.description || '' ).toggle( !!gameData.description );
+			// タイトル画面の内容を設定
+			$titleMain.text( gameData.title || '' );
+			$titleSubtitle.text( gameData.subtitle || '' ).toggle( !!gameData.subtitle );
+			$titleDescription.text( gameData.description || '' ).toggle( !!gameData.description );
 			
 			// 保存された進捗をチェックして「途中から始める」ボタンの表示を制御
 			if ( gameData.title ) {

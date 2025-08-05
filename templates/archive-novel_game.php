@@ -158,29 +158,7 @@ get_header(); ?>
     </div>
 </div>
 
-<!-- ゲーム選択モーダル -->
-<div id="novel-game-selection-modal-overlay" class="novel-game-selection-modal-overlay" style="display: none;">
-    <div class="novel-game-selection-modal">
-        <div class="novel-game-selection-modal-header">
-            <button class="novel-game-selection-modal-close" aria-label="<?php echo esc_attr__('閉じる', 'novel-game-plugin'); ?>">×</button>
-            <h2 class="novel-game-selection-modal-title" id="novel-game-selection-title"></h2>
-            <p class="novel-game-selection-modal-subtitle" id="novel-game-selection-subtitle"></p>
-            <p class="novel-game-selection-modal-description" id="novel-game-selection-description"></p>
-        </div>
-        <div class="novel-game-selection-modal-body">
-            <div class="novel-game-selection-modal-buttons">
-                <button class="novel-game-selection-modal-btn novel-game-selection-start-btn" id="novel-game-selection-start">
-                    <?php _e('ゲーム開始', 'novel-game-plugin'); ?>
-                </button>
-                <button class="novel-game-selection-modal-btn novel-game-selection-continue-btn hidden" id="novel-game-selection-continue">
-                    <?php _e('途中から始める', 'novel-game-plugin'); ?>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- モーダルオーバーレイ（ゲーム表示用） -->
+<!-- モーダルオーバーレイ（ゲーム表示用・タイトル画面統合版） -->
 <div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">
     <!-- モーダルコンテンツ -->
     <div id="novel-game-modal-content" class="novel-game-modal-content">
@@ -188,6 +166,23 @@ get_header(); ?>
         <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>">
             <span class="close-icon">×</span>
         </button>
+        
+        <!-- タイトル画面 -->
+        <div id="novel-title-screen" class="novel-title-screen" style="display: none;">
+            <div class="novel-title-content">
+                <h2 id="novel-title-main" class="novel-title-main"></h2>
+                <p id="novel-title-subtitle" class="novel-title-subtitle"></p>
+                <p id="novel-title-description" class="novel-title-description"></p>
+                <div class="novel-title-buttons">
+                    <button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">
+                        <?php echo esc_html__( '最初から開始', 'novel-game-plugin' ); ?>
+                    </button>
+                    <button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">
+                        <?php echo esc_html__( '続きから始める', 'novel-game-plugin' ); ?>
+                    </button>
+                </div>
+            </div>
+        </div>
         
         <!-- ゲームコンテナ -->
         <div id="novel-game-container" class="novel-game-container">
