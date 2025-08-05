@@ -652,16 +652,16 @@ function noveltool_game_list_shortcode( $atts ) {
     echo '            </div>';
     echo '            <div class="game-selection-info">';
     echo '                <h2 id="game-selection-title" class="game-selection-title"></h2>';
-    echo '                <p id="game-selection-subtitle" class="game-selection-subtitle" style="display: none;"></p>';
+    echo '                <h3 id="game-selection-subtitle" class="game-selection-subtitle"></h3>';
     echo '                <p id="game-selection-description" class="game-selection-description"></p>';
-    echo '            </div>';
-    echo '            <div class="game-selection-actions">';
-    echo '                <button id="start-new-game-btn" class="game-action-button start-button">';
-    echo '                    ' . esc_html__( 'ゲーム開始', 'novel-game-plugin' );
-    echo '                </button>';
-    echo '                <button id="resume-game-btn" class="game-action-button resume-button" style="display: none;">';
-    echo '                    ' . esc_html__( '途中から始める', 'novel-game-plugin' );
-    echo '                </button>';
+    echo '                <div class="game-selection-actions">';
+    echo '                    <button id="start-new-game-btn" class="game-action-button start-new-game-btn">';
+    echo '                        ' . esc_html__( 'ゲーム開始', 'novel-game-plugin' );
+    echo '                    </button>';
+    echo '                    <button id="resume-game-btn" class="game-action-button resume-game-btn" style="display: none;">';
+    echo '                        ' . esc_html__( '途中から始める', 'novel-game-plugin' );
+    echo '                    </button>';
+    echo '                </div>';
     echo '            </div>';
     echo '        </div>';
     echo '    </div>';
@@ -678,195 +678,6 @@ function noveltool_game_list_shortcode( $atts ) {
     echo '        </div>';
     echo '    </div>';
     echo '</div>';
-    
-    // JavaScript event handling を追加
-    ?>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // ゲーム選択ボタンのクリックイベント
-        const gameSelectButtons = document.querySelectorAll('.noveltool-game-select-button');
-        
-        // ゲーム選択モーダル要素
-        const gameSelectionModal = document.getElementById('game-selection-modal-overlay');
-        const gameSelectionImage = document.getElementById('game-selection-image');
-        const gameSelectionTitle = document.getElementById('game-selection-title');
-        const gameSelectionSubtitle = document.getElementById('game-selection-subtitle');
-        const gameSelectionDescription = document.getElementById('game-selection-description');
-        const startNewGameBtn = document.getElementById('start-new-game-btn');
-        const resumeGameBtn = document.getElementById('resume-game-btn');
-        const gameSelectionCloseBtn = document.getElementById('game-selection-close-btn');
-        
-        // 現在選択されているゲームの情報を保持
-        let currentGameData = null;
-        
-        // モーダル表示関数
-        function showGameSelectionModal(gameData) {
-            currentGameData = gameData;
-            
-            // モーダルに情報を設定
-            if (gameData.image) {
-                gameSelectionImage.src = gameData.image;
-                gameSelectionImage.alt = gameData.title;
-                gameSelectionImage.style.display = 'block';
-            } else {
-                gameSelectionImage.style.display = 'none';
-            }
-            
-            gameSelectionTitle.textContent = gameData.title;
-            
-            // サブタイトルの表示
-            if (gameData.subtitle && gameData.subtitle.trim() !== '') {
-                gameSelectionSubtitle.textContent = gameData.subtitle;
-                gameSelectionSubtitle.style.display = 'block';
-            } else {
-                gameSelectionSubtitle.style.display = 'none';
-            }
-            
-            gameSelectionDescription.textContent = gameData.description || 'ゲームの説明はありません。';
-            
-            // 進捗チェック（frontend.jsの関数を使用）
-            checkSavedProgress(gameData.title);
-            
-            // モーダルを表示
-            gameSelectionModal.style.display = 'flex';
-        }
-        
-        // モーダル非表示関数
-        function closeGameSelectionModal() {
-            gameSelectionModal.style.display = 'none';
-            currentGameData = null;
-        }
-        
-        // 保存された進捗をチェック
-        function checkSavedProgress(gameTitle) {
-            // frontend.jsの関数が利用可能になるまで待機
-            function waitForProgressFunctions() {
-                if (typeof window.getSavedGameProgress === 'function') {
-                    const savedProgress = window.getSavedGameProgress(gameTitle);
-                    
-                    if (savedProgress) {
-                        resumeGameBtn.style.display = 'inline-block';
-                        console.log('Saved progress found, showing resume button');
-                    } else {
-                        resumeGameBtn.style.display = 'none';
-                        console.log('No saved progress found, hiding resume button');
-                    }
-                } else {
-                    console.log('Progress functions not yet available, waiting...');
-                    setTimeout(waitForProgressFunctions, 100);
-                }
-            }
-            
-            waitForProgressFunctions();
-        }
-        
-        // 新規ゲーム開始
-        function startNewGame() {
-            if (!currentGameData) return;
-            
-            // 進捗をクリア
-            if (typeof window.clearGameProgress === 'function') {
-                window.clearGameProgress(currentGameData.title);
-            }
-            
-            // ゲーム選択モーダルを閉じる
-            const gameUrl = currentGameData.url;
-            closeGameSelectionModal();
-            
-            // ゲームを開始
-            if (window.novelGameModal && typeof window.novelGameModal.open === 'function') {
-                window.novelGameModal.open(gameUrl);
-            } else {
-                window.location.href = gameUrl;
-            }
-        }
-        
-        // 途中から再開
-        function resumeGame() {
-            if (!currentGameData) return;
-            
-            // ゲーム選択モーダルを閉じる
-            const gameUrl = currentGameData.url;
-            closeGameSelectionModal();
-            
-            // ゲームを開始（進捗は保持）
-            if (window.novelGameModal && typeof window.novelGameModal.open === 'function') {
-                window.novelGameModal.open(gameUrl);
-            } else {
-                window.location.href = gameUrl;
-            }
-        }
-        
-        // イベントリスナーの設定
-        gameSelectButtons.forEach(function(button) {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const gameData = {
-                    id: this.getAttribute('data-game-id'),
-                    url: this.getAttribute('data-game-url'),
-                    title: this.getAttribute('data-game-title'),
-                    subtitle: this.getAttribute('data-game-subtitle'),
-                    description: this.getAttribute('data-game-description'),
-                    image: this.getAttribute('data-game-image')
-                };
-                
-                console.log('Game selected:', gameData);
-                showGameSelectionModal(gameData);
-            });
-        });
-        
-        // モーダルのボタンイベント
-        if (startNewGameBtn) {
-            startNewGameBtn.addEventListener('click', startNewGame);
-        }
-        
-        if (resumeGameBtn) {
-            resumeGameBtn.addEventListener('click', resumeGame);
-        }
-        
-        if (gameSelectionCloseBtn) {
-            gameSelectionCloseBtn.addEventListener('click', closeGameSelectionModal);
-        }
-        
-        // ESCキーでモーダルを閉じる
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && gameSelectionModal.style.display === 'flex') {
-                closeGameSelectionModal();
-            }
-        });
-        
-        // モーダル外クリックで閉じる
-        gameSelectionModal.addEventListener('click', function(e) {
-            if (e.target === gameSelectionModal) {
-                closeGameSelectionModal();
-            }
-        });
-        
-        // モーダル関数が利用可能になるまで待機してから、frontend.jsの関数をグローバルに公開
-        function waitForModalAndExposeFunctions() {
-            if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
-                console.log('Modal functions found, setting up shortcode game selection');
-                
-                // frontend.jsの進捗管理関数をグローバルに公開（まだ公開されていない場合）
-                if (typeof window.getSavedGameProgress === 'undefined') {
-                    // frontend.jsで定義された関数をグローバルに公開する必要があるかチェック
-                    setTimeout(waitForModalAndExposeFunctions, 100);
-                } else {
-                    console.log('Progress functions already available');
-                }
-            } else {
-                console.log('Modal functions not yet available for shortcode, waiting...');
-                setTimeout(waitForModalAndExposeFunctions, 100);
-            }
-        }
-        
-        // モーダル関数の準備を待機
-        waitForModalAndExposeFunctions();
-    });
-    </script>
-    <?php
     
     return ob_get_clean();
 }
