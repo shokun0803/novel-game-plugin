@@ -337,70 +337,46 @@
 			$titleDescription.text( gameData.description || '' ).toggle( !!gameData.description );
 			
 			// 保存された進捗をチェックして「途中から始める」ボタンの表示を制御
+			
+			// 保存された進捗をチェックして「続きから始める」ボタンの表示を制御
 			if ( gameData.title ) {
 				var savedProgress = getSavedGameProgress( gameData.title );
-				var $continueBtn = $( '#novel-game-selection-continue' );
 				
 				if ( savedProgress ) {
-					$continueBtn.removeClass( 'hidden' );
-					console.log( '保存された進捗が見つかりました。「途中から始める」ボタンを表示します。' );
+					$titleContinueBtn.show();
+					console.log( '保存された進捗が見つかりました。「続きから始める」ボタンを表示します。' );
 				} else {
-					$continueBtn.addClass( 'hidden' );
-					console.log( '保存された進捗がありません。「途中から始める」ボタンを非表示にします。' );
+					$titleContinueBtn.hide();
+					console.log( '保存された進捗がありません。「続きから始める」ボタンを非表示にします。' );
 				}
 			} else {
-				$( '#novel-game-selection-continue' ).addClass( 'hidden' );
+				$titleContinueBtn.hide();
 			}
 			
-			// オーバーレイの表示
-			$selectionModalOverlay.css( {
-				'display': 'flex',
-				'opacity': '0',
-				'position': 'fixed',
-				'top': '0',
-				'left': '0',
-				'width': '100vw',
-				'height': '100vh',
-				'z-index': '2147483647'
-			} ).animate( { opacity: 1 }, 300 );
-			
-			// ESCキーでモーダルを閉じる
-			$( document ).on( 'keydown.selection-modal', function( e ) {
-				if ( e.which === 27 ) { // ESC key
-					console.log( 'ESC key pressed, closing selection modal' );
-					closeGameSelectionModal();
-				}
-			} );
+			// タイトル画面を表示
+			$titleScreen.css( 'display', 'flex' ).hide().fadeIn( 300 );
 			
 			// ゲームデータを一時保存（ボタン押下時に使用）
 			window.currentGameSelectionData = gameData;
 		}
 
 		/**
-		 * ゲーム選択モーダルを閉じる
+		 * タイトル画面を非表示にする
 		 */
-		function closeGameSelectionModal() {
-			console.log( 'closeGameSelectionModal called' );
+		function hideTitleScreen() {
+			console.log( 'hideTitleScreen called' );
 			
-			if ( ! isSelectionModalOpen ) {
-				console.log( 'Selection modal already closed, ignoring' );
+			if ( ! isTitleScreenVisible ) {
+				console.log( 'Title screen already hidden, ignoring' );
 				return;
 			}
 			
-			isSelectionModalOpen = false;
+			isTitleScreenVisible = false;
 			
-			// ボディとHTMLのスクロールを復元（ゲームモーダルが開いていない場合のみ）
-			if ( ! isModalOpen ) {
-				$( 'html, body' ).removeClass( 'modal-open' ).css( 'overflow', '' );
-			}
-			
-			// オーバーレイを非表示
-			$selectionModalOverlay.animate( { opacity: 0 }, 300, function() {
-				$selectionModalOverlay.css( 'display', 'none' );
+			// タイトル画面を非表示
+			$titleScreen.fadeOut( 300, function() {
+				$titleScreen.css( 'display', 'none' );
 			} );
-			
-			// イベントリスナーをクリーンアップ
-			$( document ).off( 'keydown.selection-modal' );
 			
 			// 一時保存されたゲームデータをクリア
 			window.currentGameSelectionData = null;
@@ -585,12 +561,12 @@
 			} );
 		}
 		/**
-		 * モーダルを開く
+		 * モーダルを開く（タイトル画面表示モードまたは直接ゲーム開始モード）
 		 *
-		 * @param {string} gameUrl （オプション）ゲームのURL
+		 * @param {string|object} gameUrlOrData ゲームのURLまたはゲームデータオブジェクト
 		 */
-		function openModal( gameUrl ) {
-			console.log( 'openModal called with URL:', gameUrl );
+		function openModal( gameUrlOrData ) {
+			console.log( 'openModal called with:', gameUrlOrData );
 			console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
 			console.log( 'isModalOpen:', isModalOpen );
 			
@@ -601,9 +577,11 @@
 			
 			// モーダル要素が存在しない場合はページ遷移
 			if ( $modalOverlay.length === 0 ) {
-				console.log( 'Modal overlay not found, redirecting to:', gameUrl );
-				if ( gameUrl ) {
-					window.location.href = gameUrl;
+				console.log( 'Modal overlay not found, redirecting to:', gameUrlOrData );
+				if ( typeof gameUrlOrData === 'string' ) {
+					window.location.href = gameUrlOrData;
+				} else if ( gameUrlOrData && gameUrlOrData.url ) {
+					window.location.href = gameUrlOrData.url;
 				}
 				return;
 			}
@@ -641,10 +619,27 @@
 			
 			console.log( 'Modal overlay display set to flex' );
 			
-			// ゲームデータの読み込み（URLが指定されている場合）
-			if ( gameUrl ) {
-				console.log( 'Loading game data from URL:', gameUrl );
-				loadGameData( gameUrl ).then( function() {
+			// ゲームデータがオブジェクトとして渡された場合（ゲームリストから）
+			if ( typeof gameUrlOrData === 'object' && gameUrlOrData !== null ) {
+				console.log( 'Opening with game data (from game list), showing title screen' );
+				
+				// ゲームデータを読み込んでからタイトル画面を表示
+				loadGameData( gameUrlOrData.url ).then( function() {
+					console.log( 'Game data loaded successfully, showing title screen' );
+					
+					// タイトル画面を表示
+					setTimeout( function() {
+						showTitleScreen( gameUrlOrData );
+					}, 300 );
+				} ).catch( function( error ) {
+					console.error( 'ゲームの読み込みに失敗しました:', error );
+					closeModal();
+				} );
+			}
+			// URLが文字列として指定された場合（URLから直接または従来の方法）
+			else if ( typeof gameUrlOrData === 'string' ) {
+				console.log( 'Loading game data from URL:', gameUrlOrData );
+				loadGameData( gameUrlOrData ).then( function() {
 					console.log( 'Game data loaded successfully' );
 					
 					// 保存された進捗をチェック
@@ -1001,7 +996,7 @@
 			console.log( 'Start button exists:', $startButton.length > 0 );
 			console.log( 'Clear progress button exists:', $clearProgressButton.length > 0 );
 			console.log( 'Close button exists:', $closeButton.length > 0 );
-			console.log( 'Selection modal exists:', $selectionModalOverlay.length > 0 );
+			console.log( 'Title screen exists:', $titleScreen.length > 0 );
 			
 			// 開始ボタンクリックイベント
 			$startButton.on( 'click', function( e ) {
@@ -1039,32 +1034,27 @@
 				closeModal();
 			} );
 			
-			// ゲーム選択モーダルの閉じるボタン（委譲イベント）
-			$( document ).on( 'click', '.novel-game-selection-modal-close', function( e ) {
+			// タイトル画面：最初から開始ボタン（委譲イベント）
+			$( document ).on( 'click', '#novel-title-start-new', function( e ) {
 				e.preventDefault();
-				console.log( 'Selection modal close button clicked' );
-				closeGameSelectionModal();
-			} );
-			
-			// ゲーム開始ボタン（委譲イベント）
-			$( document ).on( 'click', '#novel-game-selection-start', function( e ) {
-				e.preventDefault();
-				console.log( 'Selection modal start button clicked' );
+				console.log( 'Title screen start button clicked' );
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
-					// URLを一時変数に退避してからモーダルを閉じる
-					var url = window.currentGameSelectionData.url;
-					closeGameSelectionModal();
+					// タイトル画面を非表示にしてゲーム開始
+					hideTitleScreen();
 					setTimeout( function() {
-						openModal( url );
-					}, 100 );
+						// 保存された進捗をチェックしてゲームを初期化
+						checkAndOfferResumeOption().then( function() {
+							initializeGameContent();
+						} );
+					}, 300 );
 				}
 			} );
 			
-			// 途中から始めるボタン（委譲イベント）
-			$( document ).on( 'click', '#novel-game-selection-continue', function( e ) {
+			// タイトル画面：続きから始めるボタン（委譲イベント）
+			$( document ).on( 'click', '#novel-title-continue', function( e ) {
 				e.preventDefault();
-				console.log( 'Selection modal continue button clicked' );
+				console.log( 'Title screen continue button clicked' );
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
 					var gameTitle = window.currentGameSelectionData.title;
@@ -1072,23 +1062,21 @@
 					
 					if ( savedProgress ) {
 						console.log( '保存された進捗から再開します' );
-						// 必要なデータを一時変数に退避してからモーダルを閉じる
-						var startUrl = savedProgress.sceneUrl || window.currentGameSelectionData.url;
-						closeGameSelectionModal();
+						// タイトル画面を非表示にして保存地点から再開
+						hideTitleScreen();
 						setTimeout( function() {
-							// 保存された進捗のシーンURLから開始するか、現在のURLから開始
-							openModal( startUrl );
-						}, 100 );
+							// 保存された進捗データから状態を復元
+							resumeFromSavedProgress( savedProgress );
+						}, 300 );
 					} else {
 						console.log( '保存された進捗が見つかりません。最初から開始します。' );
-						// 進捗がない場合は最初から開始（URLを退避）
-						var url = window.currentGameSelectionData.url;
-						closeGameSelectionModal();
+						// 進捗がない場合は最初から開始
+						hideTitleScreen();
 						setTimeout( function() {
-							openModal( url );
-						}, 100 );
-					}
-				}
+							checkAndOfferResumeOption().then( function() {
+								initializeGameContent();
+							} );
+						}, 300 );
 			} );
 
 			// ゲームカード・プレイボタンクリックイベント（委譲イベント）
@@ -1105,7 +1093,7 @@
 				console.log( 'Game item clicked:', { gameUrl: gameUrl, gameTitle: gameTitle, gameDescription: gameDescription } );
 				
 				if ( gameUrl && gameTitle ) {
-					// ゲーム選択モーダルを表示
+					// ゲームデータオブジェクトを作成し、タイトル画面表示モードでモーダルを開く
 					var gameData = {
 						url: gameUrl,
 						title: gameTitle,
@@ -1113,7 +1101,7 @@
 						subtitle: gameSubtitle
 					};
 					
-					openGameSelectionModal( gameData );
+					openModal( gameData );
 				} else {
 					console.error( 'ゲームデータが不足しています:', { gameUrl: gameUrl, gameTitle: gameTitle } );
 				}
@@ -1862,19 +1850,19 @@
 		function initializeGame() {
 			console.log( 'Initializing game...' );
 			console.log( 'Modal overlay found:', $modalOverlay.length > 0 );
-			console.log( 'Selection modal overlay found:', $selectionModalOverlay.length > 0 );
+			console.log( 'Title screen found:', $titleScreen.length > 0 );
 			console.log( 'Start button found:', $startButton.length > 0 );
 			console.log( 'Clear progress button found:', $clearProgressButton.length > 0 );
 			console.log( 'Close button found:', $closeButton.length > 0 );
 			
 			// モーダル要素が存在する場合のみモーダルイベントを設定
-			if ( $modalOverlay.length > 0 || $selectionModalOverlay.length > 0 ) {
+			if ( $modalOverlay.length > 0 ) {
 				// モーダルイベントの設定
 				setupModalEvents();
 				
-				// 初期状態はモーダルを非表示
+				// 初期状態はモーダルとタイトル画面を非表示
 				$modalOverlay.hide();
-				$selectionModalOverlay.hide();
+				$titleScreen.hide();
 				
 				console.log( 'Modal events set up successfully' );
 			} else {
@@ -1910,23 +1898,23 @@
 			},
 			openSelection: function( gameData ) {
 				console.log( 'novelGameModal.openSelection called with data:', gameData );
-				console.log( 'Selection modal overlay exists:', $selectionModalOverlay.length > 0 );
+				console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
 				
-				// 選択モーダル要素が存在しない場合は直接ゲームを開始
-				if ( $selectionModalOverlay.length === 0 ) {
-					console.log( 'Selection modal overlay not found, opening game directly' );
+				// モーダル要素が存在しない場合は直接ゲームを開始
+				if ( $modalOverlay.length === 0 ) {
+					console.log( 'Modal overlay not found, opening game directly' );
 					if ( gameData && gameData.url ) {
-						this.open( gameData.url );
+						window.location.href = gameData.url;
 					}
 					return;
 				}
-				openGameSelectionModal( gameData );
+				openModal( gameData );
 			},
 			close: function() {
 				console.log( 'novelGameModal.close called' );
-				// 選択モーダルが開いている場合は選択モーダルを閉じる
-				if ( isSelectionModalOpen && $selectionModalOverlay.length > 0 ) {
-					closeGameSelectionModal();
+				// タイトル画面が表示されている場合は非表示にする
+				if ( isTitleScreenVisible ) {
+					hideTitleScreen();
 				}
 				// ゲームモーダルが開いている場合はゲームモーダルを閉じる
 				if ( isModalOpen && $modalOverlay.length > 0 ) {
@@ -1934,7 +1922,7 @@
 				}
 			},
 			isAvailable: function() {
-				return $modalOverlay.length > 0 || $selectionModalOverlay.length > 0;
+				return $modalOverlay.length > 0;
 			}
 		};
 		
