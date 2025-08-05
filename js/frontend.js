@@ -1057,10 +1057,11 @@
 				console.log( 'Selection modal start button clicked' );
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
-					// 選択モーダルを閉じてからゲームを開始
+					// URLを一時変数に退避してからモーダルを閉じる
+					var url = window.currentGameSelectionData.url;
 					closeGameSelectionModal();
 					setTimeout( function() {
-						openModal( window.currentGameSelectionData.url );
+						openModal( url );
 					}, 100 );
 				}
 			} );
@@ -1076,19 +1077,20 @@
 					
 					if ( savedProgress ) {
 						console.log( '保存された進捗から再開します' );
-						// 選択モーダルを閉じてからゲームを開始（進捗付き）
+						// 必要なデータを一時変数に退避してからモーダルを閉じる
+						var startUrl = savedProgress.sceneUrl || window.currentGameSelectionData.url;
 						closeGameSelectionModal();
 						setTimeout( function() {
 							// 保存された進捗のシーンURLから開始するか、現在のURLから開始
-							var startUrl = savedProgress.sceneUrl || window.currentGameSelectionData.url;
 							openModal( startUrl );
 						}, 100 );
 					} else {
 						console.log( '保存された進捗が見つかりません。最初から開始します。' );
-						// 進捗がない場合は最初から開始
+						// 進捗がない場合は最初から開始（URLを退避）
+						var url = window.currentGameSelectionData.url;
 						closeGameSelectionModal();
 						setTimeout( function() {
-							openModal( window.currentGameSelectionData.url );
+							openModal( url );
 						}, 100 );
 					}
 				}
