@@ -614,10 +614,10 @@ function noveltool_game_list_shortcode( $atts ) {
         
         // ゲーム管理システムからゲーム情報を取得
         $game = noveltool_get_game_by_title( $game_title );
-        $game_id = $game ? $game['id'] : 0;
-        $full_description = $game ? $game['description'] : '';
-        $full_subtitle = $game ? $game['subtitle'] : '';
-        $title_image = $game ? $game['title_image'] : '';
+        $game_id = ( $game && isset( $game['id'] ) ) ? $game['id'] : 0;
+        $full_description = ( $game && isset( $game['description'] ) ) ? $game['description'] : '';
+        $full_subtitle = ( $game && isset( $game['subtitle'] ) ) ? $game['subtitle'] : '';
+        $title_image = ( $game && isset( $game['title_image'] ) ) ? $game['title_image'] : '';
         
         // タイトル画像が設定されていない場合は、シーン背景画像をフォールバック
         $display_image = $title_image ? $title_image : $background;
