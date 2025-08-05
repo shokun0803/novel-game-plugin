@@ -16,7 +16,7 @@ get_header(); ?>
         <p class="archive-description"><?php _e('プレイしたいゲームを選択してください', 'novel-game-plugin'); ?></p>
     </header>
 
-    <div class="novel-games-grid">
+    <div class="noveltool-game-list-grid noveltool-columns-3">
         <?php
         // ゲームタイトルごとにグループ化して最初のシーンを取得
         global $wpdb;
@@ -113,27 +113,37 @@ get_header(); ?>
                     $game_image = get_post_meta($game->first_scene_id, '_background_image', true);
                 }
                 ?>
-                <div class="novel-game-card" data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>" data-game-title="<?php echo esc_attr($game_title); ?>">
-                    <div class="game-thumbnail">
-                        <?php if ($game_image) : ?>
-                            <img src="<?php echo esc_url($game_image); ?>" alt="<?php echo esc_attr($game_title); ?>" class="game-bg-image">
-                        <?php else : ?>
-                            <div class="game-placeholder">
-                                <span class="placeholder-text"><?php _e('No Image', 'novel-game-plugin'); ?></span>
-                            </div>
+                <div class="noveltool-game-list-item">
+                    <?php if ($game_image) : ?>
+                        <div class="noveltool-game-thumbnail">
+                            <img src="<?php echo esc_url($game_image); ?>" alt="<?php echo esc_attr($game_title); ?>" />
+                        </div>
+                    <?php endif; ?>
+                    
+                    <div class="noveltool-game-content">
+                        <h3 class="noveltool-game-title">
+                            <?php echo esc_html($game_title); ?>
+                        </h3>
+                        
+                        <?php if ( $game_description ) : ?>
+                            <p class="noveltool-game-description"><?php echo esc_html(mb_substr($game_description, 0, 120)); 
+                            if ( mb_strlen($game_description) > 120 ) {
+                                echo '...';
+                            } ?></p>
                         <?php endif; ?>
-                        <div class="game-overlay">
-                            <div class="game-info">
-                                <h3 class="game-title"><?php echo $game_title; ?></h3>
-                                <?php if ( $game_description ) : ?>
-                                    <p class="game-description"><?php echo wp_trim_words($game_description, 20, '...'); ?></p>
-                                <?php endif; ?>
-                                <p class="scene-count"><?php printf(__('%d シーン', 'novel-game-plugin'), $scene_count); ?></p>
-                                <p class="first-scene-info"><?php printf(__('開始: %s', 'novel-game-plugin'), esc_html($game->first_scene_title)); ?></p>
-                            </div>
-                            <div class="play-button">
-                                <span><?php _e('ゲーム開始', 'novel-game-plugin'); ?></span>
-                            </div>
+                        
+                        <p class="noveltool-game-count"><?php printf(__('%d シーン', 'novel-game-plugin'), $scene_count); ?></p>
+                        
+                        <div class="noveltool-game-actions">
+                            <button class="noveltool-game-select-button" 
+                                data-game-id="<?php echo esc_attr($game->first_scene_id); ?>" 
+                                data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>" 
+                                data-game-title="<?php echo esc_attr($game_title); ?>" 
+                                data-game-subtitle="<?php echo esc_attr($game_description ? wp_trim_words($game_description, 5, '') : ''); ?>" 
+                                data-game-description="<?php echo esc_attr($game_description); ?>" 
+                                data-game-image="<?php echo esc_url($game_image); ?>">
+                                <?php _e('選択', 'novel-game-plugin'); ?>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -150,6 +160,33 @@ get_header(); ?>
             <?php
         endif;
         ?>
+    </div>
+</div>
+
+<!-- ゲーム選択モーダル（Issue #50対応） -->
+<div id="game-selection-modal-overlay" class="game-selection-modal-overlay" style="display: none;">
+    <div id="game-selection-modal-content" class="game-selection-modal-content">
+        <button id="game-selection-close-btn" class="game-selection-close-btn" aria-label="<?php echo esc_attr__( '閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( '閉じる', 'novel-game-plugin' ); ?>">
+            <span class="close-icon">×</span>
+        </button>
+        <div class="game-selection-modal-body">
+            <div class="game-selection-image-container">
+                <img id="game-selection-image" class="game-selection-image" src="" alt="" />
+            </div>
+            <div class="game-selection-info">
+                <h2 id="game-selection-title" class="game-selection-title"></h2>
+                <h3 id="game-selection-subtitle" class="game-selection-subtitle"></h3>
+                <p id="game-selection-description" class="game-selection-description"></p>
+                <div class="game-selection-actions">
+                    <button id="start-new-game-btn" class="game-action-button start-new-game-btn">
+                        <?php echo esc_html__( 'ゲーム開始', 'novel-game-plugin' ); ?>
+                    </button>
+                    <button id="resume-game-btn" class="game-action-button resume-game-btn" style="display: none;">
+                        <?php echo esc_html__( '途中から始める', 'novel-game-plugin' ); ?>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -193,252 +230,277 @@ get_header(); ?>
     margin-bottom: 0;
 }
 
-.novel-games-grid {
+/* 統一されたゲーム一覧スタイル */
+.noveltool-game-list-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 30px;
     margin-top: 30px;
 }
 
-.novel-game-card {
-    cursor: pointer;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    background: #fff;
+.noveltool-columns-3 {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
-.novel-game-card:hover,
-.novel-game-card.hovered {
-    transform: translateY(-5px);
+.noveltool-game-list-item {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e1e8ed;
+}
+
+.noveltool-game-list-item:hover {
+    transform: translateY(-4px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.game-thumbnail {
-    position: relative;
+.noveltool-game-thumbnail {
     width: 100%;
     height: 200px;
     overflow: hidden;
+    position: relative;
 }
 
-.game-bg-image {
+.noveltool-game-thumbnail img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
 }
 
-.novel-game-card:hover .game-bg-image,
-.novel-game-card.hovered .game-bg-image {
+.noveltool-game-list-item:hover .noveltool-game-thumbnail img {
     transform: scale(1.05);
 }
 
-.game-placeholder {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.noveltool-game-content {
+    padding: 20px;
+}
+
+.noveltool-game-title {
+    margin: 0 0 12px 0;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #1a1a1a;
+    line-height: 1.3;
+}
+
+.noveltool-game-description {
+    color: #666;
+    font-size: 0.9em;
+    line-height: 1.5;
+    margin: 8px 0;
+}
+
+.noveltool-game-count {
+    color: #888;
+    font-size: 0.85em;
+    margin: 8px 0;
+}
+
+.noveltool-game-actions {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.noveltool-game-select-button {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    min-width: 100px;
+}
+
+.noveltool-game-select-button:hover {
+    background: #005a87;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* ゲーム選択モーダルのスタイル */
+.game-selection-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2147483600;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.placeholder-text {
-    color: white;
-    font-size: 1.1em;
-    font-weight: bold;
-}
-
-.game-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
-    color: white;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-}
-
-.game-info {
-    flex: 1;
-}
-
-.game-title {
-    font-size: 1.4em;
-    margin: 0 0 8px 0;
-    font-weight: bold;
-    line-height: 1.2;
-}
-
-.game-description {
-    font-size: 0.9em;
-    margin: 0 0 8px 0;
-    opacity: 0.9;
-    line-height: 1.3;
-}
-
-.scene-count,
-.first-scene-info {
-    font-size: 0.85em;
-    margin: 2px 0;
-    opacity: 0.8;
-}
-
-.play-button {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid white;
-    border-radius: 25px;
-    padding: 8px 16px;
-    font-weight: bold;
-    font-size: 0.9em;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.novel-game-card:hover .play-button,
-.novel-game-card.hovered .play-button {
+.game-selection-modal-content {
     background: white;
-    color: #333;
-    transform: scale(1.05);
+    border-radius: 16px;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 800px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.game-selection-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: background 0.3s ease;
+}
+
+.game-selection-close-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.game-selection-modal-body {
+    display: flex;
+    min-height: 400px;
+}
+
+.game-selection-image-container {
+    width: 50%;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-selection-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.game-selection-info {
+    width: 50%;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.game-selection-title {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin: 0 0 8px 0;
+    color: #1a1a1a;
+}
+
+.game-selection-subtitle {
+    font-size: 1.1em;
+    color: #666;
+    margin: 0 0 16px 0;
+    font-weight: normal;
+}
+
+.game-selection-description {
+    color: #444;
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+    flex-grow: 1;
+}
+
+.game-selection-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.game-action-button {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: none;
+}
+
+.start-new-game-btn {
+    background: #0073aa;
+    color: white;
+}
+
+.start-new-game-btn:hover {
+    background: #005a87;
+    transform: translateY(-1px);
+}
+
+.resume-game-btn {
+    background: #46b450;
+    color: white;
+}
+
+.resume-game-btn:hover {
+    background: #3d9c46;
+    transform: translateY(-1px);
 }
 
 .no-games-message {
     text-align: center;
     padding: 60px 20px;
-    background: #f9f9f9;
-    border-radius: 12px;
-    margin-top: 40px;
-}
-
-.no-games-message p {
-    font-size: 1.1em;
     color: #666;
-    margin-bottom: 20px;
 }
 
 .no-games-message .button {
-    background: #667eea;
+    background: #0073aa;
     color: white;
-    border: none;
     padding: 12px 24px;
     border-radius: 6px;
     text-decoration: none;
-    font-weight: bold;
-    transition: background 0.3s ease;
+    display: inline-block;
+    margin-top: 16px;
 }
 
 .no-games-message .button:hover {
-    background: #5a67d8;
+    background: #005a87;
+    color: white;
 }
 
 /* レスポンシブデザイン */
 @media (max-width: 768px) {
-    .novel-games-grid {
+    .noveltool-columns-3 {
         grid-template-columns: 1fr;
-        gap: 20px;
     }
     
-    .archive-title {
-        font-size: 2em;
+    .game-selection-modal-content {
+        width: 95vw;
+        margin: 20px;
     }
     
-    .archive-description {
-        font-size: 1em;
+    .game-selection-modal-body {
+        flex-direction: column;
+        min-height: auto;
     }
     
-    .game-thumbnail {
-        height: 180px;
+    .game-selection-image-container,
+    .game-selection-info {
+        width: 100%;
     }
     
-    .game-overlay {
-        padding: 15px;
-    }
-    
-    .game-title {
-        font-size: 1.2em;
-    }
-}
-
-@media (max-width: 480px) {
-    .novel-game-archive-container {
-        padding: 15px;
-    }
-    
-    .game-thumbnail {
-        height: 160px;
-    }
-    
-    .game-overlay {
-        padding: 12px;
-    }
-    
-    .play-button {
-        padding: 6px 12px;
-        font-size: 0.8em;
+    .game-selection-image-container {
+        height: 200px;
     }
 }
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // ゲームカードのクリックイベント
-    const gameCards = document.querySelectorAll('.novel-game-card');
-    
-    // モーダル関数が利用可能になるまで待機
-    function waitForModalAndSetupEvents() {
-        if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && window.novelGameModal.isAvailable && window.novelGameModal.isAvailable()) {
-            console.log('Modal functions found and available, setting up events');
-            setupGameCardEvents();
-        } else if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
-            console.log('Modal functions found but not available, setting up events anyway');
-            setupGameCardEvents();
-        } else {
-            console.log('Modal functions not yet available, waiting...');
-            // jQuery が読み込まれるまで少し待機
-            setTimeout(waitForModalAndSetupEvents, 100);
-        }
-    }
-    
-    function setupGameCardEvents() {
-        gameCards.forEach(function(card) {
-            card.addEventListener('click', function(e) {
-                e.preventDefault(); // ページ遷移を防ぐ
-                e.stopPropagation();
-                
-                const gameUrl = this.getAttribute('data-game-url');
-                const gameTitle = this.getAttribute('data-game-title');
-                console.log('Game card clicked, URL:', gameUrl, 'Title:', gameTitle);
-                
-                if (gameUrl && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
-                    console.log('Calling modal open');
-                    // モーダルでゲームを開始（ページ遷移せずに）
-                    window.novelGameModal.open(gameUrl);
-                } else if (gameUrl) {
-                    console.log('Modal not available, using page navigation');
-                    // フォールバック：ページ遷移
-                    window.location.href = gameUrl;
-                } else {
-                    console.error('No game URL found on card');
-                }
-            });
-            
-            // ホバー効果
-            card.addEventListener('mouseenter', function() {
-                this.classList.add('hovered');
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.classList.remove('hovered');
-            });
-        });
-    }
-    
-    // モーダル関数の準備を待機
-    waitForModalAndSetupEvents();
-});
-</script>
 
 <?php get_footer(); ?>

@@ -1751,6 +1751,202 @@
 		
 		// デバッグ情報を出力
 		console.log( 'Novel Game Modal initialized. Modal overlay found:', $modalOverlay.length > 0 );
+		
+		// 統一されたゲーム選択イベント処理を追加
+		setupUnifiedGameSelectionEvents();
 	} );
+	
+	/**
+	 * 統一されたゲーム選択イベント処理
+	 * アーカイブテンプレートとショートコードの両方で動作
+	 */
+	function setupUnifiedGameSelectionEvents() {
+		console.log( 'Setting up unified game selection events' );
+		
+		// 現在選択されているゲームの情報を保持
+		var currentGameData = null;
+		
+		// ゲーム選択ボタンのクリックイベント（委譲）
+		$( document ).on( 'click', '.noveltool-game-select-button', function( e ) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			var gameData = {
+				id: $( this ).attr( 'data-game-id' ),
+				url: $( this ).attr( 'data-game-url' ),
+				title: $( this ).attr( 'data-game-title' ),
+				subtitle: $( this ).attr( 'data-game-subtitle' ),
+				description: $( this ).attr( 'data-game-description' ),
+				image: $( this ).attr( 'data-game-image' )
+			};
+			
+			console.log( 'Game select button clicked:', gameData );
+			showGameSelectionModal( gameData );
+		} );
+		
+		// ゲーム選択モーダル関連のイベント（委譲）
+		$( document ).on( 'click', '#start-new-game-btn', function( e ) {
+			e.preventDefault();
+			startNewGame();
+		} );
+		
+		$( document ).on( 'click', '#resume-game-btn', function( e ) {
+			e.preventDefault();
+			resumeGame();
+		} );
+		
+		$( document ).on( 'click', '#game-selection-close-btn', function( e ) {
+			e.preventDefault();
+			closeGameSelectionModal();
+		} );
+		
+		// オーバーレイクリックで閉じる
+		$( document ).on( 'click', '#game-selection-modal-overlay', function( e ) {
+			if ( e.target === this ) {
+				closeGameSelectionModal();
+			}
+		} );
+		
+		/**
+		 * ゲーム選択モーダルを表示
+		 */
+		function showGameSelectionModal( gameData ) {
+			currentGameData = gameData;
+			console.log( 'Showing game selection modal for:', gameData.title );
+			
+			var $modal = $( '#game-selection-modal-overlay' );
+			var $image = $( '#game-selection-image' );
+			var $title = $( '#game-selection-title' );
+			var $subtitle = $( '#game-selection-subtitle' );
+			var $description = $( '#game-selection-description' );
+			
+			if ( $modal.length === 0 ) {
+				console.error( 'Game selection modal not found' );
+				// フォールバック：直接ゲームを開始
+				if ( gameData.url && window.novelGameModal && typeof window.novelGameModal.open === 'function' ) {
+					window.novelGameModal.open( gameData.url );
+				} else if ( gameData.url ) {
+					window.location.href = gameData.url;
+				}
+				return;
+			}
+			
+			// モーダルに情報を設定
+			if ( gameData.image && $image.length > 0 ) {
+				$image.attr( 'src', gameData.image );
+				$image.attr( 'alt', gameData.title );
+				$image.show();
+			} else if ( $image.length > 0 ) {
+				$image.hide();
+			}
+			
+			if ( $title.length > 0 ) {
+				$title.text( gameData.title );
+			}
+			
+			// サブタイトルの表示
+			if ( gameData.subtitle && gameData.subtitle.trim() !== '' && $subtitle.length > 0 ) {
+				$subtitle.text( gameData.subtitle ).show();
+			} else if ( $subtitle.length > 0 ) {
+				$subtitle.hide();
+			}
+			
+			if ( $description.length > 0 ) {
+				$description.text( gameData.description || 'ゲームの説明はありません。' );
+			}
+			
+			// 進捗チェック
+			checkSavedProgressForModal( gameData.title );
+			
+			// モーダルを表示
+			$modal.css( 'display', 'flex' );
+		}
+		
+		/**
+		 * ゲーム選択モーダルを閉じる
+		 */
+		function closeGameSelectionModal() {
+			console.log( 'Closing game selection modal' );
+			var $modal = $( '#game-selection-modal-overlay' );
+			if ( $modal.length > 0 ) {
+				$modal.hide();
+			}
+			currentGameData = null;
+		}
+		
+		/**
+		 * 保存された進捗をチェック（モーダル用）
+		 */
+		function checkSavedProgressForModal( gameTitle ) {
+			var $resumeBtn = $( '#resume-game-btn' );
+			
+			if ( $resumeBtn.length === 0 ) {
+				console.log( 'Resume button not found' );
+				return;
+			}
+			
+			// 進捗管理関数が利用可能かチェック
+			if ( typeof getSavedGameProgress === 'function' ) {
+				var savedProgress = getSavedGameProgress( gameTitle );
+				
+				if ( savedProgress ) {
+					$resumeBtn.show();
+					console.log( 'Saved progress found, showing resume button' );
+				} else {
+					$resumeBtn.hide();
+					console.log( 'No saved progress, hiding resume button' );
+				}
+			} else {
+				// グローバル関数が見つからない場合、ボタンを隠す
+				$resumeBtn.hide();
+				console.log( 'Progress functions not available, hiding resume button' );
+			}
+		}
+		
+		/**
+		 * 新規ゲーム開始
+		 */
+		function startNewGame() {
+			if ( ! currentGameData ) return;
+			
+			console.log( 'Starting new game:', currentGameData.title );
+			
+			// 進捗をクリア
+			if ( typeof clearGameProgress === 'function' ) {
+				clearGameProgress( currentGameData.title );
+			}
+			
+			// ゲーム選択モーダルを閉じる前にURLを退避
+			var gameUrl = currentGameData.url;
+			closeGameSelectionModal();
+			
+			// ゲームを開始
+			if ( window.novelGameModal && typeof window.novelGameModal.open === 'function' ) {
+				window.novelGameModal.open( gameUrl );
+			} else {
+				window.location.href = gameUrl;
+			}
+		}
+		
+		/**
+		 * 途中から再開
+		 */
+		function resumeGame() {
+			if ( ! currentGameData ) return;
+			
+			console.log( 'Resuming game:', currentGameData.title );
+			
+			// ゲーム選択モーダルを閉じる前にURLを退避
+			var gameUrl = currentGameData.url;
+			closeGameSelectionModal();
+			
+			// ゲームを開始（進捗は保持）
+			if ( window.novelGameModal && typeof window.novelGameModal.open === 'function' ) {
+				window.novelGameModal.open( gameUrl );
+			} else {
+				window.location.href = gameUrl;
+			}
+		}
+	}
 
 } )( jQuery );
