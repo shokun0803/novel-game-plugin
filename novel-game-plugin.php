@@ -555,8 +555,7 @@ function noveltool_game_list_shortcode( $atts ) {
     
     ob_start();
     
-    echo '<div class="noveltool-columns-' . esc_attr( $columns ) . '">';
-    echo '<div class="novel-games-grid">';
+    echo '<div class="noveltool-game-list-grid noveltool-columns-' . esc_attr( $columns ) . '">';
     
     foreach ( $game_titles as $game_title ) {
         $posts = noveltool_get_posts_by_game_title( $game_title, array( 'posts_per_page' => 1 ) );
@@ -566,1057 +565,132 @@ function noveltool_game_list_shortcode( $atts ) {
         }
         
         $first_post = $posts[0];
+        $background = get_post_meta( $first_post->ID, '_background_image', true );
         $post_count = count( noveltool_get_posts_by_game_title( $game_title ) );
         
-        // ゲーム情報の取得（新しいゲーム管理システムから）
+        // ゲーム説明の取得（新しいゲーム管理システムから）
         $game_description = '';
-        $game_title_image = '';
-        $game = noveltool_get_game_by_title( $game_title );
-        if ( $game ) {
-            if ( ! empty( $game['description'] ) ) {
+        if ( $show_description ) {
+            $game = noveltool_get_game_by_title( $game_title );
+            if ( $game && ! empty( $game['description'] ) ) {
                 $game_description = $game['description'];
             }
-            if ( ! empty( $game['title_image'] ) ) {
-                $game_title_image = $game['title_image'];
-            }
         }
         
-        // 画像の優先順位：ゲーム専用タイトル画像 > 最初のシーンの背景画像
-        $game_image = '';
-        if ( ! empty( $game_title_image ) ) {
-            $game_image = $game_title_image;
-        } else {
-            // タイトル画像がない場合のみ最初のシーンの背景画像を使用
-            $game_image = get_post_meta( $first_post->ID, '_background_image', true );
-        }
+        echo '<div class="noveltool-game-list-item">';
         
-        // アーカイブテンプレートと同じHTML構造を使用
-        echo '<div class="novel-game-card" ';
-        echo 'data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" ';
-        echo 'data-game-title="' . esc_attr( $game_title ) . '" ';
-        echo 'data-game-description="' . esc_attr( $game_description ) . '" ';
-        echo 'data-game-image="' . esc_attr( $game_image ) . '" ';
-        echo 'data-scene-count="' . esc_attr( $post_count ) . '">';
-        
-        echo '<div class="game-thumbnail">';
-        if ( $game_image ) {
-            echo '<img src="' . esc_url( $game_image ) . '" alt="' . esc_attr( $game_title ) . '" class="game-bg-image">';
-        } else {
-            echo '<div class="game-placeholder">';
-            echo '<span class="placeholder-text">' . esc_html__( 'No Image', 'novel-game-plugin' ) . '</span>';
+        if ( $background ) {
+            echo '<div class="noveltool-game-thumbnail">';
+            echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '">';
+            echo '<img src="' . esc_url( $background ) . '" alt="' . esc_attr( $game_title ) . '" />';
+            echo '</a>';
             echo '</div>';
         }
         
-        echo '<div class="game-overlay">';
-        echo '<div class="game-info">';
-        echo '<h3 class="game-title">' . esc_html( $game_title ) . '</h3>';
+        echo '<div class="noveltool-game-content">';
+        echo '<h3 class="noveltool-game-title">';
+        echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '">' . esc_html( $game_title ) . '</a>';
+        echo '</h3>';
         
         if ( $show_description && $game_description ) {
-            $short_description = wp_trim_words( $game_description, 20, '...' );
-            echo '<p class="game-description">' . esc_html( $short_description ) . '</p>';
+            echo '<p class="noveltool-game-description">' . esc_html( mb_substr( $game_description, 0, 120 ) );
+            if ( mb_strlen( $game_description ) > 120 ) {
+                echo '...';
+            }
+            echo '</p>';
         }
         
         if ( $show_count ) {
-            echo '<p class="scene-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
+            echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
         }
         
-        echo '</div>'; // .game-info
-        echo '<div class="play-button">';
-        echo '<span>' . esc_html__( '選択', 'novel-game-plugin' ) . '</span>';
-        echo '</div>'; // .play-button
-        echo '</div>'; // .game-overlay
-        echo '</div>'; // .game-thumbnail
-        echo '</div>'; // .novel-game-card
-    }
-    
-    echo '</div>'; // .novel-games-grid
-    echo '</div>'; // .noveltool-columns-{n}
-    
-    // ゲーム選択モーダル HTML を追加
-    ?>
-    <div id="game-selection-modal-overlay" class="game-selection-modal-overlay" style="display: none;">
-        <div id="game-selection-modal-content" class="game-selection-modal-content">
-            <button id="game-selection-close-btn" class="game-selection-close-btn" aria-label="<?php echo esc_attr__( '閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( '閉じる', 'novel-game-plugin' ); ?>">
-                <span class="close-icon">×</span>
-            </button>
-            
-            <div class="game-selection-header">
-                <div id="game-selection-image" class="game-selection-image"></div>
-                <div class="game-selection-info">
-                    <h2 id="game-selection-title" class="game-selection-title"></h2>
-                    <p id="game-selection-description" class="game-selection-description"></p>
-                    <p id="game-selection-scene-count" class="game-selection-scene-count"></p>
-                </div>
-            </div>
-            
-            <div class="game-selection-actions">
-                <button id="game-start-new-btn" class="game-action-btn game-start-btn">
-                    <span class="btn-icon">▶</span>
-                    <span class="btn-text"><?php _e('ゲーム開始', 'novel-game-plugin'); ?></span>
-                    <small class="btn-subtext"><?php _e('最初から始める', 'novel-game-plugin'); ?></small>
-                </button>
-                
-                <button id="game-resume-btn" class="game-action-btn game-resume-btn" style="display: none;">
-                    <span class="btn-icon">⏯</span>
-                    <span class="btn-text"><?php _e('途中から始める', 'novel-game-plugin'); ?></span>
-                    <small class="btn-subtext"><?php _e('前回の続きから', 'novel-game-plugin'); ?></small>
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- ゲームプレイ用モーダル HTML を追加 -->
-    <div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">
-        <!-- モーダルコンテンツ -->
-        <div id="novel-game-modal-content" class="novel-game-modal-content">
-            <!-- ゲーム閉じるボタン -->
-            <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>">
-                <span class="close-icon">×</span>
-            </button>
-            
-            <!-- ゲームコンテナ -->
-            <div id="novel-game-container" class="novel-game-container">
-                <!-- キャラクター表示エリア -->
-                <img id="novel-character-left" class="novel-character novel-character-left" style="display: none;" alt="<?php echo esc_attr__( '左キャラクター', 'novel-game-plugin' ); ?>" />
-                <img id="novel-character-center" class="novel-character novel-character-center" style="display: none;" alt="<?php echo esc_attr__( '中央キャラクター', 'novel-game-plugin' ); ?>" />
-                <img id="novel-character-right" class="novel-character novel-character-right" style="display: none;" alt="<?php echo esc_attr__( '右キャラクター', 'novel-game-plugin' ); ?>" />
-                <img id="novel-character" class="novel-character novel-character-center" style="display: none;" alt="<?php echo esc_attr__( 'キャラクター', 'novel-game-plugin' ); ?>" />
-
-                <div id="novel-speaker-name" class="novel-speaker-name"></div>
-                
-                <div id="novel-dialogue-box" class="novel-dialogue-box">
-                    <div id="novel-dialogue-text-container" class="novel-dialogue-text-container">
-                        <span id="novel-dialogue-text"></span>
-                    </div>
-                    <div id="novel-dialogue-continue" class="novel-dialogue-continue" style="display: none;">
-                        <span class="continue-indicator">▼</span>
-                    </div>
-                </div>
-
-                <div id="novel-choices" class="novel-choices"></div>
-
-                <script id="novel-dialogue-data" type="application/json">[]</script>
-                <script id="novel-base-background" type="application/json">""</script>
-                <script id="novel-characters-data" type="application/json">{}</script>
-                <script id="novel-choices-data" type="application/json">[]</script>
-            </div>
-        </div>
-    </div>
-    <?php
-    
-    // ゲーム選択モーダル CSS を追加
-    ?>
-    <style>
-    /* ショートコード用 novel-games-grid スタイル */
-    .novel-games-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 30px;
-        margin: 20px 0;
-    }
-
-    /* columns パラメータ対応 */
-    .noveltool-columns-1 .novel-games-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .noveltool-columns-2 .novel-games-grid {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    }
-    
-    .noveltool-columns-3 .novel-games-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    }
-    
-    .noveltool-columns-4 .novel-games-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    }
-    
-    .noveltool-columns-5 .novel-games-grid {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    }
-    
-    /* ゲームプレイ用モーダル CSS */
-    .novel-game-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 2147483647;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
-        max-width: none;
-        margin-left: 0;
-        margin-right: 0;
-    }
-    
-    .novel-game-modal-content {
-        width: 100%;
-        height: 100%;
-        background: #000;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .novel-game-close-btn {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 50px;
-        height: 50px;
-        background: rgba(0, 0, 0, 0.8);
-        border: 2px solid rgba(255, 255, 255, 0.9);
-        border-radius: 50%;
-        color: #fff;
-        font-size: 24px;
-        font-weight: bold;
-        cursor: pointer;
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    }
-    
-    .novel-game-close-btn:hover {
-        background: rgba(255, 255, 255, 0.9);
-        color: #333;
-        border-color: #333;
-        transform: scale(1.1);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-    }
-    
-    #novel-game-container {
-        width: 100%;
-        height: 100%;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        position: relative;
-        overflow: hidden;
-        touch-action: manipulation;
-    }
-    
-    .novel-character {
-        position: absolute;
-        max-height: 80%;
-        width: auto;
-        bottom: 0;
-        z-index: 2;
-        transition: all 0.3s ease;
-    }
-    
-    .novel-character-left {
-        left: 10%;
-        transform: scaleX(-1);
-    }
-    
-    .novel-character-center {
-        left: 50%;
-        transform: translateX(-50%);
-    }
-    
-    .novel-character-right {
-        right: 10%;
-    }
-    
-    .novel-speaker-name {
-        position: absolute;
-        bottom: 100px;
-        left: 20px;
-        font-weight: bold;
-        color: #ffd700;
-        font-size: 0.9em;
-        opacity: 0.9;
-        background: rgba(0, 0, 0, 0.6);
-        padding: 6px 12px;
-        border-radius: 4px;
-        display: block;
-        width: fit-content;
-        min-width: 80px;
-        min-height: 20px;
-        text-align: center;
-        z-index: 4;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-    
-    #novel-dialogue-box {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        color: #fff;
-        z-index: 3;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        padding: 20px;
-        min-height: 120px;
-    }
-    
-    .novel-dialogue-text-container {
-        flex: 1;
-        display: flex;
-        align-items: center;
-    }
-    
-    #novel-dialogue-text {
-        white-space: pre-wrap;
-        word-break: break-all;
-        font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'Meiryo', 'メイリオ', sans-serif;
-        letter-spacing: 0.05em;
-        overflow-wrap: break-word;
-        max-height: calc(1.6em * 3);
-        overflow: hidden;
-        width: 100%;
-        font-size: 16px;
-        line-height: 1.6;
-    }
-    
-    .novel-dialogue-continue {
-        position: absolute;
-        bottom: 10px;
-        right: 20px;
-        color: #fff;
-        font-size: 14px;
-        animation: pulse 1s infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-    }
-    
-    #novel-choices {
-        position: absolute;
-        bottom: 140px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        z-index: 5;
-        max-width: 80%;
-        width: auto;
-    }
-    
-    .novel-choice {
-        background: rgba(0, 0, 0, 0.8);
-        color: #fff;
-        border: 2px solid #555;
-        border-radius: 8px;
-        padding: 12px 20px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-align: center;
-        min-width: 200px;
-        font-size: 14px;
-        line-height: 1.4;
-    }
-    
-    .novel-choice:hover {
-        background: rgba(255, 255, 255, 0.9);
-        color: #333;
-        border-color: #333;
-        transform: scale(1.05);
-    }
-    
-    /* ゲーム選択モーダル CSS */
-    .game-selection-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.85);
-        z-index: 2147483646;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(5px);
-        transition: opacity 0.3s ease;
-    }
-    
-    .game-selection-modal-content {
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-        border-radius: 20px;
-        max-width: 600px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        position: relative;
-        animation: game-selection-appear 0.4s ease-out;
-    }
-    
-    @keyframes game-selection-appear {
-        from {
-            opacity: 0;
-            transform: scale(0.8) translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-    
-    .game-selection-close-btn {
-        position: absolute;
-        top: 15px;
-        right: 20px;
-        background: rgba(255, 255, 255, 0.9);
-        border: none;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 20px;
-        color: #666;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-        transition: all 0.2s ease;
-        z-index: 10;
-    }
-    
-    .game-selection-close-btn:hover {
-        background: rgba(255, 255, 255, 1);
-        color: #333;
-        transform: scale(1.05);
-    }
-    
-    .game-selection-header {
-        padding: 30px 30px 20px;
-        border-bottom: 1px solid #e9ecef;
-    }
-    
-    .game-selection-image {
-        width: 100%;
-        height: 200px;
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 20px;
-        background: #f8f9fa;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .game-selection-bg-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .game-selection-placeholder {
-        color: #999;
-        font-size: 14px;
-    }
-    
-    .game-selection-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: #2c3e50;
-        margin: 0 0 12px 0;
-        line-height: 1.3;
-    }
-    
-    .game-selection-description {
-        font-size: 16px;
-        color: #5a6c7d;
-        line-height: 1.6;
-        margin: 0 0 10px 0;
-    }
-    
-    .game-selection-scene-count {
-        font-size: 14px;
-        color: #7f8c8d;
-        margin: 0;
-        font-weight: 500;
-    }
-    
-    .game-selection-actions {
-        padding: 20px 30px 30px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .game-action-btn {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        padding: 18px 24px;
-        border: none;
-        border-radius: 12px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-align: left;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .game-start-btn {
-        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-        color: white;
-        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-    }
-    
-    .game-start-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
-    }
-    
-    .game-resume-btn {
-        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-        color: white;
-        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-    }
-    
-    .game-resume-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
-    }
-    
-    .btn-icon {
-        font-size: 18px;
-        margin-right: 12px;
-        opacity: 0.9;
-    }
-    
-    .btn-text {
-        font-size: 16px;
-        margin-right: auto;
-    }
-    
-    .btn-subtext {
-        font-size: 12px;
-        opacity: 0.8;
-        font-weight: 400;
-        margin-left: 8px;
-    }
-    
-    /* レスポンシブ対応 */
-    @media (max-width: 768px) {
-        .game-selection-modal-content {
-            margin: 20px;
-            width: calc(100% - 40px);
-            max-height: calc(100vh - 40px);
-        }
+        echo '<div class="noveltool-game-actions">';
+        echo '<button class="noveltool-play-button" data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" data-game-title="' . esc_attr( $game_title ) . '">';
+        echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
+        echo '</button>';
+        echo '</div>';
         
-        .game-selection-header {
-            padding: 20px 20px 15px;
-        }
-        
-        .game-selection-actions {
-            padding: 15px 20px 20px;
-        }
-        
-        .game-selection-title {
-            font-size: 20px;
-        }
-        
-        .game-action-btn {
-            padding: 15px 20px;
-            font-size: 15px;
-        }
-        
-        .btn-text {
-            font-size: 15px;
-        }
-        
-        .btn-subtext {
-            font-size: 11px;
-        }
+        echo '</div>'; // .noveltool-game-content
+        echo '</div>'; // .noveltool-game-list-item
     }
     
-    .noveltool-columns-6 .novel-games-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    }
-
-    /* アーカイブテンプレートからのスタイル統一 */
-    .novel-game-card {
-        cursor: pointer;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        background: #fff;
-    }
-
-    .novel-game-card:hover,
-    .novel-game-card.hovered {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .game-thumbnail {
-        position: relative;
-        width: 100%;
-        height: 200px;
-        overflow: hidden;
-    }
-
-    .game-bg-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .novel-game-card:hover .game-bg-image,
-    .novel-game-card.hovered .game-bg-image {
-        transform: scale(1.05);
-    }
-
-    .game-placeholder {
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .placeholder-text {
-        color: white;
-        font-size: 1.1em;
-        font-weight: bold;
-    }
-
-    .game-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
-        color: white;
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-    }
-
-    .game-info {
-        flex: 1;
-    }
-
-    .game-title {
-        font-size: 1.4em;
-        margin: 0 0 8px 0;
-        font-weight: bold;
-        line-height: 1.2;
-    }
-
-    .game-description {
-        font-size: 0.9em;
-        margin: 0 0 8px 0;
-        opacity: 0.9;
-        line-height: 1.3;
-    }
-
-    .scene-count {
-        font-size: 0.85em;
-        margin: 2px 0;
-        opacity: 0.8;
-    }
-
-    .play-button {
-        background: rgba(255, 255, 255, 0.2);
-        border: 2px solid white;
-        border-radius: 25px;
-        padding: 8px 16px;
-        font-weight: bold;
-        font-size: 0.9em;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-    }
-
-    .novel-game-card:hover .play-button,
-    .novel-game-card.hovered .play-button {
-        background: white;
-        color: #333;
-        transform: scale(1.05);
-    }
-
-    /* レスポンシブデザイン */
-    @media (max-width: 768px) {
-        .novel-games-grid {
-            grid-template-columns: 1fr !important;
-            gap: 20px;
-        }
-        
-        .game-thumbnail {
-            height: 180px;
-        }
-        
-        .game-overlay {
-            padding: 15px;
-        }
-        
-        .game-title {
-            font-size: 1.2em;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .game-thumbnail {
-            height: 160px;
-        }
-        
-        .game-overlay {
-            padding: 12px;
-        }
-        
-        .play-button {
-            padding: 6px 12px;
-            font-size: 0.8em;
-        }
-    }
-
-    /* ゲーム選択モーダル */
-    .game-selection-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.85);
-        z-index: 2147483646; /* ゲームモーダルより少し低い */
-        display: none;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(5px);
-        transition: opacity 0.3s ease;
-    }
-
-    /* ゲーム選択モーダルコンテンツ */
-    .game-selection-modal-content {
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-        border-radius: 20px;
-        max-width: 600px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        position: relative;
-        animation: game-selection-appear 0.4s ease-out;
-    }
-
-    @keyframes game-selection-appear {
-        from {
-            opacity: 0;
-            transform: scale(0.9) translateY(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    /* 閉じるボタン */
-    .game-selection-close-btn {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        width: 40px;
-        height: 40px;
-        background: rgba(0, 0, 0, 0.1);
-        border: none;
-        border-radius: 50%;
-        color: #666;
-        font-size: 18px;
-        cursor: pointer;
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-
-    .game-selection-close-btn:hover {
-        background: rgba(0, 0, 0, 0.2);
-        color: #333;
-        transform: scale(1.1);
-    }
-
-    /* ゲーム選択ヘッダー */
-    .game-selection-header {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 30px 30px 20px 30px;
-        text-align: center;
-    }
-
-    /* ゲーム選択画像 */
-    .game-selection-image {
-        width: 100%;
-        max-width: 300px;
-        height: 180px;
-        border-radius: 15px;
-        overflow: hidden;
-        margin-bottom: 20px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .game-selection-bg-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .game-selection-placeholder {
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 16px;
-    }
-
-    /* ゲーム選択情報 */
-    .game-selection-info {
-        width: 100%;
-    }
-
-    .game-selection-title {
-        font-size: clamp(1.4em, 4vw, 2em);
-        font-weight: bold;
-        color: #333;
-        margin: 0 0 15px 0;
-        line-height: 1.3;
-    }
-
-    .game-selection-description {
-        font-size: clamp(0.9em, 2.5vw, 1.1em);
-        color: #666;
-        line-height: 1.6;
-        margin: 0 0 15px 0;
-        max-height: 100px;
-        overflow-y: auto;
-    }
-
-    .game-selection-scene-count {
-        font-size: clamp(0.8em, 2vw, 1em);
-        color: #888;
-        margin: 0;
-        font-weight: 500;
-    }
-
-    /* ゲーム選択アクション */
-    .game-selection-actions {
-        padding: 20px 30px 30px 30px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    /* ゲームアクションボタン */
-    .game-action-btn {
-        display: flex;
-        align-items: center;
-        padding: 20px 25px;
-        border: none;
-        border-radius: 15px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-family: inherit;
-        position: relative;
-        overflow: hidden;
-        min-height: 70px;
-        text-align: left;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
-    }
-
-    .game-action-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-    }
-
-    .game-action-btn:active {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
-    }
-
-    /* ゲーム開始ボタン */
-    .game-start-btn {
-        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
-    }
-
-    .game-start-btn:hover {
-        box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
-    }
-
-    .game-start-btn:active {
-        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
-    }
-
-    /* ゲーム再開ボタン */
-    .game-resume-btn {
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
-    }
-
-    .game-resume-btn:hover {
-        box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
-    }
-
-    .game-resume-btn:active {
-        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
-    }
-
-    /* ボタン内のアイコン */
-    .btn-icon {
-        font-size: 1.5em;
-        margin-right: 15px;
-        flex-shrink: 0;
-    }
-
-    /* ボタンテキストコンテナ */
-    .game-action-btn .btn-text,
-    .game-action-btn .btn-subtext {
-        display: block;
-        margin: 0;
-    }
-
-    .btn-text {
-        font-size: clamp(1.1em, 3vw, 1.3em);
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-
-    .btn-subtext {
-        font-size: clamp(0.8em, 2vw, 0.9em);
-        opacity: 0.9;
-        font-weight: normal;
-    }
-
-    /* レスポンシブ対応: ゲーム選択モーダル */
-    @media (max-width: 768px) {
-        .game-selection-modal-content {
-            width: 95%;
-            max-height: 90vh;
-            border-radius: 15px;
-        }
-        
-        .game-selection-header {
-            padding: 25px 20px 15px 20px;
-        }
-        
-        .game-selection-image {
-            height: 150px;
-            margin-bottom: 15px;
-        }
-        
-        .game-selection-actions {
-            padding: 15px 20px 25px 20px;
-            gap: 12px;
-        }
-        
-        .game-action-btn {
-            min-height: 60px;
-            padding: 15px 20px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .game-selection-modal-content {
-            width: 95%;
-            max-height: 95vh;
-            border-radius: 12px;
-        }
-        
-        .game-selection-header {
-            padding: 20px 15px 10px 15px;
-        }
-        
-        .game-selection-image {
-            height: 120px;
-            margin-bottom: 12px;
-        }
-        
-        .game-selection-actions {
-            padding: 10px 15px 20px 15px;
-            gap: 10px;
-        }
-        
-        .game-action-btn {
-            min-height: 55px;
-            padding: 12px 15px;
-        }
-        
-        .btn-icon {
-            margin-right: 10px;
-        }
-    }
-
-    /* 高コントラストモードへの対応 */
-    @media (prefers-contrast: high) {
-        .game-selection-modal-content {
-            background: #ffffff;
-            border: 3px solid #000000;
-        }
-        
-        .game-action-btn {
-            border: 2px solid rgba(255, 255, 255, 0.5);
-        }
-        
-        .game-selection-close-btn {
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid #666;
-        }
-    }
-
-    /* 動きを減らす設定への対応 */
-    @media (prefers-reduced-motion: reduce) {
-        .game-selection-modal-content {
-            animation: none;
-        }
-        
-        .game-action-btn:hover {
-            transform: none;
-        }
-        
-        .game-action-btn:active {
-            transform: none;
-        }
-    }
-    </style>
-    <?php
+    echo '</div>'; // .noveltool-game-list-grid
     
-    // ゲーム選択モーダル JavaScript を追加
+    // モーダルオーバーレイを追加（ゲーム表示用）
+    echo '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">';
+    echo '    <div id="novel-game-modal-content" class="novel-game-modal-content">';
+    echo '        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '" title="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '">';
+    echo '            <span class="close-icon">×</span>';
+    echo '        </button>';
+    echo '        <div id="novel-game-container" class="novel-game-container">';
+    echo '            <!-- ゲーム内容は動的に読み込まれます -->';
+    echo '        </div>';
+    echo '    </div>';
+    echo '</div>';
+    
+    // JavaScript event handling を追加
     ?>
     <script>
-    // ゲーム選択モーダル機能は js/frontend.js に統合されました
-    // この機能は全ページで統一して動作します
-    console.log('Shortcode loaded - game selection modal handled by frontend.js');
+    document.addEventListener('DOMContentLoaded', function() {
+        // プレイボタンのクリックイベント
+        const playButtons = document.querySelectorAll('.noveltool-play-button');
+        
+        // モーダル関数が利用可能になるまで待機
+        function waitForModalAndSetupEvents() {
+            if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && window.novelGameModal.isAvailable && window.novelGameModal.isAvailable()) {
+                console.log('Modal functions found and available, setting up shortcode events');
+                setupPlayButtonEvents();
+            } else if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
+                console.log('Modal functions found but not available, setting up shortcode events anyway');
+                setupPlayButtonEvents();
+            } else {
+                console.log('Modal functions not yet available for shortcode, waiting...');
+                setTimeout(waitForModalAndSetupEvents, 100);
+            }
+        }
+        
+        function setupPlayButtonEvents() {
+            playButtons.forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault(); // デフォルト動作を防ぐ
+                    e.stopPropagation();
+                    
+                    const gameUrl = this.getAttribute('data-game-url');
+                    const gameTitle = this.getAttribute('data-game-title');
+                    console.log('Play button clicked in shortcode, URL:', gameUrl, 'Title:', gameTitle);
+                    
+                    if (gameUrl && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
+                        console.log('Calling modal open from shortcode');
+                        // モーダルでゲームを開始（ページ遷移せずに）
+                        window.novelGameModal.open(gameUrl);
+                    } else if (gameUrl) {
+                        console.log('Modal not available, using page navigation from shortcode');
+                        // フォールバック：ページ遷移
+                        window.location.href = gameUrl;
+                    } else {
+                        console.error('No game URL found on button');
+                    }
+                });
+            });
+        }
+        
+        // モーダル関数の準備を待機
+        waitForModalAndSetupEvents();
+    });
     </script>
     <?php
     
     return ob_get_clean();
 }
+add_shortcode( 'novel_game_list', 'noveltool_game_list_shortcode' );
+
+/**
+ * ゲーム投稿一覧を表示するショートコード
+ *
+ * @param array $atts ショートコードの属性
+ * @return string ショートコードの出力
+ * @since 1.0.0
+ */
 add_shortcode( 'novel_game_list', 'noveltool_game_list_shortcode' );
 
 /**

@@ -113,12 +113,7 @@ get_header(); ?>
                     $game_image = get_post_meta($game->first_scene_id, '_background_image', true);
                 }
                 ?>
-                <div class="novel-game-card" 
-                     data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>" 
-                     data-game-title="<?php echo esc_attr($game_title); ?>"
-                     data-game-description="<?php echo esc_attr($game_description); ?>"
-                     data-game-image="<?php echo esc_attr($game_image); ?>"
-                     data-scene-count="<?php echo esc_attr($scene_count); ?>">
+                <div class="novel-game-card" data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>" data-game-title="<?php echo esc_attr($game_title); ?>">
                     <div class="game-thumbnail">
                         <?php if ($game_image) : ?>
                             <img src="<?php echo esc_url($game_image); ?>" alt="<?php echo esc_attr($game_title); ?>" class="game-bg-image">
@@ -137,7 +132,7 @@ get_header(); ?>
                                 <p class="first-scene-info"><?php printf(__('開始: %s', 'novel-game-plugin'), esc_html($game->first_scene_title)); ?></p>
                             </div>
                             <div class="play-button">
-                                <span><?php _e('選択', 'novel-game-plugin'); ?></span>
+                                <span><?php _e('ゲーム開始', 'novel-game-plugin'); ?></span>
                             </div>
                         </div>
                     </div>
@@ -170,38 +165,6 @@ get_header(); ?>
         <!-- ゲームコンテナ -->
         <div id="novel-game-container" class="novel-game-container">
             <!-- ゲーム内容は動的に読み込まれます -->
-        </div>
-    </div>
-</div>
-
-<!-- ゲーム選択モーダル -->
-<div id="game-selection-modal-overlay" class="game-selection-modal-overlay" style="display: none;">
-    <div id="game-selection-modal-content" class="game-selection-modal-content">
-        <button id="game-selection-close-btn" class="game-selection-close-btn" aria-label="<?php echo esc_attr__( '閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( '閉じる', 'novel-game-plugin' ); ?>">
-            <span class="close-icon">×</span>
-        </button>
-        
-        <div class="game-selection-header">
-            <div id="game-selection-image" class="game-selection-image"></div>
-            <div class="game-selection-info">
-                <h2 id="game-selection-title" class="game-selection-title"></h2>
-                <p id="game-selection-description" class="game-selection-description"></p>
-                <p id="game-selection-scene-count" class="game-selection-scene-count"></p>
-            </div>
-        </div>
-        
-        <div class="game-selection-actions">
-            <button id="game-start-new-btn" class="game-action-btn game-start-btn">
-                <span class="btn-icon">▶</span>
-                <span class="btn-text"><?php _e('ゲーム開始', 'novel-game-plugin'); ?></span>
-                <small class="btn-subtext"><?php _e('最初から始める', 'novel-game-plugin'); ?></small>
-            </button>
-            
-            <button id="game-resume-btn" class="game-action-btn game-resume-btn" style="display: none;">
-                <span class="btn-icon">⏯</span>
-                <span class="btn-text"><?php _e('途中から始める', 'novel-game-plugin'); ?></span>
-                <small class="btn-subtext"><?php _e('前回の続きから', 'novel-game-plugin'); ?></small>
-            </button>
         </div>
     </div>
 </div>
@@ -420,9 +383,62 @@ get_header(); ?>
 </style>
 
 <script>
-// ゲーム選択モーダル機能は js/frontend.js に統合されました
-// この機能は全ページで統一して動作します
-console.log("Archive template loaded - game selection modal handled by frontend.js");
+document.addEventListener('DOMContentLoaded', function() {
+    // ゲームカードのクリックイベント
+    const gameCards = document.querySelectorAll('.novel-game-card');
+    
+    // モーダル関数が利用可能になるまで待機
+    function waitForModalAndSetupEvents() {
+        if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && window.novelGameModal.isAvailable && window.novelGameModal.isAvailable()) {
+            console.log('Modal functions found and available, setting up events');
+            setupGameCardEvents();
+        } else if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
+            console.log('Modal functions found but not available, setting up events anyway');
+            setupGameCardEvents();
+        } else {
+            console.log('Modal functions not yet available, waiting...');
+            // jQuery が読み込まれるまで少し待機
+            setTimeout(waitForModalAndSetupEvents, 100);
+        }
+    }
+    
+    function setupGameCardEvents() {
+        gameCards.forEach(function(card) {
+            card.addEventListener('click', function(e) {
+                e.preventDefault(); // ページ遷移を防ぐ
+                e.stopPropagation();
+                
+                const gameUrl = this.getAttribute('data-game-url');
+                const gameTitle = this.getAttribute('data-game-title');
+                console.log('Game card clicked, URL:', gameUrl, 'Title:', gameTitle);
+                
+                if (gameUrl && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
+                    console.log('Calling modal open');
+                    // モーダルでゲームを開始（ページ遷移せずに）
+                    window.novelGameModal.open(gameUrl);
+                } else if (gameUrl) {
+                    console.log('Modal not available, using page navigation');
+                    // フォールバック：ページ遷移
+                    window.location.href = gameUrl;
+                } else {
+                    console.error('No game URL found on card');
+                }
+            });
+            
+            // ホバー効果
+            card.addEventListener('mouseenter', function() {
+                this.classList.add('hovered');
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.classList.remove('hovered');
+            });
+        });
+    }
+    
+    // モーダル関数の準備を待機
+    waitForModalAndSetupEvents();
+});
 </script>
 
 <?php get_footer(); ?>
