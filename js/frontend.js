@@ -1763,16 +1763,22 @@
 		window.novelGameModal = {
 			open: function( gameUrl ) {
 				console.log( 'novelGameModal.open called with URL:', gameUrl );
-				console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
+				
+				// モーダル要素を動的に検索（ショートコード対応）
+				var $currentModalOverlay = $( '#novel-game-modal-overlay' );
+				console.log( 'Modal overlay exists (dynamic check):', $currentModalOverlay.length > 0 );
 				
 				// モーダル要素が存在しない場合はページ遷移
-				if ( $modalOverlay.length === 0 ) {
+				if ( $currentModalOverlay.length === 0 ) {
 					console.log( 'Modal overlay not found, redirecting to:', gameUrl );
 					if ( gameUrl ) {
 						window.location.href = gameUrl;
 					}
 					return;
 				}
+				
+				// モーダル変数を更新してからオープン
+				$modalOverlay = $currentModalOverlay;
 				openModal( gameUrl );
 			},
 			close: function() {
