@@ -55,6 +55,7 @@ function noveltool_handle_game_settings_form() {
 
         // ゲーム情報の取得とバリデーション
         $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
+        $game_subtitle = isset( $_POST['game_subtitle'] ) ? sanitize_text_field( wp_unslash( $_POST['game_subtitle'] ) ) : '';
         $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
         $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
 
@@ -74,6 +75,7 @@ function noveltool_handle_game_settings_form() {
         // ゲームを保存
         $game_data = array(
             'title'       => $game_title,
+            'subtitle'    => $game_subtitle,
             'description' => $game_description,
             'title_image' => $game_title_image,
         );
@@ -101,6 +103,7 @@ function noveltool_handle_game_settings_form() {
 
         $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
         $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
+        $game_subtitle = isset( $_POST['game_subtitle'] ) ? sanitize_text_field( wp_unslash( $_POST['game_subtitle'] ) ) : '';
         $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
         $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
         $old_title = isset( $_POST['old_title'] ) ? sanitize_text_field( wp_unslash( $_POST['old_title'] ) ) : '';
@@ -123,6 +126,7 @@ function noveltool_handle_game_settings_form() {
         $game_data = array(
             'id'          => $game_id,
             'title'       => $game_title,
+            'subtitle'    => $game_subtitle,
             'description' => $game_description,
             'title_image' => $game_title_image,
         );
@@ -338,6 +342,20 @@ function noveltool_game_settings_page() {
                                            placeholder="<?php esc_attr_e( 'ゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" />
                                 </td>
                             </tr>
+                            
+                            <tr>
+                                <th scope="row">
+                                    <label for="game_subtitle"><?php esc_html_e( 'サブタイトル', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" 
+                                           id="game_subtitle" 
+                                           name="game_subtitle" 
+                                           value="<?php echo esc_attr( isset( $editing_game['subtitle'] ) ? $editing_game['subtitle'] : '' ); ?>" 
+                                           class="regular-text"
+                                           placeholder="<?php esc_attr_e( 'サブタイトル（任意）', 'novel-game-plugin' ); ?>" />
+                                </td>
+                            </tr>
 
                             <tr>
                                 <th scope="row">
@@ -404,6 +422,9 @@ function noveltool_game_settings_page() {
                                 <div class="noveltool-game-card">
                                     <div class="game-info">
                                         <h3><?php echo esc_html( $game['title'] ); ?></h3>
+                                        <?php if ( isset( $game['subtitle'] ) && $game['subtitle'] ) : ?>
+                                            <p class="game-subtitle"><?php echo esc_html( $game['subtitle'] ); ?></p>
+                                        <?php endif; ?>
                                         <?php if ( $game['description'] ) : ?>
                                             <p class="game-description"><?php echo esc_html( mb_substr( $game['description'], 0, 100 ) ); ?><?php echo mb_strlen( $game['description'] ) > 100 ? '...' : ''; ?></p>
                                         <?php endif; ?>
@@ -464,6 +485,20 @@ function noveltool_game_settings_page() {
                                            class="regular-text"
                                            required
                                            placeholder="<?php esc_attr_e( 'ゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" />
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <th scope="row">
+                                    <label for="game_subtitle"><?php esc_html_e( 'サブタイトル', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" 
+                                           id="game_subtitle" 
+                                           name="game_subtitle" 
+                                           value="" 
+                                           class="regular-text"
+                                           placeholder="<?php esc_attr_e( 'サブタイトル（任意）', 'novel-game-plugin' ); ?>" />
                                 </td>
                             </tr>
 
@@ -671,6 +706,13 @@ function noveltool_game_settings_page() {
         color: #666;
         margin-bottom: 15px;
         line-height: 1.4;
+    }
+    
+    .game-subtitle {
+        color: #888;
+        font-style: italic;
+        margin: 5px 0 10px 0;
+        font-size: 0.9em;
     }
     
     .game-image {
