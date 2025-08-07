@@ -594,12 +594,27 @@ function noveltool_game_list_shortcode( $atts ) {
             }
         }
         
+        // ゲーム専用のタイトル画像を取得
+        $game_title_image = '';
+        $all_games = noveltool_get_all_games();
+        if ( ! empty( $all_games ) ) {
+            foreach ( $all_games as $game_data ) {
+                if ( $game_data['title'] === $game_title ) {
+                    $game_title_image = isset( $game_data['title_image'] ) ? $game_data['title_image'] : '';
+                    break;
+                }
+            }
+        }
+        
+        // 表示用の画像を決定：タイトル画像を優先、なければ背景画像
+        $display_image = ! empty( $game_title_image ) ? $game_title_image : $background;
+        
         echo '<div class="noveltool-game-list-item noveltool-game-item">';
         
-        if ( $background ) {
+        if ( $display_image ) {
             echo '<div class="noveltool-game-thumbnail">';
             echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '">';
-            echo '<img src="' . esc_url( $background ) . '" alt="' . esc_attr( $game_title ) . '" />';
+            echo '<img src="' . esc_url( $display_image ) . '" alt="' . esc_attr( $game_title ) . '" />';
             echo '</a>';
             echo '</div>';
         }
@@ -621,11 +636,24 @@ function noveltool_game_list_shortcode( $atts ) {
             echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
         }
         
+        // ゲーム専用のタイトル画像を取得
+        $game_title_image = '';
+        $all_games = noveltool_get_all_games();
+        if ( ! empty( $all_games ) ) {
+            foreach ( $all_games as $game_data ) {
+                if ( $game_data['title'] === $game_title ) {
+                    $game_title_image = isset( $game_data['title_image'] ) ? $game_data['title_image'] : '';
+                    break;
+                }
+            }
+        }
+        
         echo '<div class="noveltool-game-actions">';
         echo '<button class="noveltool-play-button" ' .
              'data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" ' .
              'data-game-title="' . esc_attr( $game_title ) . '" ' .
              'data-game-description="' . esc_attr( $game_description ) . '" ' .
+             'data-game-image="' . esc_attr( $game_title_image ) . '" ' .
              'data-game-subtitle="">';
         echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
         echo '</button>';

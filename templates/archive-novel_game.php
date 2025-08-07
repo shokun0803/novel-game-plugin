@@ -117,6 +117,7 @@ get_header(); ?>
                      data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>" 
                      data-game-title="<?php echo esc_attr($game_title); ?>"
                      data-game-description="<?php echo esc_attr($game_description); ?>"
+                     data-game-image="<?php echo esc_attr($game_image); ?>"
                      data-game-subtitle=""
                      data-scene-count="<?php echo esc_attr($scene_count); ?>">
                     <div class="game-thumbnail">

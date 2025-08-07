@@ -375,22 +375,27 @@
 			// 背景画像を取得する優先順序
 			var backgroundImage = '';
 			
-			// 1. 現在読み込まれたベース背景画像
-			if ( baseBackground ) {
+			// 1. ゲーム固有のタイトル用画像（最優先）
+			if ( gameData.image && gameData.image.trim() ) {
+				backgroundImage = gameData.image;
+				console.log( 'Using game-specific title image:', backgroundImage );
+			}
+			// 2. 現在読み込まれたベース背景画像
+			else if ( baseBackground ) {
 				backgroundImage = baseBackground;
 				console.log( 'Using base background from loaded data:', backgroundImage );
 			}
-			// 2. 現在の背景画像
+			// 3. 現在の背景画像
 			else if ( currentBackground ) {
 				backgroundImage = currentBackground;
 				console.log( 'Using current background:', backgroundImage );
 			}
-			// 3. セリフデータの最初の背景画像
+			// 4. セリフデータの最初の背景画像
 			else if ( dialogueData && dialogueData.length > 0 && dialogueData[0].background_image ) {
 				backgroundImage = dialogueData[0].background_image;
 				console.log( 'Using background from first dialogue:', backgroundImage );
 			}
-			// 4. セリフデータの最初のbackgroundプロパティ
+			// 5. セリフデータの最初のbackgroundプロパティ
 			else if ( dialogueData && dialogueData.length > 0 && dialogueData[0].background ) {
 				backgroundImage = dialogueData[0].background;
 				console.log( 'Using background from first dialogue (legacy):', backgroundImage );
@@ -1166,8 +1171,9 @@
 				var gameTitle = $target.attr( 'data-game-title' ) || $target.closest( '[data-game-title]' ).attr( 'data-game-title' );
 				var gameDescription = $target.attr( 'data-game-description' ) || $target.closest( '[data-game-description]' ).attr( 'data-game-description' ) || '';
 				var gameSubtitle = $target.attr( 'data-game-subtitle' ) || $target.closest( '[data-game-subtitle]' ).attr( 'data-game-subtitle' ) || '';
+				var gameImage = $target.attr( 'data-game-image' ) || $target.closest( '[data-game-image]' ).attr( 'data-game-image' ) || '';
 				
-				console.log( 'Game item clicked:', { gameUrl: gameUrl, gameTitle: gameTitle, gameDescription: gameDescription } );
+				console.log( 'Game item clicked:', { gameUrl: gameUrl, gameTitle: gameTitle, gameDescription: gameDescription, gameImage: gameImage } );
 				
 				if ( gameUrl && gameTitle ) {
 					// ゲームデータオブジェクトを作成し、タイトル画面表示モードでモーダルを開く
@@ -1175,7 +1181,8 @@
 						url: gameUrl,
 						title: gameTitle,
 						description: gameDescription,
-						subtitle: gameSubtitle
+						subtitle: gameSubtitle,
+						image: gameImage
 					};
 					
 					openModal( gameData );
