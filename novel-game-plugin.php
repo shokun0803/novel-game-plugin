@@ -846,9 +846,11 @@ function noveltool_all_games_shortcode_output( $atts ) {
         $background = get_post_meta( $first_post->ID, '_background_image', true );
         $post_count = count( noveltool_get_posts_by_game_title( $game_title ) );
         
-        // ゲーム概要・タイトル用画像を取得
+        // ゲーム概要・タイトル用画像を取得（改善版）
         $game_description = '';
         $game_title_image = '';
+        
+        // 1. 新しいオプション形式から取得を試行
         $all_games = noveltool_get_all_games();
         if ( ! empty( $all_games ) ) {
             foreach ( $all_games as $game_data ) {
@@ -857,6 +859,15 @@ function noveltool_all_games_shortcode_output( $atts ) {
                     $game_title_image = isset( $game_data['title_image'] ) ? $game_data['title_image'] : '';
                     break;
                 }
+            }
+        }
+        
+        // 2. データが見つからない場合は後方互換性のため従来の単一ゲーム設定から取得
+        if ( empty( $game_description ) && empty( $game_title_image ) ) {
+            $legacy_title = get_option( 'noveltool_game_title', '' );
+            if ( $legacy_title === $game_title ) {
+                $game_description = get_option( 'noveltool_game_description', '' );
+                $game_title_image = get_option( 'noveltool_game_title_image', '' );
             }
         }
         
