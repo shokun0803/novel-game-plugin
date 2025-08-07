@@ -336,7 +336,8 @@
 			$titleSubtitle.text( gameData.subtitle || '' ).toggle( !!gameData.subtitle );
 			$titleDescription.text( gameData.description || '' ).toggle( !!gameData.description );
 			
-			// 保存された進捗をチェックして「途中から始める」ボタンの表示を制御
+			// 背景画像を設定
+			setTitleScreenBackground( gameData );
 			
 			// 保存された進捗をチェックして「続きから始める」ボタンの表示を制御
 			if ( gameData.title ) {
@@ -361,6 +362,59 @@
 		}
 
 		/**
+		 * タイトル画面の背景画像を設定する
+		 *
+		 * @param {object} gameData ゲームデータ
+		 */
+		function setTitleScreenBackground( gameData ) {
+			if ( ! gameData || ! gameData.url ) {
+				console.log( 'No game data or URL provided for background image' );
+				return;
+			}
+			
+			// 背景画像を取得する優先順序
+			var backgroundImage = '';
+			
+			// 1. 現在読み込まれたベース背景画像
+			if ( baseBackground ) {
+				backgroundImage = baseBackground;
+				console.log( 'Using base background from loaded data:', backgroundImage );
+			}
+			// 2. 現在の背景画像
+			else if ( currentBackground ) {
+				backgroundImage = currentBackground;
+				console.log( 'Using current background:', backgroundImage );
+			}
+			// 3. セリフデータの最初の背景画像
+			else if ( dialogueData && dialogueData.length > 0 && dialogueData[0].background_image ) {
+				backgroundImage = dialogueData[0].background_image;
+				console.log( 'Using background from first dialogue:', backgroundImage );
+			}
+			// 4. セリフデータの最初のbackgroundプロパティ
+			else if ( dialogueData && dialogueData.length > 0 && dialogueData[0].background ) {
+				backgroundImage = dialogueData[0].background;
+				console.log( 'Using background from first dialogue (legacy):', backgroundImage );
+			}
+			
+			// 背景画像を設定
+			if ( backgroundImage ) {
+				console.log( 'Setting title screen background image:', backgroundImage );
+				$titleScreen.css( {
+					'background-image': 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(' + backgroundImage + ')',
+					'background-size': 'cover',
+					'background-position': 'center',
+					'background-repeat': 'no-repeat'
+				} );
+			} else {
+				console.log( 'No background image found, using default gradient' );
+				$titleScreen.css( {
+					'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+					'background-image': 'none'
+				} );
+			}
+		}
+
+		/**
 		 * タイトル画面を非表示にする
 		 */
 		function hideTitleScreen() {
@@ -376,6 +430,11 @@
 			// タイトル画面を非表示
 			$titleScreen.fadeOut( 300, function() {
 				$titleScreen.css( 'display', 'none' );
+				// 背景画像をリセット
+				$titleScreen.css( {
+					'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+					'background-image': 'none'
+				} );
 			} );
 			
 			// 一時保存されたゲームデータをクリア
@@ -868,7 +927,11 @@
 						loadGameData( savedProgress.sceneUrl ).then( function() {
 							// データ読み込み後に進捗を復元
 							restoreProgressState( savedProgress );
-							resolve();
+							// ゲームコンテンツを初期化
+							setTimeout( function() {
+								initializeGameContent();
+								resolve();
+							}, 100 );
 						} ).catch( function( error ) {
 							console.error( 'シーンデータの読み込みに失敗:', error );
 							reject( error );
@@ -876,7 +939,11 @@
 					} else {
 						// 同じシーンの場合は現在のデータで進捗を復元
 						restoreProgressState( savedProgress );
-						resolve();
+						// ゲームコンテンツを初期化
+						setTimeout( function() {
+							initializeGameContent();
+							resolve();
+						}, 100 );
 					}
 				} catch ( error ) {
 					console.error( '進捗復元中にエラーが発生:', error );
@@ -1040,13 +1107,19 @@
 				console.log( 'Title screen start button clicked' );
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
+					var gameTitle = window.currentGameSelectionData.title;
+					
+					// 保存された進捗があれば削除（最初から開始のため）
+					if ( gameTitle ) {
+						clearGameProgress( gameTitle );
+						console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
+					}
+					
 					// タイトル画面を非表示にしてゲーム開始
 					hideTitleScreen();
 					setTimeout( function() {
-						// 保存された進捗をチェックしてゲームを初期化
-						checkAndOfferResumeOption().then( function() {
-							initializeGameContent();
-						} );
+						// タイトル画面経由での開始のため、進捗チェックをスキップして直接初期化
+						initializeGameContent();
 					}, 300 );
 				}
 			} );
@@ -1065,18 +1138,22 @@
 						// タイトル画面を非表示にして保存地点から再開
 						hideTitleScreen();
 						setTimeout( function() {
-							// 保存された進捗データから状態を復元
-							resumeFromSavedProgress( savedProgress );
-						}, 300 );
-					} else {
-						console.log( '保存された進捗が見つかりません。最初から開始します。' );
-						// 進捗がない場合は最初から開始
-						hideTitleScreen();
-						setTimeout( function() {
-							checkAndOfferResumeOption().then( function() {
+							// 保存された進捗データから状態を復元（タイトル画面経由のため進捗チェックはスキップ）
+							resumeFromSavedProgress( savedProgress ).catch( function( error ) {
+								console.error( '進捗復元に失敗しました:', error );
+								// フォールバック：最初から開始
 								initializeGameContent();
 							} );
 						}, 300 );
+					} else {
+						console.log( '保存された進捗が見つかりません。最初から開始します。' );
+						// 進捗がない場合は最初から開始（タイトル画面経由のため進捗チェックはスキップ）
+						hideTitleScreen();
+						setTimeout( function() {
+							initializeGameContent();
+						}, 300 );
+					}
+				}
 			} );
 
 			// ゲームカード・プレイボタンクリックイベント（委譲イベント）
