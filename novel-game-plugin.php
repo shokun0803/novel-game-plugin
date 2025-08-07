@@ -846,16 +846,41 @@ function noveltool_all_games_shortcode_output( $atts ) {
         $background = get_post_meta( $first_post->ID, '_background_image', true );
         $post_count = count( noveltool_get_posts_by_game_title( $game_title ) );
         
-        echo '<div class="noveltool-game-item">';
+        // ゲーム概要・タイトル用画像を取得
+        $game_description = '';
+        $game_title_image = '';
+        $all_games = noveltool_get_all_games();
+        if ( ! empty( $all_games ) ) {
+            foreach ( $all_games as $game_data ) {
+                if ( $game_data['title'] === $game_title ) {
+                    $game_description = isset( $game_data['description'] ) ? $game_data['description'] : '';
+                    $game_title_image = isset( $game_data['title_image'] ) ? $game_data['title_image'] : '';
+                    break;
+                }
+            }
+        }
         
-        if ( $background ) {
+        // 表示用の画像を決定：タイトル画像を優先、なければ背景画像
+        $display_image = ! empty( $game_title_image ) ? $game_title_image : $background;
+        
+        echo '<div class="noveltool-game-item" ' .
+             'data-game-url="' . esc_attr( get_permalink( $first_post->ID ) ) . '" ' .
+             'data-game-title="' . esc_attr( $game_title ) . '" ' .
+             'data-game-description="' . esc_attr( $game_description ) . '" ' .
+             'data-game-image="' . esc_attr( $game_title_image ) . '" ' .
+             'data-game-subtitle="">';
+        
+        if ( $display_image ) {
             echo '<div class="noveltool-game-thumbnail">';
-            echo '<img src="' . esc_url( $background ) . '" alt="' . esc_attr( $game_title ) . '" />';
+            echo '<img src="' . esc_url( $display_image ) . '" alt="' . esc_attr( $game_title ) . '" />';
             echo '</div>';
         }
         
         echo '<div class="noveltool-game-info">';
         echo '<h4 class="noveltool-game-title">' . esc_html( $game_title ) . '</h4>';
+        if ( $game_description ) {
+            echo '<p class="noveltool-game-description">' . esc_html( wp_trim_words( $game_description, 15, '...' ) ) . '</p>';
+        }
         echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
         echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '" class="noveltool-game-link button">';
         echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
