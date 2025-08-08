@@ -63,6 +63,178 @@
 }
 
 /* =============================================================================
+   タイトル画面 スタイル（統合モーダル内）
+   ============================================================================= */
+
+/* タイトル画面 */
+.novel-title-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    animation: title-screen-appear 0.4s ease-out;
+}
+
+@keyframes title-screen-appear {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* タイトル画面コンテンツ */
+.novel-title-content {
+    text-align: center;
+    max-width: 600px;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    color: white;
+}
+
+/* タイトルテキスト */
+.novel-title-main {
+    font-size: 3em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-shadow: 
+        3px 3px 6px rgba(0, 0, 0, 0.8),
+        1px 1px 3px rgba(0, 0, 0, 0.9);
+    line-height: 1.2;
+    color: white;
+}
+
+/* サブタイトル */
+.novel-title-subtitle {
+    font-size: 1.3em;
+    margin-bottom: 15px;
+    font-weight: 300;
+    text-shadow: 
+        2px 2px 4px rgba(0, 0, 0, 0.8),
+        1px 1px 2px rgba(0, 0, 0, 0.9);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* 説明文 */
+.novel-title-description {
+    font-size: 1.1em;
+    margin-bottom: 40px;
+    line-height: 1.6;
+    text-shadow: 
+        2px 2px 4px rgba(0, 0, 0, 0.8),
+        1px 1px 2px rgba(0, 0, 0, 0.9);
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ボタンコンテナ */
+.novel-title-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+/* タイトル画面ボタン */
+.novel-title-btn {
+    position: relative;
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    min-width: 200px;
+    overflow: hidden;
+}
+
+.novel-title-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.novel-title-btn:active {
+    transform: translateY(0);
+}
+
+/* 続きからボタン */
+.novel-title-continue-btn {
+    background: linear-gradient(45deg, #fd7e14, #ffc107);
+}
+
+/* ボタンアニメーション効果 */
+.novel-title-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.novel-title-btn:active::before {
+    left: 100%;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .novel-title-content {
+        padding: 30px 20px;
+        max-width: 90%;
+        background: rgba(0, 0, 0, 0.4);
+    }
+    
+    .novel-title-main {
+        font-size: 2.2em;
+        text-shadow: 
+            2px 2px 4px rgba(0, 0, 0, 0.9),
+            1px 1px 2px rgba(0, 0, 0, 1);
+    }
+    
+    .novel-title-subtitle {
+        font-size: 1.1em;
+        text-shadow: 
+            1px 1px 3px rgba(0, 0, 0, 0.9),
+            0 0 2px rgba(0, 0, 0, 1);
+    }
+    
+    .novel-title-description {
+        font-size: 1em;
+        padding: 12px 15px;
+        background: rgba(0, 0, 0, 0.3);
+        text-shadow: 
+            1px 1px 3px rgba(0, 0, 0, 0.9),
+            0 0 2px rgba(0, 0, 0, 1);
+    }
+    
+    .novel-title-btn {
+        min-width: 100%;
+        padding: 18px 25px;
+        font-size: 18px;
+    }
+}
+/* =============================================================================
    ゲーム再開ダイアログ スタイル
    ============================================================================= */
 

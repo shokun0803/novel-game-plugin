@@ -403,6 +403,23 @@ function noveltool_filter_novel_game_content( $content ) {
                 <span class="close-icon">×</span>
             </button>
             
+            <!-- タイトル画面 -->
+            <div id="novel-title-screen" class="novel-title-screen" style="display: none;">
+                <div class="novel-title-content">
+                    <h2 id="novel-title-main" class="novel-title-main"></h2>
+                    <p id="novel-title-subtitle" class="novel-title-subtitle"></p>
+                    <p id="novel-title-description" class="novel-title-description"></p>
+                    <div class="novel-title-buttons">
+                        <button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">
+                            <?php echo esc_html__( '最初から開始', 'novel-game-plugin' ); ?>
+                        </button>
+                        <button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">
+                            <?php echo esc_html__( '続きから始める', 'novel-game-plugin' ); ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
             <!-- ゲームコンテナ -->
             <div id="novel-game-container" class="novel-game-container" style="background-image: url('<?php echo esc_url( $background ); ?>');">
                 <!-- 3体キャラクター表示 -->
@@ -569,20 +586,34 @@ function noveltool_game_list_shortcode( $atts ) {
         $post_count = count( noveltool_get_posts_by_game_title( $game_title ) );
         
         // ゲーム説明の取得（新しいゲーム管理システムから）
+        // data-game-description属性用に常に取得
         $game_description = '';
-        if ( $show_description ) {
-            $game = noveltool_get_game_by_title( $game_title );
-            if ( $game && ! empty( $game['description'] ) ) {
-                $game_description = $game['description'];
+        $game = noveltool_get_game_by_title( $game_title );
+        if ( $game && ! empty( $game['description'] ) ) {
+            $game_description = $game['description'];
+        }
+        
+        // ゲーム専用のタイトル画像を取得
+        $game_title_image = '';
+        $all_games = noveltool_get_all_games();
+        if ( ! empty( $all_games ) ) {
+            foreach ( $all_games as $game_data ) {
+                if ( $game_data['title'] === $game_title ) {
+                    $game_title_image = isset( $game_data['title_image'] ) ? $game_data['title_image'] : '';
+                    break;
+                }
             }
         }
         
-        echo '<div class="noveltool-game-list-item">';
+        // 表示用の画像を決定：タイトル画像を優先、なければ背景画像
+        $display_image = ! empty( $game_title_image ) ? $game_title_image : $background;
         
-        if ( $background ) {
+        echo '<div class="noveltool-game-list-item noveltool-game-item">';
+        
+        if ( $display_image ) {
             echo '<div class="noveltool-game-thumbnail">';
             echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '">';
-            echo '<img src="' . esc_url( $background ) . '" alt="' . esc_attr( $game_title ) . '" />';
+            echo '<img src="' . esc_url( $display_image ) . '" alt="' . esc_attr( $game_title ) . '" />';
             echo '</a>';
             echo '</div>';
         }
@@ -604,8 +635,25 @@ function noveltool_game_list_shortcode( $atts ) {
             echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
         }
         
+        // ゲーム専用のタイトル画像を取得
+        $game_title_image = '';
+        $all_games = noveltool_get_all_games();
+        if ( ! empty( $all_games ) ) {
+            foreach ( $all_games as $game_data ) {
+                if ( $game_data['title'] === $game_title ) {
+                    $game_title_image = isset( $game_data['title_image'] ) ? $game_data['title_image'] : '';
+                    break;
+                }
+            }
+        }
+        
         echo '<div class="noveltool-game-actions">';
-        echo '<button class="noveltool-play-button" data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" data-game-title="' . esc_attr( $game_title ) . '">';
+        echo '<button class="noveltool-play-button" ' .
+             'data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" ' .
+             'data-game-title="' . esc_attr( $game_title ) . '" ' .
+             'data-game-description="' . esc_attr( $game_description ) . '" ' .
+             'data-game-image="' . esc_attr( $game_title_image ) . '" ' .
+             'data-game-subtitle="">';
         echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
         echo '</button>';
         echo '</div>';
@@ -616,69 +664,33 @@ function noveltool_game_list_shortcode( $atts ) {
     
     echo '</div>'; // .noveltool-game-list-grid
     
-    // モーダルオーバーレイを追加（ゲーム表示用）
+    // モーダルオーバーレイを追加（ゲーム表示用・タイトル画面統合版）
     echo '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">';
     echo '    <div id="novel-game-modal-content" class="novel-game-modal-content">';
     echo '        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '" title="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '">';
     echo '            <span class="close-icon">×</span>';
     echo '        </button>';
+    echo '        <!-- タイトル画面 -->';
+    echo '        <div id="novel-title-screen" class="novel-title-screen" style="display: none;">';
+    echo '            <div class="novel-title-content">';
+    echo '                <h2 id="novel-title-main" class="novel-title-main"></h2>';
+    echo '                <p id="novel-title-subtitle" class="novel-title-subtitle"></p>';
+    echo '                <p id="novel-title-description" class="novel-title-description"></p>';
+    echo '                <div class="novel-title-buttons">';
+    echo '                    <button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">';
+    echo                          esc_html__( '最初から開始', 'novel-game-plugin' );
+    echo '                    </button>';
+    echo '                    <button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">';
+    echo                          esc_html__( '続きから始める', 'novel-game-plugin' );
+    echo '                    </button>';
+    echo '                </div>';
+    echo '            </div>';
+    echo '        </div>';
     echo '        <div id="novel-game-container" class="novel-game-container">';
     echo '            <!-- ゲーム内容は動的に読み込まれます -->';
     echo '        </div>';
     echo '    </div>';
     echo '</div>';
-    
-    // JavaScript event handling を追加
-    ?>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // プレイボタンのクリックイベント
-        const playButtons = document.querySelectorAll('.noveltool-play-button');
-        
-        // モーダル関数が利用可能になるまで待機
-        function waitForModalAndSetupEvents() {
-            if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && window.novelGameModal.isAvailable && window.novelGameModal.isAvailable()) {
-                console.log('Modal functions found and available, setting up shortcode events');
-                setupPlayButtonEvents();
-            } else if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
-                console.log('Modal functions found but not available, setting up shortcode events anyway');
-                setupPlayButtonEvents();
-            } else {
-                console.log('Modal functions not yet available for shortcode, waiting...');
-                setTimeout(waitForModalAndSetupEvents, 100);
-            }
-        }
-        
-        function setupPlayButtonEvents() {
-            playButtons.forEach(function(button) {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault(); // デフォルト動作を防ぐ
-                    e.stopPropagation();
-                    
-                    const gameUrl = this.getAttribute('data-game-url');
-                    const gameTitle = this.getAttribute('data-game-title');
-                    console.log('Play button clicked in shortcode, URL:', gameUrl, 'Title:', gameTitle);
-                    
-                    if (gameUrl && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
-                        console.log('Calling modal open from shortcode');
-                        // モーダルでゲームを開始（ページ遷移せずに）
-                        window.novelGameModal.open(gameUrl);
-                    } else if (gameUrl) {
-                        console.log('Modal not available, using page navigation from shortcode');
-                        // フォールバック：ページ遷移
-                        window.location.href = gameUrl;
-                    } else {
-                        console.error('No game URL found on button');
-                    }
-                });
-            });
-        }
-        
-        // モーダル関数の準備を待機
-        waitForModalAndSetupEvents();
-    });
-    </script>
-    <?php
     
     return ob_get_clean();
 }
@@ -833,16 +845,52 @@ function noveltool_all_games_shortcode_output( $atts ) {
         $background = get_post_meta( $first_post->ID, '_background_image', true );
         $post_count = count( noveltool_get_posts_by_game_title( $game_title ) );
         
-        echo '<div class="noveltool-game-item">';
+        // ゲーム概要・タイトル用画像を取得（改善版）
+        $game_description = '';
+        $game_title_image = '';
         
-        if ( $background ) {
+        // 1. 新しいオプション形式から取得を試行
+        $all_games = noveltool_get_all_games();
+        if ( ! empty( $all_games ) ) {
+            foreach ( $all_games as $game_data ) {
+                if ( $game_data['title'] === $game_title ) {
+                    $game_description = isset( $game_data['description'] ) ? $game_data['description'] : '';
+                    $game_title_image = isset( $game_data['title_image'] ) ? $game_data['title_image'] : '';
+                    break;
+                }
+            }
+        }
+        
+        // 2. データが見つからない場合は後方互換性のため従来の単一ゲーム設定から取得
+        if ( empty( $game_description ) && empty( $game_title_image ) ) {
+            $legacy_title = get_option( 'noveltool_game_title', '' );
+            if ( $legacy_title === $game_title ) {
+                $game_description = get_option( 'noveltool_game_description', '' );
+                $game_title_image = get_option( 'noveltool_game_title_image', '' );
+            }
+        }
+        
+        // 表示用の画像を決定：タイトル画像を優先、なければ背景画像
+        $display_image = ! empty( $game_title_image ) ? $game_title_image : $background;
+        
+        echo '<div class="noveltool-game-item" ' .
+             'data-game-url="' . esc_attr( get_permalink( $first_post->ID ) ) . '" ' .
+             'data-game-title="' . esc_attr( $game_title ) . '" ' .
+             'data-game-description="' . esc_attr( $game_description ) . '" ' .
+             'data-game-image="' . esc_attr( $game_title_image ) . '" ' .
+             'data-game-subtitle="">';
+        
+        if ( $display_image ) {
             echo '<div class="noveltool-game-thumbnail">';
-            echo '<img src="' . esc_url( $background ) . '" alt="' . esc_attr( $game_title ) . '" />';
+            echo '<img src="' . esc_url( $display_image ) . '" alt="' . esc_attr( $game_title ) . '" />';
             echo '</div>';
         }
         
         echo '<div class="noveltool-game-info">';
         echo '<h4 class="noveltool-game-title">' . esc_html( $game_title ) . '</h4>';
+        if ( $game_description ) {
+            echo '<p class="noveltool-game-description">' . esc_html( wp_trim_words( $game_description, 15, '...' ) ) . '</p>';
+        }
         echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
         echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '" class="noveltool-game-link button">';
         echo esc_html__( 'プレイ開始', 'novel-game-plugin' );

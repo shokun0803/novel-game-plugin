@@ -113,7 +113,13 @@ get_header(); ?>
                     $game_image = get_post_meta($game->first_scene_id, '_background_image', true);
                 }
                 ?>
-                <div class="novel-game-card" data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>" data-game-title="<?php echo esc_attr($game_title); ?>">
+                <div class="novel-game-card noveltool-game-item" 
+                     data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>" 
+                     data-game-title="<?php echo esc_attr($game_title); ?>"
+                     data-game-description="<?php echo esc_attr($game_description); ?>"
+                     data-game-image="<?php echo esc_attr($game_image); ?>"
+                     data-game-subtitle=""
+                     data-scene-count="<?php echo esc_attr($scene_count); ?>">
                     <div class="game-thumbnail">
                         <?php if ($game_image) : ?>
                             <img src="<?php echo esc_url($game_image); ?>" alt="<?php echo esc_attr($game_title); ?>" class="game-bg-image">
@@ -153,7 +159,7 @@ get_header(); ?>
     </div>
 </div>
 
-<!-- モーダルオーバーレイ（ゲーム表示用） -->
+<!-- モーダルオーバーレイ（ゲーム表示用・タイトル画面統合版） -->
 <div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">
     <!-- モーダルコンテンツ -->
     <div id="novel-game-modal-content" class="novel-game-modal-content">
@@ -161,6 +167,23 @@ get_header(); ?>
         <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>">
             <span class="close-icon">×</span>
         </button>
+        
+        <!-- タイトル画面 -->
+        <div id="novel-title-screen" class="novel-title-screen" style="display: none;">
+            <div class="novel-title-content">
+                <h2 id="novel-title-main" class="novel-title-main"></h2>
+                <p id="novel-title-subtitle" class="novel-title-subtitle"></p>
+                <p id="novel-title-description" class="novel-title-description"></p>
+                <div class="novel-title-buttons">
+                    <button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">
+                        <?php echo esc_html__( '最初から開始', 'novel-game-plugin' ); ?>
+                    </button>
+                    <button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">
+                        <?php echo esc_html__( '続きから始める', 'novel-game-plugin' ); ?>
+                    </button>
+                </div>
+            </div>
+        </div>
         
         <!-- ゲームコンテナ -->
         <div id="novel-game-container" class="novel-game-container">
@@ -382,63 +405,6 @@ get_header(); ?>
 }
 </style>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // ゲームカードのクリックイベント
-    const gameCards = document.querySelectorAll('.novel-game-card');
-    
-    // モーダル関数が利用可能になるまで待機
-    function waitForModalAndSetupEvents() {
-        if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal && window.novelGameModal.isAvailable && window.novelGameModal.isAvailable()) {
-            console.log('Modal functions found and available, setting up events');
-            setupGameCardEvents();
-        } else if (typeof window.novelGameModal !== 'undefined' && window.novelGameModal) {
-            console.log('Modal functions found but not available, setting up events anyway');
-            setupGameCardEvents();
-        } else {
-            console.log('Modal functions not yet available, waiting...');
-            // jQuery が読み込まれるまで少し待機
-            setTimeout(waitForModalAndSetupEvents, 100);
-        }
-    }
-    
-    function setupGameCardEvents() {
-        gameCards.forEach(function(card) {
-            card.addEventListener('click', function(e) {
-                e.preventDefault(); // ページ遷移を防ぐ
-                e.stopPropagation();
-                
-                const gameUrl = this.getAttribute('data-game-url');
-                const gameTitle = this.getAttribute('data-game-title');
-                console.log('Game card clicked, URL:', gameUrl, 'Title:', gameTitle);
-                
-                if (gameUrl && window.novelGameModal && typeof window.novelGameModal.open === 'function') {
-                    console.log('Calling modal open');
-                    // モーダルでゲームを開始（ページ遷移せずに）
-                    window.novelGameModal.open(gameUrl);
-                } else if (gameUrl) {
-                    console.log('Modal not available, using page navigation');
-                    // フォールバック：ページ遷移
-                    window.location.href = gameUrl;
-                } else {
-                    console.error('No game URL found on card');
-                }
-            });
-            
-            // ホバー効果
-            card.addEventListener('mouseenter', function() {
-                this.classList.add('hovered');
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.classList.remove('hovered');
-            });
-        });
-    }
-    
-    // モーダル関数の準備を待機
-    waitForModalAndSetupEvents();
-});
-</script>
+
 
 <?php get_footer(); ?>
