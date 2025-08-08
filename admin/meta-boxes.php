@@ -818,6 +818,26 @@ function noveltool_meta_box_callback( $post ) {
                 </div>
             </td>
         </tr>
+
+        <tr>
+            <th scope="row">
+                <label for="novel_is_ending_scene"><?php esc_html_e( 'エンディング設定', 'novel-game-plugin' ); ?></label>
+            </th>
+            <td>
+                <?php
+                $is_ending_scene = get_post_meta( $post->ID, '_is_ending_scene', true );
+                ?>
+                <input type="checkbox"
+                       id="novel_is_ending_scene"
+                       name="is_ending_scene"
+                       value="1"
+                       <?php checked( $is_ending_scene, '1' ); ?> />
+                <label for="novel_is_ending_scene"><?php esc_html_e( 'このシーンをエンディングシーンとして設定', 'novel-game-plugin' ); ?></label>
+                <p class="description">
+                    <?php esc_html_e( 'エンディングシーンでは、選択肢がない場合にクリックするとタイトル画面へ自動的に戻ります。', 'novel-game-plugin' ); ?>
+                </p>
+            </td>
+        </tr>
     </table>
     <?php
 }
@@ -859,6 +879,10 @@ function noveltool_save_meta_box_data( $post_id ) {
         'choices'          => '_choices',
         'game_title'       => '_game_title',
     );
+    
+    // エンディングシーンフラグの保存
+    $is_ending_scene = isset( $_POST['is_ending_scene'] ) ? '1' : '0';
+    update_post_meta( $post_id, '_is_ending_scene', $is_ending_scene );
     
     // セリフ背景データの保存
     if ( isset( $_POST['dialogue_backgrounds'] ) ) {

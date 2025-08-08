@@ -261,6 +261,9 @@ function noveltool_filter_novel_game_content( $content ) {
     $game_title = get_post_meta( $post->ID, '_game_title', true );
     $dialogue_backgrounds = get_post_meta( $post->ID, '_dialogue_backgrounds', true );
     
+    // エンディングシーン設定の取得
+    $is_ending_scene = get_post_meta( $post->ID, '_is_ending_scene', true );
+    
     // 3体キャラクター対応のメタデータ取得
     $character_left   = get_post_meta( $post->ID, '_character_left', true );
     $character_center = get_post_meta( $post->ID, '_character_center', true );
@@ -475,6 +478,10 @@ function noveltool_filter_novel_game_content( $content ) {
 
                 <script id="novel-choices-data" type="application/json">
                     <?php echo wp_json_encode( $choices, JSON_UNESCAPED_UNICODE ); ?>
+                </script>
+                
+                <script id="novel-ending-scene-flag" type="application/json">
+                    <?php echo wp_json_encode( $is_ending_scene === '1', JSON_UNESCAPED_UNICODE ); ?>
                 </script>
             </div>
         </div>

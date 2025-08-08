@@ -1201,6 +1201,44 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     -ms-user-select: none;
 }
 
+/* エンディングクリック指示メッセージ */
+.ending-click-instruction {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffd700;
+    padding: 15px 20px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: clamp(14px, 3vw, 18px);
+    font-style: italic;
+    margin: 15px 0 0 0;
+    animation: ending-click-pulse 2s infinite;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+@keyframes ending-click-pulse {
+    0% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+    100% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+}
+
+.ending-click-instruction:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
 /* ゲームナビゲーションボタン */
 .game-navigation {
     margin-top: 20px;
