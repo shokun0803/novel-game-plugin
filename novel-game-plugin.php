@@ -586,12 +586,11 @@ function noveltool_game_list_shortcode( $atts ) {
         $post_count = count( noveltool_get_posts_by_game_title( $game_title ) );
         
         // ゲーム説明の取得（新しいゲーム管理システムから）
+        // data-game-description属性用に常に取得
         $game_description = '';
-        if ( $show_description ) {
-            $game = noveltool_get_game_by_title( $game_title );
-            if ( $game && ! empty( $game['description'] ) ) {
-                $game_description = $game['description'];
-            }
+        $game = noveltool_get_game_by_title( $game_title );
+        if ( $game && ! empty( $game['description'] ) ) {
+            $game_description = $game['description'];
         }
         
         // ゲーム専用のタイトル画像を取得
