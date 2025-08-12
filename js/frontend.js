@@ -1135,6 +1135,9 @@
 
 		/**
 		 * モーダルイベントハンドラーの設定
+		 * 
+		 * イベント委譲を使用しているため、対象のDOM要素が存在しない状態で呼び出しても安全です。
+		 * DOM要素が後から動的に生成された場合でも、正しくイベントが機能します。
 		 */
 		function setupModalEvents() {
 			console.log( 'Setting up modal events' );
@@ -2052,19 +2055,21 @@
 			console.log( 'Clear progress button found:', $clearProgressButton.length > 0 );
 			console.log( 'Close button found:', $closeButton.length > 0 );
 			
-			// モーダル要素が存在する場合のみモーダルイベントを設定
+			// モーダルイベントを常に設定（DOM要素の存在有無に関わらず委譲イベントを設定）
+			setupModalEvents();
+			
+			// モーダル要素が存在する場合のみ表示制御を実行
 			if ( $modalOverlay.length > 0 ) {
-				// モーダルイベントの設定
-				setupModalEvents();
-				
 				// 初期状態はモーダルとタイトル画面を非表示
 				$modalOverlay.hide();
 				$titleScreen.hide();
 				
-				console.log( 'Modal events set up successfully' );
+				console.log( 'Modal overlay found and hidden' );
 			} else {
-				console.log( 'No modal overlay found, skipping modal setup' );
+				console.log( 'No modal overlay found, but events are still set up for dynamic elements' );
 			}
+			
+			console.log( 'Modal events set up successfully (always executed)' );
 			
 			// 進捗クリアボタンの表示状態を初期化
 			var gameTitle = extractGameTitleFromPage();
