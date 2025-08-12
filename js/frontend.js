@@ -479,8 +479,8 @@
 				console.log( 'ゲーム完了により進捗をクリアしました:', gameTitle );
 			}
 			
-			// 全ゲーム状態とデータを包括的にリセット
-			resetAllGameData();
+			// 全ゲーム状態とデータを包括的にリセット（タイトル画面復帰時は全クリア）
+			resetAllGameData( true );
 			
 			// タイトル画面用のゲームデータを構築
 			var gameData = {
@@ -855,16 +855,16 @@
 						} ).catch( function() {
 							// 復元に失敗した場合は最初から開始
 							console.log( '進捗復元に失敗したため、最初から開始します' );
-							// フォールバック時も全ゲーム状態をリセット
-							resetAllGameData();
+							// フォールバック時は完全リセット（データ配列もクリア）
+							resetAllGameData( true );
 							resolve();
 						} );
 					} else {
 						console.log( '最初から開始します' );
 						// 保存された進捗をクリア
 						clearGameProgress( currentGameTitle );
-						// 最初から開始時は全ゲーム状態をリセット
-						resetAllGameData();
+						// 最初から開始時は全ゲーム状態をリセット（データ配列もクリア）
+						resetAllGameData( true );
 						resolve();
 					}
 				} );
@@ -1155,8 +1155,17 @@
 		 * 
 		 * @since 1.0.0
 		 */
-		function resetAllGameData() {
-			console.log( 'Resetting all game data and state...' );
+		/**
+		 * ゲームデータと状態を包括的にリセットする関数
+		 * @param {boolean} clearDataArrays - セリフ・選択肢データ配列をクリアするかどうか（デフォルト: true）
+		 */
+		function resetAllGameData( clearDataArrays ) {
+			// clearDataArraysが未指定の場合はtrueをデフォルト値とする
+			if ( typeof clearDataArrays === 'undefined' ) {
+				clearDataArrays = true;
+			}
+			
+			console.log( 'Resetting all game data and state... clearDataArrays:', clearDataArrays );
 			
 			// セリフ・対話データの完全リセット
 			currentDialogueIndex = 0;
@@ -1172,12 +1181,18 @@
 			currentGameTitle = '';
 			currentSceneUrl = '';
 			
-			// 選択肢とセリフデータのリセット（参照のみ、元データは保持）
-			choices = [];
-			
-			// 背景表示の完全リセット
-			if ( baseBackground ) {
-				currentBackground = baseBackground;
+			// 選択肢とセリフデータのリセット（オプション）
+			// シーン遷移時は新データがロード後に上書きされるため、クリア不要
+			if ( clearDataArrays ) {
+				choices = [];
+				dialogueData = [];
+				dialogues = [];
+				baseBackground = '';
+				currentBackground = '';
+				charactersData = {};
+				console.log( 'Data arrays cleared (complete reset)' );
+			} else {
+				console.log( 'Data arrays preserved (partial reset for scene transition)' );
 			}
 			
 			// DOM要素の表示を完全リセット
@@ -1285,8 +1300,8 @@
 						console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
 					}
 					
-					// 新ゲーム開始のため、全ゲーム状態を包括的にリセット
-					resetAllGameData();
+					// 新ゲーム開始のため、全ゲーム状態を包括的にリセット（データ配列もクリア）
+					resetAllGameData( true );
 					
 					// タイトル画面を非表示にしてゲーム開始
 					hideTitleScreen();
@@ -1326,16 +1341,15 @@
 							// 保存された進捗データから状態を復元（タイトル画面経由のため進捗チェックはスキップ）
 							resumeFromSavedProgress( savedProgress ).catch( function( error ) {
 								console.error( '進捗復元に失敗しました:', error );
-								// フォールバック：最初から開始（全状態をリセット）
-								resetAllGameData();
+								// フォールバック：最初から開始（全状態とデータ配列をリセット）
+								resetAllGameData( true );
 								initializeGameContent();
 							} );
 						}, 300 );
 					} else {
 						console.log( '保存された進捗が見つかりません。最初から開始します。' );
-						// 進捗がない場合は最初から開始（タイトル画面経由のため進捗チェックはスキップ）
-						// フォールバック時も全ゲーム状態をリセット
-						resetAllGameData();
+						// 進捗がない場合は最初から開始（全状態とデータ配列をリセット）
+						resetAllGameData( true );
 						hideTitleScreen();
 						setTimeout( function() {
 							initializeGameContent();
@@ -1627,7 +1641,17 @@
 		 * 選択肢を表示、選択肢がない場合は「おわり」を表示
 		 */
 		function showChoices() {
+			console.log( 'showChoices called, choices.length:', choices.length );
+			
 			if ( choices.length === 0 ) {
+				console.warn( 'No choices available - showing game end. This may indicate a data loading issue.' );
+				console.log( 'Current game state:', {
+					currentGameTitle: currentGameTitle,
+					currentSceneUrl: currentSceneUrl,
+					dialogueData_length: dialogueData.length,
+					dialogues_length: dialogues.length,
+					isEndingScene: isEndingScene
+				} );
 				// 選択肢がない場合は「おわり」を表示
 				showGameEnd();
 				return;
@@ -1681,19 +1705,15 @@
 					// 既存のイベントハンドラーをクリーンアップ
 					$( document ).off( 'keydown.novel-choices' );
 					
-					// 1. まず古いデータを完全にクリア
-					dialogueData = [];
-					dialogues = [];
-					choices = [];
-					baseBackground = '';
-					currentBackground = '';
-					charactersData = {};
-					
-					// 2. 表示状態をリセット
+					// 1. 表示状態をリセット（データクリアは新データロード後に実行）
 					resetGameState();
 					
-					// 3. 新しいシーンのデータを読み込み
+					// 2. 新しいシーンのデータを読み込み
 					loadGameData( nextScene ).then( function() {
+						// 3. 新データロード成功後に古いデータを完全にクリア
+						// （この時点で新しいデータがすでにロードされている）
+						console.log( 'Scene transition successful, new data loaded' );
+						
 						// 4. シーン遷移後の進捗を保存
 						autoSaveGameProgress();
 						
