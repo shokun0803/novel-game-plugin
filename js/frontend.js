@@ -473,31 +473,90 @@
 				console.log( 'ゲーム完了により進捗をクリアしました:', gameTitle );
 			}
 			
-			// ゲーム状態をリセット
-			resetGameState();
+			// 全ゲーム状態をリセット（データも含めて完全にクリア）
+			resetAllGameData();
 			
 			// タイトル画面用のゲームデータを構築
 			var gameData = {
 				title: gameTitle,
 				description: '',
 				subtitle: '',
-				image: baseBackground || currentBackground || '',
+				image: '',
 				url: window.location.href
 			};
 			
-			// 保存されているゲーム設定から詳細情報を取得
-			var game = noveltool_get_game_by_title ? noveltool_get_game_by_title( gameTitle ) : null;
-			if ( game ) {
-				gameData.description = game.description || '';
-				gameData.image = game.title_image || gameData.image;
+			// ゲーム説明文を取得する優先順序
+			// 1. DOM内のメタデータから取得
+			var gameDescriptionMeta = $( 'meta[name="novel-game-description"]' ).attr( 'content' );
+			if ( gameDescriptionMeta ) {
+				gameData.description = gameDescriptionMeta.trim();
+				console.log( 'Game description from meta tag:', gameData.description );
 			}
+			
+			// 2. DOM内のdata属性から取得
+			if ( ! gameData.description ) {
+				var gameDataElement = $( '[data-game-description]' ).first();
+				if ( gameDataElement.length > 0 ) {
+					gameData.description = gameDataElement.attr( 'data-game-description' );
+					console.log( 'Game description from data attribute:', gameData.description );
+				}
+			}
+			
+			// 3. ページコンテンツから説明文を抽出
+			if ( ! gameData.description ) {
+				var gameDescriptionElement = $( '.novel-game-description, .game-description, #novel-game-description' ).first();
+				if ( gameDescriptionElement.length > 0 ) {
+					gameData.description = gameDescriptionElement.text().trim();
+					console.log( 'Game description from content element:', gameData.description );
+				}
+			}
+			
+			// 4. ページの要約情報から取得
+			if ( ! gameData.description ) {
+				var excerptMeta = $( 'meta[name="description"]' ).attr( 'content' );
+				if ( excerptMeta && excerptMeta.length < 200 ) { // 長すぎる場合は除外
+					gameData.description = excerptMeta.trim();
+					console.log( 'Game description from page meta description:', gameData.description );
+				}
+			}
+			
+			// サブタイトルの取得
+			var gameSubtitleMeta = $( 'meta[name="novel-game-subtitle"]' ).attr( 'content' );
+			if ( gameSubtitleMeta ) {
+				gameData.subtitle = gameSubtitleMeta.trim();
+			} else {
+				var gameSubtitleElement = $( '[data-game-subtitle]' ).first();
+				if ( gameSubtitleElement.length > 0 ) {
+					gameData.subtitle = gameSubtitleElement.attr( 'data-game-subtitle' );
+				}
+			}
+			
+			// 背景画像の設定
+			if ( baseBackground ) {
+				gameData.image = baseBackground;
+			} else if ( currentBackground ) {
+				gameData.image = currentBackground;
+			} else {
+				// DOM内から背景画像を探す
+				var gameImageMeta = $( 'meta[name="novel-game-image"]' ).attr( 'content' );
+				if ( gameImageMeta ) {
+					gameData.image = gameImageMeta;
+				} else {
+					var gameImageElement = $( '[data-game-image]' ).first();
+					if ( gameImageElement.length > 0 ) {
+						gameData.image = gameImageElement.attr( 'data-game-image' );
+					}
+				}
+			}
+			
+			console.log( 'タイトル画面用ゲームデータを構築しました:', gameData );
 			
 			// タイトル画面を表示
 			setTimeout( function() {
 				showTitleScreen( gameData );
 			}, 500 );
 			
-			console.log( 'エンディング完了、タイトル画面に戻ります:', gameData );
+			console.log( 'エンディング完了、タイトル画面に戻ります' );
 		}
 
 		/**
@@ -847,14 +906,18 @@
 						resumeFromSavedProgress( savedProgress ).then( function() {
 							resolve();
 						} ).catch( function() {
-							// 復元に失敗した場合は最初から開始
+							// 復元に失敗した場合は最初から開始（全状態リセット）
 							console.log( '進捗復元に失敗したため、最初から開始します' );
+							resetAllGameData();
 							resolve();
 						} );
 					} else {
 						console.log( '最初から開始します' );
-						// 保存された進捗をクリア
+						// 保存された進捗をクリアし、全状態をリセット
 						clearGameProgress( currentGameTitle );
+						resetAllGameData();
+						// ゲーム情報を再設定
+						setCurrentGameInfo( currentGameTitle, currentSceneUrl || window.location.href );
 						resolve();
 					}
 				} );
@@ -1083,12 +1146,73 @@
 			$( document ).off( 'keydown.novel-dialogue' );
 			$( window ).off( 'resize.game orientationchange.game' );
 			
-			// ゲーム状態をリセット
-			resetGameState();
+			// ゲーム状態を完全にリセット
+			resetAllGameData();
+		}
+
+		/**
+		 * 全ゲームデータを完全にリセット（データと表示状態の両方）
+		 * 
+		 * @since 1.2.0
+		 */
+		function resetAllGameData() {
+			console.log( 'Resetting all game data and state...' );
+			
+			// ゲームデータ本体を完全にリセット
+			dialogueData = [];
+			dialogues = [];
+			choices = [];
+			baseBackground = '';
+			currentBackground = '';
+			charactersData = {};
+			isEndingScene = false;
+			
+			// ゲーム進行状態をリセット
+			currentGameTitle = '';
+			currentSceneUrl = '';
+			
+			// ページング状態をリセット
+			currentDialogueIndex = 0;
+			currentPageIndex = 0;
+			currentDialoguePages = [];
+			allDialoguePages = [];
+			dialogueIndex = 0;
+			
+			// 一時保存されたゲームデータをクリア
+			if ( window.currentGameSelectionData ) {
+				window.currentGameSelectionData = null;
+			}
+			
+			// DOM要素の表示をリセット
+			if ( $dialogueText && $dialogueText.length > 0 ) {
+				$dialogueText.text( '' );
+			}
+			if ( $speakerName && $speakerName.length > 0 ) {
+				$speakerName.text( '' );
+			}
+			if ( $choicesContainer && $choicesContainer.length > 0 ) {
+				$choicesContainer.empty().hide();
+			}
+			if ( $dialogueContinue && $dialogueContinue.length > 0 ) {
+				$dialogueContinue.hide();
+			}
+			if ( $dialogueBox && $dialogueBox.length > 0 ) {
+				$dialogueBox.show();
+			}
+			
+			// キャラクターの状態をリセット
+			$( '.novel-character' ).removeClass( 'speaking not-speaking' );
+			
+			// イベントハンドラーをクリーンアップ
+			$( document ).off( 'keydown.novel-dialogue keydown.novel-end keydown.novel-end-ending click.novel-end-ending touchend.novel-end-ending' );
+			
+			console.log( 'All game data and state reset completed' );
 		}
 
 		/**
 		 * ゲーム状態をリセット（表示状態のみ、データはクリアしない）
+		 * 
+		 * @deprecated 1.2.0 Use resetAllGameData() for complete reset instead
 		 */
 		function resetGameState() {
 			console.log( 'Resetting game display state...' );
@@ -1193,6 +1317,12 @@
 						console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
 					}
 					
+					// 全状態を完全にリセット
+					resetAllGameData();
+					
+					// ゲーム情報を再設定
+					setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
+					
 					// タイトル画面を非表示にしてゲーム開始
 					hideTitleScreen();
 					setTimeout( function() {
@@ -1213,10 +1343,17 @@
 					
 					if ( savedProgress ) {
 						console.log( '保存された進捗から再開します' );
+						
+						// 全状態をリセットしてから進捗を復元
+						resetAllGameData();
+						
+						// ゲーム情報を再設定
+						setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
+						
 						// タイトル画面を非表示にして保存地点から再開
 						hideTitleScreen();
 						setTimeout( function() {
-							// 保存された進捗データから状態を復元（タイトル画面経由のため進捗チェックはスキップ）
+							// 保存された進捗データから状態を復元
 							resumeFromSavedProgress( savedProgress ).catch( function( error ) {
 								console.error( '進捗復元に失敗しました:', error );
 								// フォールバック：最初から開始
@@ -1225,7 +1362,14 @@
 						}, 300 );
 					} else {
 						console.log( '保存された進捗が見つかりません。最初から開始します。' );
-						// 進捗がない場合は最初から開始（タイトル画面経由のため進捗チェックはスキップ）
+						
+						// 全状態を完全にリセット
+						resetAllGameData();
+						
+						// ゲーム情報を再設定
+						setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
+						
+						// 進捗がない場合は最初から開始
 						hideTitleScreen();
 						setTimeout( function() {
 							initializeGameContent();
@@ -1569,23 +1713,15 @@
 					// 既存のイベントハンドラーをクリーンアップ
 					$( document ).off( 'keydown.novel-choices' );
 					
-					// 1. まず古いデータを完全にクリア
-					dialogueData = [];
-					dialogues = [];
-					choices = [];
-					baseBackground = '';
-					currentBackground = '';
-					charactersData = {};
+					// 1. 全データを完全にクリア
+					resetAllGameData();
 					
-					// 2. 表示状態をリセット
-					resetGameState();
-					
-					// 3. 新しいシーンのデータを読み込み
+					// 2. 新しいシーンのデータを読み込み
 					loadGameData( nextScene ).then( function() {
-						// 4. シーン遷移後の進捗を保存
+						// 3. シーン遷移後の進捗を保存
 						autoSaveGameProgress();
 						
-						// 5. ゲームコンテンツを初期化
+						// 4. ゲームコンテンツを初期化
 						initializeGameContent();
 					} ).catch( function( error ) {
 						console.error( '次のシーンの読み込みに失敗しました:', error );
