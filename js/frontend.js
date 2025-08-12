@@ -361,6 +361,9 @@
 				$titleContinueBtn.hide();
 			}
 			
+			// タイトル画面のボタンを有効化（UI/UX一貫性のため）
+			$( '#novel-title-start-new, #novel-title-continue' ).prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+			
 			// タイトル画面を表示
 			$titleScreen.css( 'display', 'flex' ).hide().fadeIn( 300 );
 			
@@ -438,6 +441,9 @@
 			}
 			
 			isTitleScreenVisible = false;
+			
+			// タイトル画面のボタンを無効化（UI/UX一貫性のため）
+			$( '#novel-title-start-new, #novel-title-continue' ).prop( 'disabled', true ).css( 'pointer-events', 'none' );
 			
 			// タイトル画面を非表示
 			$titleScreen.fadeOut( 300, function() {
@@ -1187,8 +1193,18 @@
 				e.preventDefault();
 				console.log( 'Title screen start button clicked' );
 				
+				// nullガード: window.currentGameSelectionDataが存在しない場合は何もしない
+				if ( ! window.currentGameSelectionData ) {
+					console.warn( 'currentGameSelectionData is null, ignoring click' );
+					return;
+				}
+				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
 					var gameTitle = window.currentGameSelectionData.title;
+					
+					// ボタンを一時的に無効化（重複クリック防止）
+					var $button = $( '#novel-title-start-new' );
+					$button.prop( 'disabled', true ).css( 'pointer-events', 'none' );
 					
 					// 保存された進捗があれば削除（最初から開始のため）
 					if ( gameTitle ) {
@@ -1202,6 +1218,8 @@
 						// タイトル画面経由での開始のため、進捗チェックをスキップして直接初期化
 						initializeGameContent();
 					}, 300 );
+				} else {
+					console.warn( 'currentGameSelectionData.url is missing, ignoring click' );
 				}
 			} );
 			
@@ -1210,9 +1228,19 @@
 				e.preventDefault();
 				console.log( 'Title screen continue button clicked' );
 				
+				// nullガード: window.currentGameSelectionDataが存在しない場合は何もしない
+				if ( ! window.currentGameSelectionData ) {
+					console.warn( 'currentGameSelectionData is null, ignoring click' );
+					return;
+				}
+				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
 					var gameTitle = window.currentGameSelectionData.title;
 					var savedProgress = getSavedGameProgress( gameTitle );
+					
+					// ボタンを一時的に無効化（重複クリック防止）
+					var $button = $( '#novel-title-continue' );
+					$button.prop( 'disabled', true ).css( 'pointer-events', 'none' );
 					
 					if ( savedProgress ) {
 						console.log( '保存された進捗から再開します' );
@@ -1234,6 +1262,8 @@
 							initializeGameContent();
 						}, 300 );
 					}
+				} else {
+					console.warn( 'currentGameSelectionData.url is missing, ignoring click' );
 				}
 			} );
 
