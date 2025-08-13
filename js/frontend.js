@@ -855,16 +855,16 @@
 						} ).catch( function() {
 							// 復元に失敗した場合は最初から開始
 							console.log( '進捗復元に失敗したため、最初から開始します' );
-							// フォールバック時は完全リセット（データ配列もクリア）
-							resetAllGameData( true );
+							// フォールバック時は完全リセット（データ配列もクリア）し、HTMLから再読み込み
+							resetAllGameData( true, true );
 							resolve();
 						} );
 					} else {
 						console.log( '最初から開始します' );
 						// 保存された進捗をクリア
 						clearGameProgress( currentGameTitle );
-						// 最初から開始時は全ゲーム状態をリセット（データ配列もクリア）
-						resetAllGameData( true );
+						// 最初から開始時は全ゲーム状態をリセット（データ配列もクリア）し、HTMLから再読み込み
+						resetAllGameData( true, true );
 						resolve();
 					}
 				} );
@@ -1149,6 +1149,69 @@
 		}
 
 		/**
+		 * HTMLからゲームデータを再読み込みする関数
+		 * resetAllGameData()でデータ配列をクリアした後に、HTMLから再度データを取得する
+		 * 
+		 * @since 1.0.0
+		 */
+		function reloadGameDataFromHTML() {
+			console.log( 'Reloading game data from HTML...' );
+			
+			try {
+				var dialogueDataRaw = $( '#novel-dialogue-data' ).text();
+				var choicesData = $( '#novel-choices-data' ).text();
+				var baseBackgroundData = $( '#novel-base-background' ).text();
+				var charactersDataRaw = $( '#novel-characters-data' ).text();
+				var endingSceneFlagData = $( '#novel-ending-scene-flag' ).text();
+
+				if ( dialogueDataRaw ) {
+					dialogueData = JSON.parse( dialogueDataRaw );
+					
+					// 後方互換性のため、文字列配列の場合は変換
+					if ( dialogueData.length > 0 && typeof dialogueData[0] === 'string' ) {
+						dialogueData = dialogueData.map( function( text ) {
+							return { text: text, background: '', speaker: '' };
+						} );
+					}
+					
+					// 旧形式のために dialogues 配列も維持
+					dialogues = dialogueData.map( function( item ) {
+						return item.text;
+					} );
+					console.log( 'Reloaded dialogue data, length:', dialogueData.length );
+				}
+
+				if ( choicesData ) {
+					choices = JSON.parse( choicesData );
+					console.log( 'Reloaded choices data, length:', choices.length );
+				}
+				
+				if ( baseBackgroundData ) {
+					baseBackground = JSON.parse( baseBackgroundData );
+					currentBackground = baseBackground;
+					console.log( 'Reloaded background data' );
+				}
+				
+				if ( charactersDataRaw ) {
+					charactersData = JSON.parse( charactersDataRaw );
+					console.log( 'Reloaded characters data' );
+				}
+				
+				// エンディングシーンフラグの取得
+				if ( endingSceneFlagData ) {
+					isEndingScene = JSON.parse( endingSceneFlagData );
+					console.log( 'Reloaded ending scene flag:', isEndingScene );
+				}
+				
+				console.log( 'Game data reloaded successfully from HTML' );
+				return true;
+			} catch ( error ) {
+				console.error( 'HTMLからのゲームデータ再読み込みに失敗しました:', error );
+				return false;
+			}
+		}
+
+		/**
 		 * 全ゲームデータと状態の包括的リセット
 		 * 
 		 * エンディング後のタイトル画面復帰や新ゲーム開始時に使用
@@ -1158,14 +1221,19 @@
 		/**
 		 * ゲームデータと状態を包括的にリセットする関数
 		 * @param {boolean} clearDataArrays - セリフ・選択肢データ配列をクリアするかどうか（デフォルト: true）
+		 * @param {boolean} reloadData - データ配列クリア後にHTMLから再読み込みするかどうか（デフォルト: false）
 		 */
-		function resetAllGameData( clearDataArrays ) {
+		function resetAllGameData( clearDataArrays, reloadData ) {
 			// clearDataArraysが未指定の場合はtrueをデフォルト値とする
 			if ( typeof clearDataArrays === 'undefined' ) {
 				clearDataArrays = true;
 			}
+			// reloadDataが未指定の場合はfalseをデフォルト値とする
+			if ( typeof reloadData === 'undefined' ) {
+				reloadData = false;
+			}
 			
-			console.log( 'Resetting all game data and state... clearDataArrays:', clearDataArrays );
+			console.log( 'Resetting all game data and state... clearDataArrays:', clearDataArrays, 'reloadData:', reloadData );
 			
 			// セリフ・対話データの完全リセット
 			currentDialogueIndex = 0;
@@ -1223,6 +1291,12 @@
 			
 			// 一時データのクリア
 			window.currentGameSelectionData = null;
+			
+			// データ配列をクリアした後、HTMLから再読み込みする場合
+			if ( clearDataArrays && reloadData ) {
+				console.log( 'Reloading data from HTML after reset...' );
+				reloadGameDataFromHTML();
+			}
 			
 			console.log( 'All game data and state reset completed' );
 		}
@@ -1300,8 +1374,8 @@
 						console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
 					}
 					
-					// 新ゲーム開始のため、全ゲーム状態を包括的にリセット（データ配列もクリア）
-					resetAllGameData( true );
+					// 新ゲーム開始のため、全ゲーム状態を包括的にリセット（データ配列もクリア）し、HTMLから再読み込み
+					resetAllGameData( true, true );
 					
 					// タイトル画面を非表示にしてゲーム開始
 					hideTitleScreen();
@@ -1341,15 +1415,15 @@
 							// 保存された進捗データから状態を復元（タイトル画面経由のため進捗チェックはスキップ）
 							resumeFromSavedProgress( savedProgress ).catch( function( error ) {
 								console.error( '進捗復元に失敗しました:', error );
-								// フォールバック：最初から開始（全状態とデータ配列をリセット）
-								resetAllGameData( true );
+								// フォールバック：最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
+								resetAllGameData( true, true );
 								initializeGameContent();
 							} );
 						}, 300 );
 					} else {
 						console.log( '保存された進捗が見つかりません。最初から開始します。' );
-						// 進捗がない場合は最初から開始（全状態とデータ配列をリセット）
-						resetAllGameData( true );
+						// 進捗がない場合は最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
+						resetAllGameData( true, true );
 						hideTitleScreen();
 						setTimeout( function() {
 							initializeGameContent();
@@ -2115,6 +2189,16 @@
 			adjustForResponsive();
 
 			// セリフデータがある場合は分割処理を実行
+			// データが空の場合はHTMLから再読み込みを試行
+			if ( dialogues.length === 0 && dialogueData.length === 0 ) {
+				console.log( 'Dialogue data is empty, attempting to reload from HTML...' );
+				if ( reloadGameDataFromHTML() ) {
+					console.log( 'Successfully reloaded data from HTML' );
+				} else {
+					console.error( 'Failed to reload data from HTML' );
+				}
+			}
+			
 			if ( dialogues.length > 0 || dialogueData.length > 0 ) {
 				console.log( 'Preparing dialogue pages' );
 				
