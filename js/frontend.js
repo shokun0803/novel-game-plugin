@@ -1519,6 +1519,7 @@
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
 					var gameTitle = window.currentGameSelectionData.title;
+					var sceneUrl = window.currentGameSelectionData.url;
 					
 					// ボタンを一時的に無効化（重複クリック防止）
 					$button.prop( 'disabled', true ).css( 'pointer-events', 'none' );
@@ -1534,7 +1535,7 @@
 						resetAllGameData( true, true );
 						
 						// ゲーム情報を再設定（最初から開始用）
-						setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
+						setCurrentGameInfo( gameTitle, sceneUrl );
 						
 						// タイトル画面を非表示にしてゲーム開始
 						hideTitleScreen();
@@ -1577,6 +1578,7 @@
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
 					var gameTitle = window.currentGameSelectionData.title;
+					var sceneUrl = window.currentGameSelectionData.url;
 					
 					// ボタンを一時的に無効化（重複クリック防止）
 					$button.prop( 'disabled', true ).css( 'pointer-events', 'none' );
@@ -1591,7 +1593,7 @@
 							resetAllGameData();
 							
 							// ゲーム情報を再設定
-							setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
+							setCurrentGameInfo( gameTitle, sceneUrl );
 							
 							// タイトル画面を非表示にして保存地点から再開
 							hideTitleScreen();
@@ -1602,7 +1604,7 @@
 									// フォールバック：最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
 									resetAllGameData( true, true );
 									// ゲーム情報を再設定
-									setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
+									setCurrentGameInfo( gameTitle, sceneUrl );
 									try {
 										initializeGameContent();
 									} catch ( initError ) {
@@ -1617,7 +1619,7 @@
 							// 進捗がない場合は最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
 							resetAllGameData( true, true );
 							// ゲーム情報を再設定
-							setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
+							setCurrentGameInfo( gameTitle, sceneUrl );
 							hideTitleScreen();
 							setTimeout( function() {
 								try {
