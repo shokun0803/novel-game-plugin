@@ -430,6 +430,14 @@
 		}
 
 		/**
+		 * タイトル画面のボタンを再有効化する（エラー時の復旧用）
+		 */
+		function reEnableTitleButtons() {
+			console.log( 'Re-enabling title screen buttons' );
+			$( '#novel-title-start-new, #novel-title-continue' ).prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+		}
+
+		/**
 		 * タイトル画面を非表示にする
 		 */
 		function hideTitleScreen() {
@@ -835,6 +843,8 @@
 					}, 300 );
 				} ).catch( function( error ) {
 					console.error( 'ゲームの読み込みに失敗しました:', error );
+					// エラー時はタイトルボタンを再有効化
+					reEnableTitleButtons();
 					closeModal();
 				} );
 			}
@@ -848,11 +858,23 @@
 					checkAndOfferResumeOption().then( function() {
 						// モーダル表示後にゲームを初期化
 						setTimeout( function() {
-							initializeGameContent();
+							try {
+								initializeGameContent();
+							} catch ( error ) {
+								console.error( 'ゲーム初期化中にエラーが発生:', error );
+								// エラー時はタイトルボタンを再有効化
+								reEnableTitleButtons();
+							}
 						}, 100 );
+					} ).catch( function( error ) {
+						console.error( '進捗チェック中にエラーが発生:', error );
+						// エラー時はタイトルボタンを再有効化
+						reEnableTitleButtons();
 					} );
 				} ).catch( function( error ) {
 					console.error( 'ゲームの読み込みに失敗しました:', error );
+					// エラー時はタイトルボタンを再有効化
+					reEnableTitleButtons();
 					closeModal();
 				} );
 			} else {
@@ -868,8 +890,18 @@
 				checkAndOfferResumeOption().then( function() {
 					// モーダル表示後にゲームを初期化
 					setTimeout( function() {
-						initializeGameContent();
+						try {
+							initializeGameContent();
+						} catch ( error ) {
+							console.error( 'ゲーム初期化中にエラーが発生:', error );
+							// エラー時はタイトルボタンを再有効化
+							reEnableTitleButtons();
+						}
 					}, 100 );
+				} ).catch( function( error ) {
+					console.error( '進捗チェック中にエラーが発生:', error );
+					// エラー時はタイトルボタンを再有効化
+					reEnableTitleButtons();
 				} );
 			}
 			
@@ -1475,9 +1507,13 @@
 				e.preventDefault();
 				console.log( 'Title screen start button clicked' );
 				
+				var $button = $( '#novel-title-start-new' );
+				
 				// nullガード: window.currentGameSelectionDataが存在しない場合は何もしない
 				if ( ! window.currentGameSelectionData ) {
 					console.warn( 'currentGameSelectionData is null, ignoring click' );
+					// ボタンを再有効化
+					$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
 					return;
 				}
 				
@@ -1485,26 +1521,42 @@
 					var gameTitle = window.currentGameSelectionData.title;
 					
 					// ボタンを一時的に無効化（重複クリック防止）
-					var $button = $( '#novel-title-start-new' );
 					$button.prop( 'disabled', true ).css( 'pointer-events', 'none' );
 					
-					// 保存された進捗があれば削除（最初から開始のため）
-					if ( gameTitle ) {
-						clearGameProgress( gameTitle );
-						console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
+					try {
+						// 保存された進捗があれば削除（最初から開始のため）
+						if ( gameTitle ) {
+							clearGameProgress( gameTitle );
+							console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
+						}
+						
+						// 新ゲーム開始のため、全ゲーム状態を包括的にリセット（データ配列もクリア）し、HTMLから再読み込み
+						resetAllGameData( true, true );
+						
+						// ゲーム情報を再設定（最初から開始用）
+						setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
+						
+						// タイトル画面を非表示にしてゲーム開始
+						hideTitleScreen();
+						setTimeout( function() {
+							// タイトル画面経由での開始のため、進捗チェックをスキップして直接初期化
+							try {
+								initializeGameContent();
+							} catch ( error ) {
+								console.error( 'ゲーム初期化中にエラーが発生:', error );
+								// エラー時はボタンを再有効化
+								$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+							}
+						}, 300 );
+					} catch ( error ) {
+						console.error( '「最初から開始」処理中にエラーが発生:', error );
+						// エラー時はボタンを再有効化
+						$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
 					}
-					
-					// 新ゲーム開始のため、全ゲーム状態を包括的にリセット（データ配列もクリア）し、HTMLから再読み込み
-					resetAllGameData( true, true );
-					
-					// タイトル画面を非表示にしてゲーム開始
-					hideTitleScreen();
-					setTimeout( function() {
-						// タイトル画面経由での開始のため、進捗チェックをスキップして直接初期化
-						initializeGameContent();
-					}, 300 );
 				} else {
 					console.warn( 'currentGameSelectionData.url is missing, ignoring click' );
+					// ボタンを再有効化
+					$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
 				}
 			} );
 			
@@ -1513,51 +1565,79 @@
 				e.preventDefault();
 				console.log( 'Title screen continue button clicked' );
 				
+				var $button = $( '#novel-title-continue' );
+				
 				// nullガード: window.currentGameSelectionDataが存在しない場合は何もしない
 				if ( ! window.currentGameSelectionData ) {
 					console.warn( 'currentGameSelectionData is null, ignoring click' );
+					// ボタンを再有効化
+					$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
 					return;
 				}
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
 					var gameTitle = window.currentGameSelectionData.title;
-					var savedProgress = getSavedGameProgress( gameTitle );
 					
 					// ボタンを一時的に無効化（重複クリック防止）
-					var $button = $( '#novel-title-continue' );
 					$button.prop( 'disabled', true ).css( 'pointer-events', 'none' );
 					
-					if ( savedProgress ) {
-						console.log( '保存された進捗から再開します' );
+					try {
+						var savedProgress = getSavedGameProgress( gameTitle );
 						
-						// 全状態をリセットしてから進捗を復元
-						resetAllGameData();
-						
-						// ゲーム情報を再設定
-						setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
-						
-						// タイトル画面を非表示にして保存地点から再開
-						hideTitleScreen();
-						setTimeout( function() {
-							// 保存された進捗データから状態を復元
-							resumeFromSavedProgress( savedProgress ).catch( function( error ) {
-								console.error( '進捗復元に失敗しました:', error );
-								// フォールバック：最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
-								resetAllGameData( true, true );
-								initializeGameContent();
-							} );
-						}, 300 );
-					} else {
-						console.log( '保存された進捗が見つかりません。最初から開始します。' );
-						// 進捗がない場合は最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
-						resetAllGameData( true, true );
-						hideTitleScreen();
-						setTimeout( function() {
-							initializeGameContent();
-						}, 300 );
+						if ( savedProgress ) {
+							console.log( '保存された進捗から再開します' );
+							
+							// 全状態をリセットしてから進捗を復元
+							resetAllGameData();
+							
+							// ゲーム情報を再設定
+							setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
+							
+							// タイトル画面を非表示にして保存地点から再開
+							hideTitleScreen();
+							setTimeout( function() {
+								// 保存された進捗データから状態を復元
+								resumeFromSavedProgress( savedProgress ).catch( function( error ) {
+									console.error( '進捗復元に失敗しました:', error );
+									// フォールバック：最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
+									resetAllGameData( true, true );
+									// ゲーム情報を再設定
+									setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
+									try {
+										initializeGameContent();
+									} catch ( initError ) {
+										console.error( 'フォールバック時のゲーム初期化に失敗:', initError );
+										// ボタンを再有効化
+										$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+									}
+								} );
+							}, 300 );
+						} else {
+							console.log( '保存された進捗が見つかりません。最初から開始します。' );
+							// 進捗がない場合は最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
+							resetAllGameData( true, true );
+							// ゲーム情報を再設定
+							setCurrentGameInfo( gameTitle, window.currentGameSelectionData.url );
+							hideTitleScreen();
+							setTimeout( function() {
+								try {
+									initializeGameContent();
+								} catch ( error ) {
+									console.error( 'ゲーム初期化中にエラーが発生:', error );
+									// エラー時はボタンを再有効化
+									$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+								}
+							}, 300 );
+						}
+					} catch ( error ) {
+						console.error( '「続きから始める」処理中にエラーが発生:', error );
+						// エラー時はボタンを再有効化
+						$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
 					}
 				} else {
 					console.warn( 'currentGameSelectionData.url is missing, ignoring click' );
+					// ボタンを再有効化
+					$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
 				}
 			} );
 
