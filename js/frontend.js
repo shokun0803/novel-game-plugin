@@ -491,6 +491,10 @@
 			// 全ゲーム状態とデータを包括的にリセット（タイトル画面復帰時は全クリア）
 			resetAllGameData( true );
 			
+			// タイトル画面復帰時は、エンディングフラグを確実に初期化
+			isEndingScene = false;
+			console.log( 'タイトル画面復帰時、エンディングフラグを確実に初期化しました' );
+			
 			// タイトル画面用のゲームデータを構築
 			var gameData = {
 				title: gameTitle,
@@ -960,6 +964,11 @@
 							console.log( '進捗復元に失敗したため、最初から開始します' );
 							// フォールバック時は完全リセット（データ配列もクリア）し、HTMLから再読み込み
 							resetAllGameData( true, true );
+							
+							// 最初から開始時は、HTMLから再読み込みされたエンディングフラグを強制的に初期化
+							isEndingScene = false;
+							console.log( '進捗復元失敗のため最初から開始、エンディングフラグを強制的に初期化しました' );
+							
 							resolve();
 						} );
 					} else {
@@ -968,6 +977,11 @@
 						clearGameProgress( currentGameTitle );
 						// 最初から開始時は全ゲーム状態をリセット（データ配列もクリア）し、HTMLから再読み込み
 						resetAllGameData( true, true );
+						
+						// 最初から開始時は、HTMLから再読み込みされたエンディングフラグを強制的に初期化
+						isEndingScene = false;
+						console.log( '最初から開始のため、エンディングフラグを強制的に初期化しました' );
+						
 						resolve();
 					}
 				} );
@@ -1576,6 +1590,10 @@
 						// 新ゲーム開始のため、全ゲーム状態を包括的にリセット（データ配列もクリア）し、HTMLから再読み込み
 						resetAllGameData( true, true );
 						
+						// 最初から開始時は、HTMLから再読み込みされたエンディングフラグを強制的に初期化
+						isEndingScene = false;
+						console.log( '「最初から開始」のため、エンディングフラグを強制的に初期化しました' );
+						
 						// ゲーム情報を再設定（最初から開始用）
 						setCurrentGameInfo( gameTitle, sceneUrl );
 						
@@ -1661,6 +1679,11 @@
 									console.error( '進捗復元に失敗しました:', error );
 									// フォールバック：最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
 									resetAllGameData( true, true );
+									
+									// 最初から開始時は、HTMLから再読み込みされたエンディングフラグを強制的に初期化
+									isEndingScene = false;
+									console.log( '進捗復元失敗フォールバック時、エンディングフラグを強制的に初期化しました' );
+									
 									// ゲーム情報を再設定
 									setCurrentGameInfo( gameTitle, sceneUrl );
 									try {
@@ -1676,6 +1699,11 @@
 							console.log( '保存された進捗が見つかりません。最初から開始します。' );
 							// 進捗がない場合は最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
 							resetAllGameData( true, true );
+							
+							// 最初から開始時は、HTMLから再読み込みされたエンディングフラグを強制的に初期化
+							isEndingScene = false;
+							console.log( '進捗なしのため最初から開始、エンディングフラグを強制的に初期化しました' );
+							
 							// ゲーム情報を再設定
 							setCurrentGameInfo( gameTitle, sceneUrl );
 							hideTitleScreen();
