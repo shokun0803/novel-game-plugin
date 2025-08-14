@@ -369,6 +369,7 @@
 			
 			// ゲームデータを一時保存（ボタン押下時に使用）
 			window.currentGameSelectionData = gameData;
+			console.log( 'showTitleScreen: currentGameSelectionData set to:', window.currentGameSelectionData );
 		}
 
 		/**
@@ -565,9 +566,20 @@
 			
 			console.log( 'タイトル画面用ゲームデータを構築しました:', gameData );
 			
-			// タイトル画面を表示
+			// タイトル画面を表示し、確実にcurrentGameSelectionDataを再生成する
 			setTimeout( function() {
 				showTitleScreen( gameData );
+				
+				// showTitleScreen後に確実にcurrentGameSelectionDataが設定されているかチェック
+				setTimeout( function() {
+					if ( ! window.currentGameSelectionData ) {
+						console.warn( 'currentGameSelectionData was not set by showTitleScreen, regenerating...' );
+						window.currentGameSelectionData = gameData;
+						console.log( 'currentGameSelectionData regenerated:', window.currentGameSelectionData );
+					} else {
+						console.log( 'currentGameSelectionData successfully set:', window.currentGameSelectionData );
+					}
+				}, 100 );
 			}, 500 );
 			
 			console.log( 'エンディング完了、タイトル画面に戻ります' );
@@ -1394,7 +1406,7 @@
 			allDialoguePages = [];
 			dialogueIndex = 0;
 			
-			// ゲーム状態フラグのリセット
+			// ゲーム状態フラグのリセット（エンディングフラグを完全初期化）
 			isEndingScene = false;
 			
 			// ゲーム情報の初期化
@@ -1441,8 +1453,13 @@
 			$( window ).off( 'resize.game orientationchange.game' );
 			$gameContainer.off( '.novel-game' );
 			
-			// 一時データのクリア
-			window.currentGameSelectionData = null;
+			// 一時データのクリア（デバッグログ付き）
+			if ( window.currentGameSelectionData ) {
+				console.log( 'Clearing currentGameSelectionData:', window.currentGameSelectionData );
+				window.currentGameSelectionData = null;
+			} else {
+				console.log( 'currentGameSelectionData was already null' );
+			}
 			
 			// データ配列をクリアした後、HTMLから再読み込みする場合
 			if ( clearDataArrays && reloadData ) {
@@ -1450,7 +1467,16 @@
 				reloadGameDataFromHTML();
 			}
 			
-			console.log( 'All game data and state reset completed' );
+			console.log( 'All game data and state reset completed. Game state summary:', {
+				currentGameTitle: currentGameTitle,
+				currentSceneUrl: currentSceneUrl,
+				isEndingScene: isEndingScene,
+				currentPageIndex: currentPageIndex,
+				currentDialogueIndex: currentDialogueIndex,
+				dialogueDataLength: dialogueData.length,
+				choicesLength: choices.length,
+				currentGameSelectionData: window.currentGameSelectionData
+			} );
 		}
 
 		/**
@@ -1511,10 +1537,26 @@
 				
 				// nullガード: window.currentGameSelectionDataが存在しない場合は何もしない
 				if ( ! window.currentGameSelectionData ) {
-					console.warn( 'currentGameSelectionData is null, ignoring click' );
-					// ボタンを再有効化
-					$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
-					return;
+					console.warn( 'currentGameSelectionData is null, ignoring click. Attempting to regenerate...' );
+					
+					// currentGameSelectionDataが null の場合、可能なら再生成を試行
+					var gameTitle = extractGameTitleFromPage();
+					if ( gameTitle ) {
+						console.log( 'Attempting to regenerate currentGameSelectionData with title:', gameTitle );
+						window.currentGameSelectionData = {
+							title: gameTitle,
+							url: window.location.href,
+							description: $( 'meta[name="novel-game-description"]' ).attr( 'content' ) || '',
+							subtitle: $( 'meta[name="novel-game-subtitle"]' ).attr( 'content' ) || '',
+							image: $( 'meta[name="novel-game-image"]' ).attr( 'content' ) || baseBackground || currentBackground || ''
+						};
+						console.log( 'currentGameSelectionData regenerated:', window.currentGameSelectionData );
+					} else {
+						console.error( 'Cannot regenerate currentGameSelectionData: no game title found' );
+						// ボタンを再有効化
+						$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+						return;
+					}
 				}
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
@@ -1570,10 +1612,26 @@
 				
 				// nullガード: window.currentGameSelectionDataが存在しない場合は何もしない
 				if ( ! window.currentGameSelectionData ) {
-					console.warn( 'currentGameSelectionData is null, ignoring click' );
-					// ボタンを再有効化
-					$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
-					return;
+					console.warn( 'currentGameSelectionData is null, ignoring click. Attempting to regenerate...' );
+					
+					// currentGameSelectionDataが null の場合、可能なら再生成を試行
+					var gameTitle = extractGameTitleFromPage();
+					if ( gameTitle ) {
+						console.log( 'Attempting to regenerate currentGameSelectionData with title:', gameTitle );
+						window.currentGameSelectionData = {
+							title: gameTitle,
+							url: window.location.href,
+							description: $( 'meta[name="novel-game-description"]' ).attr( 'content' ) || '',
+							subtitle: $( 'meta[name="novel-game-subtitle"]' ).attr( 'content' ) || '',
+							image: $( 'meta[name="novel-game-image"]' ).attr( 'content' ) || baseBackground || currentBackground || ''
+						};
+						console.log( 'currentGameSelectionData regenerated:', window.currentGameSelectionData );
+					} else {
+						console.error( 'Cannot regenerate currentGameSelectionData: no game title found' );
+						// ボタンを再有効化
+						$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+						return;
+					}
 				}
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
