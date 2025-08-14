@@ -967,6 +967,11 @@
 						} ).catch( function() {
 							// 復元に失敗した場合は最初から開始
 							console.log( '進捗復元に失敗したため、最初から開始します' );
+							// 復元失敗時も最初から開始時と同様に初期化
+							currentPageIndex = 0;
+							currentDialogueIndex = 0;
+							isEndingScene = false;
+							console.log( '進捗復元失敗のため、進行状況とフラグを初期化しました' );
 							// 統一された初期化処理を使用
 							initializeNewGame( currentGameTitle, currentSceneUrl );
 							resolve();
@@ -975,6 +980,11 @@
 						console.log( '最初から開始します' );
 						// 保存された進捗をクリアして新ゲーム開始
 						clearGameProgress( currentGameTitle );
+						// 最初から開始時の進行状況・フラグを明示的に初期化
+						currentPageIndex = 0;
+						currentDialogueIndex = 0;
+						isEndingScene = false;
+						console.log( '「最初から開始」選択のため、進行状況とフラグを初期化しました' );
 						// 統一された初期化処理を使用
 						initializeNewGame( currentGameTitle, currentSceneUrl );
 						resolve();
@@ -1465,7 +1475,12 @@
 			// 2. 全ゲーム状態を初期化（データ再取得後に必ず実行）
 			resetAllGameState();
 			
-			// 3. ゲーム情報を再設定
+			// 3. 新ゲーム開始時はエンディングフラグを強制的にfalseに設定
+			// reloadGameDataFromHTMLでHTMLから再読み込みされた場合も確実に初期化
+			isEndingScene = false;
+			console.log( '新ゲーム開始のため、エンディングフラグを強制初期化しました' );
+			
+			// 4. ゲーム情報を再設定
 			setCurrentGameInfo( gameTitle || '', sceneUrl || window.location.href );
 			
 			console.log( 'New game initialization completed successfully' );
@@ -1489,6 +1504,13 @@
 					clearGameProgress( gameTitle );
 					console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
 				}
+				
+				// 最初から開始時の進行状況・フラグを明示的に初期化
+				currentPageIndex = 0;
+				currentDialogueIndex = 0;
+				isEndingScene = false;
+				currentGameTitle = gameTitle || '';
+				console.log( '最初から開始のため、進行状況とフラグを初期化しました' );
 				
 				// 新ゲーム開始のため初期化処理を実行
 				if ( ! initializeNewGame( gameTitle, sceneUrl ) ) {
@@ -1538,6 +1560,13 @@
 							console.error( '進捗復元に失敗しました:', error );
 							// フォールバック：最初から開始
 							console.log( 'フォールバック: 最初から開始します' );
+							
+							// 進捗復元失敗時も最初から開始時と同様に初期化
+							currentPageIndex = 0;
+							currentDialogueIndex = 0;
+							isEndingScene = false;
+							currentGameTitle = gameTitle || '';
+							console.log( '進捗復元失敗のため、進行状況とフラグを初期化しました' );
 							
 							if ( ! initializeNewGame( gameTitle, sceneUrl ) ) {
 								console.error( 'Failed to initialize fallback new game' );
@@ -2502,6 +2531,19 @@
 		 */
 		function initializeGameContent() {
 			console.log( 'initializeGameContent called' );
+			
+			// 最初から開始時の進行インデックスを必ず0に設定
+			// この処理は initializeGameContent の最初で行い、前回の進行状況が残らないようにする
+			if ( currentPageIndex === 0 && currentDialogueIndex === 0 ) {
+				// 既に初期化済みの場合はログのみ
+				console.log( 'Game indices already initialized to 0' );
+			} else {
+				// 進行状況が残っている場合は強制的に0に設定
+				currentPageIndex = 0;
+				currentDialogueIndex = 0;
+				console.log( 'Game indices forcefully reset to 0 to ensure fresh start' );
+			}
+			
 			console.log( 'Game container exists:', $gameContainer.length > 0 );
 			console.log( 'Dialogue data length:', dialogueData.length );
 			console.log( 'Dialogues length:', dialogues.length );
