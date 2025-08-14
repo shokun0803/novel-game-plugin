@@ -1480,7 +1480,12 @@
 			isEndingScene = false;
 			console.log( '新ゲーム開始のため、エンディングフラグを強制初期化しました' );
 			
-			// 4. ゲーム情報を再設定
+			// 4. 新ゲーム開始時は進行インデックスも確実に0に設定
+			currentPageIndex = 0;
+			currentDialogueIndex = 0;
+			console.log( '新ゲーム開始のため、進行インデックスを強制初期化しました' );
+			
+			// 5. ゲーム情報を再設定
 			setCurrentGameInfo( gameTitle || '', sceneUrl || window.location.href );
 			
 			console.log( 'New game initialization completed successfully' );
@@ -1522,7 +1527,7 @@
 				hideTitleScreen();
 				setTimeout( function() {
 					try {
-						initializeGameContent();
+						initializeGameContent( true ); // 新ゲーム強制フラグを渡す
 					} catch ( error ) {
 						console.error( 'Error during game initialization:', error );
 					}
@@ -1574,7 +1579,7 @@
 							}
 							
 							try {
-								initializeGameContent();
+								initializeGameContent( true ); // 新ゲーム強制フラグを渡す
 							} catch ( error ) {
 								console.error( 'Error during fallback game initialization:', error );
 							}
@@ -2529,12 +2534,17 @@
 		/**
 		 * ゲームコンテンツの初期化処理（モーダル内で実行）
 		 */
-		function initializeGameContent() {
-			console.log( 'initializeGameContent called' );
+		function initializeGameContent( forceNewGame ) {
+			console.log( 'initializeGameContent called with forceNewGame:', forceNewGame );
 			
 			// 最初から開始時の進行インデックスを必ず0に設定
 			// この処理は initializeGameContent の最初で行い、前回の進行状況が残らないようにする
-			if ( currentPageIndex === 0 && currentDialogueIndex === 0 ) {
+			if ( forceNewGame === true ) {
+				// 新ゲーム開始時は必ず0から開始
+				currentPageIndex = 0;
+				currentDialogueIndex = 0;
+				console.log( 'Force new game: Game indices set to 0' );
+			} else if ( currentPageIndex === 0 && currentDialogueIndex === 0 ) {
 				// 既に初期化済みの場合はログのみ
 				console.log( 'Game indices already initialized to 0' );
 			} else {
@@ -2619,8 +2629,13 @@
 				
 				prepareDialoguePages();
 				
-				// 保存された進捗がある場合はその位置から開始、なければ最初から
-				if ( currentPageIndex > 0 && currentPageIndex < allDialoguePages.length ) {
+				// 新ゲーム強制フラグがある場合は必ず最初から開始
+				if ( forceNewGame === true ) {
+					console.log( '新ゲーム強制開始: 最初から開始' );
+					currentPageIndex = 0;
+					currentDialogueIndex = 0;
+					displayCurrentPage();
+				} else if ( currentPageIndex > 0 && currentPageIndex < allDialoguePages.length ) {
 					console.log( '保存された位置から再開:', currentPageIndex );
 					displayCurrentPage();
 				} else {
