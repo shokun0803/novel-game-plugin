@@ -488,12 +488,17 @@
 				console.log( 'ゲーム完了により進捗をクリアしました:', gameTitle );
 			}
 			
-			// 全ゲーム状態とデータを包括的にリセット（タイトル画面復帰時は全クリア）
-			resetAllGameData( true );
+			// データ配列をクリアして統一された状態初期化を使用
+			choices = [];
+			dialogueData = [];
+			dialogues = [];
+			baseBackground = '';
+			currentBackground = '';
+			charactersData = {};
+			console.log( 'Data arrays cleared for title screen return' );
 			
-			// タイトル画面復帰時は、エンディングフラグを確実に初期化
-			isEndingScene = false;
-			console.log( 'タイトル画面復帰時、エンディングフラグを確実に初期化しました' );
+			// 統一された状態初期化を使用
+			resetAllGameState();
 			
 			// タイトル画面用のゲームデータを構築
 			var gameData = {
@@ -960,28 +965,18 @@
 						resumeFromSavedProgress( savedProgress ).then( function() {
 							resolve();
 						} ).catch( function() {
-							// 復元に失敗した場合は最初から開始（全状態リセット）
+							// 復元に失敗した場合は最初から開始
 							console.log( '進捗復元に失敗したため、最初から開始します' );
-							// フォールバック時は完全リセット（データ配列もクリア）し、HTMLから再読み込み
-							resetAllGameData( true, true );
-							
-							// 最初から開始時は、HTMLから再読み込みされたエンディングフラグを強制的に初期化
-							isEndingScene = false;
-							console.log( '進捗復元失敗のため最初から開始、エンディングフラグを強制的に初期化しました' );
-							
+							// 統一された初期化処理を使用
+							initializeNewGame( currentGameTitle, currentSceneUrl );
 							resolve();
 						} );
 					} else {
 						console.log( '最初から開始します' );
-						// 保存された進捗をクリアし、全状態をリセット
+						// 保存された進捗をクリアして新ゲーム開始
 						clearGameProgress( currentGameTitle );
-						// 最初から開始時は全ゲーム状態をリセット（データ配列もクリア）し、HTMLから再読み込み
-						resetAllGameData( true, true );
-						
-						// 最初から開始時は、HTMLから再読み込みされたエンディングフラグを強制的に初期化
-						isEndingScene = false;
-						console.log( '最初から開始のため、エンディングフラグを強制的に初期化しました' );
-						
+						// 統一された初期化処理を使用
+						initializeNewGame( currentGameTitle, currentSceneUrl );
 						resolve();
 					}
 				} );
@@ -1390,30 +1385,15 @@
 		}
 
 		/**
-		 * 全ゲームデータと状態の包括的リセット
-		 * 
-		 * エンディング後のタイトル画面復帰や新ゲーム開始時に使用
+		 * ゲーム状態・フラグのみを初期化する関数（責務分離）
+		 * データ配列の操作は行わず、状態管理のみに専念
 		 * 
 		 * @since 1.0.0
 		 */
-		/**
-		 * ゲームデータと状態を包括的にリセットする関数
-		 * @param {boolean} clearDataArrays - セリフ・選択肢データ配列をクリアするかどうか（デフォルト: true）
-		 * @param {boolean} reloadData - データ配列クリア後にHTMLから再読み込みするかどうか（デフォルト: false）
-		 */
-		function resetAllGameData( clearDataArrays, reloadData ) {
-			// clearDataArraysが未指定の場合はtrueをデフォルト値とする
-			if ( typeof clearDataArrays === 'undefined' ) {
-				clearDataArrays = true;
-			}
-			// reloadDataが未指定の場合はfalseをデフォルト値とする
-			if ( typeof reloadData === 'undefined' ) {
-				reloadData = false;
-			}
+		function resetAllGameState() {
+			console.log( 'Resetting all game state and flags...' );
 			
-			console.log( 'Resetting all game data and state... clearDataArrays:', clearDataArrays, 'reloadData:', reloadData );
-			
-			// セリフ・対話データの完全リセット
+			// セリフ・対話進行状況の初期化
 			currentDialogueIndex = 0;
 			currentPageIndex = 0;
 			currentDialoguePages = [];
@@ -1427,21 +1407,7 @@
 			currentGameTitle = '';
 			currentSceneUrl = '';
 			
-			// 選択肢とセリフデータのリセット（オプション）
-			// シーン遷移時は新データがロード後に上書きされるため、クリア不要
-			if ( clearDataArrays ) {
-				choices = [];
-				dialogueData = [];
-				dialogues = [];
-				baseBackground = '';
-				currentBackground = '';
-				charactersData = {};
-				console.log( 'Data arrays cleared (complete reset)' );
-			} else {
-				console.log( 'Data arrays preserved (partial reset for scene transition)' );
-			}
-			
-			// DOM要素の表示を完全リセット
+			// DOM要素の表示状態をリセット
 			if ( $dialogueText && $dialogueText.length > 0 ) {
 				$dialogueText.text( '' );
 			}
@@ -1474,6 +1440,166 @@
 			} else {
 				console.log( 'currentGameSelectionData was already null' );
 			}
+			
+			console.log( 'All game state and flags reset completed' );
+		}
+
+		/**
+		 * 新ゲーム開始用の初期化処理（一元化）
+		 * データ再取得→状態初期化→ゲーム情報設定の流れを統一
+		 * 
+		 * @param {string} gameTitle ゲームタイトル
+		 * @param {string} sceneUrl シーンURL
+		 * @since 1.0.0
+		 */
+		function initializeNewGame( gameTitle, sceneUrl ) {
+			console.log( 'Initializing new game:', { gameTitle: gameTitle, sceneUrl: sceneUrl } );
+			
+			// 1. HTMLからデータを再取得
+			var reloadSuccess = reloadGameDataFromHTML();
+			if ( ! reloadSuccess ) {
+				console.error( 'Failed to reload game data from HTML' );
+				return false;
+			}
+			
+			// 2. 全ゲーム状態を初期化（データ再取得後に必ず実行）
+			resetAllGameState();
+			
+			// 3. ゲーム情報を再設定
+			setCurrentGameInfo( gameTitle || '', sceneUrl || window.location.href );
+			
+			console.log( 'New game initialization completed successfully' );
+			return true;
+		}
+
+		/**
+		 * タイトル画面からの新ゲーム開始処理（一元化）
+		 * 進捗削除→初期化→画面遷移の流れを統一
+		 * 
+		 * @param {string} gameTitle ゲームタイトル
+		 * @param {string} sceneUrl シーンURL
+		 * @since 1.0.0
+		 */
+		function startNewGameFromTitle( gameTitle, sceneUrl ) {
+			console.log( 'Starting new game from title screen:', { gameTitle: gameTitle, sceneUrl: sceneUrl } );
+			
+			try {
+				// 保存された進捗があれば削除（最初から開始のため）
+				if ( gameTitle ) {
+					clearGameProgress( gameTitle );
+					console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
+				}
+				
+				// 新ゲーム開始のため初期化処理を実行
+				if ( ! initializeNewGame( gameTitle, sceneUrl ) ) {
+					console.error( 'Failed to initialize new game' );
+					return false;
+				}
+				
+				// タイトル画面を非表示にしてゲーム開始
+				hideTitleScreen();
+				setTimeout( function() {
+					try {
+						initializeGameContent();
+					} catch ( error ) {
+						console.error( 'Error during game initialization:', error );
+					}
+				}, 300 );
+				
+				return true;
+			} catch ( error ) {
+				console.error( '新ゲーム開始処理中にエラーが発生:', error );
+				return false;
+			}
+		}
+
+		/**
+		 * タイトル画面からのゲーム再開処理（一元化）
+		 * 進捗復元→フォールバック→画面遷移の流れを統一
+		 * 
+		 * @param {string} gameTitle ゲームタイトル
+		 * @param {string} sceneUrl シーンURL
+		 * @since 1.0.0
+		 */
+		function resumeGameFromTitle( gameTitle, sceneUrl ) {
+			console.log( 'Resuming game from title screen:', { gameTitle: gameTitle, sceneUrl: sceneUrl } );
+			
+			try {
+				// 保存された進捗を取得
+				var savedProgress = getSavedGameProgress( gameTitle );
+				if ( savedProgress ) {
+					console.log( '保存された進捗から再開します' );
+					
+					// タイトル画面を非表示にして進捗復元
+					hideTitleScreen();
+					setTimeout( function() {
+						// 保存された進捗データから状態を復元
+						resumeFromSavedProgress( savedProgress ).catch( function( error ) {
+							console.error( '進捗復元に失敗しました:', error );
+							// フォールバック：最初から開始
+							console.log( 'フォールバック: 最初から開始します' );
+							
+							if ( ! initializeNewGame( gameTitle, sceneUrl ) ) {
+								console.error( 'Failed to initialize fallback new game' );
+								return;
+							}
+							
+							try {
+								initializeGameContent();
+							} catch ( error ) {
+								console.error( 'Error during fallback game initialization:', error );
+							}
+						} );
+					}, 300 );
+				} else {
+					console.log( '保存された進捗が見つかりません。最初から開始します。' );
+					// 進捗がない場合は最初から開始
+					return startNewGameFromTitle( gameTitle, sceneUrl );
+				}
+				
+				return true;
+			} catch ( error ) {
+				console.error( 'ゲーム再開処理中にエラーが発生:', error );
+				return false;
+			}
+		}
+
+		/**
+		 * 全ゲームデータと状態の包括的リセット（後方互換性維持）
+		 * 
+		 * @deprecated 新しいコードでは initializeNewGame() を使用してください
+		 * @param {boolean} clearDataArrays - セリフ・選択肢データ配列をクリアするかどうか（デフォルト: true）
+		 * @param {boolean} reloadData - データ配列クリア後にHTMLから再読み込みするかどうか（デフォルト: false）
+		 * @since 1.0.0
+		 */
+		function resetAllGameData( clearDataArrays, reloadData ) {
+			// clearDataArraysが未指定の場合はtrueをデフォルト値とする
+			if ( typeof clearDataArrays === 'undefined' ) {
+				clearDataArrays = true;
+			}
+			// reloadDataが未指定の場合はfalseをデフォルト値とする
+			if ( typeof reloadData === 'undefined' ) {
+				reloadData = false;
+			}
+			
+			console.log( 'Resetting all game data and state... clearDataArrays:', clearDataArrays, 'reloadData:', reloadData );
+			
+			// 選択肢とセリフデータのリセット（オプション）
+			// シーン遷移時は新データがロード後に上書きされるため、クリア不要
+			if ( clearDataArrays ) {
+				choices = [];
+				dialogueData = [];
+				dialogues = [];
+				baseBackground = '';
+				currentBackground = '';
+				charactersData = {};
+				console.log( 'Data arrays cleared (complete reset)' );
+			} else {
+				console.log( 'Data arrays preserved (partial reset for scene transition)' );
+			}
+			
+			// 統一された状態初期化を使用
+			resetAllGameState();
 			
 			// データ配列をクリアした後、HTMLから再読み込みする場合
 			if ( clearDataArrays && reloadData ) {
@@ -1549,11 +1675,16 @@
 				
 				var $button = $( '#novel-title-start-new' );
 				
-				// nullガード: window.currentGameSelectionDataが存在しない場合は何もしない
+				// currentGameSelectionDataのnullガード・エラー時ボタン再有効化関数
+				function reEnableTitleButtons() {
+					$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+					$( '#novel-title-continue' ).prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+				}
+				
+				// nullガード: window.currentGameSelectionDataが存在しない場合は再生成を試行
 				if ( ! window.currentGameSelectionData ) {
-					console.warn( 'currentGameSelectionData is null, ignoring click. Attempting to regenerate...' );
+					console.warn( 'currentGameSelectionData is null, attempting to regenerate...' );
 					
-					// currentGameSelectionDataが null の場合、可能なら再生成を試行
 					var gameTitle = extractGameTitleFromPage();
 					if ( gameTitle ) {
 						console.log( 'Attempting to regenerate currentGameSelectionData with title:', gameTitle );
@@ -1567,57 +1698,32 @@
 						console.log( 'currentGameSelectionData regenerated:', window.currentGameSelectionData );
 					} else {
 						console.error( 'Cannot regenerate currentGameSelectionData: no game title found' );
-						// ボタンを再有効化
-						$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+						reEnableTitleButtons();
 						return;
 					}
 				}
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
-					var gameTitle = window.currentGameSelectionData.title;
+					var gameTitle = window.currentGameSelectionData.title || extractGameTitleFromPage();
 					var sceneUrl = window.currentGameSelectionData.url;
 					
 					// ボタンを一時的に無効化（重複クリック防止）
 					$button.prop( 'disabled', true ).css( 'pointer-events', 'none' );
 					
 					try {
-						// 保存された進捗があれば削除（最初から開始のため）
-						if ( gameTitle ) {
-							clearGameProgress( gameTitle );
-							console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
+						// 統一された新ゲーム開始処理を使用
+						var success = startNewGameFromTitle( gameTitle, sceneUrl );
+						if ( ! success ) {
+							console.error( '新ゲーム開始処理に失敗しました' );
+							reEnableTitleButtons();
 						}
-						
-						// 新ゲーム開始のため、全ゲーム状態を包括的にリセット（データ配列もクリア）し、HTMLから再読み込み
-						resetAllGameData( true, true );
-						
-						// 最初から開始時は、HTMLから再読み込みされたエンディングフラグを強制的に初期化
-						isEndingScene = false;
-						console.log( '「最初から開始」のため、エンディングフラグを強制的に初期化しました' );
-						
-						// ゲーム情報を再設定（最初から開始用）
-						setCurrentGameInfo( gameTitle, sceneUrl );
-						
-						// タイトル画面を非表示にしてゲーム開始
-						hideTitleScreen();
-						setTimeout( function() {
-							// タイトル画面経由での開始のため、進捗チェックをスキップして直接初期化
-							try {
-								initializeGameContent();
-							} catch ( error ) {
-								console.error( 'ゲーム初期化中にエラーが発生:', error );
-								// エラー時はボタンを再有効化
-								$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
-							}
-						}, 300 );
 					} catch ( error ) {
 						console.error( '「最初から開始」処理中にエラーが発生:', error );
-						// エラー時はボタンを再有効化
-						$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+						reEnableTitleButtons();
 					}
 				} else {
 					console.warn( 'currentGameSelectionData.url is missing, ignoring click' );
-					// ボタンを再有効化
-					$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+					reEnableTitleButtons();
 				}
 			} );
 			
@@ -1628,11 +1734,16 @@
 				
 				var $button = $( '#novel-title-continue' );
 				
-				// nullガード: window.currentGameSelectionDataが存在しない場合は何もしない
+				// currentGameSelectionDataのnullガード・エラー時ボタン再有効化関数
+				function reEnableTitleButtons() {
+					$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+					$( '#novel-title-start-new' ).prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+				}
+				
+				// nullガード: window.currentGameSelectionDataが存在しない場合は再生成を試行
 				if ( ! window.currentGameSelectionData ) {
-					console.warn( 'currentGameSelectionData is null, ignoring click. Attempting to regenerate...' );
+					console.warn( 'currentGameSelectionData is null, attempting to regenerate...' );
 					
-					// currentGameSelectionDataが null の場合、可能なら再生成を試行
 					var gameTitle = extractGameTitleFromPage();
 					if ( gameTitle ) {
 						console.log( 'Attempting to regenerate currentGameSelectionData with title:', gameTitle );
@@ -1646,86 +1757,32 @@
 						console.log( 'currentGameSelectionData regenerated:', window.currentGameSelectionData );
 					} else {
 						console.error( 'Cannot regenerate currentGameSelectionData: no game title found' );
-						// ボタンを再有効化
-						$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+						reEnableTitleButtons();
 						return;
 					}
 				}
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
-					var gameTitle = window.currentGameSelectionData.title;
+					var gameTitle = window.currentGameSelectionData.title || extractGameTitleFromPage();
 					var sceneUrl = window.currentGameSelectionData.url;
 					
 					// ボタンを一時的に無効化（重複クリック防止）
 					$button.prop( 'disabled', true ).css( 'pointer-events', 'none' );
 					
 					try {
-						var savedProgress = getSavedGameProgress( gameTitle );
-						
-						if ( savedProgress ) {
-							console.log( '保存された進捗から再開します' );
-							
-							// 全状態をリセットしてから進捗を復元
-							resetAllGameData();
-							
-							// ゲーム情報を再設定
-							setCurrentGameInfo( gameTitle, sceneUrl );
-							
-							// タイトル画面を非表示にして保存地点から再開
-							hideTitleScreen();
-							setTimeout( function() {
-								// 保存された進捗データから状態を復元
-								resumeFromSavedProgress( savedProgress ).catch( function( error ) {
-									console.error( '進捗復元に失敗しました:', error );
-									// フォールバック：最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
-									resetAllGameData( true, true );
-									
-									// 最初から開始時は、HTMLから再読み込みされたエンディングフラグを強制的に初期化
-									isEndingScene = false;
-									console.log( '進捗復元失敗フォールバック時、エンディングフラグを強制的に初期化しました' );
-									
-									// ゲーム情報を再設定
-									setCurrentGameInfo( gameTitle, sceneUrl );
-									try {
-										initializeGameContent();
-									} catch ( initError ) {
-										console.error( 'フォールバック時のゲーム初期化に失敗:', initError );
-										// ボタンを再有効化
-										$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
-									}
-								} );
-							}, 300 );
-						} else {
-							console.log( '保存された進捗が見つかりません。最初から開始します。' );
-							// 進捗がない場合は最初から開始（全状態とデータ配列をリセット）し、HTMLから再読み込み
-							resetAllGameData( true, true );
-							
-							// 最初から開始時は、HTMLから再読み込みされたエンディングフラグを強制的に初期化
-							isEndingScene = false;
-							console.log( '進捗なしのため最初から開始、エンディングフラグを強制的に初期化しました' );
-							
-							// ゲーム情報を再設定
-							setCurrentGameInfo( gameTitle, sceneUrl );
-							hideTitleScreen();
-							setTimeout( function() {
-								try {
-									initializeGameContent();
-								} catch ( error ) {
-									console.error( 'ゲーム初期化中にエラーが発生:', error );
-									// エラー時はボタンを再有効化
-									$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
-								}
-							}, 300 );
+						// 統一されたゲーム再開処理を使用
+						var success = resumeGameFromTitle( gameTitle, sceneUrl );
+						if ( ! success ) {
+							console.error( 'ゲーム再開処理に失敗しました' );
+							reEnableTitleButtons();
 						}
 					} catch ( error ) {
 						console.error( '「続きから始める」処理中にエラーが発生:', error );
-						// エラー時はボタンを再有効化
-						$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+						reEnableTitleButtons();
 					}
 				} else {
 					console.warn( 'currentGameSelectionData.url is missing, ignoring click' );
-					// ボタンを再有効化
-					$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+					reEnableTitleButtons();
 				}
 			} );
 
