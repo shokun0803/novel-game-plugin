@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novel Game Plugin Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-results { margin-top: 20px; }
+        .pass { color: green; }
+        .fail { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Novel Game Plugin Test</h1>
+    <p>テスト結果はブラウザのコンソールで確認してください。</p>
+    
+    <!-- ゲームデータの模擬 -->
+    <script id="novel-dialogue-data" type="application/json">
+    [
+        {"text": "最初のシーンです。", "background": "", "speaker": ""},
+        {"text": "2番目のシーンです。", "background": "", "speaker": ""},
+        {"text": "3番目のシーンです。", "background": "", "speaker": ""},
+        {"text": "エンディングシーンです。おめでとうございます！", "background": "", "speaker": ""}
+    ]
+    </script>
+    
+    <script id="novel-choices-data" type="application/json">[]</script>
+    <script id="novel-base-background" type="application/json">""</script>
+    <script id="novel-characters-data" type="application/json">{}</script>
+    <script id="novel-ending-scene-flag" type="application/json">true</script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- テスト用のDOM要素 -->
+    <div id="novel-game-container" style="display: none;"></div>
+    <div id="novel-dialogue-text" style="display: none;"></div>
+    <div id="novel-dialogue-box" style="display: none;"></div>
+    <div id="novel-speaker-name" style="display: none;"></div>
+    <div id="novel-dialogue-continue" style="display: none;"></div>
+    <div id="novel-choices" style="display: none;"></div>
+    
+    <!-- ゲームのJavaScript -->
+    <script src="../js/frontend.js"></script>
+    
+    <!-- テストスクリプト -->
+    <script src="frontend-test.js"></script>
+    
+    <div class="test-results">
+        <h2>テスト結果</h2>
+        <div id="test-output">テスト実行中...</div>
+    </div>
+    
+    <script>
+        // テスト結果をページに表示
+        setTimeout(function() {
+            console.log('Running manual test...');
+            
+            // エンディングシーンの状態をシミュレート
+            window.isEndingScene = true;
+            window.currentPageIndex = 3;
+            window.currentDialogueIndex = 3;
+            
+            console.log('Before fix - isEndingScene:', window.isEndingScene, 'currentPageIndex:', window.currentPageIndex);
+            
+            // 新ゲーム開始をテスト
+            if (window.initializeNewGame) {
+                var success = window.initializeNewGame('Test Game', window.location.href);
+                console.log('initializeNewGame result:', success);
+                console.log('After initializeNewGame - isEndingScene:', window.isEndingScene, 'currentPageIndex:', window.currentPageIndex);
+                
+                if (window.initializeGameContent) {
+                    window.initializeGameContent(true);
+                    console.log('After initializeGameContent(true) - isEndingScene:', window.isEndingScene, 'currentPageIndex:', window.currentPageIndex);
+                }
+                
+                var output = document.getElementById('test-output');
+                if (window.isEndingScene === false && window.currentPageIndex === 0) {
+                    output.innerHTML = '<span class="pass">✅ テスト成功: 新ゲーム開始時に正しくリセットされました</span>';
+                } else {
+                    output.innerHTML = '<span class="fail">❌ テスト失敗: isEndingScene=' + window.isEndingScene + ', currentPageIndex=' + window.currentPageIndex + '</span>';
+                }
+            } else {
+                document.getElementById('test-output').innerHTML = '<span class="fail">❌ 関数が見つかりません</span>';
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
