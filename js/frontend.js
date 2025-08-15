@@ -1335,10 +1335,11 @@
 		 * HTMLからゲームデータを再読み込みする関数
 		 * resetAllGameData()でデータ配列をクリアした後に、HTMLから再度データを取得する
 		 * 
+		 * @param {boolean} preserveGameState 新ゲーム開始時はtrueを渡してエンディングフラグの復旧を防ぐ
 		 * @since 1.0.0
 		 */
-		function reloadGameDataFromHTML() {
-			console.log( 'Reloading game data from HTML...' );
+		function reloadGameDataFromHTML( preserveGameState ) {
+			console.log( 'Reloading game data from HTML...', preserveGameState ? '(preserving game state)' : '' );
 			
 			try {
 				var dialogueDataRaw = $( '#novel-dialogue-data' ).text();
@@ -1380,10 +1381,12 @@
 					console.log( 'Reloaded characters data' );
 				}
 				
-				// エンディングシーンフラグの取得
-				if ( endingSceneFlagData ) {
+				// エンディングシーンフラグの取得（新ゲーム開始時は無視）
+				if ( endingSceneFlagData && ! preserveGameState ) {
 					isEndingScene = JSON.parse( endingSceneFlagData );
 					console.log( 'Reloaded ending scene flag:', isEndingScene );
+				} else if ( preserveGameState ) {
+					console.log( 'Preserving game state: エンディングフラグはHTMLから復旧しません' );
 				}
 				
 				console.log( 'Game data reloaded successfully from HTML' );
@@ -1465,8 +1468,8 @@
 		function initializeNewGame( gameTitle, sceneUrl ) {
 			console.log( 'Initializing new game:', { gameTitle: gameTitle, sceneUrl: sceneUrl } );
 			
-			// 1. HTMLからデータを再取得
-			var reloadSuccess = reloadGameDataFromHTML();
+			// 1. HTMLからデータを再取得（新ゲーム開始時は状態を保持）
+			var reloadSuccess = reloadGameDataFromHTML( true );
 			if ( ! reloadSuccess ) {
 				console.error( 'Failed to reload game data from HTML' );
 				return false;
@@ -1638,7 +1641,7 @@
 			// データ配列をクリアした後、HTMLから再読み込みする場合
 			if ( clearDataArrays && reloadData ) {
 				console.log( 'Reloading data from HTML after reset...' );
-				reloadGameDataFromHTML();
+				reloadGameDataFromHTML( false ); // 旧関数なので状態保持は行わない
 			}
 			
 			console.log( 'All game data and state reset completed. Game state summary:', {
@@ -2596,8 +2599,14 @@
 			// データが空の場合はHTMLから再読み込みを試行
 			if ( dialogues.length === 0 && dialogueData.length === 0 ) {
 				console.log( 'Dialogue data is empty, attempting to reload from HTML...' );
-				if ( reloadGameDataFromHTML() ) {
+				if ( reloadGameDataFromHTML( forceNewGame ) ) {
 					console.log( 'Successfully reloaded data from HTML' );
+					
+					// 新ゲーム強制開始時はHTMLからの再読み込み後もエンディングフラグを確実に初期化
+					if ( forceNewGame === true ) {
+						isEndingScene = false;
+						console.log( 'Force new game: エンディングフラグを再初期化しました' );
+					}
 				} else {
 					console.error( 'Failed to reload data from HTML' );
 				}
@@ -2632,6 +2641,7 @@
 				// 新ゲーム強制フラグがある場合は必ず最初から開始
 				if ( forceNewGame === true ) {
 					console.log( '新ゲーム強制開始: 最初から開始' );
+					// prepareDialoguePages()で既にリセットされているが、確実にするため再度設定
 					currentPageIndex = 0;
 					currentDialogueIndex = 0;
 					displayCurrentPage();
