@@ -972,6 +972,14 @@
 							currentDialogueIndex = 0;
 							isEndingScene = false;
 							console.log( '進捗復元失敗のため、進行状況とフラグを初期化しました' );
+							
+							// HTMLのエンディングフラグもfalseにリセット（データ再取得時の上書きを防ぐため）
+							var endingFlagElement = $( '#novel-ending-scene-flag' );
+							if ( endingFlagElement.length > 0 ) {
+								endingFlagElement.text( 'false' );
+								console.log( 'HTMLのエンディングフラグをfalseにリセットしました' );
+							}
+							
 							// 統一された初期化処理を使用
 							initializeNewGame( currentGameTitle, currentSceneUrl );
 							resolve();
@@ -985,6 +993,14 @@
 						currentDialogueIndex = 0;
 						isEndingScene = false;
 						console.log( '「最初から開始」選択のため、進行状況とフラグを初期化しました' );
+						
+						// HTMLのエンディングフラグもfalseにリセット（データ再取得時の上書きを防ぐため）
+						var endingFlagElement = $( '#novel-ending-scene-flag' );
+						if ( endingFlagElement.length > 0 ) {
+							endingFlagElement.text( 'false' );
+							console.log( 'HTMLのエンディングフラグをfalseにリセットしました' );
+						}
+						
 						// 統一された初期化処理を使用
 						initializeNewGame( currentGameTitle, currentSceneUrl );
 						resolve();
@@ -1520,6 +1536,13 @@
 				currentGameTitle = gameTitle || '';
 				console.log( '最初から開始のため、進行状況とフラグを初期化しました' );
 				
+				// HTMLのエンディングフラグもfalseにリセット（データ再取得時の上書きを防ぐため）
+				var endingFlagElement = $( '#novel-ending-scene-flag' );
+				if ( endingFlagElement.length > 0 ) {
+					endingFlagElement.text( 'false' );
+					console.log( 'HTMLのエンディングフラグをfalseにリセットしました' );
+				}
+				
 				// 新ゲーム開始のため初期化処理を実行
 				if ( ! initializeNewGame( gameTitle, sceneUrl ) ) {
 					console.error( 'Failed to initialize new game' );
@@ -1575,6 +1598,13 @@
 							isEndingScene = false;
 							currentGameTitle = gameTitle || '';
 							console.log( '進捗復元失敗のため、進行状況とフラグを初期化しました' );
+							
+							// HTMLのエンディングフラグもfalseにリセット（データ再取得時の上書きを防ぐため）
+							var endingFlagElement = $( '#novel-ending-scene-flag' );
+							if ( endingFlagElement.length > 0 ) {
+								endingFlagElement.text( 'false' );
+								console.log( 'HTMLのエンディングフラグをfalseにリセットしました' );
+							}
 							
 							if ( ! initializeNewGame( gameTitle, sceneUrl ) ) {
 								console.error( 'Failed to initialize fallback new game' );
