@@ -971,6 +971,14 @@
 							currentPageIndex = 0;
 							currentDialogueIndex = 0;
 							isEndingScene = false;
+							
+							// HTMLのエンディングフラグもリセット（進捗復元失敗時）
+							var $endingFlag = $( '#novel-ending-scene-flag' );
+							if ( $endingFlag.length > 0 ) {
+								$endingFlag.text( '' );
+								console.log( 'HTMLのエンディングフラグを空文字でリセットしました（進捗復元失敗時）' );
+							}
+							
 							console.log( '進捗復元失敗のため、進行状況とフラグを初期化しました' );
 							
 							// 統一された初期化処理を使用
@@ -985,6 +993,14 @@
 						currentPageIndex = 0;
 						currentDialogueIndex = 0;
 						isEndingScene = false;
+						
+						// HTMLのエンディングフラグもリセット（最初から開始選択時）
+						var $endingFlag = $( '#novel-ending-scene-flag' );
+						if ( $endingFlag.length > 0 ) {
+							$endingFlag.text( '' );
+							console.log( 'HTMLのエンディングフラグを空文字でリセットしました（最初から開始選択時）' );
+						}
+						
 						console.log( '「最初から開始」選択のため、進行状況とフラグを初期化しました' );
 						
 						// 統一された初期化処理を使用
@@ -1517,9 +1533,17 @@
 				isEndingScene = false;
 				currentGameTitle = gameTitle || '';
 				currentSceneUrl = sceneUrl || window.location.href;
+				
+				// 3. HTMLのエンディングフラグもリセット（reloadGameDataFromHTMLでの上書きを防ぐ）
+				var $endingFlag = $( '#novel-ending-scene-flag' );
+				if ( $endingFlag.length > 0 ) {
+					$endingFlag.text( '' );
+					console.log( 'HTMLのエンディングフラグを空文字でリセットしました' );
+				}
+				
 				console.log( '最初から開始のため、全ての状態を初期化しました' );
 				
-				// 3. タイトル画面を非表示にしてゲーム開始
+				// 4. タイトル画面を非表示にしてゲーム開始
 				hideTitleScreen();
 				setTimeout( function() {
 					try {
@@ -1568,6 +1592,14 @@
 							currentDialogueIndex = 0;
 							isEndingScene = false;
 							currentGameTitle = gameTitle || '';
+							
+							// HTMLのエンディングフラグもリセット（進捗復元失敗時のフォールバック）
+							var $endingFlag = $( '#novel-ending-scene-flag' );
+							if ( $endingFlag.length > 0 ) {
+								$endingFlag.text( '' );
+								console.log( 'HTMLのエンディングフラグを空文字でリセットしました（進捗復元失敗時）' );
+							}
+							
 							console.log( '進捗復元失敗のため、進行状況とフラグを初期化しました' );
 							
 							if ( ! initializeNewGame( gameTitle, sceneUrl ) ) {
