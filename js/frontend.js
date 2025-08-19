@@ -488,6 +488,13 @@
 				console.log( 'ゲーム完了により進捗をクリアしました:', gameTitle );
 			}
 			
+			// HTMLのエンディングフラグをリセット（次回の「最初から開始」時の誤動作を防ぐ）
+			var $endingFlag = $( '#novel-ending-scene-flag' );
+			if ( $endingFlag.length > 0 ) {
+				$endingFlag.text( '' );
+				console.log( 'HTMLのエンディングフラグを空文字でリセットしました（タイトル画面復帰時）' );
+			}
+			
 			// データ配列をクリアして統一された状態初期化を使用
 			choices = [];
 			dialogueData = [];
@@ -1403,6 +1410,10 @@
 				if ( endingSceneFlagData ) {
 					isEndingScene = JSON.parse( endingSceneFlagData );
 					console.log( 'Reloaded ending scene flag:', isEndingScene );
+				} else {
+					// フラグ値が空の場合は明示的にfalseに設定
+					isEndingScene = false;
+					console.log( 'Ending scene flag data is empty, set to false' );
 				}
 				
 				console.log( 'Game data reloaded successfully from HTML' );
