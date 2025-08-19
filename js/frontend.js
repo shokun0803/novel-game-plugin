@@ -1407,7 +1407,7 @@
 				}
 				
 				// エンディングシーンフラグの取得
-				if ( endingSceneFlagData ) {
+				if ( endingSceneFlagData && endingSceneFlagData.trim() !== '' ) {
 					isEndingScene = JSON.parse( endingSceneFlagData );
 					console.log( 'Reloaded ending scene flag:', isEndingScene );
 				} else {
@@ -1552,9 +1552,21 @@
 					console.log( 'HTMLのエンディングフラグを空文字でリセットしました' );
 				}
 				
+				// 4. データ配列を明示的に初期化し、最初のシーンデータを再ロード
+				dialogueData = [];
+				dialogues = [];
+				console.log( 'データ配列を初期化しました' );
+				
+				// 最初のシーンデータをHTMLから確実に再ロード
+				if ( reloadGameDataFromHTML() ) {
+					console.log( '最初のシーンデータを正常に再ロードしました' );
+				} else {
+					console.error( 'シーンデータの再ロードに失敗しました' );
+				}
+				
 				console.log( '最初から開始のため、全ての状態を初期化しました' );
 				
-				// 4. タイトル画面を非表示にしてゲーム開始
+				// 5. タイトル画面を非表示にしてゲーム開始
 				hideTitleScreen();
 				setTimeout( function() {
 					try {
