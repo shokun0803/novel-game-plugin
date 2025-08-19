@@ -1507,30 +1507,24 @@
 			console.log( 'Starting new game from title screen:', { gameTitle: gameTitle, sceneUrl: sceneUrl } );
 			
 			try {
-				// 保存された進捗があれば削除（最初から開始のため）
-				if ( gameTitle ) {
-					clearGameProgress( gameTitle );
-					console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
-				}
+				// 1. 保存された進捗をクリア
+				clearGameProgress( gameTitle );
+				console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
 				
-				// 最初から開始時の進行状況・フラグを明示的に初期化
+				// 2. ゲーム状態を確実に初期化
 				currentPageIndex = 0;
 				currentDialogueIndex = 0;
 				isEndingScene = false;
 				currentGameTitle = gameTitle || '';
-				console.log( '最初から開始のため、進行状況とフラグを初期化しました' );
+				currentSceneUrl = sceneUrl || window.location.href;
+				console.log( '最初から開始のため、全ての状態を初期化しました' );
 				
-				// 新ゲーム開始のため初期化処理を実行
-				if ( ! initializeNewGame( gameTitle, sceneUrl ) ) {
-					console.error( 'Failed to initialize new game' );
-					return false;
-				}
-				
-				// タイトル画面を非表示にしてゲーム開始
+				// 3. タイトル画面を非表示にしてゲーム開始
 				hideTitleScreen();
 				setTimeout( function() {
 					try {
 						initializeGameContent( true ); // 新ゲーム強制フラグを渡す
+						console.log( '新ゲームが正常に開始されました' );
 					} catch ( error ) {
 						console.error( 'Error during game initialization:', error );
 					}
@@ -1726,20 +1720,14 @@
 					
 					console.log( 'Starting new game:', gameTitle );
 					
-					// 保存された進捗をクリア
-					clearGameProgress( gameTitle );
-					
-					// ゲーム状態を初期化
-					currentPageIndex = 0;
-					currentDialogueIndex = 0;
-					currentGameTitle = gameTitle;
-					currentSceneUrl = window.location.href;
-					
-					// タイトル画面を非表示にしてゲーム開始
-					hideTitleScreen();
-					setTimeout( function() {
-						initializeGameContent( true ); // 新ゲーム開始
-					}, 300 );
+					// startNewGameFromTitle関数を呼び出してロジックを一元化
+					var currentSceneUrl = window.location.href;
+					if ( startNewGameFromTitle( gameTitle, currentSceneUrl ) ) {
+						console.log( 'New game started successfully from title screen' );
+					} else {
+						console.error( 'Failed to start new game from title screen' );
+						$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
+					}
 					
 				} catch ( error ) {
 					console.error( 'Error starting new game:', error );
