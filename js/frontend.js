@@ -229,14 +229,30 @@
 				charactersData = gameState.charactersData; // 後方互換変数を更新
 			}
 			
-			// エンディングフラグの読み込み
-			if ( endingSceneFlagData ) {
-				gameState.isEndingScene = JSON.parse( endingSceneFlagData );
-				isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
-				console.log( 'エンディングシーンフラグを読み込みました:', gameState.isEndingScene );
+			// エンディングフラグの読み込み（初期化時）
+			console.log( '初期化時エンディングフラグ読み込み開始' );
+			console.log( 'endingSceneFlagData (raw):', endingSceneFlagData );
+			
+			if ( endingSceneFlagData && endingSceneFlagData.trim() !== '' ) {
+				try {
+					var parsedEndingFlag = JSON.parse( endingSceneFlagData );
+					gameState.isEndingScene = parsedEndingFlag;
+					isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
+					console.log( '初期化時エンディングシーンフラグを正常に読み込みました:', {
+						raw: endingSceneFlagData,
+						parsed: parsedEndingFlag,
+						gameState: gameState.isEndingScene,
+						legacy: isEndingScene
+					} );
+				} catch ( parseError ) {
+					console.error( '初期化時エンディングフラグのパースに失敗:', parseError );
+					gameState.isEndingScene = false;
+					isEndingScene = false;
+				}
 			} else {
+				console.log( '初期化時エンディングフラグデータが空または存在しません - falseに設定' );
 				gameState.isEndingScene = false;
-				isEndingScene = gameState.isEndingScene;
+				isEndingScene = false;
 			}
 			
 			console.log( 'ゲームデータを統一状態オブジェクトに読み込み完了' );
@@ -1524,14 +1540,30 @@
 					console.log( 'Reloaded characters data to unified state' );
 				}
 				
-				// エンディングフラグの読み込み
-				if ( endingSceneFlagData ) {
-					gameState.isEndingScene = JSON.parse( endingSceneFlagData );
-					isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
-					console.log( 'エンディングシーンフラグを再読み込みしました:', gameState.isEndingScene );
+				// エンディングフラグの読み込み（強化版デバッグ）
+				console.log( 'エンディングフラグ読み込み開始' );
+				console.log( 'endingSceneFlagData (raw):', endingSceneFlagData );
+				
+				if ( endingSceneFlagData && endingSceneFlagData.trim() !== '' ) {
+					try {
+						var parsedEndingFlag = JSON.parse( endingSceneFlagData );
+						gameState.isEndingScene = parsedEndingFlag;
+						isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
+						console.log( 'エンディングシーンフラグを正常に読み込みました:', {
+							raw: endingSceneFlagData,
+							parsed: parsedEndingFlag,
+							gameState: gameState.isEndingScene,
+							legacy: isEndingScene
+						} );
+					} catch ( parseError ) {
+						console.error( 'エンディングフラグのパースに失敗:', parseError );
+						gameState.isEndingScene = false;
+						isEndingScene = false;
+					}
 				} else {
-					// フラグデータがない場合は現在の状態を保持
-					isEndingScene = gameState.isEndingScene;
+					console.log( 'エンディングフラグデータが空または存在しません - falseに設定' );
+					gameState.isEndingScene = false;
+					isEndingScene = false;
 				}
 				
 				console.log( 'Game data reloaded successfully to unified state from HTML' );
@@ -2401,6 +2433,20 @@
 			console.log( 'isEndingScene (legacy var):', isEndingScene );
 			console.log( 'gameState.isEndingScene:', gameState.isEndingScene );
 			
+			// HTMLからエンディングフラグを再確認（最新状態の保証）
+			var htmlEndingFlag = $( '#novel-ending-scene-flag' ).text();
+			console.log( 'HTML ending flag text:', htmlEndingFlag );
+			
+			var htmlEndingValue = false;
+			if ( htmlEndingFlag ) {
+				try {
+					htmlEndingValue = JSON.parse( htmlEndingFlag );
+					console.log( 'Parsed HTML ending flag:', htmlEndingValue );
+				} catch ( e ) {
+					console.warn( 'Failed to parse HTML ending flag:', e );
+				}
+			}
+			
 			$choicesContainer.empty();
 			
 			// ゲーム完了時に進捗をクリア
@@ -2416,21 +2462,33 @@
 			
 			$choicesContainer.append( $endMessage );
 			
-			// エンディングシーンかどうかを統一ゲーム状態から確実に判定
-			var currentIsEndingScene = gameState.isEndingScene || isEndingScene;
-			console.log( 'Final ending scene determination:', currentIsEndingScene );
+			// エンディングシーンかどうかを複数の方法で確実に判定
+			var currentIsEndingScene = htmlEndingValue || gameState.isEndingScene || isEndingScene;
+			console.log( 'Final ending scene determination:', {
+				htmlEndingValue: htmlEndingValue,
+				gameStateIsEndingScene: gameState.isEndingScene,
+				legacyIsEndingScene: isEndingScene,
+				finalDecision: currentIsEndingScene
+			} );
 			
 			// エンディングシーンの場合とそうでない場合で処理を分ける
 			if ( currentIsEndingScene ) {
 				// エンディングシーンの場合：クリックでタイトル画面に戻る
-				console.log( 'エンディングシーンです。クリックでタイトル画面に戻ります。' );
+				console.log( 'エンディングシーンです。クリックでタイトル画面に戻るUIを生成します。' );
 				
 				// クリック指示メッセージを追加
 				var $clickMessage = $( '<div>' )
 					.addClass( 'ending-click-instruction' )
-					.text( 'クリックしてタイトル画面に戻る' );
+					.text( 'クリックしてタイトル画面に戻る' )
+					.css( {
+						'text-align': 'center',
+						'margin': '20px 0',
+						'font-size': '16px',
+						'color': '#666'
+					} );
 				
 				$choicesContainer.append( $clickMessage );
+				console.log( 'クリック指示メッセージを追加しました' );
 				
 				// 明示的な「タイトルに戻る」ボタンを追加（確実なUI/UX）
 				var $returnButton = $( '<button>' )
@@ -2448,10 +2506,23 @@
 						'font-weight': 'bold',
 						'min-width': '200px',
 						'box-shadow': '0 4px 8px rgba(0, 115, 170, 0.3)',
-						'transition': 'all 0.3s ease'
+						'transition': 'all 0.3s ease',
+						'display': 'block',
+						'margin-left': 'auto',
+						'margin-right': 'auto'
 					} );
 				
 				$choicesContainer.append( $returnButton );
+				console.log( 'タイトル画面に戻るボタンを追加しました' );
+				
+				// ボタンが実際に存在するかチェック
+				setTimeout( function() {
+					var buttonExists = $( '.ending-return-button' ).length > 0;
+					console.log( 'エンディングボタン存在確認:', buttonExists );
+					if ( buttonExists ) {
+						console.log( 'ボタンのCSS情報:', $( '.ending-return-button' ).css( ['display', 'visibility', 'opacity'] ) );
+					}
+				}, 100 );
 				
 				// エンディング用のクリックハンドラー（gameState.reset()とタイトル画面表示を確実に実行）
 				var endingClickHandler = function( e ) {
@@ -2737,6 +2808,43 @@
 				gameState: gameState.isEndingScene,
 				legacy: isEndingScene
 			};
+		}
+		
+		/**
+		 * エンディング機能をテストする（デバッグ用）
+		 */
+		function testEndingFunctionality() {
+			console.log( '=== エンディング機能テスト開始 ===' );
+			
+			// 現在の状態をチェック
+			var status = checkEndingStatus();
+			console.log( '現在の状態:', status );
+			
+			// エンディングモードを強制的に有効化
+			forceEndingMode();
+			
+			// showGameEnd()を直接呼び出してテスト
+			console.log( 'showGameEnd()を直接テスト実行...' );
+			showGameEnd();
+			
+			// 生成されたUIをチェック
+			setTimeout( function() {
+				var $endMessage = $( '.game-end-message' );
+				var $clickMessage = $( '.ending-click-instruction' );
+				var $returnButton = $( '.ending-return-button' );
+				
+				console.log( 'UI要素の生成確認:' );
+				console.log( '- おわりメッセージ:', $endMessage.length > 0 );
+				console.log( '- クリック指示:', $clickMessage.length > 0 );
+				console.log( '- 戻るボタン:', $returnButton.length > 0 );
+				
+				if ( $returnButton.length > 0 ) {
+					console.log( '- ボタンが表示されています:', $returnButton.is( ':visible' ) );
+					console.log( '- ボタンのテキスト:', $returnButton.text() );
+				}
+				
+				console.log( '=== エンディング機能テスト完了 ===' );
+			}, 200 );
 		}
 		function returnToGameList() {
 			// アーカイブページのURLを取得
@@ -3104,6 +3212,7 @@
 			forceEndingMode: forceEndingMode,
 			checkEndingStatus: checkEndingStatus,
 			validateEndingImplementation: validateEndingImplementation,
+			testEndingFunctionality: testEndingFunctionality,
 			showGameEnd: showGameEnd,
 			showChoices: showChoices,
 			gameState: gameState
