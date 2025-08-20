@@ -2438,13 +2438,17 @@
 					.text( 'タイトル画面に戻る' )
 					.css( {
 						'margin-top': '20px',
-						'padding': '10px 20px',
-						'font-size': '16px',
+						'padding': '15px 25px',
+						'font-size': '18px',
 						'background-color': '#0073aa',
 						'color': 'white',
 						'border': 'none',
-						'border-radius': '4px',
-						'cursor': 'pointer'
+						'border-radius': '8px',
+						'cursor': 'pointer',
+						'font-weight': 'bold',
+						'min-width': '200px',
+						'box-shadow': '0 4px 8px rgba(0, 115, 170, 0.3)',
+						'transition': 'all 0.3s ease'
 					} );
 				
 				$choicesContainer.append( $returnButton );
@@ -2456,24 +2460,44 @@
 					
 					console.log( 'エンディング完了 - ゲーム状態をリセットしてタイトル画面に戻ります' );
 					
-					// イベントハンドラーを削除（重複実行防止）
-					$gameContainer.off( 'click.novel-end-ending touchend.novel-end-ending' );
-					$( document ).off( 'keydown.novel-end-ending' );
-					$returnButton.off( 'click' );
-					
-					// 統一ゲーム状態を確実にリセット
-					gameState.reset();
-					console.log( 'gameState.reset() を実行しました' );
-					
-					// 後方互換変数も更新
-					currentPageIndex = gameState.currentPageIndex;
-					currentDialogueIndex = gameState.currentDialogueIndex;
-					isEndingScene = gameState.isEndingScene;
-					currentGameTitle = gameState.currentGameTitle;
-					currentSceneUrl = gameState.currentSceneUrl;
-					
-					// タイトル画面表示（showTitleScreen関数を確実に呼び出し）
-					returnToTitleScreen();
+					try {
+						// イベントハンドラーを削除（重複実行防止）
+						$gameContainer.off( 'click.novel-end-ending touchend.novel-end-ending' );
+						$( document ).off( 'keydown.novel-end-ending' );
+						$returnButton.off( 'click' );
+						
+						// 統一ゲーム状態を確実にリセット
+						gameState.reset();
+						console.log( 'gameState.reset() を実行しました' );
+						
+						// 後方互換変数も更新
+						currentPageIndex = gameState.currentPageIndex;
+						currentDialogueIndex = gameState.currentDialogueIndex;
+						isEndingScene = gameState.isEndingScene;
+						currentGameTitle = gameState.currentGameTitle;
+						currentSceneUrl = gameState.currentSceneUrl;
+						
+						console.log( 'ゲーム状態変数を更新しました' );
+						
+						// タイトル画面表示（showTitleScreen関数を確実に呼び出し）
+						if ( typeof returnToTitleScreen === 'function' ) {
+							returnToTitleScreen();
+							console.log( 'タイトル画面復帰処理を実行しました' );
+						} else {
+							console.warn( 'returnToTitleScreen関数が見つかりません' );
+							// フォールバック：手動でタイトル画面を表示
+							if ( $choicesContainer.length > 0 ) {
+								$choicesContainer.html( '<p style="color: green; font-weight: bold; text-align: center; padding: 20px;">ゲーム終了！<br>ページを再読み込みしてもう一度プレイできます。</p>' );
+							}
+						}
+						
+					} catch ( error ) {
+						console.error( 'エンディング処理中にエラーが発生しました:', error );
+						// エラー時のフォールバック
+						if ( $choicesContainer.length > 0 ) {
+							$choicesContainer.html( '<p style="color: red; font-weight: bold; text-align: center; padding: 20px;">エラーが発生しました。<br>ページを再読み込みしてください。</p>' );
+						}
+					}
 				};
 				
 				// ボタンクリックイベント
@@ -2596,6 +2620,89 @@
 			}
 			
 			return false;
+		}
+		
+		/**
+		 * エンディング機能の完全性をテストする（デバッグ用）
+		 */
+		function validateEndingImplementation() {
+			console.log( '=== エンディング機能実装検証 ===' );
+			
+			var validationResults = {
+				phpOutput: false,
+				jsLoading: false,
+				uiGeneration: false,
+				eventBinding: false,
+				stateManagement: false
+			};
+			
+			try {
+				// 1. PHP側のエンディングフラグ出力をチェック
+				var $endingFlagElement = $( '#novel-ending-scene-flag' );
+				if ( $endingFlagElement.length > 0 ) {
+					validationResults.phpOutput = true;
+					console.log( '✓ PHP側エンディングフラグ出力: 正常' );
+					console.log( '  - エレメント存在:', $endingFlagElement.length );
+					console.log( '  - 現在の値:', $endingFlagElement.text() );
+				} else {
+					console.log( '✗ PHP側エンディングフラグ出力: 失敗 - #novel-ending-scene-flag が見つかりません' );
+				}
+				
+				// 2. JavaScript側でのエンディングフラグ読み込みをチェック
+				if ( typeof gameState !== 'undefined' && typeof isEndingScene !== 'undefined' ) {
+					validationResults.jsLoading = true;
+					console.log( '✓ JavaScript側フラグ読み込み: 正常' );
+					console.log( '  - gameState.isEndingScene:', gameState.isEndingScene );
+					console.log( '  - isEndingScene (legacy):', isEndingScene );
+				} else {
+					console.log( '✗ JavaScript側フラグ読み込み: 失敗 - 変数が定義されていません' );
+				}
+				
+				// 3. UI生成機能をチェック
+				if ( typeof showGameEnd === 'function' ) {
+					validationResults.uiGeneration = true;
+					console.log( '✓ エンディングUI生成機能: 正常' );
+				} else {
+					console.log( '✗ エンディングUI生成機能: 失敗 - showGameEnd関数が見つかりません' );
+				}
+				
+				// 4. イベントバインディング機能をチェック（選択肢コンテナが存在する場合）
+				var $choicesContainer = $( '#novel-choices' );
+				if ( $choicesContainer.length > 0 ) {
+					validationResults.eventBinding = true;
+					console.log( '✓ イベントバインディング環境: 正常' );
+					console.log( '  - 選択肢コンテナ存在:', $choicesContainer.length );
+				} else {
+					console.log( '✗ イベントバインディング環境: 警告 - #novel-choices が見つかりません' );
+				}
+				
+				// 5. ゲーム状態管理をチェック
+				if ( typeof gameState !== 'undefined' && typeof gameState.reset === 'function' ) {
+					validationResults.stateManagement = true;
+					console.log( '✓ ゲーム状態管理: 正常' );
+				} else {
+					console.log( '✗ ゲーム状態管理: 失敗 - gameState.reset が利用できません' );
+				}
+				
+				// 結果サマリー
+				var passCount = Object.values( validationResults ).filter( Boolean ).length;
+				var totalCount = Object.keys( validationResults ).length;
+				
+				console.log( '=== 検証結果サマリー ===' );
+				console.log( '合格:', passCount + '/' + totalCount );
+				
+				if ( passCount === totalCount ) {
+					console.log( '🎉 エンディング機能は正常に実装されています！' );
+					return true;
+				} else {
+					console.log( '⚠️ エンディング機能に問題があります。上記のエラーを確認してください。' );
+					return false;
+				}
+				
+			} catch ( error ) {
+				console.error( 'エンディング機能検証中にエラーが発生:', error );
+				return false;
+			}
 		}
 		
 		/**
@@ -2996,6 +3103,7 @@
 		window.novelGameDebug = {
 			forceEndingMode: forceEndingMode,
 			checkEndingStatus: checkEndingStatus,
+			validateEndingImplementation: validateEndingImplementation,
 			showGameEnd: showGameEnd,
 			showChoices: showChoices,
 			gameState: gameState
