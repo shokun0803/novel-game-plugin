@@ -189,7 +189,7 @@
 			var choicesData = $( '#novel-choices-data' ).text();
 			var baseBackgroundData = $( '#novel-base-background' ).text();
 			var charactersDataRaw = $( '#novel-characters-data' ).text();
-			// HTMLエンディングフラグの読み込みを廃止（JavaScriptのみで管理）
+			var endingSceneFlagData = $( '#novel-ending-scene-flag' ).text();
 
 			if ( dialogueDataRaw ) {
 				gameState.dialogueData = JSON.parse( dialogueDataRaw );
@@ -229,9 +229,15 @@
 				charactersData = gameState.charactersData; // 後方互換変数を更新
 			}
 			
-			// エンディングフラグはJavaScriptのみで管理（HTML依存廃止）
-			// gameState.isEndingScene は初期値 false のまま
-			isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
+			// エンディングフラグの読み込み
+			if ( endingSceneFlagData ) {
+				gameState.isEndingScene = JSON.parse( endingSceneFlagData );
+				isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
+				console.log( 'エンディングシーンフラグを読み込みました:', gameState.isEndingScene );
+			} else {
+				gameState.isEndingScene = false;
+				isEndingScene = gameState.isEndingScene;
+			}
 			
 			console.log( 'ゲームデータを統一状態オブジェクトに読み込み完了' );
 		} catch ( error ) {
@@ -1473,7 +1479,7 @@
 				var choicesData = $( '#novel-choices-data' ).text();
 				var baseBackgroundData = $( '#novel-base-background' ).text();
 				var charactersDataRaw = $( '#novel-characters-data' ).text();
-				// HTMLエンディングフラグの読み込みを廃止（JavaScript統一状態のみ使用）
+				var endingSceneFlagData = $( '#novel-ending-scene-flag' ).text();
 
 				if ( dialogueDataRaw ) {
 					gameState.dialogueData = JSON.parse( dialogueDataRaw );
@@ -1518,10 +1524,15 @@
 					console.log( 'Reloaded characters data to unified state' );
 				}
 				
-				// エンディングフラグはJavaScript統一状態で管理（HTML依存廃止）
-				// gameState.isEndingScene の値は変更せず、現在の状態を保持
-				isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
-				console.log( 'Ending flags managed by unified state (no HTML dependency)', { isEndingScene: gameState.isEndingScene } );
+				// エンディングフラグの読み込み
+				if ( endingSceneFlagData ) {
+					gameState.isEndingScene = JSON.parse( endingSceneFlagData );
+					isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
+					console.log( 'エンディングシーンフラグを再読み込みしました:', gameState.isEndingScene );
+				} else {
+					// フラグデータがない場合は現在の状態を保持
+					isEndingScene = gameState.isEndingScene;
+				}
 				
 				console.log( 'Game data reloaded successfully to unified state from HTML' );
 				return true;
