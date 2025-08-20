@@ -480,9 +480,7 @@ function noveltool_filter_novel_game_content( $content ) {
                     <?php echo wp_json_encode( $choices, JSON_UNESCAPED_UNICODE ); ?>
                 </script>
                 
-                <script id="novel-ending-scene-flag" type="application/json">
-                    <?php echo wp_json_encode( $is_ending_scene === '1', JSON_UNESCAPED_UNICODE ); ?>
-                </script>
+                <!-- HTMLエンディングフラグ出力を廃止（JavaScript統一状態管理に移行） -->
             </div>
         </div>
     </div>
