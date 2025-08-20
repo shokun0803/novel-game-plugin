@@ -2421,17 +2421,52 @@
 				
 				$choicesContainer.append( $clickMessage );
 				
-				// クリック・タッチイベントハンドラーを設定
+				// 明示的な「タイトルに戻る」ボタンを追加（確実なUI/UX）
+				var $returnButton = $( '<button>' )
+					.addClass( 'game-nav-button ending-return-button' )
+					.text( 'タイトル画面に戻る' )
+					.css( {
+						'margin-top': '20px',
+						'padding': '10px 20px',
+						'font-size': '16px',
+						'background-color': '#0073aa',
+						'color': 'white',
+						'border': 'none',
+						'border-radius': '4px',
+						'cursor': 'pointer'
+					} );
+				
+				$choicesContainer.append( $returnButton );
+				
+				// エンディング用のクリックハンドラー（gameState.reset()とタイトル画面表示を確実に実行）
 				var endingClickHandler = function( e ) {
 					e.preventDefault();
 					e.stopPropagation();
 					
-					// イベントハンドラーを削除
-					$( document ).off( 'keydown.novel-end-ending click.novel-end-ending touchend.novel-end-ending' );
+					console.log( 'エンディング完了 - ゲーム状態をリセットしてタイトル画面に戻ります' );
 					
-					console.log( 'エンディングクリック - タイトル画面に戻ります' );
+					// イベントハンドラーを削除（重複実行防止）
+					$gameContainer.off( 'click.novel-end-ending touchend.novel-end-ending' );
+					$( document ).off( 'keydown.novel-end-ending' );
+					$returnButton.off( 'click' );
+					
+					// 統一ゲーム状態を確実にリセット
+					gameState.reset();
+					console.log( 'gameState.reset() を実行しました' );
+					
+					// 後方互換変数も更新
+					currentPageIndex = gameState.currentPageIndex;
+					currentDialogueIndex = gameState.currentDialogueIndex;
+					isEndingScene = gameState.isEndingScene;
+					currentGameTitle = gameState.currentGameTitle;
+					currentSceneUrl = gameState.currentSceneUrl;
+					
+					// タイトル画面表示（showTitleScreen関数を確実に呼び出し）
 					returnToTitleScreen();
 				};
+				
+				// ボタンクリックイベント
+				$returnButton.on( 'click', endingClickHandler );
 				
 				// 画面全体のクリックイベント（エンディング用）
 				$gameContainer.on( 'click.novel-end-ending touchend.novel-end-ending', endingClickHandler );

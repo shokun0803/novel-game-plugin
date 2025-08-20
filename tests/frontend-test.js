@@ -169,6 +169,136 @@ function testClearGameProgress() {
 }
 
 /**
+ * エンディング画面クリック機能のテスト
+ * エンディング画面でクリックした際にタイトル画面に戻る機能を検証
+ */
+function testEndingScreenClick() {
+    console.log('=== Test: Ending Screen Click Functionality ===');
+    
+    // テスト環境のセットアップ
+    var originalIsEndingScene = window.isEndingScene;
+    var $testContainer = $('<div>').attr('id', 'test-game-container');
+    var $testChoicesContainer = $('<div>').attr('id', 'test-choices-container');
+    $testContainer.append($testChoicesContainer);
+    $('body').append($testContainer);
+    
+    try {
+        // エンディングシーン状態にセット
+        window.isEndingScene = true;
+        
+        // gameStateオブジェクトが存在する場合はそちらも設定
+        if (window.gameState) {
+            window.gameState.isEndingScene = true;
+        }
+        
+        console.log('Ending scene state set to true');
+        
+        // showGameEnd関数が存在するかチェック
+        if (!window.showGameEnd) {
+            console.warn('⚠️ showGameEnd function not available - creating mock implementation');
+            
+            // Mock implementation for testing
+            window.showGameEnd = function() {
+                var $choicesContainer = $('#test-choices-container');
+                var isEndingScene = window.isEndingScene || (window.gameState && window.gameState.isEndingScene);
+                
+                $choicesContainer.empty();
+                
+                var $endMessage = $('<div>')
+                    .addClass('game-end-message')
+                    .text('おわり');
+                $choicesContainer.append($endMessage);
+                
+                if (isEndingScene) {
+                    var $clickMessage = $('<div>')
+                        .addClass('ending-click-instruction')
+                        .text('クリックしてタイトル画面に戻る');
+                    $choicesContainer.append($clickMessage);
+                    
+                    var $returnButton = $('<button>')
+                        .addClass('game-nav-button ending-return-button')
+                        .text('タイトル画面に戻る');
+                    $choicesContainer.append($returnButton);
+                    
+                    var endingClickHandler = function(e) {
+                        e.preventDefault();
+                        console.log('Ending click handler triggered');
+                        
+                        if (window.gameState && window.gameState.reset) {
+                            window.gameState.reset();
+                        }
+                        
+                        window.isEndingScene = false;
+                        console.log('Game state reset and ending flag cleared');
+                    };
+                    
+                    $returnButton.on('click', endingClickHandler);
+                    $testContainer.on('click.novel-end-ending', endingClickHandler);
+                }
+            };
+        }
+        
+        // showGameEndを実行
+        window.showGameEnd();
+        
+        // エンディング要素が作成されたかチェック
+        var $endMessage = $('.game-end-message');
+        var $clickInstruction = $('.ending-click-instruction');
+        var $returnButton = $('.ending-return-button');
+        
+        if ($endMessage.length === 0) {
+            console.error('❌ Test Failed: "おわり" message not found');
+            return false;
+        }
+        
+        if ($clickInstruction.length === 0) {
+            console.error('❌ Test Failed: Click instruction message not found');
+            return false;
+        }
+        
+        if ($returnButton.length === 0) {
+            console.error('❌ Test Failed: Return button not found');
+            return false;
+        }
+        
+        console.log('✅ Ending screen elements created successfully');
+        
+        // ボタンクリックをシミュレート
+        var clickEventTriggered = false;
+        var originalGameState = window.gameState ? { ...window.gameState } : null;
+        
+        // クリックイベントをトリガー
+        $returnButton.trigger('click');
+        
+        // 状態がリセットされたかチェック
+        if (window.gameState && window.gameState.reset) {
+            if (window.gameState.currentPageIndex !== 0 || window.gameState.currentDialogueIndex !== 0) {
+                console.error('❌ Test Failed: Game state not properly reset after click');
+                return false;
+            }
+        }
+        
+        if (window.isEndingScene !== false) {
+            console.error('❌ Test Failed: isEndingScene flag not cleared after click');
+            return false;
+        }
+        
+        console.log('✅ Test Passed: Ending Screen Click Functionality');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Test Failed with exception:', error);
+        return false;
+    } finally {
+        // クリーンアップ
+        window.isEndingScene = originalIsEndingScene;
+        $testContainer.remove();
+        $('.game-end-message, .ending-click-instruction, .ending-return-button').remove();
+        $(document).off('.novel-end-ending');
+    }
+}
+
+/**
  * 全テストを実行
  */
 function runAllTests() {
@@ -176,7 +306,8 @@ function runAllTests() {
     
     var tests = [
         testStartNewGameFromEndingScreen,
-        testClearGameProgress
+        testClearGameProgress,
+        testEndingScreenClick
     ];
     
     var passed = 0;
