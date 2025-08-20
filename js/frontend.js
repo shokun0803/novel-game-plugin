@@ -2250,6 +2250,8 @@
 		 */
 		function showChoices() {
 			console.log( 'showChoices called, choices.length:', choices.length );
+			console.log( 'Current ending scene flag (isEndingScene):', isEndingScene );
+			console.log( 'Current ending scene flag (gameState.isEndingScene):', gameState.isEndingScene );
 			
 			if ( choices.length === 0 ) {
 				console.warn( 'No choices available - showing game end. This may indicate a data loading issue.' );
@@ -2258,7 +2260,8 @@
 					currentSceneUrl: currentSceneUrl,
 					dialogueData_length: dialogueData.length,
 					dialogues_length: dialogues.length,
-					isEndingScene: isEndingScene
+					isEndingScene: isEndingScene,
+					gameStateIsEndingScene: gameState.isEndingScene
 				} );
 				// 選択肢がない場合は「おわり」を表示
 				showGameEnd();
@@ -2394,6 +2397,10 @@
 		 * ゲーム終了時の「おわり」画面を表示
 		 */
 		function showGameEnd() {
+			console.log( 'showGameEnd called' );
+			console.log( 'isEndingScene (legacy var):', isEndingScene );
+			console.log( 'gameState.isEndingScene:', gameState.isEndingScene );
+			
 			$choicesContainer.empty();
 			
 			// ゲーム完了時に進捗をクリア
@@ -2409,8 +2416,12 @@
 			
 			$choicesContainer.append( $endMessage );
 			
+			// エンディングシーンかどうかを統一ゲーム状態から確実に判定
+			var currentIsEndingScene = gameState.isEndingScene || isEndingScene;
+			console.log( 'Final ending scene determination:', currentIsEndingScene );
+			
 			// エンディングシーンの場合とそうでない場合で処理を分ける
-			if ( isEndingScene ) {
+			if ( currentIsEndingScene ) {
 				// エンディングシーンの場合：クリックでタイトル画面に戻る
 				console.log( 'エンディングシーンです。クリックでタイトル画面に戻ります。' );
 				
@@ -2588,8 +2599,38 @@
 		}
 		
 		/**
-		 * ゲーム一覧に戻る
+		 * エンディング状態を強制的に設定する（デバッグ・テスト用）
 		 */
+		function forceEndingMode() {
+			console.log( 'Force ending mode activated' );
+			gameState.isEndingScene = true;
+			isEndingScene = true;
+			
+			// HTMLエレメントも更新
+			var $endingFlag = $( '#novel-ending-scene-flag' );
+			if ( $endingFlag.length > 0 ) {
+				$endingFlag.text( 'true' );
+			}
+			
+			console.log( 'Ending mode forced. gameState.isEndingScene:', gameState.isEndingScene, 'isEndingScene:', isEndingScene );
+		}
+		
+		/**
+		 * 現在のエンディング状態を確認する（デバッグ用）
+		 */
+		function checkEndingStatus() {
+			var htmlFlag = $( '#novel-ending-scene-flag' ).text();
+			console.log( 'Ending status check:' );
+			console.log( '- HTML flag:', htmlFlag );
+			console.log( '- gameState.isEndingScene:', gameState.isEndingScene );
+			console.log( '- isEndingScene (legacy):', isEndingScene );
+			
+			return {
+				html: htmlFlag,
+				gameState: gameState.isEndingScene,
+				legacy: isEndingScene
+			};
+		}
 		function returnToGameList() {
 			// アーカイブページのURLを取得
 			var archiveUrl = window.location.origin + window.location.pathname.replace( /\/[^\/]+\/?$/, '' );
@@ -2774,11 +2815,33 @@
 					
 					// 新ゲーム強制開始時はHTMLからの再読み込み後もエンディングフラグを確実に初期化
 					if ( forceNewGame === true ) {
+						gameState.isEndingScene = false;
 						isEndingScene = false;
 						console.log( 'Force new game: エンディングフラグを再初期化しました' );
 					}
 				} else {
 					console.error( 'Failed to reload data from HTML' );
+				}
+			}
+			
+			// エンディングフラグの状態を確認・同期
+			console.log( 'Ending flag sync check:' );
+			console.log( '- gameState.isEndingScene:', gameState.isEndingScene );
+			console.log( '- isEndingScene (legacy):', isEndingScene );
+			var htmlEndingFlag = $( '#novel-ending-scene-flag' ).text();
+			console.log( '- HTML ending flag:', htmlEndingFlag );
+			
+			// HTMLフラグがある場合は同期（新ゲーム強制時以外）
+			if ( htmlEndingFlag && forceNewGame !== true ) {
+				try {
+					var htmlFlagValue = JSON.parse( htmlEndingFlag );
+					if ( gameState.isEndingScene !== htmlFlagValue ) {
+						console.log( 'Syncing ending flag from HTML:', htmlFlagValue );
+						gameState.isEndingScene = htmlFlagValue;
+						isEndingScene = htmlFlagValue;
+					}
+				} catch ( e ) {
+					console.warn( 'Failed to parse HTML ending flag:', e );
 				}
 			}
 			
@@ -2927,6 +2990,15 @@
 			isAvailable: function() {
 				return $modalOverlay.length > 0;
 			}
+		};
+		
+		// デバッグ用関数をグローバルに公開
+		window.novelGameDebug = {
+			forceEndingMode: forceEndingMode,
+			checkEndingStatus: checkEndingStatus,
+			showGameEnd: showGameEnd,
+			showChoices: showChoices,
+			gameState: gameState
 		};
 		
 		// デバッグ情報を出力

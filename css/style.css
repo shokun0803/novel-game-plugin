@@ -1301,6 +1301,38 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     transform: none; /* ナビゲーションボタンがある場合は変形しない */
 }
 
+/* エンディング専用のタイトル画面に戻るボタン */
+.ending-return-button {
+    background: #0073aa !important;
+    color: white !important;
+    font-weight: bold !important;
+    border: 2px solid #0073aa !important;
+    margin-top: 20px !important;
+    min-width: 200px !important;
+    animation: ending-button-glow 3s ease-in-out infinite !important;
+}
+
+.ending-return-button:hover {
+    background: #005a87 !important;
+    border-color: #005a87 !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 15px rgba(0, 115, 170, 0.4) !important;
+}
+
+.ending-return-button:active {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(0, 115, 170, 0.3) !important;
+}
+
+@keyframes ending-button-glow {
+    0%, 100% {
+        box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
+    }
+    50% {
+        box-shadow: 0 6px 15px rgba(0, 115, 170, 0.6);
+    }
+}
+
 /* タッチデバイス用のゲーム終了メッセージ */
 @media (hover: none) and (pointer: coarse) {
     .game-end-message {
