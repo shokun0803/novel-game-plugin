@@ -316,8 +316,8 @@
 				return storageKey;
 			} catch ( error ) {
 				console.warn( 'ストレージキーの生成に失敗しました:', error );
-				// フォールバック：従来の方式
-				return 'noveltool_progress_' + btoa( gameTitle ).replace( /[^a-zA-Z0-9]/g, '' );
+				// フォールバック：encodeURIComponent を使用した安全な方式
+				return 'noveltool_progress_' + encodeURIComponent( gameTitle );
 			}
 		}
 		
@@ -380,7 +380,7 @@
 				
 				// 2. 旧形式・類似キーを網羅的に削除
 				var oldKeys = [
-					'noveltool_progress_' + btoa( gameTitle ).replace( /[^a-zA-Z0-9]/g, '' ),
+					'noveltool_progress_' + encodeURIComponent( gameTitle ),
 					'novel_progress_' + gameTitle,
 					'game_progress_' + gameTitle,
 					gameTitle + '_progress',
@@ -411,6 +411,12 @@
 				console.log( 'ゲーム進捗を網羅的にクリアしました:', gameTitle );
 			} catch ( error ) {
 				console.warn( 'ゲーム進捗のクリアに失敗しました:', error );
+				// 進捗データ削除失敗時は、強制的に gameState を初期化し、エンディングフラグも false にリセット
+				if ( gameState ) {
+					gameState.reset();
+					gameState.isEndingScene = false;
+					console.log( 'ゲーム状態を強制初期化しました' );
+				}
 			}
 		}
 		
