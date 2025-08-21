@@ -1529,7 +1529,14 @@
 					
 					// HTML側のエンディングフラグも必ず'false'にリセット（新ゲーム開始フラグも設定）
 					$( '#novel-ending-scene-flag' ).text( 'false' ).attr( 'data-new-game', 'true' );
-					console.log( '新ゲーム開始のため、全フラグ・データを強制初期化しました（HTML側エンディングフラグも\'false\'にリセット、新ゲームフラグ設定）' );
+					
+					// ゲームコンテナのHTMLも初期化（前回のエンディング画面の残存を防ぐ）
+					if ( $gameContainer.length > 0 ) {
+						$gameContainer.empty();
+						console.log( '新ゲーム開始：ゲームコンテナのHTMLを初期化しました' );
+					}
+					
+					console.log( '新ゲーム開始のため、全フラグ・データ・HTMLコンテナを強制初期化しました（HTML側エンディングフラグも\'false\'にリセット、新ゲームフラグ設定）' );
 					return true;
 				}
 				
@@ -3030,6 +3037,14 @@
 					}
 				} else {
 					console.error( 'Failed to reload data from HTML' );
+				}
+				
+				// 新ゲーム開始時にデータが空の場合、ゲームコンテナのHTMLを初期化
+				if ( forceNewGame === true && gameState.dialogueData.length === 0 && gameState.dialogues.length === 0 ) {
+					if ( $gameContainer.length > 0 ) {
+						$gameContainer.empty();
+						console.log( '新ゲーム開始：dialogueData/dialoguesが空のため、ゲームコンテナのHTMLを初期化しました' );
+					}
 				}
 			}
 			
