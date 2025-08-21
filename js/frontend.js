@@ -1484,11 +1484,11 @@
 		 * HTMLからゲームデータを再読み込みする関数
 		 * resetAllGameData()でデータ配列をクリアした後に、HTMLから再度データを取得する
 		 * 
-		 * @param {boolean} preserveGameState 新ゲーム開始時はtrueを渡してエンディングフラグの復旧を防ぐ
+		 * @param {boolean} isNewGame 新ゲーム開始時はtrueを渡してエンディングフラグの復旧を防ぐ
 		 * @since 1.0.0
 		 */
-		function reloadGameDataFromHTML() {
-			console.log( 'Reloading game data from HTML (using unified game state)...' );
+		function reloadGameDataFromHTML( isNewGame ) {
+			console.log( 'Reloading game data from HTML (using unified game state)...', { isNewGame: isNewGame } );
 			
 			try {
 				var dialogueDataRaw = $( '#novel-dialogue-data' ).text();
@@ -1540,30 +1540,36 @@
 					console.log( 'Reloaded characters data to unified state' );
 				}
 				
-				// エンディングフラグの読み込み（強化版デバッグ）
-				console.log( 'エンディングフラグ読み込み開始' );
-				console.log( 'endingSceneFlagData (raw):', endingSceneFlagData );
-				
-				if ( endingSceneFlagData && endingSceneFlagData.trim() !== '' ) {
-					try {
-						var parsedEndingFlag = JSON.parse( endingSceneFlagData );
-						gameState.isEndingScene = parsedEndingFlag;
-						isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
-						console.log( 'エンディングシーンフラグを正常に読み込みました:', {
-							raw: endingSceneFlagData,
-							parsed: parsedEndingFlag,
-							gameState: gameState.isEndingScene,
-							legacy: isEndingScene
-						} );
-					} catch ( parseError ) {
-						console.error( 'エンディングフラグのパースに失敗:', parseError );
+				// エンディングフラグの読み込み（新ゲーム開始時は強制的にfalseに設定）
+				if ( isNewGame ) {
+					console.log( '新ゲーム開始のため、エンディングフラグを強制的にfalseに設定' );
+					gameState.isEndingScene = false;
+					isEndingScene = false;
+				} else {
+					console.log( 'エンディングフラグ読み込み開始' );
+					console.log( 'endingSceneFlagData (raw):', endingSceneFlagData );
+					
+					if ( endingSceneFlagData && endingSceneFlagData.trim() !== '' ) {
+						try {
+							var parsedEndingFlag = JSON.parse( endingSceneFlagData );
+							gameState.isEndingScene = parsedEndingFlag;
+							isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
+							console.log( 'エンディングシーンフラグを正常に読み込みました:', {
+								raw: endingSceneFlagData,
+								parsed: parsedEndingFlag,
+								gameState: gameState.isEndingScene,
+								legacy: isEndingScene
+							} );
+						} catch ( parseError ) {
+							console.error( 'エンディングフラグのパースに失敗:', parseError );
+							gameState.isEndingScene = false;
+							isEndingScene = false;
+						}
+					} else {
+						console.log( 'エンディングフラグデータが空または存在しません - falseに設定' );
 						gameState.isEndingScene = false;
 						isEndingScene = false;
 					}
-				} else {
-					console.log( 'エンディングフラグデータが空または存在しません - falseに設定' );
-					gameState.isEndingScene = false;
-					isEndingScene = false;
 				}
 				
 				console.log( 'Game data reloaded successfully to unified state from HTML' );
@@ -1645,8 +1651,8 @@
 		function initializeNewGame( gameTitle, sceneUrl ) {
 			console.log( 'Initializing new game:', { gameTitle: gameTitle, sceneUrl: sceneUrl } );
 			
-			// 1. HTMLからデータを再取得（新ゲーム開始時は状態を保持）
-			var reloadSuccess = reloadGameDataFromHTML();
+			// 1. HTMLからデータを再取得（新ゲーム開始時はエンディングフラグを初期化）
+			var reloadSuccess = reloadGameDataFromHTML( true );
 			if ( ! reloadSuccess ) {
 				console.error( 'Failed to reload game data from HTML' );
 				return false;
@@ -1684,36 +1690,38 @@
 			console.log( 'Starting new game from title screen:', { gameTitle: gameTitle, sceneUrl: sceneUrl } );
 			
 			try {
-				// 1. 保存された進捗をクリア
+				// 1. 保存された進捗をクリア（localStorage等の過去進捗・フラグ情報を一切参照しない）
 				clearGameProgress( gameTitle );
 				console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
 				
-				// 2. 統一ゲーム状態を新ゲーム用に設定（シンプル化）
+				// 2. 統一ゲーム状態を完全初期化（エンディングフラグを必ずfalseに設定）
+				gameState.reset();
 				gameState.setNewGame( gameTitle, sceneUrl );
-				console.log( '統一ゲーム状態を新ゲーム用に初期化しました' );
+				gameState.isEndingScene = false; // 新ゲーム開始時は必ずfalse
+				console.log( '統一ゲーム状態を新ゲーム用に完全初期化しました（エンディングフラグ=false）' );
 				
-				// 3. データ配列を初期化し、最初のシーンデータを再ロード
+				// 3. データ配列を初期化し、最初のシーンデータを再ロード（新ゲームフラグ付き）
 				gameState.dialogueData = [];
 				gameState.dialogues = [];
 				console.log( 'データ配列を初期化しました' );
 				
-				// 最初のシーンデータをHTMLから確実に再ロード（HTMLフラグ依存なし）
-				if ( reloadGameDataFromHTML() ) {
-					console.log( '最初のシーンデータを正常に再ロードしました' );
+				// 最初のシーンデータをHTMLから再ロード（isNewGame=trueでエンディングフラグ復旧を防ぐ）
+				if ( reloadGameDataFromHTML( true ) ) {
+					console.log( '最初のシーンデータを正常に再ロードしました（新ゲームモード）' );
 				} else {
 					console.error( 'シーンデータの再ロードに失敗しました' );
 				}
 				
-				// 4. 後方互換変数を更新
+				// 4. 後方互換変数を更新（エンディングフラグは必ずfalse）
 				currentPageIndex = gameState.currentPageIndex;
 				currentDialogueIndex = gameState.currentDialogueIndex;
-				isEndingScene = gameState.isEndingScene;
+				isEndingScene = false; // 新ゲーム開始時は明示的にfalse
 				currentGameTitle = gameState.currentGameTitle;
 				currentSceneUrl = gameState.currentSceneUrl;
 				dialogueData = gameState.dialogueData;
 				dialogues = gameState.dialogues;
 				
-				console.log( '最初から開始のため、全ての状態を統一的に初期化しました' );
+				console.log( '最初から開始のため、全ての状態を統一的に初期化しました（進捗・フラグ情報は一切参照せず）' );
 				
 				// 5. タイトル画面を非表示にしてゲーム開始
 				hideTitleScreen();
@@ -1837,7 +1845,7 @@
 			// データ配列をクリアした後、HTMLから再読み込みする場合
 			if ( clearDataArrays && reloadData ) {
 				console.log( 'Reloading data from HTML after reset...' );
-				reloadGameDataFromHTML();
+				reloadGameDataFromHTML( false );
 			}
 			
 			console.log( 'All game data and state reset completed. Game state summary:', {
@@ -3025,7 +3033,7 @@
 			// データが空の場合はHTMLから再読み込みを試行
 			if ( dialogues.length === 0 && dialogueData.length === 0 ) {
 				console.log( 'Dialogue data is empty, attempting to reload from HTML...' );
-				if ( reloadGameDataFromHTML() ) {
+				if ( reloadGameDataFromHTML( forceNewGame === true ) ) {
 					console.log( 'Successfully reloaded data from HTML' );
 					
 					// 新ゲーム強制開始時はHTMLからの再読み込み後もエンディングフラグを確実に初期化
