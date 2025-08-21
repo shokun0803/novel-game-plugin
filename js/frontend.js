@@ -130,15 +130,14 @@
 			}
 		};
 		
-		// 後方互換性のための変数（段階的移行）
-		var dialogueIndex = 0;
-		var dialogues = gameState.dialogues;
-		var dialogueData = gameState.dialogueData;
-		var choices = gameState.choices;
-		var baseBackground = gameState.baseBackground;
-		var currentBackground = gameState.currentBackground;
-		var charactersData = gameState.charactersData;
-		var isEndingScene = gameState.isEndingScene;
+		// 後方互換性のための変数（段階的移行） - gameStateへの参照に変更
+		var dialogueIndex = 0; // 廃止予定：gameState.currentDialogueIndexを参照
+		var dialogues = []; // 廃止予定：gameState.dialoguesを参照
+		var dialogueData = []; // 廃止予定：gameState.dialogueDataを参照
+		var choices = []; // 廃止予定：gameState.choicesを参照
+		var baseBackground = ''; // 廃止予定：gameState.baseBackgroundを参照
+		var currentBackground = ''; // 廃止予定：gameState.currentBackgroundを参照
+		var charactersData = {}; // 廃止予定：gameState.charactersDataを参照
 		var $gameContainer = $( '#novel-game-container' );
 		var $dialogueText = $( '#novel-dialogue-text' );
 		var $dialogueBox = $( '#novel-dialogue-box' );
@@ -148,15 +147,15 @@
 		var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 		
 		// 自動保存機能の変数（gameStateへの参照）
-		var currentGameTitle = gameState.currentGameTitle;
-		var currentSceneUrl = gameState.currentSceneUrl;
-		var autoSaveEnabled = gameState.autoSaveEnabled;
+		var currentGameTitle = ''; // 廃止予定：gameState.currentGameTitleを参照
+		var currentSceneUrl = ''; // 廃止予定：gameState.currentSceneUrlを参照
+		var autoSaveEnabled = true; // 廃止予定：gameState.autoSaveEnabledを参照
 		
 		// セリフ表示用の新しい変数（gameStateへの参照）
-		var currentDialogueIndex = gameState.currentDialogueIndex;
-		var currentPageIndex = gameState.currentPageIndex;
-		var currentDialoguePages = gameState.currentDialoguePages;
-		var allDialoguePages = gameState.allDialoguePages;
+		var currentDialogueIndex = 0; // 廃止予定：gameState.currentDialogueIndexを参照
+		var currentPageIndex = 0; // 廃止予定：gameState.currentPageIndexを参照
+		var currentDialoguePages = []; // 廃止予定：gameState.currentDialoguePagesを参照
+		var allDialoguePages = []; // 廃止予定：gameState.allDialoguePagesを参照
 		
 		// 表示設定
 		var displaySettings = {
@@ -237,22 +236,18 @@
 				try {
 					var parsedEndingFlag = JSON.parse( endingSceneFlagData );
 					gameState.isEndingScene = parsedEndingFlag;
-					isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
 					console.log( '初期化時エンディングシーンフラグを正常に読み込みました:', {
 						raw: endingSceneFlagData,
 						parsed: parsedEndingFlag,
-						gameState: gameState.isEndingScene,
-						legacy: isEndingScene
+						gameState: gameState.isEndingScene
 					} );
 				} catch ( parseError ) {
 					console.error( '初期化時エンディングフラグのパースに失敗:', parseError );
 					gameState.isEndingScene = false;
-					isEndingScene = false;
 				}
 			} else {
 				console.log( '初期化時エンディングフラグデータが空または存在しません - falseに設定' );
 				gameState.isEndingScene = false;
-				isEndingScene = false;
 			}
 			
 			console.log( 'ゲームデータを統一状態オブジェクトに読み込み完了' );
@@ -367,7 +362,7 @@
 		}
 		
 		/**
-		 * 特定のゲームの進捗を削除する
+		 * 特定のゲームの進捗を網羅的に削除する（localStorage清掃強化）
 		 *
 		 * @param {string} gameTitle ゲームタイトル
 		 * @since 1.2.0
@@ -378,9 +373,42 @@
 			}
 			
 			try {
+				// 1. メインのストレージキーを削除
 				var storageKey = generateStorageKey( gameTitle );
 				localStorage.removeItem( storageKey );
-				console.log( 'ゲーム進捗をクリアしました:', gameTitle );
+				console.log( 'メインの進捗データを削除:', storageKey );
+				
+				// 2. 旧形式・類似キーを網羅的に削除
+				var oldKeys = [
+					'noveltool_progress_' + btoa( gameTitle ).replace( /[^a-zA-Z0-9]/g, '' ),
+					'novel_progress_' + gameTitle,
+					'game_progress_' + gameTitle,
+					gameTitle + '_progress',
+					gameTitle + '_save'
+				];
+				
+				for ( var i = 0; i < oldKeys.length; i++ ) {
+					if ( localStorage.getItem( oldKeys[i] ) ) {
+						localStorage.removeItem( oldKeys[i] );
+						console.log( '旧形式の進捗データを削除:', oldKeys[i] );
+					}
+				}
+				
+				// 3. パターンマッチで関連するキーを全て削除
+				var keysToRemove = [];
+				for ( var j = 0; j < localStorage.length; j++ ) {
+					var key = localStorage.key( j );
+					if ( key && ( key.includes( gameTitle ) || key.includes( 'noveltool' ) ) ) {
+						keysToRemove.push( key );
+					}
+				}
+				
+				for ( var k = 0; k < keysToRemove.length; k++ ) {
+					localStorage.removeItem( keysToRemove[k] );
+					console.log( 'パターンマッチした関連データを削除:', keysToRemove[k] );
+				}
+				
+				console.log( 'ゲーム進捗を網羅的にクリアしました:', gameTitle );
 			} catch ( error ) {
 				console.warn( 'ゲーム進捗のクリアに失敗しました:', error );
 			}
@@ -1300,7 +1328,7 @@
 		}
 		
 		/**
-		 * 進捗状態を復元する
+		 * 進捗状態を復元する（「続きから再開」専用）
 		 *
 		 * @param {object} savedProgress 保存された進捗データ
 		 * @since 1.2.0
@@ -1317,17 +1345,11 @@
 				gameState.currentDialogueIndex = savedProgress.currentDialogueIndex;
 			}
 			
-			// 統一フラグを復元
+			// 統一フラグを復元（「続きから再開」時のみ実行）
 			if ( savedProgress.flags ) {
 				gameState.setFlagsFromString( savedProgress.flags );
 				console.log( '統一フラグを復元しました:', savedProgress.flags );
 			}
-			
-			// 後方互換変数を更新
-			currentPageIndex = gameState.currentPageIndex;
-			currentDialogueIndex = gameState.currentDialogueIndex;
-			dialogueIndex = gameState.currentDialogueIndex; // 後方互換性
-			isEndingScene = gameState.isEndingScene;
 			
 			console.log( '復元された統一ゲーム状態:', {
 				currentPageIndex: gameState.currentPageIndex,
@@ -1491,6 +1513,19 @@
 			console.log( 'Reloading game data from HTML (using unified game state)...', { isNewGame: isNewGame } );
 			
 			try {
+				// 新ゲーム開始時は一切のHTML/localStorage参照を排除し、完全初期化のみ実行
+				if ( isNewGame ) {
+					console.log( '新ゲーム開始モード：HTML/localStorage一切参照せず、強制初期化を実行' );
+					gameState.isEndingScene = false;
+					gameState.dialogueData = [];
+					gameState.dialogues = [];
+					gameState.choices = [];
+					gameState.currentPageIndex = 0;
+					gameState.currentDialogueIndex = 0;
+					console.log( '新ゲーム開始のため、全フラグ・データを強制初期化しました' );
+					return true;
+				}
+				
 				var dialogueDataRaw = $( '#novel-dialogue-data' ).text();
 				var choicesData = $( '#novel-choices-data' ).text();
 				var baseBackgroundData = $( '#novel-base-background' ).text();
@@ -1512,64 +1547,45 @@
 						return item.text;
 					} );
 					
-					// 後方互換変数を更新
-					dialogueData = gameState.dialogueData;
-					dialogues = gameState.dialogues;
-					
 					console.log( 'Reloaded dialogue data to unified state, length:', gameState.dialogueData.length );
 				}
 
 				if ( choicesData ) {
 					gameState.choices = JSON.parse( choicesData );
-					choices = gameState.choices; // 後方互換変数を更新
 					console.log( 'Reloaded choices data to unified state, length:', gameState.choices.length );
 				}
 				
 				if ( baseBackgroundData ) {
 					gameState.baseBackground = JSON.parse( baseBackgroundData );
 					gameState.currentBackground = gameState.baseBackground;
-					// 後方互換変数を更新
-					baseBackground = gameState.baseBackground;
-					currentBackground = gameState.currentBackground;
 					console.log( 'Reloaded background data to unified state' );
 				}
 				
 				if ( charactersDataRaw ) {
 					gameState.charactersData = JSON.parse( charactersDataRaw );
-					charactersData = gameState.charactersData; // 後方互換変数を更新
 					console.log( 'Reloaded characters data to unified state' );
 				}
 				
-				// エンディングフラグの読み込み（新ゲーム開始時は強制的にfalseに設定）
-				if ( isNewGame ) {
-					console.log( '新ゲーム開始のため、エンディングフラグを強制的にfalseに設定' );
-					gameState.isEndingScene = false;
-					isEndingScene = false;
-				} else {
-					console.log( 'エンディングフラグ読み込み開始' );
-					console.log( 'endingSceneFlagData (raw):', endingSceneFlagData );
-					
-					if ( endingSceneFlagData && endingSceneFlagData.trim() !== '' ) {
-						try {
-							var parsedEndingFlag = JSON.parse( endingSceneFlagData );
-							gameState.isEndingScene = parsedEndingFlag;
-							isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
-							console.log( 'エンディングシーンフラグを正常に読み込みました:', {
-								raw: endingSceneFlagData,
-								parsed: parsedEndingFlag,
-								gameState: gameState.isEndingScene,
-								legacy: isEndingScene
-							} );
-						} catch ( parseError ) {
-							console.error( 'エンディングフラグのパースに失敗:', parseError );
-							gameState.isEndingScene = false;
-							isEndingScene = false;
-						}
-					} else {
-						console.log( 'エンディングフラグデータが空または存在しません - falseに設定' );
+				// エンディングフラグの読み込み（通常ゲーム時のみ）
+				console.log( 'エンディングフラグ読み込み開始' );
+				console.log( 'endingSceneFlagData (raw):', endingSceneFlagData );
+				
+				if ( endingSceneFlagData && endingSceneFlagData.trim() !== '' ) {
+					try {
+						var parsedEndingFlag = JSON.parse( endingSceneFlagData );
+						gameState.isEndingScene = parsedEndingFlag;
+						console.log( 'エンディングシーンフラグを正常に読み込みました:', {
+							raw: endingSceneFlagData,
+							parsed: parsedEndingFlag,
+							gameState: gameState.isEndingScene
+						} );
+					} catch ( parseError ) {
+						console.error( 'エンディングフラグのパースに失敗:', parseError );
 						gameState.isEndingScene = false;
-						isEndingScene = false;
 					}
+				} else {
+					console.log( 'エンディングフラグデータが空または存在しません - falseに設定' );
+					gameState.isEndingScene = false;
 				}
 				
 				console.log( 'Game data reloaded successfully to unified state from HTML' );
@@ -1690,7 +1706,7 @@
 			console.log( 'Starting new game from title screen:', { gameTitle: gameTitle, sceneUrl: sceneUrl } );
 			
 			try {
-				// 1. 保存された進捗をクリア（localStorage等の過去進捗・フラグ情報を一切参照しない）
+				// 1. 保存された進捗を網羅的にクリア（localStorage等の過去進捗・フラグ情報を一切参照しない）
 				clearGameProgress( gameTitle );
 				console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
 				
@@ -1705,25 +1721,16 @@
 				gameState.dialogues = [];
 				console.log( 'データ配列を初期化しました' );
 				
-				// 最初のシーンデータをHTMLから再ロード（isNewGame=trueでエンディングフラグ復旧を防ぐ）
+				// 最初のシーンデータをHTMLから再ロード（isNewGame=trueでHTML/localStorage復旧を完全排除）
 				if ( reloadGameDataFromHTML( true ) ) {
 					console.log( '最初のシーンデータを正常に再ロードしました（新ゲームモード）' );
 				} else {
 					console.error( 'シーンデータの再ロードに失敗しました' );
 				}
 				
-				// 4. 後方互換変数を更新（エンディングフラグは必ずfalse）
-				currentPageIndex = gameState.currentPageIndex;
-				currentDialogueIndex = gameState.currentDialogueIndex;
-				isEndingScene = false; // 新ゲーム開始時は明示的にfalse
-				currentGameTitle = gameState.currentGameTitle;
-				currentSceneUrl = gameState.currentSceneUrl;
-				dialogueData = gameState.dialogueData;
-				dialogues = gameState.dialogues;
+				console.log( '最初から開始のため、全ての状態をgameStateで一元管理（進捗・フラグ情報は一切参照せず）' );
 				
-				console.log( '最初から開始のため、全ての状態を統一的に初期化しました（進捗・フラグ情報は一切参照せず）' );
-				
-				// 5. タイトル画面を非表示にしてゲーム開始
+				// 4. タイトル画面を非表示にしてゲーム開始
 				hideTitleScreen();
 				setTimeout( function() {
 					try {
@@ -1767,18 +1774,13 @@
 							// フォールバック：最初から開始
 							console.log( 'フォールバック: 最初から開始します' );
 							
-							// 進捗復元失敗時も最初から開始時と同様に初期化
-							currentPageIndex = 0;
-							currentDialogueIndex = 0;
-							isEndingScene = false;
-							currentGameTitle = gameTitle || '';
-							
-							// 統一ゲーム状態でエンディングフラグをリセット（HTML依存廃止）
-							gameState.currentGameTitle = currentGameTitle;
+							// 進捗復元失敗時はgameStateで統一管理し、グローバル変数依存を排除
+							gameState.currentPageIndex = 0;
+							gameState.currentDialogueIndex = 0;
 							gameState.isEndingScene = false;
-							isEndingScene = gameState.isEndingScene; // 後方互換変数を更新
+							gameState.currentGameTitle = gameTitle || '';
 							
-							console.log( '進捗復元失敗のため、統一ゲーム状態で進行状況とフラグを初期化しました' );
+							console.log( '進捗復元失敗のため、gameStateで進行状況とフラグを初期化しました' );
 							
 							if ( ! initializeNewGame( gameTitle, sceneUrl ) ) {
 								console.error( 'Failed to initialize fallback new game' );
@@ -1966,40 +1968,13 @@
 					
 					console.log( 'Continuing game:', gameTitle );
 					
-					// 保存された進捗を取得
-					var savedProgress = getSavedGameProgress( gameTitle );
-					if ( savedProgress ) {
-						console.log( 'Resuming from saved progress' );
-						
-						// ゲーム情報を設定
-						currentGameTitle = gameTitle;
-						currentSceneUrl = window.location.href;
-						
-						// タイトル画面を非表示にして進捗復元
-						hideTitleScreen();
-						setTimeout( function() {
-							resumeFromSavedProgress( savedProgress ).catch( function( error ) {
-								console.error( 'Failed to resume from saved progress:', error );
-								// フォールバック：最初から開始
-								console.log( 'Fallback: starting new game' );
-								currentPageIndex = 0;
-								currentDialogueIndex = 0;
-								initializeGameContent( true );
-							} );
-						}, 300 );
+					// resumeGameFromTitle関数を呼び出してロジックを一元化
+					var currentSceneUrl = window.location.href;
+					if ( resumeGameFromTitle( gameTitle, currentSceneUrl ) ) {
+						console.log( 'Game resumed successfully from title screen' );
 					} else {
-						console.log( 'No saved progress found, starting new game' );
-						// 進捗がない場合は最初から開始
-						clearGameProgress( gameTitle );
-						currentPageIndex = 0;
-						currentDialogueIndex = 0;
-						currentGameTitle = gameTitle;
-						currentSceneUrl = window.location.href;
-						
-						hideTitleScreen();
-						setTimeout( function() {
-							initializeGameContent( true );
-						}, 300 );
+						console.error( 'Failed to resume game from title screen' );
+						$button.prop( 'disabled', false ).css( 'pointer-events', 'auto' );
 					}
 					
 				} catch ( error ) {
