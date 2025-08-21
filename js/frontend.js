@@ -1526,7 +1526,10 @@
 					gameState.choices = [];
 					gameState.currentPageIndex = 0;
 					gameState.currentDialogueIndex = 0;
-					console.log( '新ゲーム開始のため、全フラグ・データを強制初期化しました' );
+					
+					// HTML側のエンディングフラグも必ず'false'にリセット
+					$( '#novel-ending-scene-flag' ).text( 'false' );
+					console.log( '新ゲーム開始のため、全フラグ・データを強制初期化しました（HTML側エンディングフラグも\'false\'にリセット）' );
 					return true;
 				}
 				
@@ -3013,8 +3016,10 @@
 					// 新ゲーム強制開始時はHTMLからの再読み込み後もエンディングフラグを確実に初期化
 					if ( forceNewGame === true ) {
 						gameState.isEndingScene = false;
+						// HTML側のエンディングフラグも必ず'false'にリセット
+						$( '#novel-ending-scene-flag' ).text( 'false' );
 						// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
-						console.log( 'Force new game: エンディングフラグを再初期化しました' );
+						console.log( 'Force new game: エンディングフラグを再初期化しました（HTML側も\'false\'にリセット）' );
 					}
 				} else {
 					console.error( 'Failed to reload data from HTML' );
