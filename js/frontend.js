@@ -1527,9 +1527,9 @@
 					gameState.currentPageIndex = 0;
 					gameState.currentDialogueIndex = 0;
 					
-					// HTML側のエンディングフラグも必ず'false'にリセット
-					$( '#novel-ending-scene-flag' ).text( 'false' );
-					console.log( '新ゲーム開始のため、全フラグ・データを強制初期化しました（HTML側エンディングフラグも\'false\'にリセット）' );
+					// HTML側のエンディングフラグも必ず'false'にリセット（新ゲーム開始フラグも設定）
+					$( '#novel-ending-scene-flag' ).text( 'false' ).attr( 'data-new-game', 'true' );
+					console.log( '新ゲーム開始のため、全フラグ・データを強制初期化しました（HTML側エンディングフラグも\'false\'にリセット、新ゲームフラグ設定）' );
 					return true;
 				}
 				
@@ -1573,11 +1573,15 @@
 					console.log( 'Reloaded characters data to unified state' );
 				}
 				
-				// エンディングフラグの読み込み（通常ゲーム時のみ）
+				// エンディングフラグの読み込み（通常ゲーム時のみ、新ゲーム開始時は読み込み禁止）
 				console.log( 'エンディングフラグ読み込み開始' );
 				console.log( 'endingSceneFlagData (raw):', endingSceneFlagData );
 				
-				if ( endingSceneFlagData && endingSceneFlagData.trim() !== '' ) {
+				// 新ゲーム開始フラグをチェック
+				var isNewGameFlag = $( '#novel-ending-scene-flag' ).attr( 'data-new-game' ) === 'true';
+				console.log( 'isNewGameFlag:', isNewGameFlag );
+				
+				if ( endingSceneFlagData && endingSceneFlagData.trim() !== '' && !isNewGameFlag ) {
 					try {
 						var parsedEndingFlag = JSON.parse( endingSceneFlagData );
 						gameState.isEndingScene = parsedEndingFlag;
@@ -1721,7 +1725,10 @@
 				gameState.reset();
 				gameState.setNewGame( gameTitle, sceneUrl );
 				gameState.isEndingScene = false; // 新ゲーム開始時は必ずfalse
-				console.log( '統一ゲーム状態を新ゲーム用に完全初期化しました（エンディングフラグ=false）' );
+				
+				// HTML側のエンディングフラグも新ゲーム開始として早期にマーク
+				$( '#novel-ending-scene-flag' ).text( 'false' ).attr( 'data-new-game', 'true' );
+				console.log( '統一ゲーム状態を新ゲーム用に完全初期化しました（エンディングフラグ=false、HTML側も新ゲームフラグ設定）' );
 				
 				// 3. データ配列を初期化し、最初のシーンデータを再ロード（新ゲームフラグ付き）
 				gameState.dialogueData = [];
@@ -3016,10 +3023,10 @@
 					// 新ゲーム強制開始時はHTMLからの再読み込み後もエンディングフラグを確実に初期化
 					if ( forceNewGame === true ) {
 						gameState.isEndingScene = false;
-						// HTML側のエンディングフラグも必ず'false'にリセット
-						$( '#novel-ending-scene-flag' ).text( 'false' );
+						// HTML側のエンディングフラグも必ず'false'にリセット（新ゲーム開始フラグも設定）
+						$( '#novel-ending-scene-flag' ).text( 'false' ).attr( 'data-new-game', 'true' );
 						// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
-						console.log( 'Force new game: エンディングフラグを再初期化しました（HTML側も\'false\'にリセット）' );
+						console.log( 'Force new game: エンディングフラグを再初期化しました（HTML側も\'false\'にリセット、新ゲームフラグ設定）' );
 					}
 				} else {
 					console.error( 'Failed to reload data from HTML' );
@@ -3031,10 +3038,12 @@
 			console.log( '- gameState.isEndingScene:', gameState.isEndingScene );
 			// レガシー変数isEndingScene廃止
 			var htmlEndingFlag = $( '#novel-ending-scene-flag' ).text();
+			var isNewGameFlag = $( '#novel-ending-scene-flag' ).attr( 'data-new-game' ) === 'true';
 			console.log( '- HTML ending flag:', htmlEndingFlag );
+			console.log( '- isNewGameFlag:', isNewGameFlag );
 			
-			// HTMLフラグがある場合は同期（新ゲーム強制時以外）
-			if ( htmlEndingFlag && forceNewGame !== true ) {
+			// HTMLフラグがある場合は同期（新ゲーム強制時以外、且つ新ゲームフラグが設定されていない場合のみ）
+			if ( htmlEndingFlag && forceNewGame !== true && !isNewGameFlag ) {
 				try {
 					var htmlFlagValue = JSON.parse( htmlEndingFlag );
 					if ( gameState.isEndingScene !== htmlFlagValue ) {
@@ -3099,6 +3108,12 @@
 				
 				// 初期位置を自動保存
 				autoSaveGameProgress();
+				
+				// 新ゲーム初期化完了後、新ゲームフラグをクリア
+				if ( forceNewGame === true ) {
+					$( '#novel-ending-scene-flag' ).removeAttr( 'data-new-game' );
+					console.log( 'New game initialization completed, cleared new game flag' );
+				}
 			} else {
 				// デバッグ用：セリフデータがない場合のメッセージ
 				console.log( 'No dialogue data found' );
