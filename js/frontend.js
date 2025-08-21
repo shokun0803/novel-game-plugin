@@ -658,7 +658,7 @@
 			baseBackground = gameState.baseBackground;
 			currentBackground = gameState.currentBackground;
 			charactersData = gameState.charactersData;
-			isEndingScene = gameState.isEndingScene;
+			// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
 			console.log( 'Data arrays cleared for title screen return' );
 			
 			// 統一された状態初期化を使用
@@ -866,8 +866,8 @@
 							
 							// エンディングフラグは統一ゲーム状態で管理（AJAX取得廃止）
 							// gameState.isEndingScene の値を変更せず、現在の状態を保持
-							isEndingScene = gameState.isEndingScene;
-							console.log( 'Ending flags managed by unified state (no AJAX dependency)', { isEndingScene: gameState.isEndingScene } );
+							// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
+							console.log( 'Ending flags managed by unified state (no AJAX dependency)', { gameStateIsEndingScene: gameState.isEndingScene } );
 							
 							// ゲームコンテナの内容を更新
 							// モーダル内のゲームコンテナではなく、実際のゲームページのコンテナを探す
@@ -1123,10 +1123,9 @@
 							gameState.currentDialogueIndex = 0;
 							gameState.isEndingScene = false;
 							
-							// 後方互換変数を更新
+							// 後方互換変数を更新（レガシー変数isEndingScene廃止）
 							currentPageIndex = gameState.currentPageIndex;
 							currentDialogueIndex = gameState.currentDialogueIndex;
-							isEndingScene = gameState.isEndingScene;
 							
 							console.log( '進捗復元失敗のため、統一ゲーム状態で進行状況とフラグを初期化しました' );
 							
@@ -1143,10 +1142,9 @@
 						gameState.currentDialogueIndex = 0;
 						gameState.isEndingScene = false;
 						
-						// 後方互換変数を更新
+						// 後方互換変数を更新（レガシー変数isEndingScene廃止）
 						currentPageIndex = gameState.currentPageIndex;
 						currentDialogueIndex = gameState.currentDialogueIndex;
-						isEndingScene = gameState.isEndingScene;
 						
 						console.log( '「最初から開始」選択のため、統一ゲーム状態で進行状況とフラグを初期化しました' );
 						
@@ -1405,7 +1403,7 @@
 			baseBackground = '';
 			currentBackground = '';
 			charactersData = {};
-			isEndingScene = false;
+			// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
 			
 			// ゲーム進行状態をリセット
 			currentGameTitle = '';
@@ -1613,7 +1611,7 @@
 			dialogueIndex = 0;
 			
 			// ゲーム状態フラグのリセット（エンディングフラグを完全初期化）
-			isEndingScene = false;
+			// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
 			
 			// ゲーム情報の初期化
 			currentGameTitle = '';
@@ -1679,8 +1677,8 @@
 			
 			// 3. 新ゲーム開始時はエンディングフラグを強制的にfalseに設定
 			// reloadGameDataFromHTMLでHTMLから再読み込みされた場合も確実に初期化
-			isEndingScene = false;
-			console.log( '新ゲーム開始のため、エンディングフラグを強制初期化しました' );
+			// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
+			console.log( '新ゲーム開始のため、エンディングフラグを統一ゲーム状態で初期化しました' );
 			
 			// 4. 新ゲーム開始時は進行インデックスも確実に0に設定
 			currentPageIndex = 0;
@@ -1853,7 +1851,7 @@
 			console.log( 'All game data and state reset completed. Game state summary:', {
 				currentGameTitle: currentGameTitle,
 				currentSceneUrl: currentSceneUrl,
-				isEndingScene: isEndingScene,
+				gameStateIsEndingScene: gameState.isEndingScene, // レガシー変数isEndingScene廃止
 				currentPageIndex: currentPageIndex,
 				currentDialogueIndex: currentDialogueIndex,
 				dialogueDataLength: dialogueData.length,
@@ -2265,7 +2263,6 @@
 		 */
 		function showChoices() {
 			console.log( 'showChoices called, choices.length:', choices.length );
-			console.log( 'Current ending scene flag (isEndingScene):', isEndingScene );
 			console.log( 'Current ending scene flag (gameState.isEndingScene):', gameState.isEndingScene );
 			
 			if ( choices.length === 0 ) {
@@ -2275,7 +2272,6 @@
 					currentSceneUrl: currentSceneUrl,
 					dialogueData_length: dialogueData.length,
 					dialogues_length: dialogues.length,
-					isEndingScene: isEndingScene,
 					gameStateIsEndingScene: gameState.isEndingScene
 				} );
 				// 選択肢がない場合は「おわり」を表示
@@ -2413,7 +2409,6 @@
 		 */
 		function showGameEnd() {
 			console.log( 'showGameEnd called' );
-			console.log( 'isEndingScene (legacy var):', isEndingScene );
 			console.log( 'gameState.isEndingScene:', gameState.isEndingScene );
 			
 			// HTMLからエンディングフラグを再確認（最新状態の保証）
@@ -2445,12 +2440,11 @@
 			
 			$choicesContainer.append( $endMessage );
 			
-			// エンディングシーンかどうかを複数の方法で確実に判定
-			var currentIsEndingScene = htmlEndingValue || gameState.isEndingScene || isEndingScene;
+			// エンディングシーンかどうかを複数の方法で確実に判定（レガシー変数isEndingScene廃止）
+			var currentIsEndingScene = htmlEndingValue || gameState.isEndingScene;
 			console.log( 'Final ending scene determination:', {
 				htmlEndingValue: htmlEndingValue,
 				gameStateIsEndingScene: gameState.isEndingScene,
-				legacyIsEndingScene: isEndingScene,
 				finalDecision: currentIsEndingScene
 			} );
 			
@@ -2524,10 +2518,9 @@
 						gameState.reset();
 						console.log( 'gameState.reset() を実行しました' );
 						
-						// 後方互換変数も更新
+						// 後方互換変数も更新（レガシー変数isEndingScene廃止）
 						currentPageIndex = gameState.currentPageIndex;
 						currentDialogueIndex = gameState.currentDialogueIndex;
-						isEndingScene = gameState.isEndingScene;
 						currentGameTitle = gameState.currentGameTitle;
 						currentSceneUrl = gameState.currentSceneUrl;
 						
@@ -2703,13 +2696,13 @@
 				}
 				
 				// 2. JavaScript側でのエンディングフラグ読み込みをチェック
-				if ( typeof gameState !== 'undefined' && typeof isEndingScene !== 'undefined' ) {
+				if ( typeof gameState !== 'undefined' ) {
 					validationResults.jsLoading = true;
 					console.log( '✓ JavaScript側フラグ読み込み: 正常' );
 					console.log( '  - gameState.isEndingScene:', gameState.isEndingScene );
-					console.log( '  - isEndingScene (legacy):', isEndingScene );
+					// レガシー変数isEndingScene廃止
 				} else {
-					console.log( '✗ JavaScript側フラグ読み込み: 失敗 - 変数が定義されていません' );
+					console.log( '✗ JavaScript側フラグ読み込み: 失敗 - gameState変数が定義されていません' );
 				}
 				
 				// 3. UI生成機能をチェック
@@ -2765,7 +2758,7 @@
 		function forceEndingMode() {
 			console.log( 'Force ending mode activated' );
 			gameState.isEndingScene = true;
-			isEndingScene = true;
+			// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
 			
 			// HTMLエレメントも更新
 			var $endingFlag = $( '#novel-ending-scene-flag' );
@@ -2773,7 +2766,7 @@
 				$endingFlag.text( 'true' );
 			}
 			
-			console.log( 'Ending mode forced. gameState.isEndingScene:', gameState.isEndingScene, 'isEndingScene:', isEndingScene );
+			console.log( 'Ending mode forced. gameState.isEndingScene:', gameState.isEndingScene );
 		}
 		
 		/**
@@ -2784,12 +2777,12 @@
 			console.log( 'Ending status check:' );
 			console.log( '- HTML flag:', htmlFlag );
 			console.log( '- gameState.isEndingScene:', gameState.isEndingScene );
-			console.log( '- isEndingScene (legacy):', isEndingScene );
+			// レガシー変数isEndingScene廃止
 			
 			return {
 				html: htmlFlag,
-				gameState: gameState.isEndingScene,
-				legacy: isEndingScene
+				gameState: gameState.isEndingScene
+				// レガシー変数isEndingScene廃止
 			};
 		}
 		
@@ -3014,7 +3007,7 @@
 					// 新ゲーム強制開始時はHTMLからの再読み込み後もエンディングフラグを確実に初期化
 					if ( forceNewGame === true ) {
 						gameState.isEndingScene = false;
-						isEndingScene = false;
+						// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
 						console.log( 'Force new game: エンディングフラグを再初期化しました' );
 					}
 				} else {
@@ -3025,7 +3018,7 @@
 			// エンディングフラグの状態を確認・同期
 			console.log( 'Ending flag sync check:' );
 			console.log( '- gameState.isEndingScene:', gameState.isEndingScene );
-			console.log( '- isEndingScene (legacy):', isEndingScene );
+			// レガシー変数isEndingScene廃止
 			var htmlEndingFlag = $( '#novel-ending-scene-flag' ).text();
 			console.log( '- HTML ending flag:', htmlEndingFlag );
 			
@@ -3036,7 +3029,7 @@
 					if ( gameState.isEndingScene !== htmlFlagValue ) {
 						console.log( 'Syncing ending flag from HTML:', htmlFlagValue );
 						gameState.isEndingScene = htmlFlagValue;
-						isEndingScene = htmlFlagValue;
+						// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
 					}
 				} catch ( e ) {
 					console.warn( 'Failed to parse HTML ending flag:', e );
