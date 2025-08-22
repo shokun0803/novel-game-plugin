@@ -3030,6 +3030,12 @@
 				gameState.currentDialogueIndex = 0;
 				gameState.isEndingScene = false;
 				console.log( '「最初から開始」：gameStateで強制初期化完了' );
+				
+				// ゲームコンテナのHTML初期化：前回のエンディング画面等のHTMLを削除
+				if ( $gameContainer.length > 0 ) {
+					$gameContainer.empty();
+					console.log( '「最初から開始」：initializeGameContent内でゲームコンテナHTML初期化完了' );
+				}
 			}
 			
 			console.log( 'Game container exists:', $gameContainer.length > 0 );
