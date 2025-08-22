@@ -152,10 +152,10 @@
 		var autoSaveEnabled = true; // 廃止予定：gameState.autoSaveEnabledを参照
 		
 		// セリフ表示用の新しい変数（gameStateへの参照）
-		var currentDialogueIndex = 0; // 廃止予定：gameState.currentDialogueIndexを参照
-		var currentPageIndex = 0; // 廃止予定：gameState.currentPageIndexを参照
-		var currentDialoguePages = []; // 廃止予定：gameState.currentDialoguePagesを参照
-		var allDialoguePages = []; // 廃止予定：gameState.allDialoguePagesを参照
+		// var currentDialogueIndex = 0; // 廃止：gameState.currentDialogueIndexを使用
+		// var currentPageIndex = 0; // 廃止：gameState.currentPageIndexを使用
+		// var currentDialoguePages = []; // 廃止：gameState.currentDialoguePagesを使用
+		// var allDialoguePages = []; // 廃止：gameState.allDialoguePagesを使用
 		
 		// 表示設定
 		var displaySettings = {
@@ -362,15 +362,19 @@
 		}
 		
 		/**
-		 * 特定のゲームの進捗を網羅的に削除する（localStorage清掃強化）
+		 * 「最初から開始」時の全データ完全削除処理
+		 * localStorage内の全ての進捗・フラグ情報を完全に削除し、gameStateを初期化
 		 *
 		 * @param {string} gameTitle ゲームタイトル
 		 * @since 1.2.0
 		 */
 		function clearGameProgress( gameTitle ) {
 			if ( ! gameTitle ) {
+				console.warn( 'clearGameProgress: ゲームタイトルが指定されていません' );
 				return;
 			}
+			
+			console.log( '「最初から開始」：全データ完全削除処理を開始します', gameTitle );
 			
 			try {
 				// 1. メインのストレージキーを削除
@@ -378,45 +382,57 @@
 				localStorage.removeItem( storageKey );
 				console.log( 'メインの進捗データを削除:', storageKey );
 				
-				// 2. 旧形式・類似キーを網羅的に削除
+				// 2. 旧形式・類似キーを網羅的に削除（フラグ・状態データも含む）
 				var oldKeys = [
 					'noveltool_progress_' + encodeURIComponent( gameTitle ),
 					'novel_progress_' + gameTitle,
 					'game_progress_' + gameTitle,
 					gameTitle + '_progress',
-					gameTitle + '_save'
+					gameTitle + '_save',
+					gameTitle + '_flags',
+					gameTitle + '_state',
+					gameTitle + '_ending',
+					'noveltool_' + gameTitle,
+					'game_' + gameTitle
 				];
 				
 				for ( var i = 0; i < oldKeys.length; i++ ) {
 					if ( localStorage.getItem( oldKeys[i] ) ) {
 						localStorage.removeItem( oldKeys[i] );
-						console.log( '旧形式の進捗データを削除:', oldKeys[i] );
+						console.log( '旧形式のデータを削除:', oldKeys[i] );
 					}
 				}
 				
-				// 3. パターンマッチで関連するキーを全て削除
-				var keysToRemove = [];
+				// 3. 全localStorageを走査し、関連するキーを完全削除
+				var allKeys = [];
 				for ( var j = 0; j < localStorage.length; j++ ) {
-					var key = localStorage.key( j );
-					if ( key && ( key.includes( gameTitle ) || key.includes( 'noveltool' ) ) ) {
-						keysToRemove.push( key );
+					allKeys.push( localStorage.key( j ) );
+				}
+				
+				for ( var k = 0; k < allKeys.length; k++ ) {
+					var key = allKeys[k];
+					if ( key && ( key.includes( gameTitle ) || key.includes( 'noveltool' ) || key.includes( 'novel' ) ) ) {
+						localStorage.removeItem( key );
+						console.log( '関連データを完全削除:', key );
 					}
 				}
 				
-				for ( var k = 0; k < keysToRemove.length; k++ ) {
-					localStorage.removeItem( keysToRemove[k] );
-					console.log( 'パターンマッチした関連データを削除:', keysToRemove[k] );
-				}
-				
-				console.log( 'ゲーム進捗を網羅的にクリアしました:', gameTitle );
+				console.log( '「最初から開始」：localStorage完全クリア完了' );
 			} catch ( error ) {
-				console.warn( 'ゲーム進捗のクリアに失敗しました:', error );
-				// 進捗データ削除失敗時は、強制的に gameState を初期化し、エンディングフラグも false にリセット
+				console.warn( 'localStorage削除処理でエラーが発生:', error );
+			}
+			
+			// 4. gameState強制初期化（エラーの有無に関係なく実行）
+			try {
 				if ( gameState ) {
 					gameState.reset();
 					gameState.isEndingScene = false;
-					console.log( 'ゲーム状態を強制初期化しました' );
+					gameState.currentGameTitle = '';
+					gameState.currentSceneUrl = '';
+					console.log( '「最初から開始」：gameState完全初期化完了' );
 				}
+			} catch ( stateError ) {
+				console.warn( 'gameState初期化でエラーが発生:', stateError );
 			}
 		}
 		
@@ -1129,10 +1145,6 @@
 							gameState.currentDialogueIndex = 0;
 							gameState.isEndingScene = false;
 							
-							// 後方互換変数を更新（レガシー変数isEndingScene廃止）
-							currentPageIndex = gameState.currentPageIndex;
-							currentDialogueIndex = gameState.currentDialogueIndex;
-							
 							console.log( '進捗復元失敗のため、統一ゲーム状態で進行状況とフラグを初期化しました' );
 							
 							// 統一された初期化処理を使用
@@ -1147,10 +1159,6 @@
 						gameState.currentPageIndex = 0;
 						gameState.currentDialogueIndex = 0;
 						gameState.isEndingScene = false;
-						
-						// 後方互換変数を更新（レガシー変数isEndingScene廃止）
-						currentPageIndex = gameState.currentPageIndex;
-						currentDialogueIndex = gameState.currentDialogueIndex;
 						
 						console.log( '「最初から開始」選択のため、統一ゲーム状態で進行状況とフラグを初期化しました' );
 						
@@ -1706,58 +1714,60 @@
 		}
 
 		/**
-		 * タイトル画面からの新ゲーム開始処理（一元化）
-		 * 進捗削除→初期化→画面遷移の流れを統一
+		 * 「最初から開始」ボタンからの新ゲーム開始処理（完全簡素化版）
+		 * 過去の保存情報を完全に削除し、gameStateのみで新ゲーム状態を管理
 		 * 
 		 * @param {string} gameTitle ゲームタイトル
 		 * @param {string} sceneUrl シーンURL
 		 * @since 1.0.0
 		 */
 		function startNewGameFromTitle( gameTitle, sceneUrl ) {
-			console.log( 'Starting new game from title screen:', { gameTitle: gameTitle, sceneUrl: sceneUrl } );
+			console.log( '「最初から開始」：新ゲーム開始処理を開始します', { gameTitle: gameTitle, sceneUrl: sceneUrl } );
 			
 			try {
-				// 1. 保存された進捗を網羅的にクリア（localStorage等の過去進捗・フラグ情報を一切参照しない）
+				// 1. 全データ完全削除：localStorage・進捗・フラグ情報をすべて削除
 				clearGameProgress( gameTitle );
-				console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
+				console.log( '「最初から開始」：全データ削除完了' );
 				
-				// 2. 統一ゲーム状態を完全初期化（エンディングフラグを必ずfalseに設定）
+				// 2. gameState完全初期化：一切の古いデータを参照しない
 				gameState.reset();
 				gameState.setNewGame( gameTitle, sceneUrl );
-				gameState.isEndingScene = false; // 新ゲーム開始時は必ずfalse
+				gameState.isEndingScene = false; // 必ずfalseで開始
+				console.log( '「最初から開始」：gameState完全初期化完了' );
 				
-				// HTML側のエンディングフラグも新ゲーム開始として早期にマーク
+				// 3. HTML要素の新ゲーム用初期化
 				$( '#novel-ending-scene-flag' ).text( 'false' ).attr( 'data-new-game', 'true' );
-				console.log( '統一ゲーム状態を新ゲーム用に完全初期化しました（エンディングフラグ=false、HTML側も新ゲームフラグ設定）' );
+				console.log( '「最初から開始」：HTML要素初期化完了' );
 				
-				// 3. データ配列を初期化し、最初のシーンデータを再ロード（新ゲームフラグ付き）
+				// 4. 新ゲーム用データ読み込み：古いデータを一切参照しない
 				gameState.dialogueData = [];
 				gameState.dialogues = [];
-				console.log( 'データ配列を初期化しました' );
+				gameState.choices = [];
+				gameState.currentPageIndex = 0;
+				gameState.currentDialogueIndex = 0;
 				
-				// 最初のシーンデータをHTMLから再ロード（isNewGame=trueでHTML/localStorage復旧を完全排除）
+				// HTMLから最初のシーンデータを読み込み（新ゲームフラグ付き）
 				if ( reloadGameDataFromHTML( true ) ) {
-					console.log( '最初のシーンデータを正常に再ロードしました（新ゲームモード）' );
+					console.log( '「最初から開始」：シーンデータ読み込み完了' );
 				} else {
-					console.error( 'シーンデータの再ロードに失敗しました' );
+					console.error( '「最初から開始」：シーンデータ読み込みに失敗' );
+					return false;
 				}
 				
-				console.log( '最初から開始のため、全ての状態をgameStateで一元管理（進捗・フラグ情報は一切参照せず）' );
-				
-				// 4. タイトル画面を非表示にしてゲーム開始
+				// 5. タイトル画面を非表示にしてゲーム開始
 				hideTitleScreen();
 				setTimeout( function() {
 					try {
-						initializeGameContent( true ); // 新ゲーム強制フラグを渡す
-						console.log( '新ゲームが正常に開始されました' );
+						initializeGameContent( true ); // 新ゲーム強制フラグ
+						console.log( '「最初から開始」：新ゲーム開始完了' );
 					} catch ( error ) {
-						console.error( 'Error during game initialization:', error );
+						console.error( '「最初から開始」：ゲーム初期化エラー:', error );
 					}
 				}, 300 );
 				
 				return true;
 			} catch ( error ) {
-				console.error( '新ゲーム開始処理中にエラーが発生:', error );
+				console.error( '「最初から開始」：処理中にエラーが発生:', error );
 				return false;
 			}
 		}
@@ -2964,15 +2974,17 @@
 
 		/**
 		 * ゲームコンテンツの初期化処理（モーダル内で実行）
+		 * 「最初から開始」時はgameStateのみを参照し、古いデータを一切使用しない
 		 */
 		function initializeGameContent( forceNewGame ) {
 			console.log( 'initializeGameContent called with forceNewGame:', forceNewGame );
 			
-			// 新ゲーム開始時は必ず最初から開始
+			// 新ゲーム開始時はgameStateで完全初期化
 			if ( forceNewGame === true ) {
-				currentPageIndex = 0;
-				currentDialogueIndex = 0;
-				console.log( 'Force new game: Starting from first scene' );
+				gameState.currentPageIndex = 0;
+				gameState.currentDialogueIndex = 0;
+				gameState.isEndingScene = false;
+				console.log( '「最初から開始」：gameStateで強制初期化完了' );
 			}
 			
 			console.log( 'Game container exists:', $gameContainer.length > 0 );
