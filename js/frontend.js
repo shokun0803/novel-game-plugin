@@ -648,9 +648,10 @@
 
 		/**
 		 * タイトル画面に戻る（エンディングシーン用）
+		 * エンディング→タイトル画面復帰時の完全初期化設計
 		 */
 		function returnToTitleScreen() {
-			console.log( 'returnToTitleScreen called' );
+			console.log( 'returnToTitleScreen called - エンディング→タイトル画面復帰時の完全初期化を開始' );
 			
 			// 現在のゲームタイトルを取得
 			var gameTitle = currentGameTitle || extractGameTitleFromPage();
@@ -660,31 +661,65 @@
 				return;
 			}
 			
+			console.log( 'エンディング完了によるタイトル画面復帰処理を開始:', gameTitle );
+			
+			// === 1. JavaScript状態とlocalStorageの完全初期化 ===
+			
 			// ゲーム完了時に進捗をクリア
-			if ( gameTitle ) {
-				clearGameProgress( gameTitle );
-				console.log( 'ゲーム完了により進捗をクリアしました:', gameTitle );
+			clearGameProgress( gameTitle );
+			console.log( 'localStorage進捗・フラグ情報を完全削除しました:', gameTitle );
+			
+			// 統一ゲーム状態の完全初期化
+			gameState.reset();
+			console.log( 'gameState完全初期化完了' );
+			
+			// 一時データの削除
+			window.currentGameSelectionData = null;
+			console.log( 'currentGameSelectionData削除完了' );
+			
+			// 統一された状態初期化を使用（イベントハンドラクリーンアップ含む）
+			resetAllGameState();
+			console.log( '全ゲーム状態・イベントハンドラクリーンアップ完了' );
+			
+			// === 2. モーダル・ゲームコンテナの完全再生成 ===
+			
+			// モーダルフラグの完全リセット
+			isModalOpen = false;
+			isTitleScreenVisible = false;
+			console.log( 'モーダルフラグ完全リセット完了' );
+			
+			// 既存のモーダル要素を完全削除
+			if ( $modalOverlay && $modalOverlay.length > 0 ) {
+				// モーダル関連の全イベントハンドラーを削除
+				$modalOverlay.off( '.novel-game' );
+				$modalOverlay.find( '*' ).off( '.novel-game' );
+				
+				// モーダル要素を完全削除
+				$modalOverlay.remove();
+				console.log( '既存モーダル要素を完全削除しました' );
 			}
 			
-			// 統一ゲーム状態でエンディングフラグを設定（HTML依存廃止）
-			gameState.isEndingScene = false;
-			console.log( '統一ゲーム状態でエンディングフラグをリセットしました（タイトル画面復帰時）' );
+			// モーダル要素への参照をクリア（再取得のため）
+			$modalOverlay = null;
+			$gameContainer = null;
+			$titleScreen = null;
+			$titleMain = null;
+			$titleSubtitle = null;
+			$titleDescription = null;
+			$titleStartBtn = null;
+			$titleContinueBtn = null;
+			$dialogueText = null;
+			$dialogueBox = null;
+			$speakerName = null;
+			$dialogueContinue = null;
+			$choicesContainer = null;
+			$startButton = null;
+			$clearProgressButton = null;
+			$closeButton = null;
 			
-			// 統一ゲーム状態をクリア
-			gameState.reset();
+			console.log( 'モーダル要素参照をクリアしました' );
 			
-			// 後方互換変数を更新
-			choices = gameState.choices;
-			dialogueData = gameState.dialogueData;
-			dialogues = gameState.dialogues;
-			baseBackground = gameState.baseBackground;
-			currentBackground = gameState.currentBackground;
-			charactersData = gameState.charactersData;
-			// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
-			console.log( 'Data arrays cleared for title screen return' );
-			
-			// 統一された状態初期化を使用
-			resetAllGameState();
+			// === 3. 初回起動時と同じフロー（データロード→初期化→ゲーム開始）を実行 ===
 			
 			// タイトル画面用のゲームデータを構築
 			var gameData = {
@@ -742,27 +777,46 @@
 			}
 			
 			// 背景画像の設定
-			if ( baseBackground ) {
-				gameData.image = baseBackground;
-			} else if ( currentBackground ) {
-				gameData.image = currentBackground;
+			// gameState.reset()によりbackground変数はクリアされているため、DOM/メタデータから取得
+			var gameImageMeta = $( 'meta[name="novel-game-image"]' ).attr( 'content' );
+			if ( gameImageMeta ) {
+				gameData.image = gameImageMeta;
 			} else {
-				// DOM内から背景画像を探す
-				var gameImageMeta = $( 'meta[name="novel-game-image"]' ).attr( 'content' );
-				if ( gameImageMeta ) {
-					gameData.image = gameImageMeta;
-				} else {
-					var gameImageElement = $( '[data-game-image]' ).first();
-					if ( gameImageElement.length > 0 ) {
-						gameData.image = gameImageElement.attr( 'data-game-image' );
-					}
+				var gameImageElement = $( '[data-game-image]' ).first();
+				if ( gameImageElement.length > 0 ) {
+					gameData.image = gameImageElement.attr( 'data-game-image' );
 				}
 			}
 			
 			console.log( 'タイトル画面用ゲームデータを構築しました:', gameData );
 			
-			// タイトル画面を表示し、確実にcurrentGameSelectionDataを再生成する
+			// === 4. モーダル再生成と初回起動フローを実行 ===
+			
+			// モーダル要素の再生成を待ってからタイトル画面を表示
 			setTimeout( function() {
+				// DOM再生成を確実にするため、要素参照を再取得
+				$modalOverlay = $( '#novel-game-modal-overlay' );
+				$gameContainer = $( '#novel-game-container' );
+				$titleScreen = $( '#novel-title-screen' );
+				
+				// モーダルが存在しない場合は再生成が必要
+				if ( $modalOverlay.length === 0 ) {
+					console.log( 'モーダル要素が存在しないため、初回起動フローで再生成します' );
+				}
+				
+				// 要素参照を再取得
+				$titleMain = $( '#novel-title-main' );
+				$titleSubtitle = $( '#novel-title-subtitle' );
+				$titleDescription = $( '#novel-title-description' );
+				$titleStartBtn = $( '#novel-title-start-new' );
+				$titleContinueBtn = $( '#novel-title-continue' );
+				$startButton = $( '#novel-game-start-btn' );
+				$clearProgressButton = $( '#novel-game-clear-progress-btn' );
+				$closeButton = $( '#novel-game-close-btn' );
+				
+				console.log( 'モーダル要素参照を再取得しました' );
+				
+				// 初回起動時と同じフローでタイトル画面を表示
 				showTitleScreen( gameData );
 				
 				// showTitleScreen後に確実にcurrentGameSelectionDataが設定されているかチェック
@@ -774,10 +828,12 @@
 					} else {
 						console.log( 'currentGameSelectionData successfully set:', window.currentGameSelectionData );
 					}
+					
+					console.log( 'エンディング→タイトル画面復帰時の完全初期化が完了しました' );
 				}, 100 );
 			}, 500 );
 			
-			console.log( 'エンディング完了、タイトル画面に戻ります' );
+			console.log( 'エンディング完了、完全初期化後にタイトル画面に戻ります' );
 		}
 
 		/**
