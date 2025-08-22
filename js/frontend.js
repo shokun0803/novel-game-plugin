@@ -1760,16 +1760,23 @@
 					console.log( '「最初から開始」：ゲームコンテナHTML初期化完了' );
 				}
 				
-				// 5. タイトル画面を非表示にしてゲーム開始
-				hideTitleScreen();
-				setTimeout( function() {
-					try {
-						initializeGameContent( true ); // 新ゲーム強制フラグ
-						console.log( '「最初から開始」：新ゲーム開始完了' );
-					} catch ( error ) {
-						console.error( '「最初から開始」：ゲーム初期化エラー:', error );
-					}
-				}, 300 );
+				// 5. セリフ枠等のHTML構造を再生成
+				loadGameData( sceneUrl ).then( function() {
+					console.log( '「最初から開始」：HTML構造再生成完了' );
+					
+					// 6. タイトル画面を非表示にしてゲーム開始
+					hideTitleScreen();
+					setTimeout( function() {
+						try {
+							initializeGameContent( true ); // 新ゲーム強制フラグ
+							console.log( '「最初から開始」：新ゲーム開始完了' );
+						} catch ( error ) {
+							console.error( '「最初から開始」：ゲーム初期化エラー:', error );
+						}
+					}, 300 );
+				} ).catch( function( error ) {
+					console.error( '「最初から開始」：HTML構造再生成エラー:', error );
+				} );
 				
 				return true;
 			} catch ( error ) {
@@ -2991,12 +2998,6 @@
 				gameState.currentDialogueIndex = 0;
 				gameState.isEndingScene = false;
 				console.log( '「最初から開始」：gameStateで強制初期化完了' );
-				
-				// 新ゲーム開始時はゲームコンテナのHTMLも初期化
-				if ( $gameContainer.length > 0 ) {
-					$gameContainer.empty();
-					console.log( '「最初から開始」：initializeGameContent内でゲームコンテナHTML初期化完了' );
-				}
 			}
 			
 			console.log( 'Game container exists:', $gameContainer.length > 0 );
