@@ -1424,8 +1424,8 @@
 			currentSceneUrl = '';
 			
 			// ページング状態をリセット
-			currentDialogueIndex = 0;
-			currentPageIndex = 0;
+			gameState.currentDialogueIndex = 0;
+			gameState.currentPageIndex = 0;
 			currentDialoguePages = [];
 			gameState.allDialoguePages = [];
 			dialogueIndex = 0;
@@ -1475,8 +1475,8 @@
 			console.log( 'Resetting game display state...' );
 			
 			// セリフ関連の表示状態をリセット
-			currentDialogueIndex = 0;
-			currentPageIndex = 0;
+			gameState.currentDialogueIndex = 0;
+			gameState.currentPageIndex = 0;
 			currentDialoguePages = [];
 			gameState.allDialoguePages = [];
 			
@@ -1625,8 +1625,8 @@
 			console.log( 'Resetting all game state and flags...' );
 			
 			// セリフ・対話進行状況の初期化
-			currentDialogueIndex = 0;
-			currentPageIndex = 0;
+			gameState.currentDialogueIndex = 0;
+			gameState.currentPageIndex = 0;
 			currentDialoguePages = [];
 			gameState.allDialoguePages = [];
 			dialogueIndex = 0;
@@ -1702,8 +1702,8 @@
 			console.log( '新ゲーム開始のため、エンディングフラグを統一ゲーム状態で初期化しました' );
 			
 			// 4. 新ゲーム開始時は進行インデックスも確実に0に設定
-			currentPageIndex = 0;
-			currentDialogueIndex = 0;
+			gameState.currentPageIndex = 0;
+			gameState.currentDialogueIndex = 0;
 			console.log( '新ゲーム開始のため、進行インデックスを強制初期化しました' );
 			
 			// 5. ゲーム情報を再設定
@@ -1891,8 +1891,8 @@
 				currentGameTitle: currentGameTitle,
 				currentSceneUrl: currentSceneUrl,
 				gameStateIsEndingScene: gameState.isEndingScene, // レガシー変数isEndingScene廃止
-				currentPageIndex: currentPageIndex,
-				currentDialogueIndex: currentDialogueIndex,
+				currentPageIndex: gameState.currentPageIndex,
+				currentDialogueIndex: gameState.currentDialogueIndex,
 				dialogueDataLength: dialogueData.length,
 				choicesLength: choices.length,
 				currentGameSelectionData: window.currentGameSelectionData
@@ -2139,8 +2139,8 @@
 				} );
 			} );
 			
-			currentDialogueIndex = 0;
-			currentPageIndex = 0;
+			gameState.currentDialogueIndex = 0;
+			gameState.currentPageIndex = 0;
 		}
 		
 		/**
@@ -2237,8 +2237,8 @@
 		 * 現在のページを表示する
 		 */
 		function displayCurrentPage() {
-			if ( currentPageIndex < gameState.allDialoguePages.length ) {
-				const currentPage = gameState.allDialoguePages[ currentPageIndex ];
+			if ( gameState.currentPageIndex < gameState.allDialoguePages.length ) {
+				const currentPage = gameState.allDialoguePages[ gameState.currentPageIndex ];
 				
 				// 話者名を表示
 				displaySpeakerName( currentPage.speaker );
@@ -2248,7 +2248,7 @@
 				
 				// 継続インジケーターの表示/非表示
 				// 次のページがある場合は常に表示
-				if ( currentPageIndex < gameState.allDialoguePages.length - 1 ) {
+				if ( gameState.currentPageIndex < gameState.allDialoguePages.length - 1 ) {
 					$dialogueContinue.show();
 				} else {
 					// 最後のページでも継続マーカーを表示（選択肢がある場合もない場合も）
@@ -2277,8 +2277,8 @@
 			$( document ).off( 'keydown.novel-choices' );
 			
 			// 次のページがある場合
-			if ( currentPageIndex < gameState.allDialoguePages.length - 1 ) {
-				currentPageIndex++;
+			if ( gameState.currentPageIndex < gameState.allDialoguePages.length - 1 ) {
+				gameState.currentPageIndex++;
 				displayCurrentPage();
 				
 				// 進捗を自動保存
@@ -2556,12 +2556,6 @@
 						// 統一ゲーム状態を確実にリセット
 						gameState.reset();
 						console.log( 'gameState.reset() を実行しました' );
-						
-						// 後方互換変数も更新（レガシー変数isEndingScene廃止）
-						currentPageIndex = gameState.currentPageIndex;
-						currentDialogueIndex = gameState.currentDialogueIndex;
-						currentGameTitle = gameState.currentGameTitle;
-						currentSceneUrl = gameState.currentSceneUrl;
 						
 						console.log( 'ゲーム状態変数を更新しました' );
 						
@@ -2957,7 +2951,7 @@
 			
 			// 既にセリフが表示されている場合は再分割
 			if ( dialogues.length > 0 && gameState.allDialoguePages.length > 0 ) {
-				const currentPageContent = gameState.allDialoguePages[ currentPageIndex ];
+				const currentPageContent = gameState.allDialoguePages[ gameState.currentPageIndex ];
 				prepareDialoguePages();
 				
 				// 現在の位置を可能な限り保持
@@ -2967,7 +2961,7 @@
 					} );
 					
 					if ( newPageIndex !== -1 ) {
-						currentPageIndex = newPageIndex;
+						gameState.currentPageIndex = newPageIndex;
 					}
 				}
 				
@@ -3169,16 +3163,16 @@
 				// 新ゲーム開始時は必ず最初から開始
 				if ( forceNewGame === true ) {
 					console.log( 'Starting new game from first scene' );
-					currentPageIndex = 0;
-					currentDialogueIndex = 0;
+					gameState.currentPageIndex = 0;
+					gameState.currentDialogueIndex = 0;
 					displayCurrentPage();
-				} else if ( currentPageIndex > 0 && currentPageIndex < gameState.allDialoguePages.length ) {
-					console.log( 'Resuming from saved position:', currentPageIndex );
+				} else if ( gameState.currentPageIndex > 0 && gameState.currentPageIndex < gameState.allDialoguePages.length ) {
+					console.log( 'Resuming from saved position:', gameState.currentPageIndex );
 					displayCurrentPage();
 				} else {
 					console.log( 'Starting from beginning' );
-					currentPageIndex = 0;
-					currentDialogueIndex = 0;
+					gameState.currentPageIndex = 0;
+					gameState.currentDialogueIndex = 0;
 					displayCurrentPage();
 				}
 				
