@@ -192,6 +192,45 @@
 		}
 		
 		/**
+		 * 前の選択肢シーンの進捗を取得する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {object|null} 保存されたデータまたはnull
+		 */
+		function getPreviousChoiceProgress( gameTitle ) {
+			if ( ! gameTitle ) {
+				return null;
+			}
+			
+			try {
+				var storageKey = generateStorageKey( gameTitle ) + '_prev_choice';
+				var savedData = localStorage.getItem( storageKey );
+				
+				if ( savedData ) {
+					var progressData = JSON.parse( savedData );
+					
+					// 1週間以上古いデータは削除
+					var maxAge = 7 * 24 * 60 * 60 * 1000; // 1週間（ミリ秒）
+					var currentTime = Date.now();
+					var savedTime = progressData.timestamp || 0;
+					
+					if ( currentTime - savedTime > maxAge ) {
+						console.log( '保存された前選択肢進捗が古いため削除します' );
+						localStorage.removeItem( storageKey );
+						return null;
+					}
+					
+					console.log( '保存された前選択肢進捗を取得しました:', progressData );
+					return progressData;
+				}
+			} catch ( error ) {
+				console.warn( '前選択肢進捗の取得に失敗しました:', error );
+			}
+			
+			return null;
+		}
+		
+		/**
 		 * 保存されたゲーム進捗を取得する
 		 *
 		 * @param {string} gameTitle ゲームタイトル
@@ -244,8 +283,11 @@
 			
 			try {
 				var storageKey = generateStorageKey( gameTitle );
+				var prevChoiceKey = storageKey + '_prev_choice';
+				
 				localStorage.removeItem( storageKey );
-				console.log( 'ゲーム進捗をクリアしました:', gameTitle );
+				localStorage.removeItem( prevChoiceKey );
+				console.log( 'ゲーム進捗と前選択肢進捗をクリアしました:', gameTitle );
 			} catch ( error ) {
 				console.warn( 'ゲーム進捗のクリアに失敗しました:', error );
 			}
@@ -342,10 +384,15 @@
 			// 保存された進捗をチェックして「続きから始める」ボタンの表示を制御
 			if ( gameData.title ) {
 				var savedProgress = getSavedGameProgress( gameData.title );
+				var previousChoiceProgress = getPreviousChoiceProgress( gameData.title );
 				
-				if ( savedProgress ) {
+				if ( savedProgress || previousChoiceProgress ) {
 					$titleContinueBtn.show();
-					console.log( '保存された進捗が見つかりました。「続きから始める」ボタンを表示します。' );
+					if ( savedProgress ) {
+						console.log( '保存された進捗が見つかりました。「続きから始める」ボタンを表示します。' );
+					} else {
+						console.log( '前の選択肢進捗が見つかりました。「続きから始める」ボタンを表示します。' );
+					}
 				} else {
 					$titleContinueBtn.hide();
 					console.log( '保存された進捗がありません。「続きから始める」ボタンを非表示にします。' );
@@ -1151,12 +1198,26 @@
 							} );
 						}, 300 );
 					} else {
-						console.log( '保存された進捗が見つかりません。最初から開始します。' );
-						// 進捗がない場合は最初から開始（タイトル画面経由のため進捗チェックはスキップ）
-						hideTitleScreen();
-						setTimeout( function() {
-							initializeGameContent();
-						}, 300 );
+						// 通常の進捗がない場合、前の選択肢シーンをチェック
+						var previousChoiceProgress = getPreviousChoiceProgress( gameTitle );
+						if ( previousChoiceProgress ) {
+							console.log( '前の選択肢シーンから再開します' );
+							hideTitleScreen();
+							setTimeout( function() {
+								resumeFromSavedProgress( previousChoiceProgress ).catch( function( error ) {
+									console.error( '前選択肢シーンの復元に失敗しました:', error );
+									// フォールバック：最初から開始
+									initializeGameContent();
+								} );
+							}, 300 );
+						} else {
+							console.log( '保存された進捗が見つかりません。最初から開始します。' );
+							// 進捗がない場合は最初から開始（タイトル画面経由のため進捗チェックはスキップ）
+							hideTitleScreen();
+							setTimeout( function() {
+								initializeGameContent();
+							}, 300 );
+						}
 					}
 				}
 			} );
@@ -1535,6 +1596,9 @@
 					// 既存のイベントハンドラーをクリーンアップ
 					$( document ).off( 'keydown.novel-choices' );
 					
+					// 0. 現在のシーンを前の選択肢シーンとして記録（Game Over時の復帰用）
+					savePreviousChoiceSceneForCurrentGame();
+					
 					// 1. まず古いデータを完全にクリア
 					dialogueData = [];
 					dialogues = [];
@@ -1682,6 +1746,31 @@
 			} else {
 				// フォールバック：ページリロード
 				window.location.reload();
+			}
+		}
+		
+		/**
+		 * 現在のゲームの前選択肢シーンを記録する（選択肢実行時）
+		 */
+		function savePreviousChoiceSceneForCurrentGame() {
+			if ( ! currentGameTitle || ! currentSceneUrl ) {
+				return;
+			}
+			
+			try {
+				var storageKey = generateStorageKey( currentGameTitle ) + '_prev_choice';
+				var previousChoiceData = {
+					gameTitle: currentGameTitle,
+					sceneUrl: currentSceneUrl,
+					currentPageIndex: currentPageIndex,
+					currentDialogueIndex: currentDialogueIndex,
+					timestamp: Date.now()
+				};
+				
+				localStorage.setItem( storageKey, JSON.stringify( previousChoiceData ) );
+				console.log( '前選択肢シーンを記録しました:', previousChoiceData );
+			} catch ( error ) {
+				console.warn( '前選択肢シーンの記録に失敗しました:', error );
 			}
 		}
 		
