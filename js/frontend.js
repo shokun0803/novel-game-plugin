@@ -1427,7 +1427,7 @@
 			currentDialogueIndex = 0;
 			currentPageIndex = 0;
 			currentDialoguePages = [];
-			allDialoguePages = [];
+			gameState.allDialoguePages = [];
 			dialogueIndex = 0;
 			
 			// 一時保存されたゲームデータをクリア
@@ -1478,7 +1478,7 @@
 			currentDialogueIndex = 0;
 			currentPageIndex = 0;
 			currentDialoguePages = [];
-			allDialoguePages = [];
+			gameState.allDialoguePages = [];
 			
 			// セリフ表示インデックスをリセット
 			dialogueIndex = 0;
@@ -1628,7 +1628,7 @@
 			currentDialogueIndex = 0;
 			currentPageIndex = 0;
 			currentDialoguePages = [];
-			allDialoguePages = [];
+			gameState.allDialoguePages = [];
 			dialogueIndex = 0;
 			
 			// ゲーム状態フラグのリセット（エンディングフラグを完全初期化）
@@ -2123,13 +2123,13 @@
 		 * すべてのセリフをページに分割して準備する
 		 */
 		function prepareDialoguePages() {
-			allDialoguePages = [];
+			gameState.allDialoguePages = [];
 			
 			dialogueData.forEach( function( dialogue, dialogueIndex ) {
 				const pages = splitTextIntoPages( dialogue.text );
 				
 				pages.forEach( function( pageText, pageIndex ) {
-					allDialoguePages.push( {
+					gameState.allDialoguePages.push( {
 						text: pageText,
 						background: dialogue.background,
 						speaker: dialogue.speaker,
@@ -2237,8 +2237,8 @@
 		 * 現在のページを表示する
 		 */
 		function displayCurrentPage() {
-			if ( currentPageIndex < allDialoguePages.length ) {
-				const currentPage = allDialoguePages[ currentPageIndex ];
+			if ( currentPageIndex < gameState.allDialoguePages.length ) {
+				const currentPage = gameState.allDialoguePages[ currentPageIndex ];
 				
 				// 話者名を表示
 				displaySpeakerName( currentPage.speaker );
@@ -2248,7 +2248,7 @@
 				
 				// 継続インジケーターの表示/非表示
 				// 次のページがある場合は常に表示
-				if ( currentPageIndex < allDialoguePages.length - 1 ) {
+				if ( currentPageIndex < gameState.allDialoguePages.length - 1 ) {
 					$dialogueContinue.show();
 				} else {
 					// 最後のページでも継続マーカーを表示（選択肢がある場合もない場合も）
@@ -2277,7 +2277,7 @@
 			$( document ).off( 'keydown.novel-choices' );
 			
 			// 次のページがある場合
-			if ( currentPageIndex < allDialoguePages.length - 1 ) {
+			if ( currentPageIndex < gameState.allDialoguePages.length - 1 ) {
 				currentPageIndex++;
 				displayCurrentPage();
 				
@@ -2956,13 +2956,13 @@
 			displaySettings.adjustForScreenSize();
 			
 			// 既にセリフが表示されている場合は再分割
-			if ( dialogues.length > 0 && allDialoguePages.length > 0 ) {
-				const currentPageContent = allDialoguePages[ currentPageIndex ];
+			if ( dialogues.length > 0 && gameState.allDialoguePages.length > 0 ) {
+				const currentPageContent = gameState.allDialoguePages[ currentPageIndex ];
 				prepareDialoguePages();
 				
 				// 現在の位置を可能な限り保持
 				if ( currentPageContent ) {
-					const newPageIndex = allDialoguePages.findIndex( function( page ) {
+					const newPageIndex = gameState.allDialoguePages.findIndex( function( page ) {
 						return page.includes( currentPageContent.substring( 0, 10 ) );
 					} );
 					
@@ -3172,7 +3172,7 @@
 					currentPageIndex = 0;
 					currentDialogueIndex = 0;
 					displayCurrentPage();
-				} else if ( currentPageIndex > 0 && currentPageIndex < allDialoguePages.length ) {
+				} else if ( currentPageIndex > 0 && currentPageIndex < gameState.allDialoguePages.length ) {
 					console.log( 'Resuming from saved position:', currentPageIndex );
 					displayCurrentPage();
 				} else {
