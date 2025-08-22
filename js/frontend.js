@@ -1754,6 +1754,12 @@
 					return false;
 				}
 				
+				// 4.5. ゲームコンテナのHTML初期化：前回のエンディング画面等のHTMLを削除
+				if ( $gameContainer.length > 0 ) {
+					$gameContainer.empty();
+					console.log( '「最初から開始」：ゲームコンテナHTML初期化完了' );
+				}
+				
 				// 5. タイトル画面を非表示にしてゲーム開始
 				hideTitleScreen();
 				setTimeout( function() {
@@ -2985,6 +2991,12 @@
 				gameState.currentDialogueIndex = 0;
 				gameState.isEndingScene = false;
 				console.log( '「最初から開始」：gameStateで強制初期化完了' );
+				
+				// 新ゲーム開始時はゲームコンテナのHTMLも初期化
+				if ( $gameContainer.length > 0 ) {
+					$gameContainer.empty();
+					console.log( '「最初から開始」：initializeGameContent内でゲームコンテナHTML初期化完了' );
+				}
 			}
 			
 			console.log( 'Game container exists:', $gameContainer.length > 0 );
