@@ -651,7 +651,7 @@
 		 * エンディング→タイトル画面復帰時の完全初期化設計
 		 */
 		function returnToTitleScreen() {
-			console.log( 'returnToTitleScreen called - エンディング→タイトル画面復帰時の完全初期化を開始' );
+			console.log( 'returnToTitleScreen called - エンディング→タイトル画面復帰時のモーダル再生成を開始' );
 			
 			// 現在のゲームタイトルを取得
 			var gameTitle = currentGameTitle || extractGameTitleFromPage();
@@ -663,25 +663,13 @@
 			
 			console.log( 'エンディング完了によるタイトル画面復帰処理を開始:', gameTitle );
 			
-			// === 1. JavaScript状態とlocalStorageの完全初期化 ===
-			
-			// ゲーム完了時に進捗をクリア
-			clearGameProgress( gameTitle );
-			console.log( 'localStorage進捗・フラグ情報を完全削除しました:', gameTitle );
-			
-			// 統一ゲーム状態の完全初期化
-			gameState.reset();
-			console.log( 'gameState完全初期化完了' );
+			// === 1. 一時的なイベントハンドラや参照変数のクリーンアップ ===
 			
 			// 一時データの削除
 			window.currentGameSelectionData = null;
 			console.log( 'currentGameSelectionData削除完了' );
 			
-			// 統一された状態初期化を使用（イベントハンドラクリーンアップ含む）
-			resetAllGameState();
-			console.log( '全ゲーム状態・イベントハンドラクリーンアップ完了' );
-			
-			// === 2. モーダル・ゲームコンテナの完全再生成 ===
+			// === 2. モーダル・ゲームコンテナの再生成 ===
 			
 			// モーダルフラグの完全リセット
 			isModalOpen = false;
@@ -719,7 +707,7 @@
 			
 			console.log( 'モーダル要素参照をクリアしました' );
 			
-			// === 3. 初回起動時と同じフロー（データロード→初期化→ゲーム開始）を実行 ===
+			// === 3. 初回起動時と同じフロー（モーダル再生成→タイトル画面表示）を実行 ===
 			
 			// タイトル画面用のゲームデータを構築
 			var gameData = {
@@ -1034,15 +1022,49 @@
 				return;
 			}
 			
-			// モーダル要素が存在しない場合はページ遷移
+			// モーダル要素が存在しない場合は新規生成してbodyに追加
 			if ( $modalOverlay.length === 0 ) {
-				console.log( 'Modal overlay not found, redirecting to:', gameUrlOrData );
-				if ( typeof gameUrlOrData === 'string' ) {
-					window.location.href = gameUrlOrData;
-				} else if ( gameUrlOrData && gameUrlOrData.url ) {
-					window.location.href = gameUrlOrData.url;
-				}
-				return;
+				console.log( 'Modal overlay not found, generating new modal elements...' );
+				
+				// モーダル要素のHTMLを生成
+				var modalHtml = '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">' +
+					'<div id="novel-game-modal-content" class="novel-game-modal-content">' +
+						'<button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="ゲームを閉じる" title="ゲームを閉じる">' +
+							'<span class="close-icon">×</span>' +
+						'</button>' +
+						'<div id="novel-title-screen" class="novel-title-screen" style="display: none;">' +
+							'<div class="novel-title-content">' +
+								'<h2 id="novel-title-main" class="novel-title-main"></h2>' +
+								'<p id="novel-title-subtitle" class="novel-title-subtitle"></p>' +
+								'<p id="novel-title-description" class="novel-title-description"></p>' +
+								'<div class="novel-title-buttons">' +
+									'<button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">最初から開始</button>' +
+									'<button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">続きから始める</button>' +
+								'</div>' +
+							'</div>' +
+						'</div>' +
+						'<div id="novel-game-container" class="novel-game-container">' +
+							'<!-- ゲーム内容は動的に読み込まれます -->' +
+						'</div>' +
+					'</div>' +
+				'</div>';
+				
+				// bodyに追加
+				$( 'body' ).append( modalHtml );
+				console.log( 'New modal elements generated and appended to body' );
+				
+				// 要素参照を再取得
+				$modalOverlay = $( '#novel-game-modal-overlay' );
+				$gameContainer = $( '#novel-game-container' );
+				$titleScreen = $( '#novel-title-screen' );
+				$titleMain = $( '#novel-title-main' );
+				$titleSubtitle = $( '#novel-title-subtitle' );
+				$titleDescription = $( '#novel-title-description' );
+				$titleStartBtn = $( '#novel-title-start-new' );
+				$titleContinueBtn = $( '#novel-title-continue' );
+				$closeButton = $( '#novel-game-close-btn' );
+				
+				console.log( 'Modal element references updated after generation' );
 			}
 			
 			isModalOpen = true;
@@ -1781,21 +1803,16 @@
 			console.log( '「最初から開始」：新ゲーム開始処理を開始します', { gameTitle: gameTitle, sceneUrl: sceneUrl } );
 			
 			try {
-				// 1. 全データ完全削除：localStorage・進捗・フラグ情報をすべて削除
-				clearGameProgress( gameTitle );
-				console.log( '「最初から開始」：全データ削除完了' );
-				
-				// 2. gameState完全初期化：一切の古いデータを参照しない
-				gameState.reset();
+				// 1. gameState新ゲーム設定（初期化は呼び出し元で完了済み）
 				gameState.setNewGame( gameTitle, sceneUrl );
 				gameState.isEndingScene = false; // 必ずfalseで開始
-				console.log( '「最初から開始」：gameState完全初期化完了' );
+				console.log( '「最初から開始」：gameState新ゲーム設定完了' );
 				
-				// 3. HTML要素の新ゲーム用初期化
+				// 2. HTML要素の新ゲーム用初期化
 				$( '#novel-ending-scene-flag' ).text( 'false' ).attr( 'data-new-game', 'true' );
 				console.log( '「最初から開始」：HTML要素初期化完了' );
 				
-				// 4. 新ゲーム用データ読み込み：古いデータを一切参照しない
+				// 3. 新ゲーム用データ読み込み：古いデータを一切参照しない
 				gameState.dialogueData = [];
 				gameState.dialogues = [];
 				gameState.choices = [];
@@ -1810,7 +1827,7 @@
 					return false;
 				}
 				
-				// 4.5. ゲームコンテナのHTML初期化：前回のエンディング画面等のHTMLを削除
+				// 4. ゲームコンテナのHTML初期化：前回のエンディング画面等のHTMLを削除
 				if ( $gameContainer.length > 0 ) {
 					$gameContainer.empty();
 					console.log( '「最初から開始」：ゲームコンテナHTML初期化完了' );
@@ -2024,6 +2041,22 @@
 					}
 					
 					console.log( 'Starting new game:', gameTitle );
+					
+					// === 「最初から開始」クリック時の完全初期化処理 ===
+					
+					// 1. localStorage進捗・フラグ情報を完全削除
+					clearGameProgress( gameTitle );
+					console.log( '「最初から開始」：localStorage進捗・フラグ情報を完全削除しました:', gameTitle );
+					
+					// 2. gameState完全初期化
+					gameState.reset();
+					console.log( '「最初から開始」：gameState完全初期化完了' );
+					
+					// 3. 統一された状態初期化を使用（イベントハンドラクリーンアップ含む）
+					resetAllGameState();
+					console.log( '「最初から開始」：全ゲーム状態・イベントハンドラクリーンアップ完了' );
+					
+					// === 初期化完了後、新ゲーム開始処理を実行 ===
 					
 					// startNewGameFromTitle関数を呼び出してロジックを一元化
 					var currentSceneUrl = window.location.href;
