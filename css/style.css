@@ -1201,6 +1201,13 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     -ms-user-select: none;
 }
 
+/* ゲームオーバーメッセージ（エンディングとは異なるスタイル） */
+.game-end-message.game-over-message {
+    background: rgba(128, 0, 0, 0.8);
+    border-color: #ff4444;
+    color: #ffcccc;
+}
+
 /* ゲームナビゲーションボタン */
 .game-navigation {
     margin-top: 20px;

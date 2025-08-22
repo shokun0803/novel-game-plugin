@@ -138,6 +138,7 @@ function noveltool_meta_box_callback( $post ) {
     $choices     = get_post_meta( $post->ID, '_choices', true );
     $game_title  = get_post_meta( $post->ID, '_game_title', true );
     $dialogue_backgrounds = get_post_meta( $post->ID, '_dialogue_backgrounds', true );
+    $is_ending   = get_post_meta( $post->ID, '_is_ending', true );
     
     // 3体キャラクター対応の値を取得
     $character_left   = get_post_meta( $post->ID, '_character_left', true );
@@ -818,6 +819,25 @@ function noveltool_meta_box_callback( $post ) {
                 </div>
             </td>
         </tr>
+
+        <tr>
+            <th scope="row">
+                <label for="novel_is_ending"><?php esc_html_e( 'シーンタイプ', 'novel-game-plugin' ); ?></label>
+            </th>
+            <td>
+                <label>
+                    <input type="checkbox"
+                           id="novel_is_ending"
+                           name="is_ending"
+                           value="1"
+                           <?php checked( $is_ending, '1' ); ?> />
+                    <?php esc_html_e( 'このシーンをエンディングとして設定', 'novel-game-plugin' ); ?>
+                </label>
+                <p class="description">
+                    <?php esc_html_e( 'チェックすると、選択肢がない場合に「おわり」と表示されます。チェックしないと「Game Over」と表示されます。', 'novel-game-plugin' ); ?>
+                </p>
+            </td>
+        </tr>
     </table>
     <?php
 }
@@ -858,6 +878,7 @@ function noveltool_save_meta_box_data( $post_id ) {
         'dialogue_text'    => '_dialogue_text',
         'choices'          => '_choices',
         'game_title'       => '_game_title',
+        'is_ending'        => '_is_ending',
     );
     
     // セリフ背景データの保存
@@ -931,6 +952,10 @@ function noveltool_save_meta_box_data( $post_id ) {
             update_post_meta( $post_id, $meta_key, $value );
         }
     }
+    
+    // チェックボックスの特別な処理（チェックされていない場合は空文字で保存）
+    $is_ending = isset( $_POST['is_ending'] ) ? '1' : '';
+    update_post_meta( $post_id, '_is_ending', $is_ending );
 }
 add_action( 'save_post', 'noveltool_save_meta_box_data' );
 
