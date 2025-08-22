@@ -2986,6 +2986,38 @@
 		}
 
 		/**
+		 * セリフ枠の基本HTML構造を再生成
+		 * .empty()等でHTML構造が失われた場合に使用
+		 */
+		function generateDialogueBoxStructure() {
+			console.log( 'generateDialogueBoxStructure: セリフ枠HTML構造を再生成中...' );
+			
+			if ( $gameContainer.length === 0 ) {
+				console.error( 'generateDialogueBoxStructure: ゲームコンテナが見つかりません' );
+				return false;
+			}
+			
+			// 基本的なセリフ枠HTML構造を生成
+			var dialogueStructureHtml = '' +
+				'<div id="novel-speaker-name" class="novel-speaker-name"></div>' +
+				'<div id="novel-dialogue-box" class="novel-dialogue-box">' +
+					'<div id="novel-dialogue-text-container" class="novel-dialogue-text-container">' +
+						'<span id="novel-dialogue-text"></span>' +
+					'</div>' +
+					'<div id="novel-dialogue-continue" class="novel-dialogue-continue" style="display: none;">' +
+						'<span class="continue-indicator">▼</span>' +
+					'</div>' +
+				'</div>' +
+				'<div id="novel-choices" class="novel-choices"></div>';
+			
+			// ゲームコンテナに追加
+			$gameContainer.append( dialogueStructureHtml );
+			console.log( 'generateDialogueBoxStructure: セリフ枠HTML構造の再生成完了' );
+			
+			return true;
+		}
+
+		/**
 		 * ゲームコンテンツの初期化処理（モーダル内で実行）
 		 * 「最初から開始」時はgameStateのみを参照し、古いデータを一切使用しない
 		 */
@@ -3024,6 +3056,27 @@
 				continue: $dialogueContinue.length,
 				choices: $choicesContainer.length
 			} );
+			
+			// セリフ枠が存在しない場合（.empty()後等）は基本HTML構造を再生成
+			if ( $dialogueBox.length === 0 || $dialogueText.length === 0 || $speakerName.length === 0 || $choicesContainer.length === 0 ) {
+				console.log( 'Dialogue box elements missing, regenerating HTML structure...' );
+				generateDialogueBoxStructure();
+				
+				// 再生成後に要素を再取得
+				$dialogueText = $( '#novel-dialogue-text' );
+				$dialogueBox = $( '#novel-dialogue-box' );
+				$speakerName = $( '#novel-speaker-name' );
+				$dialogueContinue = $( '#novel-dialogue-continue' );
+				$choicesContainer = $( '#novel-choices' );
+				
+				console.log( 'After regeneration - Dialogue elements found:', {
+					text: $dialogueText.length,
+					box: $dialogueBox.length,
+					speaker: $speakerName.length,
+					continue: $dialogueContinue.length,
+					choices: $choicesContainer.length
+				} );
+			}
 			
 			// 以前のイベントハンドラーをクリーンアップ
 			$( window ).off( 'resize.game orientationchange.game' );
