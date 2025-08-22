@@ -1426,9 +1426,9 @@
 			// ページング状態をリセット
 			gameState.currentDialogueIndex = 0;
 			gameState.currentPageIndex = 0;
-			currentDialoguePages = [];
+			gameState.currentDialoguePages = [];
 			gameState.allDialoguePages = [];
-			dialogueIndex = 0;
+			// dialogueIndex = 0; // 廃止：gameState.currentDialogueIndexを使用
 			
 			// 一時保存されたゲームデータをクリア
 			if ( window.currentGameSelectionData ) {
@@ -1477,11 +1477,11 @@
 			// セリフ関連の表示状態をリセット
 			gameState.currentDialogueIndex = 0;
 			gameState.currentPageIndex = 0;
-			currentDialoguePages = [];
+			gameState.currentDialoguePages = [];
 			gameState.allDialoguePages = [];
 			
 			// セリフ表示インデックスをリセット
-			dialogueIndex = 0;
+			// dialogueIndex = 0; // 廃止：gameState.currentDialogueIndexを使用
 			
 			// 背景表示の状態をリセット（データは保持）
 			if ( baseBackground ) {
@@ -1627,9 +1627,9 @@
 			// セリフ・対話進行状況の初期化
 			gameState.currentDialogueIndex = 0;
 			gameState.currentPageIndex = 0;
-			currentDialoguePages = [];
+			gameState.currentDialoguePages = [];
 			gameState.allDialoguePages = [];
-			dialogueIndex = 0;
+			// dialogueIndex = 0; // 廃止：gameState.currentDialogueIndexを使用
 			
 			// ゲーム状態フラグのリセット（エンディングフラグを完全初期化）
 			// レガシー変数isEndingScene廃止 - gameState.isEndingSceneのみ使用
