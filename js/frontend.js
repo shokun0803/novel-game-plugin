@@ -672,8 +672,8 @@
 			var $closeButton = $( '<button>' )
 				.attr( 'id', 'novel-game-close-btn' )
 				.addClass( 'novel-game-close-btn' )
-				.attr( 'aria-label', noveltool_l10n.close_game || 'ゲームを閉じる' )
-				.attr( 'title', noveltool_l10n.close_game || 'ゲームを閉じる' )
+				.attr( 'aria-label', 'ゲームを閉じる' )
+				.attr( 'title', 'ゲームを閉じる' )
 				.append( $( '<span>' ).addClass( 'close-icon' ).text( '×' ) );
 			
 			// タイトル画面の作成
@@ -701,13 +701,13 @@
 			var $titleStartBtn = $( '<button>' )
 				.attr( 'id', 'novel-title-start-new' )
 				.addClass( 'novel-title-btn novel-title-start-btn' )
-				.text( noveltool_l10n.start_new_game || '最初から開始' );
+				.text( '最初から開始' );
 			
 			var $titleContinueBtn = $( '<button>' )
 				.attr( 'id', 'novel-title-continue' )
 				.addClass( 'novel-title-btn novel-title-continue-btn' )
 				.css( 'display', 'none' )
-				.text( noveltool_l10n.continue_game || '続きから始める' );
+				.text( '続きから始める' );
 			
 			// タイトル画面の構造を組み立て
 			$titleButtons.append( $titleStartBtn ).append( $titleContinueBtn );
