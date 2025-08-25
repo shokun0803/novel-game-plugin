@@ -855,8 +855,15 @@
 				$titleStartBtn = $( '#novel-title-start-new' );
 				$titleContinueBtn = $( '#novel-title-continue' );
 				
+				// ゲームコンテナも再取得
+				$gameContainer = $( '#novel-game-container' );
+				
+				console.log( 'Modal elements recreated, overlay length:', $modalOverlay.length );
+				
+				// モーダル要素の生成に失敗した場合のみページ遷移（通常は発生しないはず）
 				if ( $modalOverlay.length === 0 ) {
-					console.error( 'Failed to create modal elements, falling back to page redirect' );
+					console.error( 'Critical error: Failed to create modal elements after createModalElements()' );
+					// 最後の手段としてページ遷移（ただし、createModalElements が正常に動作すれば実行されない）
 					if ( typeof gameUrlOrData === 'string' ) {
 						window.location.href = gameUrlOrData;
 					} else if ( gameUrlOrData && gameUrlOrData.url ) {
@@ -1890,9 +1897,20 @@
 				.addClass( 'game-nav-button return-title-button' )
 				.text( 'タイトルに戻る' )
 				.css( {
-					'display': 'inline-block',
-					'visibility': 'visible',
-					'opacity': '1'
+					'display': 'inline-block !important',
+					'visibility': 'visible !important',
+					'opacity': '1 !important',
+					'position': 'relative !important',
+					'z-index': '9999 !important',
+					'background': '#4CAF50 !important',
+					'color': 'white !important',
+					'border': 'none !important',
+					'padding': '15px 30px !important',
+					'border-radius': '5px !important',
+					'font-size': '16px !important',
+					'cursor': 'pointer !important',
+					'margin': '10px auto !important',
+					'text-align': 'center !important'
 				} )
 				.on( 'click', function() {
 					returnToTitleScreen();
@@ -1901,11 +1919,22 @@
 			$navigationContainer.append( $returnToTitleButton );
 			$choicesContainer.append( $navigationContainer );
 			
-			// 確実に表示
+			// 確実に表示（!important で CSS 競合を回避）
 			$choicesContainer.css( {
-				'display': 'block',
-				'visibility': 'visible'
+				'display': 'block !important',
+				'visibility': 'visible !important',
+				'opacity': '1 !important',
+				'position': 'relative !important',
+				'z-index': '1000 !important'
 			} ).show();
+			
+			// ナビゲーションコンテナも確実に表示
+			$navigationContainer.css( {
+				'display': 'block !important',
+				'visibility': 'visible !important',
+				'text-align': 'center !important',
+				'margin': '20px 0 !important'
+			} );
 			
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
@@ -1920,6 +1949,7 @@
 			console.log( 'Button element:', $returnToTitleButton[0] );
 			console.log( 'Button visible:', $returnToTitleButton.is( ':visible' ) );
 			console.log( 'Choices container visible:', $choicesContainer.is( ':visible' ) );
+			console.log( 'Navigation container visible:', $navigationContainer.is( ':visible' ) );
 			
 			// キーボードイベントでもナビゲーション
 			$( document ).on( 'keydown.novel-end', function( e ) {
@@ -2029,9 +2059,20 @@
 				.addClass( 'game-nav-button return-title-button' )
 				.text( 'タイトルに戻る' )
 				.css( {
-					'display': 'inline-block',
-					'visibility': 'visible',
-					'opacity': '1'
+					'display': 'inline-block !important',
+					'visibility': 'visible !important',
+					'opacity': '1 !important',
+					'position': 'relative !important',
+					'z-index': '9999 !important',
+					'background': '#f44336 !important',
+					'color': 'white !important',
+					'border': 'none !important',
+					'padding': '15px 30px !important',
+					'border-radius': '5px !important',
+					'font-size': '16px !important',
+					'cursor': 'pointer !important',
+					'margin': '10px auto !important',
+					'text-align': 'center !important'
 				} )
 				.on( 'click', function() {
 					returnToTitleScreen();
@@ -2040,11 +2081,22 @@
 			$navigationContainer.append( $returnToTitleButton );
 			$choicesContainer.append( $navigationContainer );
 			
-			// 確実に表示
+			// 確実に表示（!important で CSS 競合を回避）
 			$choicesContainer.css( {
-				'display': 'block',
-				'visibility': 'visible'
+				'display': 'block !important',
+				'visibility': 'visible !important',
+				'opacity': '1 !important',
+				'position': 'relative !important',
+				'z-index': '1000 !important'
 			} ).show();
+			
+			// ナビゲーションコンテナも確実に表示
+			$navigationContainer.css( {
+				'display': 'block !important',
+				'visibility': 'visible !important',
+				'text-align': 'center !important',
+				'margin': '20px 0 !important'
+			} );
 			
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
@@ -2059,6 +2111,7 @@
 			console.log( 'Button element:', $returnToTitleButton[0] );
 			console.log( 'Button visible:', $returnToTitleButton.is( ':visible' ) );
 			console.log( 'Choices container visible:', $choicesContainer.is( ':visible' ) );
+			console.log( 'Navigation container visible:', $navigationContainer.is( ':visible' ) );
 			
 			// キーボードイベントでもナビゲーション
 			$( document ).on( 'keydown.novel-gameover', function( e ) {
