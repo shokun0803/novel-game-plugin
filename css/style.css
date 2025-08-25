@@ -528,7 +528,7 @@ body #novel-game-modal-overlay.novel-game-modal-overlay {
     bottom: 0;
     background: rgba(0, 0, 0, 0.8);
     z-index: 2147483647; /* 最大値のz-index */
-    /* display制御はJavaScriptで行う */
+    display: none;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(5px);
@@ -1190,10 +1190,8 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     font-size: clamp(24px, 6vw, 36px);
     font-weight: bold;
     border: 2px solid #ffd700;
-    margin: 20px auto;
+    margin: 20px 0;
     min-height: 80px;
-    max-width: 600px;
-    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1201,14 +1199,6 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    box-sizing: border-box;
-}
-
-/* ゲームオーバーメッセージ（エンディングとは異なるスタイル） */
-.game-end-message.game-over-message {
-    background: rgba(128, 0, 0, 0.8);
-    border-color: #ff4444;
-    color: #ffcccc;
 }
 
 /* ゲームナビゲーションボタン */
@@ -1262,78 +1252,6 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     background: #45a049;
 }
 
-/* エンディング・Game Over用の返すボタン（高い詳細度でスタイル強制） */
-#novel-choices .game-navigation .game-nav-button.return-title-button {
-    display: inline-block;
-    visibility: visible;
-    opacity: 1;
-    position: relative;
-    z-index: 9999;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    margin: 10px auto;
-    text-align: center;
-}
-
-#novel-choices .game-navigation .game-nav-button.return-title-button:hover {
-    background: #45a049;
-}
-
-/* Game Over用の返すボタン */
-#novel-choices .game-navigation .game-nav-button.game-over-return-button {
-    display: inline-block;
-    visibility: visible;
-    opacity: 1;
-    position: relative;
-    z-index: 9999;
-    background: #f44336;
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    margin: 10px auto;
-    text-align: center;
-}
-
-#novel-choices .game-navigation .game-nav-button.game-over-return-button:hover {
-    background: #d32f2f;
-}
-
-/* エンディング・Game Over時の選択肢コンテナの表示強制と中央配置 */
-#novel-game-container #novel-choices.showing-end-buttons {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    visibility: visible;
-    opacity: 1;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    min-height: 100vh;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-/* エンディング・Game Over時のナビゲーションコンテナ */
-#novel-choices .game-navigation.end-game-navigation {
-    display: block;
-    visibility: visible;
-    text-align: center;
-    margin: 20px 0;
-    width: 100%;
-}
-
 /* 古いゲーム終了メッセージのスタイル調整 */
 .game-end-message:hover {
     background: rgba(0, 0, 0, 0.9);
@@ -1351,8 +1269,6 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         padding: 50px;
         font-size: clamp(28px, 8vw, 42px);
         min-height: 100px;
-        max-width: 500px;
-        margin: 30px auto;
     }
     
     .game-nav-button {
@@ -1362,10 +1278,6 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         min-width: 200px;
         margin: 10px;
     }
-    
-    #novel-game-container #novel-choices.showing-end-buttons {
-        padding: 40px 20px;
-    }
 }
 
 /* 小画面での調整 */
@@ -1374,8 +1286,6 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         padding: 30px;
         font-size: clamp(20px, 5vw, 28px);
         min-height: 60px;
-        max-width: 90%;
-        margin: 20px auto;
     }
     
     .game-nav-button {
@@ -1386,18 +1296,75 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         margin: 5px;
         display: block;
         width: 100%;
-        max-width: 280px;
     }
     
     .game-navigation {
         margin-top: 15px;
-        width: 100%;
+    }
+}
+
+/* エンディング画面のレイアウト */
+#novel-choices.showing-end-buttons {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#novel-choices.showing-end-buttons .game-end-message {
+    max-width: 600px;
+    margin: 0 auto 30px auto;
+    border: 3px solid #ffd700; /* 金色の枠 */
+    font-size: clamp(32px, 6vw, 48px);
+    font-weight: bold;
+}
+
+#novel-choices.showing-end-buttons .end-game-navigation {
+    text-align: center;
+}
+
+#novel-choices.showing-end-buttons .return-title-button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: clamp(16px, 3vw, 20px);
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    min-width: 200px;
+}
+
+#novel-choices.showing-end-buttons .return-title-button:hover {
+    background: #45a049;
+}
+
+/* Game Over表示用の赤色枠 */
+#novel-choices.showing-game-over-buttons .game-end-message {
+    border-color: #ff4444; /* 赤色の枠 */
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    #novel-choices.showing-end-buttons .game-end-message {
+        max-width: 90%;
+        font-size: clamp(24px, 8vw, 36px);
+        padding: 30px 20px;
+        margin-bottom: 20px;
     }
     
-    #novel-game-container #novel-choices.showing-end-buttons {
-        padding: 20px 15px;
-        min-height: 100vh;
-        justify-content: center;
+    #novel-choices.showing-end-buttons .return-title-button {
+        padding: 12px 24px;
+        font-size: clamp(14px, 4vw, 18px);
+        min-width: 160px;
     }
 }
 
