@@ -171,6 +171,9 @@ function noveltool_meta_box_callback( $post ) {
         $dialogue_speakers = array();
     }
     
+    // エンディング設定の取得
+    $is_ending = get_post_meta( $post->ID, '_is_ending', true );
+    
     // 既存のセリフデータの処理
     $dialogue_lines = array();
     
@@ -818,6 +821,26 @@ function noveltool_meta_box_callback( $post ) {
                 </div>
             </td>
         </tr>
+        
+        <!-- エンディング設定 -->
+        <tr>
+            <th scope="row">
+                <label for="novel_is_ending"><?php esc_html_e( 'エンディング設定', 'novel-game-plugin' ); ?></label>
+            </th>
+            <td>
+                <label for="novel_is_ending">
+                    <input type="checkbox"
+                           id="novel_is_ending"
+                           name="is_ending"
+                           value="1"
+                           <?php checked( $is_ending, '1' ); ?> />
+                    <?php esc_html_e( 'このシーンをエンディングシーンにする', 'novel-game-plugin' ); ?>
+                </label>
+                <p class="description">
+                    <?php esc_html_e( 'チェックすると、シーン終了時に「おわり」メッセージとタイトル復帰ボタンが表示されます。', 'novel-game-plugin' ); ?>
+                </p>
+            </td>
+        </tr>
     </table>
     <?php
 }
@@ -859,6 +882,10 @@ function noveltool_save_meta_box_data( $post_id ) {
         'choices'          => '_choices',
         'game_title'       => '_game_title',
     );
+    
+    // エンディング設定の保存
+    $is_ending = isset( $_POST['is_ending'] ) ? '1' : '';
+    update_post_meta( $post_id, '_is_ending', $is_ending );
     
     // セリフ背景データの保存
     if ( isset( $_POST['dialogue_backgrounds'] ) ) {
