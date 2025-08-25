@@ -1259,6 +1259,67 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     background: #45a049;
 }
 
+/* エンディング・Game Over用の返すボタン（高い詳細度でスタイル強制） */
+#novel-choices .game-navigation .game-nav-button.return-title-button {
+    display: inline-block;
+    visibility: visible;
+    opacity: 1;
+    position: relative;
+    z-index: 9999;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px auto;
+    text-align: center;
+}
+
+#novel-choices .game-navigation .game-nav-button.return-title-button:hover {
+    background: #45a049;
+}
+
+/* Game Over用の返すボタン */
+#novel-choices .game-navigation .game-nav-button.game-over-return-button {
+    display: inline-block;
+    visibility: visible;
+    opacity: 1;
+    position: relative;
+    z-index: 9999;
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px auto;
+    text-align: center;
+}
+
+#novel-choices .game-navigation .game-nav-button.game-over-return-button:hover {
+    background: #d32f2f;
+}
+
+/* エンディング・Game Over時の選択肢コンテナの表示強制 */
+#novel-game-container #novel-choices.showing-end-buttons {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    position: relative;
+    z-index: 1000;
+}
+
+/* エンディング・Game Over時のナビゲーションコンテナ */
+#novel-choices .game-navigation.end-game-navigation {
+    display: block;
+    visibility: visible;
+    text-align: center;
+    margin: 20px 0;
+}
+
 /* 古いゲーム終了メッセージのスタイル調整 */
 .game-end-message:hover {
     background: rgba(0, 0, 0, 0.9);

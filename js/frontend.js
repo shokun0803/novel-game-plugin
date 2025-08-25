@@ -1892,26 +1892,10 @@
 			$choicesContainer.append( $endMessage );
 			
 			// 「タイトルに戻る」ボタンを追加
-			var $navigationContainer = $( '<div>' ).addClass( 'game-navigation' );
+			var $navigationContainer = $( '<div>' ).addClass( 'game-navigation end-game-navigation' );
 			var $returnToTitleButton = $( '<button>' )
 				.addClass( 'game-nav-button return-title-button' )
 				.text( 'タイトルに戻る' )
-				.css( {
-					'display': 'inline-block !important',
-					'visibility': 'visible !important',
-					'opacity': '1 !important',
-					'position': 'relative !important',
-					'z-index': '9999 !important',
-					'background': '#4CAF50 !important',
-					'color': 'white !important',
-					'border': 'none !important',
-					'padding': '15px 30px !important',
-					'border-radius': '5px !important',
-					'font-size': '16px !important',
-					'cursor': 'pointer !important',
-					'margin': '10px auto !important',
-					'text-align': 'center !important'
-				} )
 				.on( 'click', function() {
 					returnToTitleScreen();
 				});
@@ -1919,22 +1903,8 @@
 			$navigationContainer.append( $returnToTitleButton );
 			$choicesContainer.append( $navigationContainer );
 			
-			// 確実に表示（!important で CSS 競合を回避）
-			$choicesContainer.css( {
-				'display': 'block !important',
-				'visibility': 'visible !important',
-				'opacity': '1 !important',
-				'position': 'relative !important',
-				'z-index': '1000 !important'
-			} ).show();
-			
-			// ナビゲーションコンテナも確実に表示
-			$navigationContainer.css( {
-				'display': 'block !important',
-				'visibility': 'visible !important',
-				'text-align': 'center !important',
-				'margin': '20px 0 !important'
-			} );
+			// CSSクラスによる表示制御（!important を使わずに高い詳細度で制御）
+			$choicesContainer.addClass( 'showing-end-buttons' ).show();
 			
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
@@ -2054,26 +2024,10 @@
 			$choicesContainer.append( $gameOverMessage );
 			
 			// 「タイトルに戻る」ボタンを追加
-			var $navigationContainer = $( '<div>' ).addClass( 'game-navigation' );
+			var $navigationContainer = $( '<div>' ).addClass( 'game-navigation end-game-navigation' );
 			var $returnToTitleButton = $( '<button>' )
-				.addClass( 'game-nav-button return-title-button' )
+				.addClass( 'game-nav-button game-over-return-button' )
 				.text( 'タイトルに戻る' )
-				.css( {
-					'display': 'inline-block !important',
-					'visibility': 'visible !important',
-					'opacity': '1 !important',
-					'position': 'relative !important',
-					'z-index': '9999 !important',
-					'background': '#f44336 !important',
-					'color': 'white !important',
-					'border': 'none !important',
-					'padding': '15px 30px !important',
-					'border-radius': '5px !important',
-					'font-size': '16px !important',
-					'cursor': 'pointer !important',
-					'margin': '10px auto !important',
-					'text-align': 'center !important'
-				} )
 				.on( 'click', function() {
 					returnToTitleScreen();
 				});
@@ -2081,22 +2035,8 @@
 			$navigationContainer.append( $returnToTitleButton );
 			$choicesContainer.append( $navigationContainer );
 			
-			// 確実に表示（!important で CSS 競合を回避）
-			$choicesContainer.css( {
-				'display': 'block !important',
-				'visibility': 'visible !important',
-				'opacity': '1 !important',
-				'position': 'relative !important',
-				'z-index': '1000 !important'
-			} ).show();
-			
-			// ナビゲーションコンテナも確実に表示
-			$navigationContainer.css( {
-				'display': 'block !important',
-				'visibility': 'visible !important',
-				'text-align': 'center !important',
-				'margin': '20px 0 !important'
-			} );
+			// CSSクラスによる表示制御（!important を使わずに高い詳細度で制御）
+			$choicesContainer.addClass( 'showing-end-buttons' ).show();
 			
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
