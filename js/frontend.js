@@ -843,49 +843,58 @@
 				return;
 			}
 			
-			// モーダル要素が存在しない場合は新規生成
+			// 既存のモーダル要素が存在する場合は必ず削除してから新規生成
+			var $existingModal = $( '#novel-game-modal-overlay' );
+			if ( $existingModal.length > 0 ) {
+				console.log( 'Removing existing modal overlay before creating new one' );
+				$existingModal.remove();
+			}
+			
+			// モーダル要素を必ず新規生成
+			console.log( 'Creating new modal elements' );
+			createModalElements();
+			
+			// 新規生成後に全てのjQuery要素を再取得
+			console.log( 'Re-acquiring all jQuery objects after modal creation' );
+			$modalOverlay = $( '#novel-game-modal-overlay' );
+			$startButton = $( '#novel-game-start-btn' );
+			$clearProgressButton = $( '#novel-game-clear-progress-btn' );
+			$closeButton = $( '#novel-game-close-btn' );
+			$titleScreen = $( '#novel-title-screen' );
+			$titleMain = $( '#novel-title-main' );
+			$titleSubtitle = $( '#novel-title-subtitle' );
+			$titleDescription = $( '#novel-title-description' );
+			$titleStartBtn = $( '#novel-title-start-new' );
+			$titleContinueBtn = $( '#novel-title-continue' );
+			
+			// ゲームコンテナと関連要素も再取得
+			$gameContainer = $( '#novel-game-container' );
+			
+			// ゲーム内コンテンツの要素も再取得（存在する場合のみ）
+			$dialogueText = $( '#novel-dialogue-text' );
+			$dialogueBox = $( '#novel-dialogue-box' );
+			$speakerName = $( '#novel-speaker-name' );
+			$dialogueContinue = $( '#novel-dialogue-continue' );
+			$choicesContainer = $( '#novel-choices' );
+			
+			console.log( 'Modal elements recreated, overlay length:', $modalOverlay.length );
+			console.log( 'Game container length:', $gameContainer.length );
+			console.log( 'Title elements acquired - main:', $titleMain.length, 'start btn:', $titleStartBtn.length );
+			
+			// display: flex を最初に必ず実行し、display: none の残存を完全に排除
+			$modalOverlay.css( 'display', 'flex' );
+			console.log( 'Force set display: flex to override any display: none' );
+			
+			// モーダル要素の生成に失敗した場合のみページ遷移（通常は発生しないはず）
 			if ( $modalOverlay.length === 0 ) {
-				console.log( 'Modal overlay not found, creating new modal elements' );
-				createModalElements();
-				
-				// 新規生成後に全てのjQuery要素を再取得
-				console.log( 'Re-acquiring all jQuery objects after modal creation' );
-				$modalOverlay = $( '#novel-game-modal-overlay' );
-				$startButton = $( '#novel-game-start-btn' );
-				$clearProgressButton = $( '#novel-game-clear-progress-btn' );
-				$closeButton = $( '#novel-game-close-btn' );
-				$titleScreen = $( '#novel-title-screen' );
-				$titleMain = $( '#novel-title-main' );
-				$titleSubtitle = $( '#novel-title-subtitle' );
-				$titleDescription = $( '#novel-title-description' );
-				$titleStartBtn = $( '#novel-title-start-new' );
-				$titleContinueBtn = $( '#novel-title-continue' );
-				
-				// ゲームコンテナと関連要素も再取得
-				$gameContainer = $( '#novel-game-container' );
-				
-				// ゲーム内コンテンツの要素も再取得（存在する場合のみ）
-				$dialogueText = $( '#novel-dialogue-text' );
-				$dialogueBox = $( '#novel-dialogue-box' );
-				$speakerName = $( '#novel-speaker-name' );
-				$dialogueContinue = $( '#novel-dialogue-continue' );
-				$choicesContainer = $( '#novel-choices' );
-				
-				console.log( 'Modal elements recreated, overlay length:', $modalOverlay.length );
-				console.log( 'Game container length:', $gameContainer.length );
-				console.log( 'Title elements acquired - main:', $titleMain.length, 'start btn:', $titleStartBtn.length );
-				
-				// モーダル要素の生成に失敗した場合のみページ遷移（通常は発生しないはず）
-				if ( $modalOverlay.length === 0 ) {
-					console.error( 'Critical error: Failed to create modal elements after createModalElements()' );
-					// 最後の手段としてページ遷移（ただし、createModalElements が正常に動作すれば実行されない）
-					if ( typeof gameUrlOrData === 'string' ) {
-						window.location.href = gameUrlOrData;
-					} else if ( gameUrlOrData && gameUrlOrData.url ) {
-						window.location.href = gameUrlOrData.url;
-					}
-					return;
+				console.error( 'Critical error: Failed to create modal elements after createModalElements()' );
+				// 最後の手段としてページ遷移（ただし、createModalElements が正常に動作すれば実行されない）
+				if ( typeof gameUrlOrData === 'string' ) {
+					window.location.href = gameUrlOrData;
+				} else if ( gameUrlOrData && gameUrlOrData.url ) {
+					window.location.href = gameUrlOrData.url;
 				}
+				return;
 			}
 			
 			isModalOpen = true;
@@ -900,6 +909,12 @@
 			// 複数回設定してdisplay: noneを確実に上書き
 			$modalOverlay.css( 'display', 'flex' );
 			$modalOverlay.show().css( 'display', 'flex' );
+			
+			// 追加でDOM要素のstyleプロパティを直接設定（CSS競合の完全回避）
+			if ( $modalOverlay[0] ) {
+				$modalOverlay[0].style.display = 'flex';
+				console.log( 'Direct style.display set to flex for complete CSS override' );
+			}
 			
 			$modalOverlay.css( {
 				'opacity': '0',
