@@ -672,6 +672,162 @@
 			} );
 		}
 		/**
+		 * モーダル要素を動的に生成してbodyに追加する
+		 */
+		function createModalElements() {
+			console.log( 'Creating modal elements dynamically' );
+			
+			// モーダルオーバーレイの作成
+			var $newModalOverlay = $( '<div>' )
+				.attr( 'id', 'novel-game-modal-overlay' )
+				.addClass( 'novel-game-modal-overlay' )
+				.css( {
+					'display': 'none',
+					'position': 'fixed',
+					'top': '0',
+					'left': '0',
+					'width': '100vw',
+					'height': '100vh',
+					'background': 'rgba(0, 0, 0, 0.9)',
+					'z-index': '2147483647',
+					'flex-direction': 'column',
+					'justify-content': 'center',
+					'align-items': 'center',
+					'max-width': 'none',
+					'margin': '0',
+					'padding': '0',
+					'box-sizing': 'border-box'
+				} );
+			
+			// タイトル画面の作成
+			var $newTitleScreen = $( '<div>' )
+				.attr( 'id', 'novel-title-screen' )
+				.addClass( 'novel-title-screen' )
+				.css( {
+					'position': 'absolute',
+					'top': '0',
+					'left': '0',
+					'width': '100%',
+					'height': '100%',
+					'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+					'color': 'white',
+					'display': 'flex',
+					'align-items': 'center',
+					'justify-content': 'center',
+					'z-index': '10'
+				} );
+			
+			// タイトル画面コンテンツの作成
+			var $titleContent = $( '<div>' )
+				.addClass( 'novel-title-content' )
+				.css( {
+					'text-align': 'center',
+					'max-width': '600px',
+					'padding': '40px'
+				} );
+			
+			var $titleMain = $( '<h1>' )
+				.attr( 'id', 'novel-title-main' )
+				.addClass( 'novel-title-main' )
+				.css( {
+					'font-size': 'clamp(28px, 6vw, 48px)',
+					'margin': '0 0 20px 0',
+					'font-weight': 'bold',
+					'text-shadow': '2px 2px 4px rgba(0,0,0,0.5)'
+				} );
+			
+			var $titleSubtitle = $( '<h2>' )
+				.attr( 'id', 'novel-title-subtitle' )
+				.addClass( 'novel-title-subtitle' )
+				.css( {
+					'font-size': 'clamp(16px, 3vw, 24px)',
+					'margin': '0 0 15px 0',
+					'font-weight': 'normal',
+					'opacity': '0.9'
+				} );
+			
+			var $titleDescription = $( '<p>' )
+				.attr( 'id', 'novel-title-description' )
+				.addClass( 'novel-title-description' )
+				.css( {
+					'font-size': 'clamp(14px, 2.5vw, 18px)',
+					'margin': '0 0 30px 0',
+					'line-height': '1.6',
+					'opacity': '0.8'
+				} );
+			
+			var $titleButtons = $( '<div>' )
+				.addClass( 'novel-title-buttons' )
+				.css( {
+					'display': 'flex',
+					'flex-direction': 'column',
+					'gap': '15px',
+					'align-items': 'center'
+				} );
+			
+			var $titleStartBtn = $( '<button>' )
+				.attr( 'id', 'novel-title-start-new' )
+				.addClass( 'novel-title-button novel-title-start' )
+				.text( '最初から開始' )
+				.css( {
+					'background': '#ff6b6b',
+					'color': 'white',
+					'border': 'none',
+					'padding': '15px 40px',
+					'border-radius': '25px',
+					'font-size': 'clamp(16px, 3vw, 20px)',
+					'font-weight': 'bold',
+					'cursor': 'pointer',
+					'transition': 'all 0.3s ease',
+					'min-width': '200px'
+				} );
+			
+			var $titleContinueBtn = $( '<button>' )
+				.attr( 'id', 'novel-title-continue' )
+				.addClass( 'novel-title-button novel-title-continue' )
+				.text( '続きから始める' )
+				.css( {
+					'background': '#4CAF50',
+					'color': 'white',
+					'border': 'none',
+					'padding': '15px 40px',
+					'border-radius': '25px',
+					'font-size': 'clamp(16px, 3vw, 20px)',
+					'font-weight': 'bold',
+					'cursor': 'pointer',
+					'transition': 'all 0.3s ease',
+					'min-width': '200px',
+					'display': 'none'
+				} );
+			
+			// ゲームコンテナの作成
+			var $gameContainer = $( '<div>' )
+				.attr( 'id', 'novel-game-container' )
+				.addClass( 'novel-game-container' )
+				.css( {
+					'width': '100%',
+					'height': '100%',
+					'position': 'relative',
+					'background-size': 'cover',
+					'background-position': 'center',
+					'background-repeat': 'no-repeat',
+					'overflow': 'hidden'
+				} )
+				.html( '<div style="text-align: center; color: white; padding: 50px;">ゲーム内容は動的に読み込まれます</div>' );
+			
+			// DOM構造を組み立て
+			$titleButtons.append( $titleStartBtn, $titleContinueBtn );
+			$titleContent.append( $titleMain, $titleSubtitle, $titleDescription, $titleButtons );
+			$newTitleScreen.append( $titleContent );
+			$newModalOverlay.append( $newTitleScreen, $gameContainer );
+			
+			// bodyに追加
+			$( 'body' ).append( $newModalOverlay );
+			
+			console.log( 'Modal elements created and added to body' );
+		}
+
+		/**
 		 * モーダルを開く（タイトル画面表示モードまたは直接ゲーム開始モード）
 		 *
 		 * @param {string|object} gameUrlOrData ゲームのURLまたはゲームデータオブジェクト
@@ -686,15 +842,28 @@
 				return;
 			}
 			
-			// モーダル要素が存在しない場合はページ遷移
+			// モーダル要素が存在しない場合は新規生成
 			if ( $modalOverlay.length === 0 ) {
-				console.log( 'Modal overlay not found, redirecting to:', gameUrlOrData );
-				if ( typeof gameUrlOrData === 'string' ) {
-					window.location.href = gameUrlOrData;
-				} else if ( gameUrlOrData && gameUrlOrData.url ) {
-					window.location.href = gameUrlOrData.url;
+				console.log( 'Modal overlay not found, creating new modal elements' );
+				createModalElements();
+				// 新規生成後にjQuery要素を再取得
+				$modalOverlay = $( '#novel-game-modal-overlay' );
+				$titleScreen = $( '#novel-title-screen' );
+				$titleMain = $( '#novel-title-main' );
+				$titleSubtitle = $( '#novel-title-subtitle' );
+				$titleDescription = $( '#novel-title-description' );
+				$titleStartBtn = $( '#novel-title-start-new' );
+				$titleContinueBtn = $( '#novel-title-continue' );
+				
+				if ( $modalOverlay.length === 0 ) {
+					console.error( 'Failed to create modal elements, falling back to page redirect' );
+					if ( typeof gameUrlOrData === 'string' ) {
+						window.location.href = gameUrlOrData;
+					} else if ( gameUrlOrData && gameUrlOrData.url ) {
+						window.location.href = gameUrlOrData.url;
+					}
+					return;
 				}
-				return;
 			}
 			
 			isModalOpen = true;
@@ -1048,9 +1217,25 @@
 			// オーバーレイを非表示
 			$modalOverlay.removeClass( 'show' ).animate( { opacity: 0 }, 300, function() {
 				$modalOverlay.css( 'display', 'none' );
+				
+				// タイトル画面復帰用にモーダルをDOM から削除
+				// （returnToTitleScreen での再生成を可能にするため）
+				if ( $modalOverlay.length > 0 ) {
+					console.log( 'Removing modal overlay from DOM for regeneration' );
+					$modalOverlay.remove();
+					
+					// jQuery要素をリセット
+					$modalOverlay = $( '#novel-game-modal-overlay' );
+					$titleScreen = $( '#novel-title-screen' );
+					$titleMain = $( '#novel-title-main' );
+					$titleSubtitle = $( '#novel-title-subtitle' );
+					$titleDescription = $( '#novel-title-description' );
+					$titleStartBtn = $( '#novel-title-start-new' );
+					$titleContinueBtn = $( '#novel-title-continue' );
+				}
 			} );
 			
-			console.log( 'Modal overlay hidden' );
+			console.log( 'Modal overlay hidden and will be removed' );
 			
 			// イベントリスナーをクリーンアップ
 			$( document ).off( 'keydown.modal' );
@@ -1704,13 +1889,23 @@
 			var $returnToTitleButton = $( '<button>' )
 				.addClass( 'game-nav-button return-title-button' )
 				.text( 'タイトルに戻る' )
+				.css( {
+					'display': 'inline-block',
+					'visibility': 'visible',
+					'opacity': '1'
+				} )
 				.on( 'click', function() {
 					returnToTitleScreen();
 				});
 			
 			$navigationContainer.append( $returnToTitleButton );
 			$choicesContainer.append( $navigationContainer );
-			$choicesContainer.show();
+			
+			// 確実に表示
+			$choicesContainer.css( {
+				'display': 'block',
+				'visibility': 'visible'
+			} ).show();
 			
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
@@ -1719,6 +1914,12 @@
 			if ( $speakerName && $speakerName.length > 0 ) {
 				$speakerName.hide();
 			}
+			
+			// デバッグ：ボタンの表示状態を確認
+			console.log( 'showGameEnd: ボタン要素が作成されました' );
+			console.log( 'Button element:', $returnToTitleButton[0] );
+			console.log( 'Button visible:', $returnToTitleButton.is( ':visible' ) );
+			console.log( 'Choices container visible:', $choicesContainer.is( ':visible' ) );
 			
 			// キーボードイベントでもナビゲーション
 			$( document ).on( 'keydown.novel-end', function( e ) {
@@ -1736,14 +1937,19 @@
 			console.log( 'タイトル画面に戻ります' );
 			
 			if ( window.currentGameSelectionData ) {
-				// 現在のモーダルを閉じて新しいモーダルを開く
+				console.log( 'ゲームデータが保存されています、モーダルを再生成します' );
+				
+				// 現在のモーダルを閉じる
 				closeModal();
 				
-				// 少し待ってからタイトル画面付きで再度開く
+				// モーダルが完全に閉じられるまで待ってから新しいモーダルを開く
 				setTimeout( function() {
+					console.log( 'モーダル再生成開始' );
+					// タイトル画面付きで再度開く
 					openModal( window.currentGameSelectionData );
-				}, 500 );
+				}, 600 ); // アニメーション完了を待つため少し長めに設定
 			} else {
+				console.log( 'ゲームデータが保存されていません、ページリロードにフォールバック' );
 				// フォールバック：ページリロード
 				window.location.reload();
 			}
@@ -1822,13 +2028,23 @@
 			var $returnToTitleButton = $( '<button>' )
 				.addClass( 'game-nav-button return-title-button' )
 				.text( 'タイトルに戻る' )
+				.css( {
+					'display': 'inline-block',
+					'visibility': 'visible',
+					'opacity': '1'
+				} )
 				.on( 'click', function() {
 					returnToTitleScreen();
 				});
 			
 			$navigationContainer.append( $returnToTitleButton );
 			$choicesContainer.append( $navigationContainer );
-			$choicesContainer.show();
+			
+			// 確実に表示
+			$choicesContainer.css( {
+				'display': 'block',
+				'visibility': 'visible'
+			} ).show();
 			
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
@@ -1837,6 +2053,12 @@
 			if ( $speakerName && $speakerName.length > 0 ) {
 				$speakerName.hide();
 			}
+			
+			// デバッグ：ボタンの表示状態を確認
+			console.log( 'showGameOver: ボタン要素が作成されました' );
+			console.log( 'Button element:', $returnToTitleButton[0] );
+			console.log( 'Button visible:', $returnToTitleButton.is( ':visible' ) );
+			console.log( 'Choices container visible:', $choicesContainer.is( ':visible' ) );
 			
 			// キーボードイベントでもナビゲーション
 			$( document ).on( 'keydown.novel-gameover', function( e ) {
