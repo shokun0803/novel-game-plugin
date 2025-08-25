@@ -632,6 +632,107 @@
 			} );
 		}
 		/**
+		 * モーダル要素を動的に生成してbodyに追加
+		 * モーダルオーバーレイとその内部構造を新規作成する
+		 *
+		 * @since 1.0.0
+		 */
+		function createModalElements() {
+			console.log( 'Creating modal elements' );
+			
+			// モーダルオーバーレイの作成
+			var $modalOverlay = $( '<div>' )
+				.attr( 'id', 'novel-game-modal-overlay' )
+				.addClass( 'novel-game-modal-overlay' )
+				.css( {
+					'display': 'flex',
+					'opacity': '0',
+					'position': 'fixed',
+					'top': '0',
+					'left': '0',
+					'width': '100vw',
+					'height': '100vh',
+					'background': 'rgba(0, 0, 0, 0.9)',
+					'z-index': '2147483647',
+					'flex-direction': 'column',
+					'justify-content': 'center',
+					'align-items': 'center',
+					'max-width': 'none',
+					'margin': '0',
+					'padding': '0',
+					'box-sizing': 'border-box'
+				} );
+			
+			// モーダルコンテンツの作成
+			var $modalContent = $( '<div>' )
+				.attr( 'id', 'novel-game-modal-content' )
+				.addClass( 'novel-game-modal-content' );
+			
+			// ゲーム閉じるボタンの作成
+			var $closeButton = $( '<button>' )
+				.attr( 'id', 'novel-game-close-btn' )
+				.addClass( 'novel-game-close-btn' )
+				.attr( 'aria-label', noveltool_l10n.close_game || 'ゲームを閉じる' )
+				.attr( 'title', noveltool_l10n.close_game || 'ゲームを閉じる' )
+				.append( $( '<span>' ).addClass( 'close-icon' ).text( '×' ) );
+			
+			// タイトル画面の作成
+			var $titleScreen = $( '<div>' )
+				.attr( 'id', 'novel-title-screen' )
+				.addClass( 'novel-title-screen' )
+				.css( 'display', 'none' );
+			
+			var $titleContent = $( '<div>' ).addClass( 'novel-title-content' );
+			
+			var $titleMain = $( '<h2>' )
+				.attr( 'id', 'novel-title-main' )
+				.addClass( 'novel-title-main' );
+			
+			var $titleSubtitle = $( '<p>' )
+				.attr( 'id', 'novel-title-subtitle' )
+				.addClass( 'novel-title-subtitle' );
+			
+			var $titleDescription = $( '<p>' )
+				.attr( 'id', 'novel-title-description' )
+				.addClass( 'novel-title-description' );
+			
+			var $titleButtons = $( '<div>' ).addClass( 'novel-title-buttons' );
+			
+			var $titleStartBtn = $( '<button>' )
+				.attr( 'id', 'novel-title-start-new' )
+				.addClass( 'novel-title-btn novel-title-start-btn' )
+				.text( noveltool_l10n.start_new_game || '最初から開始' );
+			
+			var $titleContinueBtn = $( '<button>' )
+				.attr( 'id', 'novel-title-continue' )
+				.addClass( 'novel-title-btn novel-title-continue-btn' )
+				.css( 'display', 'none' )
+				.text( noveltool_l10n.continue_game || '続きから始める' );
+			
+			// タイトル画面の構造を組み立て
+			$titleButtons.append( $titleStartBtn ).append( $titleContinueBtn );
+			$titleContent.append( $titleMain ).append( $titleSubtitle ).append( $titleDescription ).append( $titleButtons );
+			$titleScreen.append( $titleContent );
+			
+			// ゲームコンテナの作成
+			var $gameContainer = $( '<div>' )
+				.attr( 'id', 'novel-game-container' )
+				.addClass( 'novel-game-container' )
+				.html( '<!-- ゲーム内容は動的に読み込まれます -->' );
+			
+			// モーダルコンテンツの構造を組み立て
+			$modalContent.append( $closeButton ).append( $titleScreen ).append( $gameContainer );
+			
+			// モーダルオーバーレイに追加
+			$modalOverlay.append( $modalContent );
+			
+			// bodyに追加
+			$( 'body' ).append( $modalOverlay );
+			
+			console.log( 'Modal elements created and appended to body' );
+		}
+
+		/**
 		 * モーダルを開く（タイトル画面表示モードまたは直接ゲーム開始モード）
 		 *
 		 * @param {string|object} gameUrlOrData ゲームのURLまたはゲームデータオブジェクト
