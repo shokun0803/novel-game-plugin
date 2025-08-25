@@ -1190,8 +1190,10 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     font-size: clamp(24px, 6vw, 36px);
     font-weight: bold;
     border: 2px solid #ffd700;
-    margin: 20px 0;
+    margin: 20px auto;
     min-height: 80px;
+    max-width: 600px;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1199,6 +1201,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    box-sizing: border-box;
 }
 
 /* ゲームオーバーメッセージ（エンディングとは異なるスタイル） */
@@ -1303,13 +1306,23 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     background: #d32f2f;
 }
 
-/* エンディング・Game Over時の選択肢コンテナの表示強制 */
+/* エンディング・Game Over時の選択肢コンテナの表示強制と中央配置 */
 #novel-game-container #novel-choices.showing-end-buttons {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     visibility: visible;
     opacity: 1;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     z-index: 1000;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 /* エンディング・Game Over時のナビゲーションコンテナ */
@@ -1318,6 +1331,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     visibility: visible;
     text-align: center;
     margin: 20px 0;
+    width: 100%;
 }
 
 /* 古いゲーム終了メッセージのスタイル調整 */
@@ -1337,6 +1351,8 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         padding: 50px;
         font-size: clamp(28px, 8vw, 42px);
         min-height: 100px;
+        max-width: 500px;
+        margin: 30px auto;
     }
     
     .game-nav-button {
@@ -1346,6 +1362,10 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         min-width: 200px;
         margin: 10px;
     }
+    
+    #novel-game-container #novel-choices.showing-end-buttons {
+        padding: 40px 20px;
+    }
 }
 
 /* 小画面での調整 */
@@ -1354,6 +1374,8 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         padding: 30px;
         font-size: clamp(20px, 5vw, 28px);
         min-height: 60px;
+        max-width: 90%;
+        margin: 20px auto;
     }
     
     .game-nav-button {
@@ -1364,10 +1386,18 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         margin: 5px;
         display: block;
         width: 100%;
+        max-width: 280px;
     }
     
     .game-navigation {
         margin-top: 15px;
+        width: 100%;
+    }
+    
+    #novel-game-container #novel-choices.showing-end-buttons {
+        padding: 20px 15px;
+        min-height: 100vh;
+        justify-content: center;
     }
 }
 
