@@ -682,7 +682,8 @@
 				.attr( 'id', 'novel-game-modal-overlay' )
 				.addClass( 'novel-game-modal-overlay' )
 				.css( {
-					'display': 'none',
+					'display': 'flex',
+					'opacity': '0',
 					'position': 'fixed',
 					'top': '0',
 					'left': '0',
@@ -893,8 +894,14 @@
 			$( 'html, body' ).addClass( 'modal-open' ).css( 'overflow', 'hidden' );
 			
 			// オーバーレイの表示を確実にする（WordPress レイアウト制約を回避）
-			$modalOverlay.removeClass( 'show' ).css( {
-				'display': 'flex',
+			// display: none が残っていても強制的に表示する
+			$modalOverlay.removeClass( 'show' );
+			
+			// 複数回設定してdisplay: noneを確実に上書き
+			$modalOverlay.css( 'display', 'flex' );
+			$modalOverlay.show().css( 'display', 'flex' );
+			
+			$modalOverlay.css( {
 				'opacity': '0',
 				'position': 'fixed',
 				'top': '0',
