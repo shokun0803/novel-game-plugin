@@ -846,8 +846,13 @@
 			if ( $modalOverlay.length === 0 ) {
 				console.log( 'Modal overlay not found, creating new modal elements' );
 				createModalElements();
-				// 新規生成後にjQuery要素を再取得
+				
+				// 新規生成後に全てのjQuery要素を再取得
+				console.log( 'Re-acquiring all jQuery objects after modal creation' );
 				$modalOverlay = $( '#novel-game-modal-overlay' );
+				$startButton = $( '#novel-game-start-btn' );
+				$clearProgressButton = $( '#novel-game-clear-progress-btn' );
+				$closeButton = $( '#novel-game-close-btn' );
 				$titleScreen = $( '#novel-title-screen' );
 				$titleMain = $( '#novel-title-main' );
 				$titleSubtitle = $( '#novel-title-subtitle' );
@@ -855,10 +860,19 @@
 				$titleStartBtn = $( '#novel-title-start-new' );
 				$titleContinueBtn = $( '#novel-title-continue' );
 				
-				// ゲームコンテナも再取得
+				// ゲームコンテナと関連要素も再取得
 				$gameContainer = $( '#novel-game-container' );
 				
+				// ゲーム内コンテンツの要素も再取得（存在する場合のみ）
+				$dialogueText = $( '#novel-dialogue-text' );
+				$dialogueBox = $( '#novel-dialogue-box' );
+				$speakerName = $( '#novel-speaker-name' );
+				$dialogueContinue = $( '#novel-dialogue-continue' );
+				$choicesContainer = $( '#novel-choices' );
+				
 				console.log( 'Modal elements recreated, overlay length:', $modalOverlay.length );
+				console.log( 'Game container length:', $gameContainer.length );
+				console.log( 'Title elements acquired - main:', $titleMain.length, 'start btn:', $titleStartBtn.length );
 				
 				// モーダル要素の生成に失敗した場合のみページ遷移（通常は発生しないはず）
 				if ( $modalOverlay.length === 0 ) {
@@ -1231,14 +1245,26 @@
 					console.log( 'Removing modal overlay from DOM for regeneration' );
 					$modalOverlay.remove();
 					
-					// jQuery要素をリセット
-					$modalOverlay = $( '#novel-game-modal-overlay' );
-					$titleScreen = $( '#novel-title-screen' );
-					$titleMain = $( '#novel-title-main' );
-					$titleSubtitle = $( '#novel-title-subtitle' );
-					$titleDescription = $( '#novel-title-description' );
-					$titleStartBtn = $( '#novel-title-start-new' );
-					$titleContinueBtn = $( '#novel-title-continue' );
+					// 全てのモーダル関連jQuery要素を完全にリセット
+					console.log( 'Resetting all modal-related jQuery objects' );
+					$modalOverlay = $();
+					$startButton = $();
+					$clearProgressButton = $();
+					$closeButton = $();
+					$titleScreen = $();
+					$titleMain = $();
+					$titleSubtitle = $();
+					$titleDescription = $();
+					$titleStartBtn = $();
+					$titleContinueBtn = $();
+					$gameContainer = $();
+					$dialogueText = $();
+					$dialogueBox = $();
+					$speakerName = $();
+					$dialogueContinue = $();
+					$choicesContainer = $();
+					
+					console.log( 'All jQuery objects reset to empty state for regeneration' );
 				}
 			} );
 			
@@ -1273,25 +1299,27 @@
 				currentBackground = baseBackground;
 			}
 			
-			// DOM要素の表示をリセット
-			if ( $dialogueText && $dialogueText.length > 0 ) {
+			// DOM要素の表示をリセット（要素が存在し、かつ有効な場合のみ）
+			if ( $dialogueText && $dialogueText.length > 0 && $dialogueText.closest( 'body' ).length > 0 ) {
 				$dialogueText.text( '' );
 			}
-			if ( $speakerName && $speakerName.length > 0 ) {
+			if ( $speakerName && $speakerName.length > 0 && $speakerName.closest( 'body' ).length > 0 ) {
 				$speakerName.text( '' );
 			}
-			if ( $choicesContainer && $choicesContainer.length > 0 ) {
+			if ( $choicesContainer && $choicesContainer.length > 0 && $choicesContainer.closest( 'body' ).length > 0 ) {
 				$choicesContainer.empty().hide();
 			}
-			if ( $dialogueContinue && $dialogueContinue.length > 0 ) {
+			if ( $dialogueContinue && $dialogueContinue.length > 0 && $dialogueContinue.closest( 'body' ).length > 0 ) {
 				$dialogueContinue.hide();
 			}
-			if ( $dialogueBox && $dialogueBox.length > 0 ) {
+			if ( $dialogueBox && $dialogueBox.length > 0 && $dialogueBox.closest( 'body' ).length > 0 ) {
 				$dialogueBox.show();
 			}
 			
-			// キャラクターの状態をリセット
-			$( '.novel-character' ).removeClass( 'speaking not-speaking' );
+			// キャラクターの状態をリセット（DOM内の要素のみ）
+			$( '.novel-character' ).filter( function() {
+				return $( this ).closest( 'body' ).length > 0;
+			} ).removeClass( 'speaking not-speaking' );
 			
 			// イベントハンドラーをクリーンアップ（選択肢以外）
 			$( document ).off( 'keydown.novel-dialogue keydown.novel-end' );
@@ -1935,6 +1963,7 @@
 		 */
 		function returnToTitleScreen() {
 			console.log( 'タイトル画面に戻ります' );
+			console.log( 'Modal state before close - isModalOpen:', isModalOpen, 'overlay length:', $modalOverlay.length );
 			
 			if ( window.currentGameSelectionData ) {
 				console.log( 'ゲームデータが保存されています、モーダルを再生成します' );
@@ -1945,8 +1974,14 @@
 				// モーダルが完全に閉じられるまで待ってから新しいモーダルを開く
 				setTimeout( function() {
 					console.log( 'モーダル再生成開始' );
+					console.log( 'Modal state before reopen - isModalOpen:', isModalOpen, 'overlay length:', $modalOverlay.length );
+					
 					// タイトル画面付きで再度開く
 					openModal( window.currentGameSelectionData );
+					
+					// 再生成後の状態を確認
+					console.log( 'モーダル再生成完了 - isModalOpen:', isModalOpen, 'overlay length:', $modalOverlay.length );
+					console.log( 'タイトル要素状態 - main:', $titleMain.length, 'start btn:', $titleStartBtn.length );
 				}, 600 ); // アニメーション完了を待つため少し長めに設定
 			} else {
 				console.log( 'ゲームデータが保存されていません、ページリロードにフォールバック' );
