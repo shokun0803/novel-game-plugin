@@ -1221,12 +1221,17 @@
 
 		/**
 		 * モーダルを閉じる
+		 *
+		 * @param {Function} onComplete アニメーション完了後に実行するコールバック関数（オプション）
 		 */
-		function closeModal() {
+		function closeModal( onComplete ) {
 			console.log( 'closeModal called, isModalOpen:', isModalOpen );
 			
 			if ( ! isModalOpen ) {
 				console.log( 'Modal already closed, ignoring' );
+				if ( typeof onComplete === 'function' ) {
+					onComplete();
+				}
 				return;
 			}
 			
@@ -1265,6 +1270,12 @@
 					$choicesContainer = $();
 					
 					console.log( 'All jQuery objects reset to empty state for regeneration' );
+				}
+				
+				// アニメーション完了後にコールバックを実行
+				if ( typeof onComplete === 'function' ) {
+					console.log( 'Executing closeModal completion callback' );
+					onComplete();
 				}
 			} );
 			
@@ -1968,13 +1979,10 @@
 			if ( window.currentGameSelectionData ) {
 				console.log( 'ゲームデータが保存されています、モーダルを再生成します' );
 				
-				// 現在のモーダルを閉じる
-				closeModal();
-				
-				// モーダルが完全に閉じられるまで待ってから新しいモーダルを開く
-				setTimeout( function() {
+				// 現在のモーダルを閉じ、アニメーション完了後に新しいモーダルを開く
+				closeModal( function() {
 					console.log( 'モーダル再生成開始' );
-					console.log( 'Modal state before reopen - isModalOpen:', isModalOpen, 'overlay length:', $modalOverlay.length );
+					console.log( 'Modal state after close - isModalOpen:', isModalOpen, 'overlay length:', $modalOverlay.length );
 					
 					// タイトル画面付きで再度開く
 					openModal( window.currentGameSelectionData );
@@ -1982,7 +1990,7 @@
 					// 再生成後の状態を確認
 					console.log( 'モーダル再生成完了 - isModalOpen:', isModalOpen, 'overlay length:', $modalOverlay.length );
 					console.log( 'タイトル要素状態 - main:', $titleMain.length, 'start btn:', $titleStartBtn.length );
-				}, 600 ); // アニメーション完了を待つため少し長めに設定
+				} );
 			} else {
 				console.log( 'ゲームデータが保存されていません、ページリロードにフォールバック' );
 				// フォールバック：ページリロード
