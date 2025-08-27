@@ -884,7 +884,7 @@ function noveltool_save_meta_box_data( $post_id ) {
     );
     
     // エンディング設定の保存
-    $is_ending = isset( $_POST['is_ending'] ) ? '1' : '';
+    $is_ending = isset( $_POST['is_ending'] ) ? '1' : '0';
     update_post_meta( $post_id, '_is_ending', $is_ending );
     
     // セリフ背景データの保存

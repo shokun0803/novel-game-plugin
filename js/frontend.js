@@ -92,6 +92,9 @@
 			
 			// シーン設定データ（グローバル変数を更新）
 			sceneSettings = {};
+			console.log( 'DEBUG: sceneSettingsRaw の生データ:', sceneSettingsRaw );
+			console.log( 'DEBUG: sceneSettingsRaw の文字数:', sceneSettingsRaw ? sceneSettingsRaw.length : 0 );
+			
 			if ( sceneSettingsRaw ) {
 				try {
 					sceneSettings = JSON.parse( sceneSettingsRaw );
@@ -1602,8 +1605,11 @@
 			
 			if ( choices.length === 0 ) {
 				// 選択肢がない場合、エンディング設定に基づいて判断
-				// PHP側でboolean値に変換済みなので、シンプルに判定
-				if ( sceneSettings.is_ending === true ) {
+				// PHP側でboolean値に変換済みなので、確実に判定
+				var isEndingScene = ( sceneSettings.is_ending === true || sceneSettings.is_ending === 1 || sceneSettings.is_ending === '1' );
+				console.log( 'エンディング判定結果:', isEndingScene );
+				
+				if ( isEndingScene ) {
 					console.log( 'エンディングシーンと判定 - showGameEnd()を呼び出し' );
 					// エンディングシーンの場合
 					showGameEnd();

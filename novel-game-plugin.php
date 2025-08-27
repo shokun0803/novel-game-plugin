@@ -481,10 +481,11 @@ function noveltool_filter_novel_game_content( $content ) {
                 <script id="novel-scene-settings" type="application/json">
                     <?php 
                     // デバッグ: $is_ending の実際の値をコメントで確認
-                    // echo '/* DEBUG: $is_ending = ' . var_export( $is_ending, true ) . ' */';
+                    echo '/* DEBUG: $is_ending = ' . var_export( $is_ending, true ) . ' */';
                     
-                    // より堅牢な判定: 空でない値は全てエンディングとして扱う
-                    $is_ending_bool = ! empty( $is_ending ) && $is_ending !== '0';
+                    // より堅牢な判定: 文字列 '1' または boolean true の場合にエンディングとして扱う
+                    $is_ending_bool = ( $is_ending === '1' || $is_ending === 1 || $is_ending === true );
+                    echo '/* DEBUG: $is_ending_bool = ' . var_export( $is_ending_bool, true ) . ' */';
                     
                     $scene_settings = array(
                         'is_ending' => $is_ending_bool,
