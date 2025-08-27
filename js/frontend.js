@@ -37,6 +37,7 @@
 		var baseBackground = '';
 		var currentBackground = '';
 		var charactersData = {};
+		var sceneSettings = {}; // エンディング設定等のシーン設定データ
 		var $gameContainer = $( '#novel-game-container' );
 		var $dialogueText = $( '#novel-dialogue-text' );
 		var $dialogueBox = $( '#novel-dialogue-box' );
@@ -90,8 +91,8 @@
 			var sceneSettingsRaw = $( '#novel-scene-settings' ).text();
 			console.log( 'sceneSettingsRaw:', sceneSettingsRaw );
 			
-			// シーン設定データ
-			var sceneSettings = {};
+			// シーン設定データ（グローバル変数を更新）
+			sceneSettings = {};
 			if ( sceneSettingsRaw ) {
 				try {
 					sceneSettings = JSON.parse( sceneSettingsRaw );
