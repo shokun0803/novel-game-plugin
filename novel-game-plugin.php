@@ -481,7 +481,7 @@ function noveltool_filter_novel_game_content( $content ) {
                 </script>
                 
                 <script id="novel-ending-data" type="application/json">
-                    <?php echo wp_json_encode( array( 'isEnding' => (bool) $is_ending ), JSON_UNESCAPED_UNICODE ); ?>
+                    <?php echo wp_json_encode( array( 'isEnding' => ( $is_ending === '1' ) ), JSON_UNESCAPED_UNICODE ); ?>
                 </script>
             </div>
         </div>
