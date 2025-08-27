@@ -950,6 +950,9 @@ function noveltool_save_meta_box_data( $post_id ) {
             }
 
             update_post_meta( $post_id, $meta_key, $value );
+        } elseif ( $field === 'is_ending' ) {
+            // チェックボックスが外された場合はメタデータを削除
+            delete_post_meta( $post_id, $meta_key );
         }
     }
 }
