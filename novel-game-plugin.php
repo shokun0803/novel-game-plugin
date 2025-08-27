@@ -272,6 +272,9 @@ function noveltool_filter_novel_game_content( $content ) {
     $character_center_name = get_post_meta( $post->ID, '_character_center_name', true );
     $character_right_name  = get_post_meta( $post->ID, '_character_right_name', true );
     
+    // エンディング設定の取得
+    $is_ending = get_post_meta( $post->ID, '_is_ending', true );
+    
     // 後方互換性：既存の単一キャラクターをセンターに設定
     if ( $character && ! $character_center ) {
         $character_center = $character;
@@ -475,6 +478,10 @@ function noveltool_filter_novel_game_content( $content ) {
 
                 <script id="novel-choices-data" type="application/json">
                     <?php echo wp_json_encode( $choices, JSON_UNESCAPED_UNICODE ); ?>
+                </script>
+                
+                <script id="novel-ending-data" type="application/json">
+                    <?php echo wp_json_encode( array( 'isEnding' => (bool) $is_ending ), JSON_UNESCAPED_UNICODE ); ?>
                 </script>
             </div>
         </div>

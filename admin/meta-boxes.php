@@ -150,6 +150,9 @@ function noveltool_meta_box_callback( $post ) {
     $character_center_name = get_post_meta( $post->ID, '_character_center_name', true );
     $character_right_name  = get_post_meta( $post->ID, '_character_right_name', true );
     
+    // エンディング設定の取得
+    $is_ending = get_post_meta( $post->ID, '_is_ending', true );
+    
     // 後方互換性：既存の単一キャラクター画像をセンター位置に移行
     if ( $character && ! $character_center ) {
         $character_center = $character;
@@ -818,6 +821,23 @@ function noveltool_meta_box_callback( $post ) {
                 </div>
             </td>
         </tr>
+
+        <tr>
+            <th scope="row">
+                <label for="novel_is_ending"><?php esc_html_e( 'エンディング設定', 'novel-game-plugin' ); ?></label>
+            </th>
+            <td>
+                <label>
+                    <input type="checkbox"
+                           id="novel_is_ending"
+                           name="is_ending"
+                           value="1"
+                           <?php checked( $is_ending, '1' ); ?> />
+                    <?php esc_html_e( 'このシーンをエンディングとして設定する', 'novel-game-plugin' ); ?>
+                </label>
+                <p class="description"><?php esc_html_e( 'エンディングに設定されたシーンでは「タイトルに戻る」ボタンが表示されます。', 'novel-game-plugin' ); ?></p>
+            </td>
+        </tr>
     </table>
     <?php
 }
@@ -858,6 +878,7 @@ function noveltool_save_meta_box_data( $post_id ) {
         'dialogue_text'    => '_dialogue_text',
         'choices'          => '_choices',
         'game_title'       => '_game_title',
+        'is_ending'        => '_is_ending',
     );
     
     // セリフ背景データの保存
