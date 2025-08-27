@@ -1735,6 +1735,16 @@
 				console.log( 'ゲーム完了により進捗をクリアしました:', currentGameTitle );
 			}
 			
+			// エンディング後のタイトル復帰に必要なゲームデータを再設定
+			if ( currentGameTitle && ! window.currentGameSelectionData ) {
+				window.currentGameSelectionData = {
+					title: currentGameTitle,
+					url: window.location.href,
+					timestamp: Date.now()
+				};
+				console.log( 'エンディング時にゲームデータを再設定しました:', window.currentGameSelectionData );
+			}
+			
 			// 「おわり」メッセージを表示
 			var $endMessage = $( '<div>' )
 				.addClass( 'game-end-message' )
@@ -1855,29 +1865,31 @@
 		function returnToTitleScreen() {
 			console.log( 'タイトル画面に戻ります - 完全なモーダル再生成を実行' );
 			
-			if ( window.currentGameSelectionData ) {
-				console.log( 'ゲームデータが保存されています、モーダルを完全に再生成します' );
-				
-				// 現在のモーダルを完全に削除
-				if ( $modalOverlay.length > 0 ) {
-					console.log( 'モーダルを完全に削除中...' );
-					$modalOverlay.remove();
-				}
-				
-				// フラグをリセット
-				isModalOpen = false;
-				isTitleScreenVisible = false;
-				
-				// 短時間待ってから新しいモーダルを生成
-				setTimeout( function() {
-					console.log( 'クリーンなモーダル再生成を開始' );
-					openModal( window.currentGameSelectionData );
-				}, 100 );
-			} else {
-				console.log( 'ゲームデータが保存されていません、ページリロードにフォールバック' );
-				// フォールバック：ページリロード
-				window.location.reload();
+			// 現在のモーダルを完全に削除
+			if ( $modalOverlay.length > 0 ) {
+				console.log( 'モーダルを完全に削除中...' );
+				$modalOverlay.remove();
 			}
+			
+			// フラグをリセット
+			isModalOpen = false;
+			isTitleScreenVisible = false;
+			
+			// ゲームデータの有効性をチェックし、無効な場合は再構築
+			if ( ! window.currentGameSelectionData || ! window.currentGameSelectionData.title ) {
+				console.log( 'ゲームデータが無効です、現在のゲーム情報で再構築します' );
+				window.currentGameSelectionData = {
+					title: currentGameTitle || 'Unknown Game',
+					url: window.location.href,
+					timestamp: Date.now()
+				};
+			}
+			
+			// 短時間待ってから新しいモーダルを生成（常にタイトル画面を再生成）
+			setTimeout( function() {
+				console.log( 'クリーンなモーダル再生成を開始' );
+				openModal( window.currentGameSelectionData );
+			}, 100 );
 		}
 		
 		/**
