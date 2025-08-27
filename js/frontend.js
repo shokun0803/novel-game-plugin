@@ -1595,10 +1595,17 @@
 			console.log( '選択肢表示開始 - choices.length:', choices.length );
 			console.log( '現在のsceneSettings:', sceneSettings );
 			console.log( 'sceneSettings.is_ending:', sceneSettings.is_ending );
+			console.log( 'sceneSettings.is_ending 厳密比較 === true:', sceneSettings.is_ending === true );
+			console.log( 'sceneSettings.is_ending 緩い比較 == true:', sceneSettings.is_ending == true );
+			console.log( 'sceneSettings.is_ending Boolean変換:', Boolean( sceneSettings.is_ending ) );
 			
 			if ( choices.length === 0 ) {
 				// 選択肢がない場合、エンディング設定に基づいて判断
-				if ( sceneSettings.is_ending ) {
+				// 安全な比較のため、厳密にtrueまたは"1"をチェック
+				var isEnding = sceneSettings.is_ending === true || sceneSettings.is_ending === '1' || sceneSettings.is_ending === 1;
+				console.log( '最終的なisEnding判定:', isEnding );
+				
+				if ( isEnding ) {
 					console.log( 'エンディングシーンと判定 - showGameEnd()を呼び出し' );
 					// エンディングシーンの場合
 					showGameEnd();

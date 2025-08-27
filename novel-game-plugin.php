@@ -479,9 +479,12 @@ function noveltool_filter_novel_game_content( $content ) {
                 </script>
                 
                 <script id="novel-scene-settings" type="application/json">
-                    <?php echo wp_json_encode( array(
+                    <?php 
+                    $scene_settings = array(
                         'is_ending' => $is_ending === '1',
-                    ), JSON_UNESCAPED_UNICODE ); ?>
+                    );
+                    echo wp_json_encode( $scene_settings, JSON_UNESCAPED_UNICODE ); 
+                    ?>
                 </script>
             </div>
         </div>
