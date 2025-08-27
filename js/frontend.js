@@ -100,9 +100,13 @@
 				} catch ( e ) {
 					console.error( 'シーン設定データのパースに失敗:', e );
 					console.error( 'パース対象データ:', sceneSettingsRaw );
+					// パース失敗時はデフォルト値を設定
+					sceneSettings = { is_ending: false };
 				}
 			} else {
 				console.log( 'シーン設定データが見つかりません（sceneSettingsRaw が空）' );
+				// データが存在しない場合はデフォルト値を設定
+				sceneSettings = { is_ending: false };
 			}
 
 			if ( dialogueDataRaw ) {
@@ -1594,18 +1598,12 @@
 		function showChoices() {
 			console.log( '選択肢表示開始 - choices.length:', choices.length );
 			console.log( '現在のsceneSettings:', sceneSettings );
-			console.log( 'sceneSettings.is_ending:', sceneSettings.is_ending );
-			console.log( 'sceneSettings.is_ending 厳密比較 === true:', sceneSettings.is_ending === true );
-			console.log( 'sceneSettings.is_ending 緩い比較 == true:', sceneSettings.is_ending == true );
-			console.log( 'sceneSettings.is_ending Boolean変換:', Boolean( sceneSettings.is_ending ) );
+			console.log( 'sceneSettings.is_ending:', sceneSettings.is_ending, '(type:', typeof sceneSettings.is_ending, ')' );
 			
 			if ( choices.length === 0 ) {
 				// 選択肢がない場合、エンディング設定に基づいて判断
-				// 安全な比較のため、厳密にtrueまたは"1"をチェック
-				var isEnding = sceneSettings.is_ending === true || sceneSettings.is_ending === '1' || sceneSettings.is_ending === 1;
-				console.log( '最終的なisEnding判定:', isEnding );
-				
-				if ( isEnding ) {
+				// PHP側でboolean値に変換済みなので、シンプルに判定
+				if ( sceneSettings.is_ending === true ) {
 					console.log( 'エンディングシーンと判定 - showGameEnd()を呼び出し' );
 					// エンディングシーンの場合
 					showGameEnd();
