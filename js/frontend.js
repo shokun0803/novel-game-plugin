@@ -88,11 +88,21 @@
 			var baseBackgroundData = $( '#novel-base-background' ).text();
 			var charactersDataRaw = $( '#novel-characters-data' ).text();
 			var sceneSettingsRaw = $( '#novel-scene-settings' ).text();
+			console.log( 'sceneSettingsRaw:', sceneSettingsRaw );
 			
 			// シーン設定データ
 			var sceneSettings = {};
 			if ( sceneSettingsRaw ) {
-				sceneSettings = JSON.parse( sceneSettingsRaw );
+				try {
+					sceneSettings = JSON.parse( sceneSettingsRaw );
+					console.log( 'sceneSettings parsed:', sceneSettings );
+					console.log( 'sceneSettings.is_ending:', sceneSettings.is_ending );
+				} catch ( e ) {
+					console.error( 'シーン設定データのパースに失敗:', e );
+					console.error( 'パース対象データ:', sceneSettingsRaw );
+				}
+			} else {
+				console.warn( '#novel-scene-settings 要素が見つからないか、データが空です' );
 			}
 
 			if ( dialogueDataRaw ) {
@@ -1584,11 +1594,18 @@
 		function showChoices() {
 			if ( choices.length === 0 ) {
 				// 選択肢がない場合、エンディング設定に基づいて判断
+				console.log( 'showChoices: 選択肢なし、エンディング判定開始' );
+				console.log( 'showChoices: sceneSettings:', sceneSettings );
+				console.log( 'showChoices: sceneSettings.is_ending:', sceneSettings.is_ending );
+				console.log( 'showChoices: typeof sceneSettings.is_ending:', typeof sceneSettings.is_ending );
+				
 				if ( sceneSettings.is_ending ) {
 					// エンディングシーンの場合
+					console.log( 'showChoices: エンディングシーンと判定、showGameEnd() を呼び出し' );
 					showGameEnd();
 				} else {
 					// 通常の終了（Game Over）の場合
+					console.log( 'showChoices: 通常終了と判定、showGameOver() を呼び出し' );
 					showGameOver();
 				}
 				return;
