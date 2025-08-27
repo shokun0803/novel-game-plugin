@@ -95,10 +95,14 @@
 			if ( sceneSettingsRaw ) {
 				try {
 					sceneSettings = JSON.parse( sceneSettingsRaw );
+					console.log( 'シーン設定データ取得成功:', sceneSettings );
+					console.log( 'is_ending値:', sceneSettings.is_ending, 'タイプ:', typeof sceneSettings.is_ending );
 				} catch ( e ) {
 					console.error( 'シーン設定データのパースに失敗:', e );
 					console.error( 'パース対象データ:', sceneSettingsRaw );
 				}
+			} else {
+				console.log( 'シーン設定データが見つかりません（sceneSettingsRaw が空）' );
 			}
 
 			if ( dialogueDataRaw ) {
@@ -1588,12 +1592,18 @@
 		 * 選択肢を表示、選択肢がない場合は「おわり」を表示
 		 */
 		function showChoices() {
+			console.log( '選択肢表示開始 - choices.length:', choices.length );
+			console.log( '現在のsceneSettings:', sceneSettings );
+			console.log( 'sceneSettings.is_ending:', sceneSettings.is_ending );
+			
 			if ( choices.length === 0 ) {
 				// 選択肢がない場合、エンディング設定に基づいて判断
 				if ( sceneSettings.is_ending ) {
+					console.log( 'エンディングシーンと判定 - showGameEnd()を呼び出し' );
 					// エンディングシーンの場合
 					showGameEnd();
 				} else {
+					console.log( '通常終了と判定 - showGameOver()を呼び出し' );
 					// 通常の終了（Game Over）の場合
 					showGameOver();
 				}
@@ -1733,6 +1743,7 @@
 		 * ゲーム終了時の「おわり」画面を表示（エンディング）
 		 */
 		function showGameEnd() {
+			console.log( 'showGameEnd()が呼ばれました' );
 			$choicesContainer.empty();
 			
 			// ゲーム完了時に進捗をクリア
