@@ -1201,17 +1201,17 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     -ms-user-select: none;
 }
 
-/* ゲームナビゲーションボタン */
-.game-navigation {
+/* ゲームナビゲーションボタン - 高特異性セレクタでオーバーライド */
+body #novel-game-modal-overlay .novel-game-container .game-navigation {
     margin-top: 20px;
     text-align: center;
-    display: block !important;
-    visibility: visible !important;
+    display: block;
+    visibility: visible;
 }
 
-.game-nav-button {
-    display: inline-block !important;
-    visibility: visible !important;
+body #novel-game-modal-overlay .novel-game-container .game-nav-button {
+    display: inline-block;
+    visibility: visible;
     padding: 15px 30px;
     margin: 0 10px;
     background: #ff6b6b;
@@ -1230,37 +1230,37 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     position: relative;
 }
 
-/* 「タイトルに戻る」ボタンの特別なスタイル */
-.return-to-title-button {
-    display: inline-block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+/* 「タイトルに戻る」ボタンの特別なスタイル - 高特異性セレクタでオーバーライド */
+body #novel-game-modal-overlay .novel-game-container .return-to-title-button {
+    display: inline-block;
+    visibility: visible;
+    opacity: 1;
 }
 
-.game-nav-button:hover {
+body #novel-game-modal-overlay .novel-game-container .game-nav-button:hover {
     background: #ff5252;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.game-nav-button:active {
+body #novel-game-modal-overlay .novel-game-container .game-nav-button:active {
     transform: translateY(0);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.game-nav-button.close-button {
+body #novel-game-modal-overlay .novel-game-container .game-nav-button.close-button {
     background: #666;
 }
 
-.game-nav-button.close-button:hover {
+body #novel-game-modal-overlay .novel-game-container .game-nav-button.close-button:hover {
     background: #555;
 }
 
-.game-nav-button.game-list-button {
+body #novel-game-modal-overlay .novel-game-container .game-nav-button.game-list-button {
     background: #4CAF50;
 }
 
-.game-nav-button.game-list-button:hover {
+body #novel-game-modal-overlay .novel-game-container .game-nav-button.game-list-button:hover {
     background: #45a049;
 }
 
@@ -1283,7 +1283,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         min-height: 100px;
     }
     
-    .game-nav-button {
+    body #novel-game-modal-overlay .novel-game-container .game-nav-button {
         padding: 20px 40px;
         font-size: clamp(18px, 4vw, 24px);
         min-height: 60px;
@@ -1300,7 +1300,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         min-height: 60px;
     }
     
-    .game-nav-button {
+    body #novel-game-modal-overlay .novel-game-container .game-nav-button {
         padding: 15px 25px;
         font-size: clamp(14px, 3vw, 18px);
         min-height: 50px;
@@ -1310,7 +1310,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         width: 100%;
     }
     
-    .game-navigation {
+    body #novel-game-modal-overlay .novel-game-container .game-navigation {
         margin-top: 15px;
     }
 }
