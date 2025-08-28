@@ -693,9 +693,11 @@
 		 * モーダルを開く（タイトル画面表示モードまたは直接ゲーム開始モード）
 		 *
 		 * @param {string|object} gameUrlOrData ゲームのURLまたはゲームデータオブジェクト
+		 * @param {boolean} fromReturnToTitle タイトルに戻る処理からの呼び出しかどうか
 		 */
-		function openModal( gameUrlOrData ) {
+		function openModal( gameUrlOrData, fromReturnToTitle ) {
 			console.log( 'openModal called with:', gameUrlOrData );
+			console.log( 'fromReturnToTitle:', fromReturnToTitle );
 			console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
 			console.log( 'isModalOpen:', isModalOpen );
 			
@@ -704,14 +706,20 @@
 				return;
 			}
 			
-			// モーダル要素が存在しない場合はページ遷移
-			if ( $modalOverlay.length === 0 ) {
+			// タイトルに戻る処理からの呼び出しでない場合のみリダイレクト判定を行う
+			if ( ! fromReturnToTitle && $modalOverlay.length === 0 ) {
 				console.log( 'Modal overlay not found, redirecting to:', gameUrlOrData );
 				if ( typeof gameUrlOrData === 'string' ) {
 					window.location.href = gameUrlOrData;
 				} else if ( gameUrlOrData && gameUrlOrData.url ) {
 					window.location.href = gameUrlOrData.url;
 				}
+				return;
+			}
+			
+			// タイトルに戻る処理からの呼び出しでモーダル要素がない場合は警告のみ
+			if ( fromReturnToTitle && $modalOverlay.length === 0 ) {
+				console.error( 'タイトルに戻る処理でモーダル要素が見つかりません。リダイレクトは行いません。' );
 				return;
 			}
 			
@@ -1834,6 +1842,19 @@
 		function returnToTitle() {
 			console.log( 'タイトル画面に戻ります' );
 			
+			// window.currentGameSelectionDataの存在と有効性を確認
+			if ( ! window.currentGameSelectionData || ! window.currentGameSelectionData.url ) {
+				console.error( 'window.currentGameSelectionDataが無効です:', window.currentGameSelectionData );
+				// フォールバック：基本的なゲームデータを作成
+				window.currentGameSelectionData = {
+					url: window.location.href,
+					title: 'ノベルゲーム',
+					subtitle: '',
+					description: ''
+				};
+				console.log( 'フォールバックデータを設定しました:', window.currentGameSelectionData );
+			}
+			
 			// モーダル状態をリセット
 			isModalOpen = false;
 			
@@ -1843,79 +1864,82 @@
 				
 				// 少し待ってから既存のopenModal関数を呼び出してモーダルを再初期化
 				setTimeout( function() {
-					// 現在のゲーム選択データがある場合はそれを使用してopenModalを呼び出し
-					if ( window.currentGameSelectionData ) {
-						console.log( '既存のopenModal関数を使ってモーダルを再初期化します' );
-						
-						// 新しいモーダル要素を作成（archive-novel_game.phpと同じ構造）
-						var modalHtml = 
-							'<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">' +
-								'<div id="novel-game-modal-content" class="novel-game-modal-content">' +
-									'<button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="ゲームを閉じる" title="ゲームを閉じる">' +
-										'<span class="close-icon">×</span>' +
-									'</button>' +
-									'<div id="novel-title-screen" class="novel-title-screen" style="display: none;">' +
-										'<div class="novel-title-content">' +
-											'<h2 id="novel-title-main" class="novel-title-main"></h2>' +
-											'<p id="novel-title-subtitle" class="novel-title-subtitle"></p>' +
-											'<p id="novel-title-description" class="novel-title-description"></p>' +
-											'<div class="novel-title-buttons">' +
-												'<button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">最初から開始</button>' +
-												'<button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">続きから始める</button>' +
-											'</div>' +
+					console.log( '既存のopenModal関数を使ってモーダルを再初期化します' );
+					
+					// 新しいモーダル要素を作成（archive-novel_game.phpと同じ構造）
+					var modalHtml = 
+						'<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">' +
+							'<div id="novel-game-modal-content" class="novel-game-modal-content">' +
+								'<button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="ゲームを閉じる" title="ゲームを閉じる">' +
+									'<span class="close-icon">×</span>' +
+								'</button>' +
+								'<div id="novel-title-screen" class="novel-title-screen" style="display: none;">' +
+									'<div class="novel-title-content">' +
+										'<h2 id="novel-title-main" class="novel-title-main"></h2>' +
+										'<p id="novel-title-subtitle" class="novel-title-subtitle"></p>' +
+										'<p id="novel-title-description" class="novel-title-description"></p>' +
+										'<div class="novel-title-buttons">' +
+											'<button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">最初から開始</button>' +
+											'<button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">続きから始める</button>' +
 										'</div>' +
 									'</div>' +
-									'<div id="novel-game-container" class="novel-game-container">' +
-										'<!-- ゲーム内容は動的に読み込まれます -->' +
-									'</div>' +
 								'</div>' +
-							'</div>';
-						
-						// bodyにモーダルを追加
-						$( 'body' ).append( modalHtml );
-						
-						// 全てのモーダル関連jQuery変数を再初期化
-						$modalOverlay = $( '#novel-game-modal-overlay' );
-						$titleScreen = $( '#novel-title-screen' );
-						$titleMain = $( '#novel-title-main' );
-						$titleSubtitle = $( '#novel-title-subtitle' );
-						$titleDescription = $( '#novel-title-description' );
-						$titleStartBtn = $( '#novel-title-start-new' );
-						$titleContinueBtn = $( '#novel-title-continue' );
-						$closeButton = $( '#novel-game-close-btn' );
-						$gameContainer = $( '#novel-game-container' );
-						$dialogueText = $( '#novel-dialogue-text' );
-						$dialogueBox = $( '#novel-dialogue-box' );
-						$speakerName = $( '#novel-speaker-name' );
-						$dialogueContinue = $( '#novel-dialogue-continue' );
-						$choicesContainer = $( '#novel-choices' );
-						
-						// ゲーム状態変数も初期化
-						dialogueIndex = 0;
-						dialogues = [];
-						dialogueData = [];
-						choices = [];
-						baseBackground = '';
-						currentBackground = '';
-						charactersData = {};
-						endingData = {};
-						isTitleScreenVisible = false;
-						
-						// デバッグ：モーダル要素の存在確認
-						console.log( 'モーダル要素再作成後の確認:', {
-							modalOverlay: $modalOverlay.length,
-							titleScreen: $titleScreen.length,
-							gameContainer: $gameContainer.length,
-							isModalOpen: isModalOpen
-						} );
-						
-						// 既存のopenModal関数を使用して初期化とタイトル画面表示を一括処理
+								'<div id="novel-game-container" class="novel-game-container">' +
+									'<!-- ゲーム内容は動的に読み込まれます -->' +
+								'</div>' +
+							'</div>' +
+						'</div>';
+					
+					// bodyにモーダルを追加
+					$( 'body' ).append( modalHtml );
+					
+					// 全てのモーダル関連jQuery変数を再初期化
+					$modalOverlay = $( '#novel-game-modal-overlay' );
+					$titleScreen = $( '#novel-title-screen' );
+					$titleMain = $( '#novel-title-main' );
+					$titleSubtitle = $( '#novel-title-subtitle' );
+					$titleDescription = $( '#novel-title-description' );
+					$titleStartBtn = $( '#novel-title-start-new' );
+					$titleContinueBtn = $( '#novel-title-continue' );
+					$closeButton = $( '#novel-game-close-btn' );
+					$gameContainer = $( '#novel-game-container' );
+					$dialogueText = $( '#novel-dialogue-text' );
+					$dialogueBox = $( '#novel-dialogue-box' );
+					$speakerName = $( '#novel-speaker-name' );
+					$dialogueContinue = $( '#novel-dialogue-continue' );
+					$choicesContainer = $( '#novel-choices' );
+					
+					// ゲーム状態変数も初期化
+					dialogueIndex = 0;
+					dialogues = [];
+					dialogueData = [];
+					choices = [];
+					baseBackground = '';
+					currentBackground = '';
+					charactersData = {};
+					endingData = {};
+					isTitleScreenVisible = false;
+					
+					// デバッグ：モーダル要素の存在確認
+					console.log( 'モーダル要素再作成後の確認:', {
+						modalOverlay: $modalOverlay.length,
+						titleScreen: $titleScreen.length,
+						gameContainer: $gameContainer.length,
+						isModalOpen: isModalOpen,
+						currentGameSelectionData: window.currentGameSelectionData
+					} );
+					
+					// モーダル要素が正しく作成されたことを確認してからopenModalを呼び出し
+					if ( $modalOverlay.length > 0 ) {
 						console.log( 'openModal呼び出し前の状態確認:', {
 							currentGameSelectionData: window.currentGameSelectionData,
 							modalOverlayLength: $modalOverlay.length,
 							isModalOpen: isModalOpen
 						} );
-						openModal( window.currentGameSelectionData );
+						// タイトルに戻る処理からの呼び出しであることを明示
+						openModal( window.currentGameSelectionData, true );
+					} else {
+						console.error( 'モーダル要素の作成に失敗しました' );
 					}
 				}, 100 );
 			} );
