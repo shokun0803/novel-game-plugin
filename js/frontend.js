@@ -1874,13 +1874,29 @@
 						// bodyにモーダルを追加
 						$( 'body' ).append( modalHtml );
 						
-						// 新しいモーダル要素を取得
+						// 新しいモーダル要素を取得して変数を再初期化
 						$modalOverlay = $( '#novel-game-modal-overlay' );
 						$titleScreen = $( '#novel-title-screen' );
+						$titleMain = $( '#novel-title-main' );
+						$titleSubtitle = $( '#novel-title-subtitle' );
+						$titleDescription = $( '#novel-title-description' );
+						$titleStartBtn = $( '#novel-title-start-new' );
+						$titleContinueBtn = $( '#novel-title-continue' );
 						$closeButton = $( '#novel-game-close-btn' );
 						$gameContainer = $( '#novel-game-container' );
 						
+						// デバッグ：モーダル要素の存在確認
+						console.log( 'モーダル要素再作成後の確認:', {
+							modalOverlay: $modalOverlay.length,
+							titleScreen: $titleScreen.length,
+							gameContainer: $gameContainer.length
+						} );
+						
 						// 既存のopenModal関数を使用して初期化とタイトル画面表示を一括処理
+						console.log( 'openModal呼び出し前の状態確認:', {
+							currentGameSelectionData: window.currentGameSelectionData,
+							modalOverlayLength: $modalOverlay.length
+						} );
 						openModal( window.currentGameSelectionData );
 					}
 				}, 100 );
