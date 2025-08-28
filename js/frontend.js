@@ -602,6 +602,21 @@
 								}
 							}
 							
+							// エンディングデータを取得
+							var endingDataScript = $response.filter( 'script#novel-ending-data' );
+							if ( endingDataScript.length === 0 ) {
+								endingDataScript = $response.find( '#novel-ending-data' );
+							}
+							console.log( 'Ending data script found:', endingDataScript.length );
+							
+							if ( endingDataScript.length > 0 ) {
+								var endingDataText = endingDataScript.text() || endingDataScript.html();
+								if ( endingDataText ) {
+									endingData = JSON.parse( endingDataText );
+									console.log( 'Parsed ending data:', endingData );
+								}
+							}
+							
 							// ゲームコンテナの内容を更新
 							// モーダル内のゲームコンテナではなく、実際のゲームページのコンテナを探す
 							var $gameContentElement = null;
@@ -1558,7 +1573,6 @@
 					baseBackground = '';
 					currentBackground = '';
 					charactersData = {};
-					endingData = {};
 					
 					// 2. 表示状態をリセット
 					resetGameState();
