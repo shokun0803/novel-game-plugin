@@ -1669,6 +1669,8 @@
 		 * エンディング画面を表示
 		 */
 		function showEndingScreen() {
+			console.log( 'showEndingScreen: エンディング画面を表示します' );
+			
 			// ゲーム完了時に進捗をクリア
 			if ( currentGameTitle ) {
 				clearGameProgress( currentGameTitle );
@@ -1681,6 +1683,7 @@
 				.text( 'おわり' );
 			
 			$choicesContainer.append( $endMessage );
+			console.log( 'showEndingScreen: 「おわり」メッセージを追加しました' );
 			
 			// 話者名枠を非表示（メッセージのみの場合）
 			$speakerName.hide();
@@ -1692,13 +1695,23 @@
 			var $returnToTitleButton = $( '<button>' )
 				.addClass( 'game-nav-button return-to-title-button' )
 				.text( 'タイトルに戻る' )
+				.css( {
+					'display': 'inline-block',
+					'visibility': 'visible',
+					'opacity': '1'
+				} )
 				.on( 'click', function() {
+					console.log( 'showEndingScreen: タイトルに戻るボタンがクリックされました' );
 					returnToTitle();
 				});
+			
+			console.log( 'showEndingScreen: タイトルに戻るボタンを作成しました', $returnToTitleButton );
 			
 			$navigationContainer.append( $returnToTitleButton );
 			$choicesContainer.append( $navigationContainer );
 			$choicesContainer.show();
+			
+			console.log( 'showEndingScreen: ナビゲーションコンテナを追加し、choices containerを表示しました' );
 			
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
@@ -1707,15 +1720,28 @@
 			$( document ).on( 'keydown.novel-end', function( e ) {
 				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
 					e.preventDefault();
+					console.log( 'showEndingScreen: キーボードでタイトルに戻るがトリガーされました' );
 					$returnToTitleButton.trigger( 'click' );
 				}
 			} );
+			
+			// デバッグ: ボタンの表示状態を確認
+			setTimeout( function() {
+				console.log( 'showEndingScreen: ボタンの最終状態チェック' );
+				console.log( '- ボタン要素数:', $( '.return-to-title-button' ).length );
+				console.log( '- ボタンの表示状態:', $( '.return-to-title-button' ).css( 'display' ) );
+				console.log( '- ボタンの可視性:', $( '.return-to-title-button' ).css( 'visibility' ) );
+				console.log( '- choices container表示状態:', $choicesContainer.css( 'display' ) );
+				console.log( '- navigation container要素数:', $( '.game-navigation' ).length );
+			}, 100 );
 		}
 		
 		/**
 		 * Game Over画面を表示
 		 */
 		function showGameOverScreen() {
+			console.log( 'showGameOverScreen: Game Over画面を表示します' );
+			
 			// Game Over時は現在の進捗をクリアし、最後の選択肢シーンを保存
 			if ( currentGameTitle ) {
 				var lastChoiceScene = getLastChoiceScene( currentGameTitle );
@@ -1749,6 +1775,7 @@
 				.text( 'Game Over' );
 			
 			$choicesContainer.append( $gameOverMessage );
+			console.log( 'showGameOverScreen: Game Overメッセージを追加しました' );
 			
 			// 話者名枠を非表示（メッセージのみの場合）
 			$speakerName.hide();
@@ -1760,13 +1787,23 @@
 			var $returnToTitleButton = $( '<button>' )
 				.addClass( 'game-nav-button return-to-title-button' )
 				.text( 'タイトルに戻る' )
+				.css( {
+					'display': 'inline-block',
+					'visibility': 'visible',
+					'opacity': '1'
+				} )
 				.on( 'click', function() {
+					console.log( 'showGameOverScreen: タイトルに戻るボタンがクリックされました' );
 					returnToTitle();
 				});
+			
+			console.log( 'showGameOverScreen: タイトルに戻るボタンを作成しました', $returnToTitleButton );
 			
 			$navigationContainer.append( $returnToTitleButton );
 			$choicesContainer.append( $navigationContainer );
 			$choicesContainer.show();
+			
+			console.log( 'showGameOverScreen: ナビゲーションコンテナを追加し、choices containerを表示しました' );
 			
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
@@ -1775,9 +1812,20 @@
 			$( document ).on( 'keydown.novel-end', function( e ) {
 				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
 					e.preventDefault();
+					console.log( 'showGameOverScreen: キーボードでタイトルに戻るがトリガーされました' );
 					$returnToTitleButton.trigger( 'click' );
 				}
 			} );
+			
+			// デバッグ: ボタンの表示状態を確認
+			setTimeout( function() {
+				console.log( 'showGameOverScreen: ボタンの最終状態チェック' );
+				console.log( '- ボタン要素数:', $( '.return-to-title-button' ).length );
+				console.log( '- ボタンの表示状態:', $( '.return-to-title-button' ).css( 'display' ) );
+				console.log( '- ボタンの可視性:', $( '.return-to-title-button' ).css( 'visibility' ) );
+				console.log( '- choices container表示状態:', $choicesContainer.css( 'display' ) );
+				console.log( '- navigation container要素数:', $( '.game-navigation' ).length );
+			}, 100 );
 		}
 		
 		/**
@@ -1999,9 +2047,20 @@
 				prepareDialoguePages();
 				
 				// 現在の位置を可能な限り保持
-				if ( currentPageContent ) {
+				if ( currentPageContent && typeof currentPageContent === 'object' && currentPageContent.text ) {
+					// currentPageContentがオブジェクトの場合はtextプロパティを使用
+					const searchText = currentPageContent.text.substring( 0, 10 );
 					const newPageIndex = allDialoguePages.findIndex( function( page ) {
-						return page.includes( currentPageContent.substring( 0, 10 ) );
+						return page.text && page.text.includes( searchText );
+					} );
+					
+					if ( newPageIndex !== -1 ) {
+						currentPageIndex = newPageIndex;
+					}
+				} else if ( currentPageContent && typeof currentPageContent === 'string' ) {
+					// currentPageContentが文字列の場合（後方互換性）
+					const newPageIndex = allDialoguePages.findIndex( function( page ) {
+						return page.text && page.text.includes( currentPageContent.substring( 0, 10 ) );
 					} );
 					
 					if ( newPageIndex !== -1 ) {

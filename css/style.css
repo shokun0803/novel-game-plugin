@@ -1205,10 +1205,13 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 .game-navigation {
     margin-top: 20px;
     text-align: center;
+    display: block !important;
+    visibility: visible !important;
 }
 
 .game-nav-button {
-    display: inline-block;
+    display: inline-block !important;
+    visibility: visible !important;
     padding: 15px 30px;
     margin: 0 10px;
     background: #ff6b6b;
@@ -1223,6 +1226,15 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     min-height: 50px;
     min-width: 150px;
     box-sizing: border-box;
+    z-index: 10;
+    position: relative;
+}
+
+/* 「タイトルに戻る」ボタンの特別なスタイル */
+.return-to-title-button {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .game-nav-button:hover {
