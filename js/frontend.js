@@ -1834,63 +1834,57 @@
 		function returnToTitle() {
 			console.log( 'タイトル画面に戻ります' );
 			
+			// モーダル状態をリセット
+			isModalOpen = false;
+			
 			// モーダルを完全に除去
 			$modalOverlay.fadeOut( 300, function() {
 				$modalOverlay.remove();
 				
-				// 少し待ってから新しいモーダルを作成
+				// 少し待ってから既存のopenModal関数を呼び出してモーダルを再初期化
 				setTimeout( function() {
-					recreateModalAndShowTitle();
-				}, 100 );
-			} );
-		}
-		
-		/**
-		 * モーダルを再生成してタイトル画面を表示
-		 */
-		function recreateModalAndShowTitle() {
-			// 現在のゲーム選択データがある場合はそれを使用
-			if ( window.currentGameSelectionData ) {
-				var gameData = window.currentGameSelectionData;
-				
-				// 新しいモーダル要素を作成（archive-novel_game.phpと同じ構造）
-				var modalHtml = 
-					'<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">' +
-						'<div id="novel-game-modal-content" class="novel-game-modal-content">' +
-							'<button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="ゲームを閉じる" title="ゲームを閉じる">' +
-								'<span class="close-icon">×</span>' +
-							'</button>' +
-							'<div id="novel-title-screen" class="novel-title-screen" style="display: none;">' +
-								'<div class="novel-title-content">' +
-									'<h2 id="novel-title-main" class="novel-title-main"></h2>' +
-									'<p id="novel-title-subtitle" class="novel-title-subtitle"></p>' +
-									'<p id="novel-title-description" class="novel-title-description"></p>' +
-									'<div class="novel-title-buttons">' +
-										'<button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">最初から開始</button>' +
-										'<button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">続きから始める</button>' +
+					// 現在のゲーム選択データがある場合はそれを使用してopenModalを呼び出し
+					if ( window.currentGameSelectionData ) {
+						console.log( '既存のopenModal関数を使ってモーダルを再初期化します' );
+						
+						// 新しいモーダル要素を作成（archive-novel_game.phpと同じ構造）
+						var modalHtml = 
+							'<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">' +
+								'<div id="novel-game-modal-content" class="novel-game-modal-content">' +
+									'<button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="ゲームを閉じる" title="ゲームを閉じる">' +
+										'<span class="close-icon">×</span>' +
+									'</button>' +
+									'<div id="novel-title-screen" class="novel-title-screen" style="display: none;">' +
+										'<div class="novel-title-content">' +
+											'<h2 id="novel-title-main" class="novel-title-main"></h2>' +
+											'<p id="novel-title-subtitle" class="novel-title-subtitle"></p>' +
+											'<p id="novel-title-description" class="novel-title-description"></p>' +
+											'<div class="novel-title-buttons">' +
+												'<button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">最初から開始</button>' +
+												'<button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">続きから始める</button>' +
+											'</div>' +
+										'</div>' +
+									'</div>' +
+									'<div id="novel-game-container" class="novel-game-container">' +
+										'<!-- ゲーム内容は動的に読み込まれます -->' +
 									'</div>' +
 								'</div>' +
-							'</div>' +
-							'<div id="novel-game-container" class="novel-game-container">' +
-								'<!-- ゲーム内容は動的に読み込まれます -->' +
-							'</div>' +
-						'</div>' +
-					'</div>';
-				
-				// bodyにモーダルを追加
-				$( 'body' ).append( modalHtml );
-				
-				// 新しいモーダル要素を取得
-				$modalOverlay = $( '#novel-game-modal-overlay' );
-				$titleScreen = $( '#novel-title-screen' );
-				$closeButton = $( '#novel-game-close-btn' );
-				
-				// イベントハンドラーを再設定
-				initializeGame();
-				
-				// タイトル画面を表示
-				showTitleScreen( gameData.title, gameData.subtitle, gameData.description, gameData.image );
-			}
+							'</div>';
+						
+						// bodyにモーダルを追加
+						$( 'body' ).append( modalHtml );
+						
+						// 新しいモーダル要素を取得
+						$modalOverlay = $( '#novel-game-modal-overlay' );
+						$titleScreen = $( '#novel-title-screen' );
+						$closeButton = $( '#novel-game-close-btn' );
+						$gameContainer = $( '#novel-game-container' );
+						
+						// 既存のopenModal関数を使用して初期化とタイトル画面表示を一括処理
+						openModal( window.currentGameSelectionData );
+					}
+				}, 100 );
+			} );
 		}
 		
 		/**
