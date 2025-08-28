@@ -1874,9 +1874,6 @@
 						// bodyにモーダルを追加
 						$( 'body' ).append( modalHtml );
 						
-						// isModalOpenフラグをリセット（openModal内で再設定される）
-						isModalOpen = false;
-						
 						// 全てのモーダル関連jQuery変数を再初期化
 						$modalOverlay = $( '#novel-game-modal-overlay' );
 						$titleScreen = $( '#novel-title-screen' );
