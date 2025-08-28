@@ -1909,15 +1909,7 @@
 					$dialogueContinue = $( '#novel-dialogue-continue' );
 					$choicesContainer = $( '#novel-choices' );
 					
-					// ゲーム状態変数も初期化
-					dialogueIndex = 0;
-					dialogues = [];
-					dialogueData = [];
-					choices = [];
-					baseBackground = '';
-					currentBackground = '';
-					charactersData = {};
-					endingData = {};
+					// タイトル画面状態のみリセット（ゲームデータは保持）
 					isTitleScreenVisible = false;
 					
 					// デバッグ：モーダル要素の存在確認
