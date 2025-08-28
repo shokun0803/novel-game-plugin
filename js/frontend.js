@@ -51,6 +51,14 @@
 		var currentSceneUrl = '';
 		var autoSaveEnabled = true;
 		
+		// 現在プレイ中のゲーム情報を保持
+		var currentGameData = {
+			title: '',
+			subtitle: '',
+			description: '',
+			url: ''
+		};
+		
 		// セリフ表示用の新しい変数
 		var currentDialogueIndex = 0;
 		var currentPageIndex = 0;
@@ -312,6 +320,10 @@
 			currentGameTitle = gameTitle || '';
 			currentSceneUrl = sceneUrl || window.location.href;
 			
+			// 現在のゲームデータも更新（タイトルとURLのみ）
+			currentGameData.title = currentGameTitle;
+			currentGameData.url = currentSceneUrl;
+			
 			console.log( '現在のゲーム情報を設定:', { gameTitle: currentGameTitle, sceneUrl: currentSceneUrl } );
 		}
 		
@@ -380,6 +392,14 @@
 			}
 			
 			isTitleScreenVisible = true;
+			
+			// 現在のゲームデータを保存（エンディング時のタイトル復帰に使用）
+			currentGameData = {
+				title: gameData.title || '',
+				subtitle: gameData.subtitle || '',
+				description: gameData.description || '',
+				url: gameData.url || window.location.href
+			};
 			
 			// タイトル画面の内容を設定
 			$titleMain.text( gameData.title || '' );
@@ -525,6 +545,19 @@
 							// 現在のゲーム情報を設定
 							if ( extractedGameTitle ) {
 								setCurrentGameInfo( extractedGameTitle, gameUrl );
+								
+								// 現在保存されているゲームデータがある場合、そこから追加情報を取得
+								if ( window.currentGameSelectionData && window.currentGameSelectionData.title === extractedGameTitle ) {
+									currentGameData.title = extractedGameTitle;
+									currentGameData.subtitle = window.currentGameSelectionData.subtitle || '';
+									currentGameData.description = window.currentGameSelectionData.description || '';
+									currentGameData.url = gameUrl;
+								} else {
+									// ゲームデータを最低限で更新
+									currentGameData.title = extractedGameTitle;
+									currentGameData.url = gameUrl;
+									// subtitle と description は以前の値を保持（リセットしない）
+								}
 							}
 							
 							// セリフデータを取得
@@ -1842,13 +1875,24 @@
 		function returnToTitle() {
 			console.log( 'タイトル画面に戻ります' );
 			
-			// window.currentGameSelectionDataの存在と有効性を確認
-			if ( ! window.currentGameSelectionData || ! window.currentGameSelectionData.url ) {
-				console.error( 'window.currentGameSelectionDataが無効です:', window.currentGameSelectionData );
-				// フォールバック：基本的なゲームデータを作成
+			// 現在プレイ中のゲーム情報が保存されている場合、それを使用
+			if ( currentGameData.title && currentGameData.url ) {
+				console.log( '保存されたゲーム情報を使用します:', currentGameData );
 				window.currentGameSelectionData = {
-					url: window.location.href,
-					title: 'ノベルゲーム',
+					title: currentGameData.title,
+					subtitle: currentGameData.subtitle,
+					description: currentGameData.description,
+					url: currentGameData.url
+				};
+			}
+			// window.currentGameSelectionDataの存在と有効性を確認
+			else if ( ! window.currentGameSelectionData || ! window.currentGameSelectionData.url ) {
+				console.error( 'window.currentGameSelectionDataが無効で、保存されたゲーム情報もありません:', window.currentGameSelectionData );
+				// 最後の手段：現在のページ情報を使用
+				var extractedTitle = extractGameTitleFromPage();
+				window.currentGameSelectionData = {
+					url: currentSceneUrl || window.location.href,
+					title: extractedTitle || currentGameTitle || 'ノベルゲーム',
 					subtitle: '',
 					description: ''
 				};
