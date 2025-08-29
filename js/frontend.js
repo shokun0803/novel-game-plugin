@@ -1623,23 +1623,23 @@
 					// 既存のイベントハンドラーをクリーンアップ
 					$( document ).off( 'keydown.novel-choices' );
 					
-					// 1. まず古いデータを完全にクリア
-					dialogueData = [];
-					dialogues = [];
-					choices = [];
-					baseBackground = '';
-					currentBackground = '';
-					charactersData = {};
-					
-					// 2. 表示状態をリセット
-					resetGameState();
-					
-					// 3. 新しいシーンのデータを読み込み
+					// 新しいシーンのデータを読み込み
 					loadGameData( nextScene ).then( function() {
-						// 4. シーン遷移後の進捗を保存
+						// データ読み込み成功後に古いデータをクリア
+						dialogueData = [];
+						dialogues = [];
+						choices = [];
+						baseBackground = '';
+						currentBackground = '';
+						charactersData = {};
+						
+						// 表示状態をリセット
+						resetGameState();
+						
+						// シーン遷移後の進捗を保存
 						autoSaveGameProgress();
 						
-						// 5. ゲームコンテンツを初期化
+						// ゲームコンテンツを初期化
 						initializeGameContent();
 					} ).catch( function( error ) {
 						console.error( '次のシーンの読み込みに失敗しました:', error );
