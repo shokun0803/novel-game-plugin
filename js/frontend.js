@@ -149,6 +149,17 @@
 					version: '1.2.0'
 				};
 				
+				// 選択肢が表示されている場合は、このシーンを最後の選択肢シーンとして記録
+				if ( choices && choices.length > 0 ) {
+					progressData.lastChoiceScene = currentSceneUrl;
+				} else {
+					// 既存の lastChoiceScene を保持
+					var existingData = getSavedGameProgress( currentGameTitle );
+					if ( existingData && existingData.lastChoiceScene ) {
+						progressData.lastChoiceScene = existingData.lastChoiceScene;
+					}
+				}
+				
 				var storageKey = generateStorageKey( currentGameTitle );
 				localStorage.setItem( storageKey, JSON.stringify( progressData ) );
 				
