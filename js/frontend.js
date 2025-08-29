@@ -1219,6 +1219,7 @@
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
 					var gameTitle = window.currentGameSelectionData.title;
+					var gameUrl = window.currentGameSelectionData.url;
 					
 					// 保存された進捗があれば削除（最初から開始のため）
 					if ( gameTitle ) {
@@ -1226,11 +1227,24 @@
 						console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
 					}
 					
+					// ゲーム状態変数を初期値にリセット
+					dialogueIndex = 0;
+					currentDialogueIndex = 0;
+					currentPageIndex = 0;
+					currentSceneUrl = gameUrl;
+					
 					// タイトル画面を非表示にしてゲーム開始
 					hideTitleScreen();
 					setTimeout( function() {
-						// タイトル画面経由での開始のため、進捗チェックをスキップして直接初期化
-						initializeGameContent();
+						// 最初のシーンからゲームデータを再読み込みしてからゲーム開始
+						loadGameData( gameUrl ).then( function() {
+							console.log( '最初のシーンからゲームデータを読み込み完了' );
+							initializeGameContent();
+						} ).catch( function( error ) {
+							console.error( '最初のシーンの読み込みに失敗しました:', error );
+							// フォールバック：現在のデータで初期化を試行
+							initializeGameContent();
+						} );
 					}, 300 );
 				}
 			} );
