@@ -1099,7 +1099,23 @@
 				return;
 			}
 			
+			// セッション状態のグローバル変数をクリア（localStorageは永続進行度のみ保持）
+			console.log( 'モーダルクローズ時にセッション状態のグローバル変数をクリアします' );
 			isModalOpen = false;
+			isTitleScreenVisible = false;
+			dialogueIndex = 0;
+			currentDialogueIndex = 0;
+			currentPageIndex = 0;
+			dialogues = [];
+			dialogueData = [];
+			choices = [];
+			baseBackground = '';
+			currentBackground = '';
+			charactersData = {};
+			endingData = {};
+			currentDialoguePages = [];
+			allDialoguePages = [];
+			// 注意：currentGameDataとlocalStorageの内容は保持（永続化が必要な情報）
 			
 			// ボディとHTMLのスクロールを復元
 			$( 'html, body' ).removeClass( 'modal-open' ).css( 'overflow', '' );
@@ -1116,29 +1132,15 @@
 			$( document ).off( 'keydown.novel-dialogue' );
 			$( window ).off( 'resize.game orientationchange.game' );
 			
-			// ゲーム状態をリセット
-			resetGameState();
+			// ゲーム表示状態をリセット
+			resetGameDisplayState();
 		}
 
 		/**
-		 * ゲーム状態をリセット（表示状態のみ、データはクリアしない）
+		 * ゲーム表示状態をリセット（DOM要素の表示のみ、グローバル変数は別途管理）
 		 */
-		function resetGameState() {
+		function resetGameDisplayState() {
 			console.log( 'Resetting game display state...' );
-			
-			// セリフ関連の表示状態をリセット
-			currentDialogueIndex = 0;
-			currentPageIndex = 0;
-			currentDialoguePages = [];
-			allDialoguePages = [];
-			
-			// セリフ表示インデックスをリセット
-			dialogueIndex = 0;
-			
-			// 背景表示の状態をリセット（データは保持）
-			if ( baseBackground ) {
-				currentBackground = baseBackground;
-			}
 			
 			// DOM要素の表示をリセット
 			if ( $dialogueText && $dialogueText.length > 0 ) {
@@ -1913,8 +1915,24 @@
 				console.log( 'フォールバックデータを設定しました:', window.currentGameSelectionData );
 			}
 			
-			// モーダル状態をリセット
+			// セッション状態のグローバル変数をクリア（localStorageは永続進行度のみ保持）
+			console.log( 'セッション状態のグローバル変数をクリアします' );
 			isModalOpen = false;
+			isTitleScreenVisible = false;
+			dialogueIndex = 0;
+			currentDialogueIndex = 0;
+			currentPageIndex = 0;
+			dialogues = [];
+			dialogueData = [];
+			choices = [];
+			baseBackground = '';
+			currentBackground = '';
+			charactersData = {};
+			endingData = {};
+			currentDialoguePages = [];
+			allDialoguePages = [];
+			
+			// 注意：currentGameDataとlocalStorageの内容は保持（永続化が必要な情報）
 			
 			// モーダルを完全に除去
 			$modalOverlay.fadeOut( 300, function() {
@@ -1967,9 +1985,6 @@
 					$dialogueContinue = $( '#novel-dialogue-continue' );
 					$choicesContainer = $( '#novel-choices' );
 					
-					// タイトル画面状態のみリセット（ゲームデータは保持）
-					isTitleScreenVisible = false;
-					
 					// デバッグ：モーダル要素の存在確認
 					console.log( 'モーダル要素再作成後の確認:', {
 						modalOverlay: $modalOverlay.length,
@@ -1987,6 +2002,7 @@
 							isModalOpen: isModalOpen
 						} );
 						// タイトルに戻る処理からの呼び出しであることを明示
+						// openModal関数内でグローバル変数の再初期化が行われる
 						openModal( window.currentGameSelectionData, true );
 					} else {
 						console.error( 'モーダル要素の作成に失敗しました' );
