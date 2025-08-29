@@ -135,30 +135,6 @@
 			return;
 		}
 
-		/**
-		 * エラーメッセージを表示する
-		 *
-		 * @param {string} message 表示するエラーメッセージ
-		 * @since 1.2.0
-		 */
-		function showErrorMessage( message ) {
-			// ゲーム画面内にエラーメッセージを表示
-			var $errorMessage = $( '<div class="novel-error-message" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 0, 0, 0.9); color: white; padding: 20px; border-radius: 10px; z-index: 10000; text-align: center; font-size: 16px; max-width: 400px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);">' + message + '</div>' );
-			
-			// モーダル内に表示
-			if ( $modalOverlay && $modalOverlay.length > 0 ) {
-				$modalOverlay.append( $errorMessage );
-			} else {
-				$( 'body' ).append( $errorMessage );
-			}
-			
-			// 3秒後に自動で消す
-			setTimeout( function() {
-				$errorMessage.fadeOut( 500, function() {
-					$errorMessage.remove();
-				} );
-			}, 3000 );
-		}
 
 		/**
 		 * ゲーム進捗をlocalStorageに自動保存する
@@ -1668,8 +1644,6 @@
 						initializeGameContent();
 					} ).catch( function( error ) {
 						console.error( '次のシーンの読み込みに失敗しました:', error );
-						// エラーメッセージ表示
-						showErrorMessage( 'シーンデータの取得に失敗しました。もう一度お試しください。' );
 					} );
 				}
 			}
