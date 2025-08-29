@@ -137,6 +137,7 @@ function noveltool_meta_box_callback( $post ) {
     $dialogue    = get_post_meta( $post->ID, '_dialogue_text', true );
     $choices     = get_post_meta( $post->ID, '_choices', true );
     $game_title  = get_post_meta( $post->ID, '_game_title', true );
+    $is_ending   = get_post_meta( $post->ID, '_is_ending', true );
     $dialogue_backgrounds = get_post_meta( $post->ID, '_dialogue_backgrounds', true );
     
     // 3体キャラクター対応の値を取得
@@ -818,6 +819,23 @@ function noveltool_meta_box_callback( $post ) {
                 </div>
             </td>
         </tr>
+
+        <tr>
+            <th scope="row">
+                <label for="novel_is_ending"><?php esc_html_e( 'エンディング設定', 'novel-game-plugin' ); ?></label>
+            </th>
+            <td>
+                <input type="checkbox"
+                       id="novel_is_ending"
+                       name="is_ending"
+                       value="1"
+                       <?php checked( $is_ending, '1' ); ?> />
+                <label for="novel_is_ending"><?php esc_html_e( 'このシーンをエンディング（ゲーム終了）として設定する', 'novel-game-plugin' ); ?></label>
+                <p class="description">
+                    <?php esc_html_e( 'チェックを入れると、このシーンで選択肢がない場合にエンディング画面が表示され、「タイトルに戻る」ボタンが表示されます。チェックなしの場合は「Game Over」として扱われます。', 'novel-game-plugin' ); ?>
+                </p>
+            </td>
+        </tr>
     </table>
     <?php
 }
@@ -858,6 +876,7 @@ function noveltool_save_meta_box_data( $post_id ) {
         'dialogue_text'    => '_dialogue_text',
         'choices'          => '_choices',
         'game_title'       => '_game_title',
+        'is_ending'        => '_is_ending',
     );
     
     // セリフ背景データの保存
