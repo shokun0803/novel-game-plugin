@@ -1765,6 +1765,9 @@
 					}
 					
 					setTimeout( function() {
+						// DOM から $modalOverlay を再取得（fadeOut後はDOMから削除されている可能性があるため）
+						$modalOverlay = $( '#novel-game-modal-overlay' );
+						
 						// モーダルオーバーレイが消失している場合は新規生成
 						if ( $modalOverlay.length === 0 ) {
 							$modalOverlay = $( '<div id="novel-game-modal-overlay" class="novel-modal-overlay"></div>' ).appendTo( 'body' );
