@@ -937,7 +937,11 @@ function noveltool_save_meta_box_data( $post_id ) {
     }
 
     foreach ( $fields as $field => $meta_key ) {
-        if ( isset( $_POST[ $field ] ) ) {
+        if ( $field === 'is_ending' ) {
+            // チェックボックスの場合、チェックを外すと $_POST に含まれないため特別処理
+            $value = isset( $_POST['is_ending'] ) ? '1' : '0';
+            update_post_meta( $post_id, $meta_key, $value );
+        } elseif ( isset( $_POST[ $field ] ) ) {
             $value = wp_unslash( $_POST[ $field ] );
 
             // サニタイズ処理
