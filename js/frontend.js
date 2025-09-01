@@ -1807,6 +1807,10 @@
 								'</div>';
 							$modalOverlay = $( modalHtml ).appendTo( 'body' );
 							console.log( 'New modal overlay created:', $modalOverlay.length );
+							
+							// モーダル要素変数を更新
+							$closeButton = $( '#novel-game-close-btn' );
+							console.log( 'Close button updated:', $closeButton.length );
 						}
 						
 						// モーダル表示フラグをリセット
