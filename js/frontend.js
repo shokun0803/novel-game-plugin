@@ -1743,6 +1743,8 @@
 		 */
 		function returnToTitleScreen() {
 			console.log( 'タイトル画面に戻ります' );
+			console.log( 'currentGameTitle:', currentGameTitle );
+			console.log( 'currentSceneUrl:', currentSceneUrl );
 			
 			// モーダルを一度削除
 			if ( $modalOverlay && $modalOverlay.length > 0 ) {
@@ -1755,30 +1757,63 @@
 					resetGameDisplayState();
 					
 					// window.currentGameSelectionDataを必ず再セット
-					if ( currentGameTitle ) {
-						window.currentGameSelectionData = {
-							title: currentGameTitle,
-							url: currentSceneUrl || window.location.href,
-							description: '',
-							subtitle: ''
-						};
+					// currentGameTitleが未定義の場合は、window.currentGameSelectionDataから取得を試行
+					var gameTitle = currentGameTitle;
+					var gameUrl = currentSceneUrl;
+					
+					if ( !gameTitle && window.currentGameSelectionData && window.currentGameSelectionData.title ) {
+						gameTitle = window.currentGameSelectionData.title;
 					}
+					
+					if ( !gameUrl && window.currentGameSelectionData && window.currentGameSelectionData.url ) {
+						gameUrl = window.currentGameSelectionData.url;
+					}
+					
+					// フォールバックとして現在のURLを使用
+					if ( !gameUrl ) {
+						gameUrl = window.location.href;
+					}
+					
+					console.log( 'Setting gameTitle:', gameTitle );
+					console.log( 'Setting gameUrl:', gameUrl );
+					
+					// ゲームデータを構築
+					window.currentGameSelectionData = {
+						title: gameTitle || 'Novel Game',
+						url: gameUrl,
+						description: '',
+						subtitle: ''
+					};
+					
+					// currentGameTitleとcurrentSceneUrlを更新
+					currentGameTitle = gameTitle;
+					currentSceneUrl = gameUrl;
 					
 					setTimeout( function() {
 						// DOM から $modalOverlay を再取得（fadeOut後はDOMから削除されている可能性があるため）
 						$modalOverlay = $( '#novel-game-modal-overlay' );
+						console.log( 'Modal overlay found after fadeOut:', $modalOverlay.length );
 						
 						// モーダルオーバーレイが消失している場合は新規生成
 						if ( $modalOverlay.length === 0 ) {
+							console.log( 'Creating new modal overlay' );
 							$modalOverlay = $( '<div id="novel-game-modal-overlay" class="novel-modal-overlay"></div>' ).appendTo( 'body' );
 						}
 						
+						// モーダル表示フラグをリセット
+						isModalOpen = false;
+						
 						// ゲームデータが存在する場合はモーダルを再起動
 						if ( window.currentGameSelectionData ) {
+							console.log( 'Reopening modal with data:', window.currentGameSelectionData );
 							openModal( window.currentGameSelectionData );
+						} else {
+							console.error( 'window.currentGameSelectionData is not available for modal restart' );
 						}
-					}, 100 );
+					}, 150 );
 				} );
+			} else {
+				console.error( 'Modal overlay not found for return to title' );
 			}
 		}
 		
