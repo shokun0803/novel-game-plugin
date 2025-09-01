@@ -1754,23 +1754,27 @@
 					// ゲーム状態をリセット（グローバル変数のクリアのみ、localStorageは保持）
 					resetGameDisplayState();
 					
-					// 同じゲームでモーダルを再起動（タイトル画面表示）
-					if ( window.currentGameSelectionData ) {
-						setTimeout( function() {
-							openModal( window.currentGameSelectionData );
-						}, 100 );
-					} else if ( currentGameTitle ) {
-						// currentGameTitleからゲームデータを再構築
-						var gameData = {
+					// window.currentGameSelectionDataを必ず再セット
+					if ( currentGameTitle ) {
+						window.currentGameSelectionData = {
 							title: currentGameTitle,
 							url: currentSceneUrl || window.location.href,
 							description: '',
 							subtitle: ''
 						};
-						setTimeout( function() {
-							openModal( gameData );
-						}, 100 );
 					}
+					
+					setTimeout( function() {
+						// モーダルオーバーレイが消失している場合は新規生成
+						if ( $modalOverlay.length === 0 ) {
+							$modalOverlay = $( '<div id="novel-game-modal-overlay" class="novel-modal-overlay"></div>' ).appendTo( 'body' );
+						}
+						
+						// ゲームデータが存在する場合はモーダルを再起動
+						if ( window.currentGameSelectionData ) {
+							openModal( window.currentGameSelectionData );
+						}
+					}, 100 );
 				} );
 			}
 		}
