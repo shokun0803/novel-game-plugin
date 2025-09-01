@@ -1797,20 +1797,40 @@
 						// モーダルオーバーレイが消失している場合は新規生成
 						if ( $modalOverlay.length === 0 ) {
 							console.log( 'Creating new modal overlay' );
-							$modalOverlay = $( '<div id="novel-game-modal-overlay" class="novel-modal-overlay"></div>' ).appendTo( 'body' );
+							// 元のテンプレートと同じ構造でモーダルを再生成
+							var modalHtml = '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">' +
+								'<div id="novel-game-modal-content" class="novel-game-modal-content">' +
+								'<button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="ゲームを閉じる" title="ゲームを閉じる">' +
+								'<span class="close-icon">×</span>' +
+								'</button>' +
+								'</div>' +
+								'</div>';
+							$modalOverlay = $( modalHtml ).appendTo( 'body' );
+							console.log( 'New modal overlay created:', $modalOverlay.length );
 						}
 						
 						// モーダル表示フラグをリセット
 						isModalOpen = false;
 						
-						// ゲームデータが存在する場合はモーダルを再起動
-						if ( window.currentGameSelectionData ) {
+						// ゲームデータが存在するかどうかを再確認
+						if ( window.currentGameSelectionData && window.currentGameSelectionData.title ) {
 							console.log( 'Reopening modal with data:', window.currentGameSelectionData );
-							openModal( window.currentGameSelectionData );
+							// モーダルが確実に存在することを確認してから開く
+							if ( $modalOverlay.length > 0 ) {
+								openModal( window.currentGameSelectionData );
+							} else {
+								console.error( 'Failed to create modal overlay, cannot reopen' );
+								// フォールバック: ページ遷移
+								if ( window.currentGameSelectionData.url ) {
+									console.log( 'Falling back to page navigation:', window.currentGameSelectionData.url );
+									window.location.href = window.currentGameSelectionData.url;
+								}
+							}
 						} else {
 							console.error( 'window.currentGameSelectionData is not available for modal restart' );
+							console.log( 'Available game data:', window.currentGameSelectionData );
 						}
-					}, 150 );
+					}, 350 );
 				} );
 			} else {
 				console.error( 'Modal overlay not found for return to title' );
