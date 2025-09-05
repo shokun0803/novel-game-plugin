@@ -55,6 +55,7 @@
 		var currentPageIndex = 0;
 		var currentDialoguePages = [];
 		var allDialoguePages = [];
+		var isEnding = false;
 		
 		// 表示設定
 		var displaySettings = {
@@ -87,6 +88,7 @@
 			var choicesData = $( '#novel-choices-data' ).text();
 			var baseBackgroundData = $( '#novel-base-background' ).text();
 			var charactersDataRaw = $( '#novel-characters-data' ).text();
+			var endingDataRaw = $( '#novel-ending-data' ).text();
 
 			if ( dialogueDataRaw ) {
 				dialogueData = JSON.parse( dialogueDataRaw );
@@ -115,6 +117,10 @@
 			
 			if ( charactersDataRaw ) {
 				charactersData = JSON.parse( charactersDataRaw );
+			}
+			
+			if ( endingDataRaw ) {
+				isEnding = JSON.parse( endingDataRaw );
 			}
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
@@ -549,6 +555,21 @@
 								if ( charactersDataText ) {
 									charactersData = JSON.parse( charactersDataText );
 									console.log( 'Parsed characters data:', charactersData );
+								}
+							}
+							
+							// エンディングデータを取得
+							var endingDataScript = $response.filter( 'script#novel-ending-data' );
+							if ( endingDataScript.length === 0 ) {
+								endingDataScript = $response.find( '#novel-ending-data' );
+							}
+							console.log( 'Ending data script found:', endingDataScript.length );
+							
+							if ( endingDataScript.length > 0 ) {
+								var endingDataText = endingDataScript.text() || endingDataScript.html();
+								if ( endingDataText ) {
+									isEnding = JSON.parse( endingDataText );
+									console.log( 'Parsed ending data:', isEnding );
 								}
 							}
 							
@@ -1442,6 +1463,12 @@
 		 * 選択肢を表示、選択肢がない場合は「おわり」を表示
 		 */
 		function showChoices() {
+			// エンディング設定がある場合は選択肢に関係なくゲーム終了
+			if ( isEnding ) {
+				showGameEnd();
+				return;
+			}
+			
 			if ( choices.length === 0 ) {
 				// 選択肢がない場合は「おわり」を表示
 				showGameEnd();
