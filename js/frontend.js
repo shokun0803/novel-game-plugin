@@ -2039,6 +2039,429 @@
 		
 		// デバッグ情報を出力
 		console.log( 'Novel Game Modal initialized. Modal overlay found:', $modalOverlay.length > 0 );
+
+		/**
+		 * モーダルDOM再生成ユーティリティ
+		 * ゲーム進行中にモーダルの削除・再生成が必要な場合に使用
+		 * 
+		 * @since 1.3.0
+		 */
+		var modalUtil = {
+			/**
+			 * モーダルDOM構造のテンプレート
+			 * 既存構造と同一構造を保証する
+			 */
+			template: {
+				overlay: '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;"></div>',
+				content: '<div id="novel-game-modal-content" class="novel-game-modal-content"></div>',
+				closeButton: '<button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="ゲームを閉じる" title="ゲームを閉じる"><span class="close-icon">×</span></button>',
+				titleScreen: '<div id="novel-title-screen" class="novel-title-screen" style="display: none;"><div class="novel-title-content"><h2 id="novel-title-main" class="novel-title-main"></h2><p id="novel-title-subtitle" class="novel-title-subtitle"></p><p id="novel-title-description" class="novel-title-description"></p><div class="novel-title-buttons"><button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">最初から開始</button><button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">続きから始める</button></div></div></div>',
+				gameContainer: '<div id="novel-game-container" class="novel-game-container"><!-- ゲーム内容は動的に読み込まれます --></div>'
+			},
+
+			/**
+			 * 現在の実行中アニメーション管理
+			 */
+			pendingAnimations: [],
+
+			/**
+			 * モーダル再生成の実行状態
+			 */
+			isRecreating: false,
+
+			/**
+			 * モーダルを安全に再生成する
+			 * フェードアウトなど非同期アニメーション完了後に実行
+			 * 
+			 * @param {object} options 再生成オプション
+			 * @param {boolean} options.preserveState 現在の状態を保持するかどうか（デフォルト: true）
+			 * @param {boolean} options.waitForAnimations アニメーション完了を待つかどうか（デフォルト: true）
+			 * @return {Promise} 再生成完了のPromise
+			 */
+			recreate: function( options ) {
+				var self = this;
+				options = options || {};
+				var preserveState = options.preserveState !== false;
+				var waitForAnimations = options.waitForAnimations !== false;
+
+				return new Promise( function( resolve, reject ) {
+					console.log( 'modalUtil.recreate開始:', { preserveState: preserveState, waitForAnimations: waitForAnimations } );
+
+					// 既に再生成中の場合は待機
+					if ( self.isRecreating ) {
+						console.log( 'モーダル再生成が既に実行中です' );
+						setTimeout( function() {
+							self.recreate( options ).then( resolve ).catch( reject );
+						}, 100 );
+						return;
+					}
+
+					self.isRecreating = true;
+
+					try {
+						// 1. 現在の状態を保存
+						var savedState = preserveState ? self._saveCurrentState() : null;
+
+						// 2. アニメーション完了を待機
+						var animationPromise = waitForAnimations ? self._waitForAnimations() : Promise.resolve();
+
+						animationPromise.then( function() {
+							// 3. イベントハンドラーをクリーンアップ
+							self._cleanupEventHandlers();
+
+							// 4. 古いモーダルを削除
+							self._removeOldModal();
+
+							// 5. 新しいモーダルを生成
+							self._createNewModal();
+
+							// 6. DOM参照を再取得
+							self._refreshDOMReferences();
+
+							// 7. イベントハンドラーを再設定
+							self._rebindEventHandlers();
+
+							// 8. 状態を復元
+							if ( savedState ) {
+								self._restoreState( savedState );
+							}
+
+							self.isRecreating = false;
+							console.log( 'modalUtil.recreate完了' );
+							resolve();
+
+						} ).catch( function( error ) {
+							self.isRecreating = false;
+							console.error( 'modalUtil.recreate失敗:', error );
+							reject( error );
+						} );
+
+					} catch ( error ) {
+						self.isRecreating = false;
+						console.error( 'modalUtil.recreate例外:', error );
+						reject( error );
+					}
+				} );
+			},
+
+			/**
+			 * 現在のアニメーション完了を待機
+			 * 
+			 * @return {Promise} アニメーション完了のPromise
+			 */
+			_waitForAnimations: function() {
+				var self = this;
+				return new Promise( function( resolve ) {
+					// モーダルのフェードアニメーション検知
+					if ( $modalOverlay.length > 0 && $modalOverlay.is( ':animated' ) ) {
+						console.log( 'モーダルアニメーション完了を待機中...' );
+						$modalOverlay.queue( function() {
+							$( this ).dequeue();
+							resolve();
+						} );
+					} else {
+						// 短時間待機してから完了とする（CSS animationなどのために）
+						setTimeout( resolve, 50 );
+					}
+				} );
+			},
+
+			/**
+			 * 現在の状態を保存
+			 * 
+			 * @return {object} 保存された状態
+			 */
+			_saveCurrentState: function() {
+				var state = {};
+
+				try {
+					// モーダルの表示状態
+					state.isModalOpen = isModalOpen;
+					state.isTitleScreenVisible = isTitleScreenVisible;
+
+					// モーダルの位置・スタイル
+					if ( $modalOverlay.length > 0 ) {
+						state.modalDisplay = $modalOverlay.css( 'display' );
+						state.modalOpacity = $modalOverlay.css( 'opacity' );
+						state.modalClasses = $modalOverlay.attr( 'class' );
+					}
+
+					// タイトル画面の表示状態
+					if ( $titleScreen.length > 0 ) {
+						state.titleScreenDisplay = $titleScreen.css( 'display' );
+						state.titleScreenClasses = $titleScreen.attr( 'class' );
+					}
+
+					// ゲームコンテナの状態
+					if ( $gameContainer.length > 0 ) {
+						state.gameContainerHTML = $gameContainer.html();
+						state.gameContainerClasses = $gameContainer.attr( 'class' );
+						state.gameContainerStyle = $gameContainer.attr( 'style' );
+					}
+
+					console.log( '状態保存完了:', state );
+					return state;
+
+				} catch ( error ) {
+					console.warn( '状態保存中にエラーが発生:', error );
+					return {};
+				}
+			},
+
+			/**
+			 * イベントハンドラーのクリーンアップ
+			 */
+			_cleanupEventHandlers: function() {
+				console.log( 'イベントハンドラーのクリーンアップ開始' );
+
+				try {
+					// モーダル関連のイベントをクリーンアップ
+					$( document ).off( 'keydown.modal' );
+					$( document ).off( 'keydown.novel-dialogue' );
+					$( document ).off( 'keydown.resume-dialog' );
+					$( window ).off( 'resize.game orientationchange.game' );
+
+					// モーダル要素のイベントをクリーンアップ
+					if ( $modalOverlay.length > 0 ) {
+						$modalOverlay.off( '.novel-game' );
+					}
+					if ( $gameContainer.length > 0 ) {
+						$gameContainer.off( '.novel-game' );
+					}
+
+					// 動的に追加されたイベントもクリーンアップ
+					$( document ).off( 'click.novel-game-dynamic' );
+
+					console.log( 'イベントハンドラーのクリーンアップ完了' );
+
+				} catch ( error ) {
+					console.warn( 'イベントハンドラークリーンアップ中にエラーが発生:', error );
+				}
+			},
+
+			/**
+			 * 古いモーダルを削除
+			 */
+			_removeOldModal: function() {
+				console.log( '古いモーダルの削除開始' );
+
+				try {
+					if ( $modalOverlay.length > 0 ) {
+						$modalOverlay.remove();
+					}
+					console.log( '古いモーダルの削除完了' );
+
+				} catch ( error ) {
+					console.warn( '古いモーダル削除中にエラーが発生:', error );
+				}
+			},
+
+			/**
+			 * 新しいモーダルを生成
+			 */
+			_createNewModal: function() {
+				console.log( '新しいモーダルの生成開始' );
+
+				try {
+					// モーダル構造を構築
+					var $newOverlay = $( this.template.overlay );
+					var $newContent = $( this.template.content );
+					var $newCloseButton = $( this.template.closeButton );
+					var $newTitleScreen = $( this.template.titleScreen );
+					var $newGameContainer = $( this.template.gameContainer );
+
+					// 構造を組み立て
+					$newContent.append( $newCloseButton );
+					$newContent.append( $newTitleScreen );
+					$newContent.append( $newGameContainer );
+					$newOverlay.append( $newContent );
+
+					// DOMに追加
+					$( 'body' ).append( $newOverlay );
+
+					console.log( '新しいモーダルの生成完了' );
+
+				} catch ( error ) {
+					console.error( '新しいモーダル生成中にエラーが発生:', error );
+					throw error;
+				}
+			},
+
+			/**
+			 * DOM参照を再取得
+			 */
+			_refreshDOMReferences: function() {
+				console.log( 'DOM参照の再取得開始' );
+
+				try {
+					// グローバル変数の再取得
+					$modalOverlay = $( '#novel-game-modal-overlay' );
+					$closeButton = $( '#novel-game-close-btn' );
+					$titleScreen = $( '#novel-title-screen' );
+					$titleMain = $( '#novel-title-main' );
+					$titleSubtitle = $( '#novel-title-subtitle' );
+					$titleDescription = $( '#novel-title-description' );
+					$titleStartBtn = $( '#novel-title-start-new' );
+					$titleContinueBtn = $( '#novel-title-continue' );
+					$gameContainer = $( '#novel-game-container' );
+
+					// ゲーム内の要素も再取得
+					$dialogueText = $( '#novel-dialogue-text' );
+					$dialogueBox = $( '#novel-dialogue-box' );
+					$speakerName = $( '#novel-speaker-name' );
+					$dialogueContinue = $( '#novel-dialogue-continue' );
+					$choicesContainer = $( '#novel-choices' );
+
+					console.log( 'DOM参照の再取得完了:', {
+						modalOverlay: $modalOverlay.length,
+						closeButton: $closeButton.length,
+						titleScreen: $titleScreen.length,
+						gameContainer: $gameContainer.length
+					} );
+
+				} catch ( error ) {
+					console.error( 'DOM参照再取得中にエラーが発生:', error );
+					throw error;
+				}
+			},
+
+			/**
+			 * イベントハンドラーを再設定
+			 */
+			_rebindEventHandlers: function() {
+				console.log( 'イベントハンドラーの再設定開始' );
+
+				try {
+					// モーダルイベントを再設定
+					if ( typeof setupModalEvents === 'function' ) {
+						setupModalEvents();
+					}
+
+					console.log( 'イベントハンドラーの再設定完了' );
+
+				} catch ( error ) {
+					console.error( 'イベントハンドラー再設定中にエラーが発生:', error );
+					throw error;
+				}
+			},
+
+			/**
+			 * 状態を復元
+			 * 
+			 * @param {object} savedState 保存された状態
+			 */
+			_restoreState: function( savedState ) {
+				console.log( '状態の復元開始:', savedState );
+
+				try {
+					if ( ! savedState ) {
+						return;
+					}
+
+					// モーダルの表示状態復元
+					if ( savedState.isModalOpen !== undefined ) {
+						isModalOpen = savedState.isModalOpen;
+					}
+					if ( savedState.isTitleScreenVisible !== undefined ) {
+						isTitleScreenVisible = savedState.isTitleScreenVisible;
+					}
+
+					// モーダルのスタイル復元
+					if ( $modalOverlay.length > 0 ) {
+						if ( savedState.modalDisplay ) {
+							$modalOverlay.css( 'display', savedState.modalDisplay );
+						}
+						if ( savedState.modalOpacity ) {
+							$modalOverlay.css( 'opacity', savedState.modalOpacity );
+						}
+						if ( savedState.modalClasses ) {
+							$modalOverlay.attr( 'class', savedState.modalClasses );
+						}
+					}
+
+					// タイトル画面の表示状態復元
+					if ( $titleScreen.length > 0 ) {
+						if ( savedState.titleScreenDisplay ) {
+							$titleScreen.css( 'display', savedState.titleScreenDisplay );
+						}
+						if ( savedState.titleScreenClasses ) {
+							$titleScreen.attr( 'class', savedState.titleScreenClasses );
+						}
+					}
+
+					// ゲームコンテナの状態復元
+					if ( $gameContainer.length > 0 ) {
+						if ( savedState.gameContainerHTML ) {
+							$gameContainer.html( savedState.gameContainerHTML );
+						}
+						if ( savedState.gameContainerClasses ) {
+							$gameContainer.attr( 'class', savedState.gameContainerClasses );
+						}
+						if ( savedState.gameContainerStyle ) {
+							$gameContainer.attr( 'style', savedState.gameContainerStyle );
+						}
+					}
+
+					console.log( '状態の復元完了' );
+
+				} catch ( error ) {
+					console.warn( '状態復元中にエラーが発生:', error );
+				}
+			},
+
+			/**
+			 * 短時間で連続操作された場合の安全性チェック
+			 * 
+			 * @return {boolean} 安全に実行可能かどうか
+			 */
+			isSafeToRecreate: function() {
+				// 再生成中でないこと
+				if ( this.isRecreating ) {
+					return false;
+				}
+
+				// モーダル要素が存在すること
+				if ( $modalOverlay.length === 0 ) {
+					return true; // 存在しない場合は再生成可能
+				}
+
+				// アニメーション中でないこと
+				if ( $modalOverlay.is( ':animated' ) ) {
+					return false;
+				}
+
+				return true;
+			}
+		};
+
+		// modalUtilをグローバルにエクスポート（他の機能から利用可能にする）
+		window.novelGameModalUtil = modalUtil;
+
+		/**
+		 * モーダル再生成ユーティリティの使用例:
+		 * 
+		 * // 基本的な再生成（状態保持あり）
+		 * window.novelGameModalUtil.recreate().then(function() {
+		 *     console.log('モーダル再生成完了');
+		 * });
+		 * 
+		 * // 状態を保持せずに再生成
+		 * window.novelGameModalUtil.recreate({ preserveState: false }).then(function() {
+		 *     console.log('モーダル再生成完了（状態リセット）');
+		 * });
+		 * 
+		 * // アニメーション完了を待たずに即座に再生成
+		 * window.novelGameModalUtil.recreate({ waitForAnimations: false }).then(function() {
+		 *     console.log('モーダル再生成完了（アニメーション待機なし）');
+		 * });
+		 * 
+		 * // 安全性チェック
+		 * if (window.novelGameModalUtil.isSafeToRecreate()) {
+		 *     // 再生成実行
+		 * }
+		 */
+
+		console.log( 'モーダルDOM再生成ユーティリティが初期化されました' );
 	} );
 
 } )( jQuery );
