@@ -1180,6 +1180,14 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     display: none; /* 新しいスタイルを使用する場合は非表示 */
 }
 
+/* #novel-choices配下のナビゲーションボタンは常に表示 */
+#novel-choices .game-nav-button,
+#novel-choices .game-nav-button.back-to-title-button,
+#novel-choices .game-nav-button.game-list-button,
+#novel-choices .game-nav-button.close-button {
+    display: inline-block;
+}
+
 /* ゲーム終了メッセージ */
 .game-end-message {
     background: rgba(0, 0, 0, 0.8);
