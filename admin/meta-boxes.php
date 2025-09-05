@@ -150,6 +150,9 @@ function noveltool_meta_box_callback( $post ) {
     $character_center_name = get_post_meta( $post->ID, '_character_center_name', true );
     $character_right_name  = get_post_meta( $post->ID, '_character_right_name', true );
     
+    // エンディング設定の取得
+    $is_ending = get_post_meta( $post->ID, '_is_ending', true );
+    
     // 後方互換性：既存の単一キャラクター画像をセンター位置に移行
     if ( $character && ! $character_center ) {
         $character_center = $character;
@@ -301,6 +304,7 @@ function noveltool_meta_box_callback( $post ) {
             'character_left_name' => $character_left_name,
             'character_center_name' => $character_center_name,
             'character_right_name' => $character_right_name,
+            'is_ending' => (bool) $is_ending,
         )
     );
 
@@ -818,6 +822,23 @@ function noveltool_meta_box_callback( $post ) {
                 </div>
             </td>
         </tr>
+
+        <tr>
+            <th scope="row">
+                <label for="novel_is_ending"><?php esc_html_e( 'エンディング設定', 'novel-game-plugin' ); ?></label>
+            </th>
+            <td>
+                <label for="novel_is_ending">
+                    <input type="checkbox"
+                           id="novel_is_ending"
+                           name="is_ending"
+                           value="1"
+                           <?php checked( $is_ending ); ?> />
+                    <?php esc_html_e( 'このシーンをエンディング（ゲームの終了）として設定する', 'novel-game-plugin' ); ?>
+                </label>
+                <p class="description"><?php esc_html_e( 'チェックを入れると、このシーンでゲームが終了します。選択肢が設定されていてもエンディングが優先されます。', 'novel-game-plugin' ); ?></p>
+            </td>
+        </tr>
     </table>
     <?php
 }
@@ -915,6 +936,15 @@ function noveltool_save_meta_box_data( $post_id ) {
             $sanitized_texts = array_map( 'sanitize_textarea_field', $dialogue_texts );
             update_post_meta( $post_id, '_dialogue_texts', $sanitized_texts );
         }
+    }
+
+    // エンディング設定の保存処理
+    if ( isset( $_POST['is_ending'] ) && '1' === $_POST['is_ending'] ) {
+        // チェックされている場合はtrueで保存
+        update_post_meta( $post_id, '_is_ending', true );
+    } else {
+        // チェックされていない場合はメタデータを削除
+        delete_post_meta( $post_id, '_is_ending' );
     }
 
     foreach ( $fields as $field => $meta_key ) {
