@@ -2159,9 +2159,12 @@
 							// 7. イベントハンドラーを再設定
 							self._rebindEventHandlers();
 
-							// 8. 状態を復元
+							// 8. 状態を復元または初期化
 							if ( savedState ) {
 								self._restoreState( savedState );
+							} else {
+								// preserveState: false の場合は明示的に状態をリセット
+								self._resetModalState();
 							}
 
 							self.isRecreating = false;
@@ -2444,6 +2447,41 @@
 
 				} catch ( error ) {
 					console.warn( '状態復元中にエラーが発生:', error );
+				}
+			},
+
+			/**
+			 * モーダル状態を初期状態にリセット
+			 * preserveState: false 時に使用
+			 */
+			_resetModalState: function() {
+				console.log( 'モーダル状態のリセット開始' );
+
+				try {
+					// モーダル表示フラグをリセット
+					isModalOpen = false;
+					isTitleScreenVisible = false;
+
+					// モーダル要素の初期状態設定
+					if ( $modalOverlay.length > 0 ) {
+						$modalOverlay.css( {
+							'display': 'none',
+							'opacity': '0'
+						} ).removeClass( 'show' );
+					}
+
+					// タイトル画面を非表示
+					if ( $titleScreen.length > 0 ) {
+						$titleScreen.css( 'display', 'none' );
+					}
+
+					// body のスクロール制御をリセット
+					$( 'html, body' ).removeClass( 'modal-open' ).css( 'overflow', '' );
+
+					console.log( 'モーダル状態のリセット完了' );
+
+				} catch ( error ) {
+					console.warn( 'モーダル状態リセット中にエラーが発生:', error );
 				}
 			},
 
