@@ -1252,6 +1252,14 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     background: #45a049;
 }
 
+.game-nav-button.back-to-title-button {
+    background: #007cba;
+}
+
+.game-nav-button.back-to-title-button:hover {
+    background: #005a87;
+}
+
 /* 古いゲーム終了メッセージのスタイル調整 */
 .game-end-message:hover {
     background: rgba(0, 0, 0, 0.9);

@@ -1610,6 +1610,9 @@
 		function showGameEnd() {
 			$choicesContainer.empty();
 			
+			// エンディング画面では話者名枠を非表示にする
+			$speakerName.hide();
+			
 			// ゲーム完了時に進捗をクリア
 			if ( currentGameTitle ) {
 				clearGameProgress( currentGameTitle );
@@ -1626,11 +1629,46 @@
 			// ナビゲーションボタンを追加
 			var $navigationContainer = $( '<div>' ).addClass( 'game-navigation' );
 			
+			// 「タイトルに戻る」ボタンを追加
+			var $backToTitleButton = $( '<button>' )
+				.addClass( 'game-nav-button back-to-title-button' )
+				.text( 'タイトルに戻る' )
+				.on( 'click', function() {
+					console.log( 'タイトルに戻るボタンがクリックされました' );
+					
+					// モーダル再生成APIが利用可能かチェック
+					if ( window.novelGameModalUtil && window.novelGameModalUtil.recreate ) {
+						console.log( 'モーダル再生成を開始します' );
+						
+						// 状態を保持せずにモーダルを再生成
+						window.novelGameModalUtil.recreate( { preserveState: false } ).then( function() {
+							console.log( 'モーダル再生成完了、タイトル画面を表示します' );
+							
+							// タイトル画面を表示（ゲーム状態リセットなし）
+							if ( window.currentGameSelectionData ) {
+								openModal( window.currentGameSelectionData );
+							} else {
+								console.warn( 'ゲーム選択データが見つかりません' );
+							}
+						}).catch( function( error ) {
+							console.error( 'モーダル再生成に失敗しました:', error );
+							// フォールバック：通常のページリロード
+							window.location.reload();
+						});
+					} else {
+						console.warn( 'モーダル再生成APIが利用できません。ページをリロードします。' );
+						// フォールバック：通常のページリロード
+						window.location.reload();
+					}
+				});
+			
+			$navigationContainer.append( $backToTitleButton );
+			
 			// ショートコード使用の検出
 			var isShortcodeUsed = noveltool_is_shortcode_context();
 			
 			if ( isShortcodeUsed ) {
-				// ショートコードの場合は「閉じる」ボタン
+				// ショートコードの場合は「閉じる」ボタンも追加
 				var $closeButton = $( '<button>' )
 					.addClass( 'game-nav-button close-button' )
 					.text( '閉じる' )
@@ -1645,7 +1683,7 @@
 				
 				$navigationContainer.append( $closeButton );
 			} else {
-				// 通常の場合は「ゲーム一覧に戻る」ボタン
+				// 通常の場合は「ゲーム一覧に戻る」ボタンも追加
 				var $gameListButton = $( '<button>' )
 					.addClass( 'game-nav-button game-list-button' )
 					.text( 'ゲーム一覧に戻る' )
@@ -1666,11 +1704,8 @@
 			$( document ).on( 'keydown.novel-end', function( e ) {
 				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
 					e.preventDefault();
-					if ( isShortcodeUsed ) {
-						$closeButton.trigger( 'click' );
-					} else {
-						$gameListButton.trigger( 'click' );
-					}
+					// デフォルトは「タイトルに戻る」ボタンを実行
+					$backToTitleButton.trigger( 'click' );
 				}
 			} );
 		}
@@ -1874,6 +1909,9 @@
 			$speakerName = $( '#novel-speaker-name' );
 			$dialogueContinue = $( '#novel-dialogue-continue' );
 			$choicesContainer = $( '#novel-choices' );
+			
+			// 話者名枠を表示（エンディング以外の場合）
+			$speakerName.show();
 			
 			console.log( 'Dialogue elements found:', {
 				text: $dialogueText.length,
