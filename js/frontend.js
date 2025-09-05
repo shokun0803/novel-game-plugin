@@ -1864,15 +1864,19 @@
 				prepareDialoguePages();
 				
 				// 現在の位置を可能な限り保持
-				if ( currentPageContent ) {
-					const newPageIndex = allDialoguePages.findIndex( function( page ) {
-						return page.includes( currentPageContent.substring( 0, 10 ) );
-					} );
-					
-					if ( newPageIndex !== -1 ) {
-						currentPageIndex = newPageIndex;
-					}
-				}
+				   if ( currentPageContent ) {
+					   // currentPageContentがオブジェクトの場合はtextプロパティを参照
+					   var currentText = (typeof currentPageContent === 'string') ? currentPageContent : (currentPageContent.text || '');
+					   if (typeof currentText === 'string' && currentText.length > 0) {
+						   const newPageIndex = allDialoguePages.findIndex(function(page) {
+							   var pageText = (typeof page === 'string') ? page : (page.text || '');
+							   return (typeof pageText === 'string') && pageText.includes(currentText.substring(0, 10));
+						   });
+						   if (newPageIndex !== -1) {
+							   currentPageIndex = newPageIndex;
+						   }
+					   }
+				   }
 				
 				displayCurrentPage();
 			}
