@@ -1647,6 +1647,21 @@
 						window.novelGameModalUtil.recreate( { preserveState: false } ).then( function() {
 							console.log( 'モーダル再生成完了、タイトル画面を表示します' );
 							
+							// currentGameTitleが空の場合は再取得
+							if ( ! currentGameTitle ) {
+								currentGameTitle = extractGameTitleFromPage();
+							}
+							
+							// window.currentGameSelectionDataが存在しない場合は再生成
+							if ( ! window.currentGameSelectionData && currentGameTitle ) {
+								window.currentGameSelectionData = {
+									title: currentGameTitle,
+									url: currentSceneUrl || window.location.href,
+									description: '',
+									subtitle: ''
+								};
+							}
+							
 							// タイトル画面を表示（ゲーム状態リセットなし）
 							if ( window.currentGameSelectionData ) {
 								openModal( window.currentGameSelectionData );
