@@ -1195,10 +1195,46 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     display: flex;
     align-items: center;
     justify-content: center;
+    animation: game-end-appear 0.6s ease-out;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+}
+
+/* エンディング専用メッセージ */
+.game-end-message.ending-message {
+    background: rgba(0, 0, 0, 0.9);
+    border: 3px solid #ff6b6b;
+    color: #ffffff;
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+    animation: ending-message-appear 1s ease-out;
+}
+
+@keyframes game-end-appear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes ending-message-appear {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) rotateY(90deg);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.1) rotateY(0deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotateY(0deg);
+    }
 }
 
 /* ゲームナビゲーションボタン */
@@ -1250,6 +1286,34 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 
 .game-nav-button.game-list-button:hover {
     background: #45a049;
+}
+
+/* タイトルに戻るボタン（エンディング専用） */
+.game-nav-button.return-to-title-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.4);
+    animation: title-button-glow 2s ease-in-out infinite alternate;
+}
+
+.game-nav-button.return-to-title-button:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    box-shadow: 0 0 25px rgba(102, 126, 234, 0.6);
+    transform: translateY(-3px);
+}
+
+.game-nav-button.return-to-title-button:active {
+    background: linear-gradient(135deg, #4e5fc6 0%, #5e3a7e 100%);
+    transform: translateY(-1px);
+}
+
+@keyframes title-button-glow {
+    from {
+        box-shadow: 0 0 15px rgba(102, 126, 234, 0.4);
+    }
+    to {
+        box-shadow: 0 0 25px rgba(102, 126, 234, 0.8);
+    }
 }
 
 /* 古いゲーム終了メッセージのスタイル調整 */

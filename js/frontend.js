@@ -1605,12 +1605,18 @@
 		}
 
 		/**
-		 * ゲーム終了時の「おわり」画面を表示
+		 * ゲーム終了時の「おわり」画面またはエンディング画面を表示
 		 */
 		function showGameEnd() {
 			$choicesContainer.empty();
 			
-			// ゲーム完了時に進捗をクリア
+			// エンディング設定がある場合は専用のエンディング画面を表示
+			if ( isEnding ) {
+				showEndingScreen();
+				return;
+			}
+			
+			// 通常のゲーム完了時に進捗をクリア
 			if ( currentGameTitle ) {
 				clearGameProgress( currentGameTitle );
 				console.log( 'ゲーム完了により進捗をクリアしました:', currentGameTitle );
@@ -1672,6 +1678,134 @@
 						$gameListButton.trigger( 'click' );
 					}
 				}
+			} );
+		}
+
+		/**
+		 * エンディング専用画面を表示する
+		 * 話者名枠を非表示にし、「タイトルに戻る」ボタンを表示する
+		 * 
+		 * @since 1.3.0
+		 */
+		function showEndingScreen() {
+			console.log( 'エンディング画面を表示します' );
+			
+			// 話者名枠を非表示にする
+			if ( $speakerName && $speakerName.length > 0 ) {
+				$speakerName.hide();
+				console.log( '話者名枠を非表示にしました' );
+			}
+			
+			// ゲーム完了時に進捗をクリア
+			if ( currentGameTitle ) {
+				clearGameProgress( currentGameTitle );
+				console.log( 'エンディング到達により進捗をクリアしました:', currentGameTitle );
+			}
+			
+			// エンディングメッセージを表示
+			var $endingMessage = $( '<div>' )
+				.addClass( 'game-end-message ending-message' )
+				.text( 'おわり' );
+			
+			$choicesContainer.append( $endingMessage );
+			
+			// ナビゲーションボタンを追加
+			var $navigationContainer = $( '<div>' ).addClass( 'game-navigation' );
+			
+			// 「タイトルに戻る」ボタンを作成
+			var $returnToTitleButton = $( '<button>' )
+				.addClass( 'game-nav-button return-to-title-button' )
+				.text( 'タイトルに戻る' )
+				.on( 'click', function( e ) {
+					e.preventDefault();
+					returnToTitleScreen();
+				} );
+			
+			$navigationContainer.append( $returnToTitleButton );
+			$choicesContainer.append( $navigationContainer );
+			$choicesContainer.show();
+			
+			// 継続マーカーを非表示
+			$dialogueContinue.hide();
+			
+			// キーボードイベントでもナビゲーション（エンディング専用）
+			$( document ).off( 'keydown.novel-end' ); // 既存のイベントをクリア
+			$( document ).on( 'keydown.novel-ending', function( e ) {
+				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
+					e.preventDefault();
+					$returnToTitleButton.trigger( 'click' );
+				}
+			} );
+			
+			console.log( 'エンディング画面の表示完了' );
+		}
+
+		/**
+		 * タイトル画面に戻る処理（既存モーダル再生成 API を使用）
+		 * ゲーム状態変数はリセットしない
+		 * 
+		 * @since 1.3.0
+		 */
+		function returnToTitleScreen() {
+			console.log( 'タイトル画面への遷移を開始します' );
+			
+			// 安全性チェック
+			if ( ! window.novelGameModalUtil || typeof window.novelGameModalUtil.recreate !== 'function' ) {
+				console.error( 'モーダル再生成APIが利用できません' );
+				// フォールバック: 単純にモーダルを閉じる
+				closeModal();
+				return;
+			}
+			
+			// 再生成が安全に実行可能かチェック
+			if ( ! window.novelGameModalUtil.isSafeToRecreate() ) {
+				console.warn( 'モーダル再生成が安全でない状態です。少し待ってから実行します。' );
+				setTimeout( function() {
+					returnToTitleScreen();
+				}, 100 );
+				return;
+			}
+			
+			// エンディング専用のキーボードイベントをクリーンアップ
+			$( document ).off( 'keydown.novel-ending' );
+			
+			console.log( '既存モーダル再生成APIを使用してモーダルを再生成します' );
+			
+			// 既存のモーダル再生成APIを使用（状態を保持せずに再生成）
+			window.novelGameModalUtil.recreate( {
+				preserveState: false,
+				waitForAnimations: true
+			} ).then( function() {
+				console.log( 'モーダル再生成完了。タイトル画面を表示します。' );
+				
+				// モーダル再生成後、話者名枠を再表示
+				if ( $speakerName && $speakerName.length > 0 ) {
+					$speakerName.show();
+					console.log( '話者名枠を再表示しました' );
+				}
+				
+				// タイトル画面を表示するため、ゲームデータを準備
+				var gameData = {
+					title: currentGameTitle || extractGameTitleFromPage(),
+					url: currentSceneUrl || window.location.href,
+					description: '', // 管理画面から取得可能であれば設定
+					subtitle: '',
+					image: baseBackground || '' // 背景画像をタイトル用画像として使用
+				};
+				
+				console.log( 'タイトル画面表示用のゲームデータ:', gameData );
+				
+				// タイトル画面を表示（openModal関数を呼び出し）
+				setTimeout( function() {
+					openModal( gameData );
+				}, 100 );
+				
+			} ).catch( function( error ) {
+				console.error( 'モーダル再生成に失敗しました:', error );
+				
+				// フォールバック処理: 単純にモーダルを閉じてページをリロード
+				console.log( 'フォールバック: ページをリロードします' );
+				window.location.reload();
 			} );
 		}
 		
