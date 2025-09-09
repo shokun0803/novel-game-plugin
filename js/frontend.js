@@ -330,6 +330,14 @@
 		function showTitleScreen( gameData ) {
 			console.log( 'showTitleScreen called with:', gameData );
 			
+			// モーダル再生成後のDOM参照漏れを防ぐため、必ず最新のDOM要素を取得
+			$titleScreen = $( '#novel-title-screen' );
+			$titleMain = $( '#novel-title-main' );
+			$titleSubtitle = $( '#novel-title-subtitle' );
+			$titleDescription = $( '#novel-title-description' );
+			$titleStartBtn = $( '#novel-title-start-new' );
+			$titleContinueBtn = $( '#novel-title-continue' );
+			
 			if ( isTitleScreenVisible ) {
 				console.log( 'Title screen already visible, ignoring' );
 				return;
@@ -360,8 +368,8 @@
 				$titleContinueBtn.hide();
 			}
 			
-			// タイトル画面を表示
-			$titleScreen.css( 'display', 'flex' ).hide().fadeIn( 300 );
+			// タイトル画面を表示（モーダル再生成後の表示確保のため、display: flex を明示的に設定）
+			$titleScreen.css( 'display', 'flex' ).addClass( 'show' ).hide().fadeIn( 300 );
 			
 			// ゲームデータを一時保存（ボタン押下時に使用）
 			window.currentGameSelectionData = gameData;
@@ -430,6 +438,9 @@
 		 */
 		function hideTitleScreen() {
 			console.log( 'hideTitleScreen called' );
+			
+			// モーダル再生成後のDOM参照漏れを防ぐため、必ず最新のDOM要素を取得
+			$titleScreen = $( '#novel-title-screen' );
 			
 			if ( ! isTitleScreenVisible ) {
 				console.log( 'Title screen already hidden, ignoring' );
@@ -652,6 +663,10 @@
 		 */
 		function openModal( gameUrlOrData ) {
 			console.log( 'openModal called with:', gameUrlOrData );
+			
+			// モーダル再生成後のDOM参照漏れを防ぐため、必ず最新のDOM要素を取得
+			$modalOverlay = $( '#novel-game-modal-overlay' );
+			
 			console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
 			console.log( 'isModalOpen:', isModalOpen );
 			
@@ -677,6 +692,7 @@
 			$( 'html, body' ).addClass( 'modal-open' ).css( 'overflow', 'hidden' );
 			
 			// オーバーレイの表示を確実にする（WordPress レイアウト制約を回避）
+			// モーダル再生成後の表示確保のため、display: flex と .show クラスを明示的に設定
 			$modalOverlay.removeClass( 'show' ).css( {
 				'display': 'flex',
 				'opacity': '0',
@@ -1009,6 +1025,9 @@
 		function closeModal() {
 			console.log( 'closeModal called, isModalOpen:', isModalOpen );
 			
+			// モーダル再生成後のDOM参照漏れを防ぐため、必ず最新のDOM要素を取得
+			$modalOverlay = $( '#novel-game-modal-overlay' );
+			
 			if ( ! isModalOpen ) {
 				console.log( 'Modal already closed, ignoring' );
 				return;
@@ -1020,9 +1039,11 @@
 			$( 'html, body' ).removeClass( 'modal-open' ).css( 'overflow', '' );
 			
 			// オーバーレイを非表示
-			$modalOverlay.removeClass( 'show' ).animate( { opacity: 0 }, 300, function() {
-				$modalOverlay.css( 'display', 'none' );
-			} );
+			if ( $modalOverlay.length > 0 ) {
+				$modalOverlay.removeClass( 'show' ).animate( { opacity: 0 }, 300, function() {
+					$modalOverlay.css( 'display', 'none' );
+				} );
+			}
 			
 			console.log( 'Modal overlay hidden' );
 			
