@@ -335,6 +335,9 @@
 				return;
 			}
 			
+			// モーダル本体を確実に表示状態にする（modalUtil.recreate後の状態同期のため）
+			$modalOverlay.css( 'display', 'flex' ).addClass( 'show' );
+			
 			isTitleScreenVisible = true;
 			
 			// タイトル画面の内容を設定
