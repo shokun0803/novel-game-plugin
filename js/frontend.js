@@ -2147,13 +2147,18 @@
 							// 5. 新しいモーダルを生成
 							self._createNewModal();
 
-							// 6. DOM参照を再取得
+							// 6. モーダル再生成に伴い状態フラグをリセット
+							// 新しいモーダルが生成されたので、isModalOpen は false にリセットする
+							isModalOpen = false;
+							console.log( 'モーダル再生成により isModalOpen を false にリセット' );
+
+							// 7. DOM参照を再取得
 							self._refreshDOMReferences();
 
-							// 7. イベントハンドラーを再設定
+							// 8. イベントハンドラーを再設定
 							self._rebindEventHandlers();
 
-							// 8. 状態を復元
+							// 9. 状態を復元
 							if ( savedState ) {
 								self._restoreState( savedState );
 							}
@@ -2391,9 +2396,11 @@
 					}
 
 					// モーダルの表示状態復元
-					if ( savedState.isModalOpen !== undefined ) {
-						isModalOpen = savedState.isModalOpen;
-					}
+					// 注意：モーダル再生成後は新しいモーダルが作成されるため、
+					// isModalOpen は false の初期状態のままにする必要がある
+					// if ( savedState.isModalOpen !== undefined ) {
+					//     isModalOpen = savedState.isModalOpen;
+					// }
 					if ( savedState.isTitleScreenVisible !== undefined ) {
 						isTitleScreenVisible = savedState.isTitleScreenVisible;
 					}
