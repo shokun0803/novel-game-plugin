@@ -1174,8 +1174,8 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 /* 古いボタンスタイル（後方互換性のため残す） */
-#novel-choices button,
-.novel-choices button,
+#novel-choices button:not(.game-nav-button),
+.novel-choices button:not(.game-nav-button),
 .novel-choice-button {
     display: none; /* 新しいスタイルを使用する場合は非表示 */
 }

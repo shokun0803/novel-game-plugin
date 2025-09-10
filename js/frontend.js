@@ -1898,7 +1898,7 @@
 				prepareDialoguePages();
 				
 				// 現在の位置を可能な限り保持
-				if ( currentPageContent ) {
+				if ( currentPageContent && typeof currentPageContent === 'string' ) {
 					const newPageIndex = allDialoguePages.findIndex( function( page ) {
 						return page.includes( currentPageContent.substring( 0, 10 ) );
 					} );
