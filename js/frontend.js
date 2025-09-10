@@ -338,6 +338,11 @@
 			$titleStartBtn = $( '#novel-title-start-new' );
 			$titleContinueBtn = $( '#novel-title-continue' );
 			
+			// モーダル再生成後の表示確保のため、display: flex と .show クラスを明示的に設定
+			if ( $titleScreen.length > 0 ) {
+				$titleScreen.css( 'display', 'flex' ).addClass( 'show' );
+			}
+			
 			if ( isTitleScreenVisible ) {
 				console.log( 'Title screen already visible, ignoring' );
 				return;
@@ -368,8 +373,8 @@
 				$titleContinueBtn.hide();
 			}
 			
-			// タイトル画面を表示（モーダル再生成後の表示確保のため、display: flex を明示的に設定）
-			$titleScreen.css( 'display', 'flex' ).addClass( 'show' ).hide().fadeIn( 300 );
+			// タイトル画面を表示（モーダル再生成後の表示確保のため、アニメーション付きで表示）
+			$titleScreen.hide().fadeIn( 300 );
 			
 			// ゲームデータを一時保存（ボタン押下時に使用）
 			window.currentGameSelectionData = gameData;
@@ -666,6 +671,11 @@
 			
 			// モーダル再生成後のDOM参照漏れを防ぐため、必ず最新のDOM要素を取得
 			$modalOverlay = $( '#novel-game-modal-overlay' );
+			
+			// モーダル再生成後の表示確保のため、display: flex を明示的に設定
+			if ( $modalOverlay.length > 0 ) {
+				$modalOverlay.css( 'display', 'flex' );
+			}
 			
 			console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
 			console.log( 'isModalOpen:', isModalOpen );
