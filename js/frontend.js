@@ -1631,69 +1631,117 @@
 		function showGameEnd() {
 			$choicesContainer.empty();
 			
-			// ゲーム完了時に進捗をクリア
-			if ( currentGameTitle ) {
-				clearGameProgress( currentGameTitle );
-				console.log( 'ゲーム完了により進捗をクリアしました:', currentGameTitle );
-			}
-			
-			// 「おわり」メッセージを表示
-			var $endMessage = $( '<div>' )
-				.addClass( 'game-end-message' )
-				.text( 'おわり' );
-			
-			$choicesContainer.append( $endMessage );
-			
-			// ナビゲーションボタンを追加
-			var $navigationContainer = $( '<div>' ).addClass( 'game-navigation' );
-			
-			// ショートコード使用の検出
-			var isShortcodeUsed = noveltool_is_shortcode_context();
-			
-			if ( isShortcodeUsed ) {
-				// ショートコードの場合は「閉じる」ボタン
-				var $closeButton = $( '<button>' )
-					.addClass( 'game-nav-button close-button' )
-					.text( '閉じる' )
+			// エンディング判定による処理分岐
+			if ( isEnding ) {
+				// エンディング画面：話者名枠を非表示にする
+				$speakerName.hide();
+				
+				// エンディングメッセージを表示
+				var $endMessage = $( '<div>' )
+					.addClass( 'game-end-message' )
+					.text( 'おわり' );
+				
+				$choicesContainer.append( $endMessage );
+				
+				// 「タイトルに戻る」ボタンを追加
+				var $navigationContainer = $( '<div>' ).addClass( 'game-navigation' );
+				var $titleReturnButton = $( '<button>' )
+					.addClass( 'game-nav-button title-return-button' )
+					.text( 'タイトルに戻る' )
 					.on( 'click', function() {
-						// ショートコードコンテナを非表示にする
-						$gameContainer.closest( '.noveltool-shortcode-container' ).hide();
-						// または親ウィンドウを閉じる
-						if ( window.parent !== window ) {
-							window.parent.postMessage( 'close-game', '*' );
-						}
+						console.log( 'タイトルに戻るボタンがクリックされました' );
+						
+						// 既存のモーダル再生成 API を使用してモーダルを削除・再生成
+						window.novelGameModalUtil.recreate().then( function() {
+							console.log( 'モーダル再生成完了、タイトル画面を表示します' );
+							
+							// 再生成後にタイトル画面を表示（状態変数はリセットしない）
+							openModal();
+							
+						} ).catch( function( error ) {
+							console.error( 'モーダル再生成に失敗しました:', error );
+							// フォールバック：直接タイトル画面を表示
+							openModal();
+						} );
 					});
 				
-				$navigationContainer.append( $closeButton );
+				$navigationContainer.append( $titleReturnButton );
+				$choicesContainer.append( $navigationContainer );
+				
+				// キーボードイベントでもタイトルに戻る
+				$( document ).on( 'keydown.novel-end', function( e ) {
+					if ( e.which === 13 || e.which === 32 ) { // Enter or Space
+						e.preventDefault();
+						$titleReturnButton.trigger( 'click' );
+					}
+				} );
+				
 			} else {
-				// 通常の場合は「ゲーム一覧に戻る」ボタン
-				var $gameListButton = $( '<button>' )
-					.addClass( 'game-nav-button game-list-button' )
-					.text( 'ゲーム一覧に戻る' )
-					.on( 'click', function() {
-						returnToGameList();
-					});
+				// 通常のゲーム完了：進捗をクリア
+				if ( currentGameTitle ) {
+					clearGameProgress( currentGameTitle );
+					console.log( 'ゲーム完了により進捗をクリアしました:', currentGameTitle );
+				}
 				
-				$navigationContainer.append( $gameListButton );
+				// 「おわり」メッセージを表示
+				var $endMessage = $( '<div>' )
+					.addClass( 'game-end-message' )
+					.text( 'おわり' );
+				
+				$choicesContainer.append( $endMessage );
+				
+				// ナビゲーションボタンを追加
+				var $navigationContainer = $( '<div>' ).addClass( 'game-navigation' );
+				
+				// ショートコード使用の検出
+				var isShortcodeUsed = noveltool_is_shortcode_context();
+				
+				if ( isShortcodeUsed ) {
+					// ショートコードの場合は「閉じる」ボタン
+					var $closeButton = $( '<button>' )
+						.addClass( 'game-nav-button close-button' )
+						.text( '閉じる' )
+						.on( 'click', function() {
+							// ショートコードコンテナを非表示にする
+							$gameContainer.closest( '.noveltool-shortcode-container' ).hide();
+							// または親ウィンドウを閉じる
+							if ( window.parent !== window ) {
+								window.parent.postMessage( 'close-game', '*' );
+							}
+						});
+					
+					$navigationContainer.append( $closeButton );
+				} else {
+					// 通常の場合は「ゲーム一覧に戻る」ボタン
+					var $gameListButton = $( '<button>' )
+						.addClass( 'game-nav-button game-list-button' )
+						.text( 'ゲーム一覧に戻る' )
+						.on( 'click', function() {
+							returnToGameList();
+						});
+					
+					$navigationContainer.append( $gameListButton );
+				}
+				
+				$choicesContainer.append( $navigationContainer );
+				
+				// キーボードイベントでもナビゲーション
+				$( document ).on( 'keydown.novel-end', function( e ) {
+					if ( e.which === 13 || e.which === 32 ) { // Enter or Space
+						e.preventDefault();
+						if ( isShortcodeUsed ) {
+							$closeButton.trigger( 'click' );
+						} else {
+							$gameListButton.trigger( 'click' );
+						}
+					}
+				} );
 			}
 			
-			$choicesContainer.append( $navigationContainer );
 			$choicesContainer.show();
 			
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
-			
-			// キーボードイベントでもナビゲーション
-			$( document ).on( 'keydown.novel-end', function( e ) {
-				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
-					e.preventDefault();
-					if ( isShortcodeUsed ) {
-						$closeButton.trigger( 'click' );
-					} else {
-						$gameListButton.trigger( 'click' );
-					}
-				}
-			} );
 		}
 		
 		/**
