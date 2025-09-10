@@ -373,8 +373,9 @@
 				$titleContinueBtn.hide();
 			}
 			
-			// タイトル画面を表示（モーダル再生成後の表示確保のため、アニメーション付きで表示）
-			$titleScreen.hide().fadeIn( 300 );
+			// タイトル画面を表示（モーダル再生成後の表示確保のため、display制御とアニメーション）
+			// 競合を避けるため、直接 opacity でアニメーション
+			$titleScreen.css( 'opacity', '0' ).animate( { opacity: 1 }, 300 );
 			
 			// ゲームデータを一時保存（ボタン押下時に使用）
 			window.currentGameSelectionData = gameData;
@@ -672,9 +673,9 @@
 			// モーダル再生成後のDOM参照漏れを防ぐため、必ず最新のDOM要素を取得
 			$modalOverlay = $( '#novel-game-modal-overlay' );
 			
-			// モーダル再生成後の表示確保のため、display: flex を明示的に設定
+			// モーダル再生成後の表示確保のため、display: flex と .show クラスを明示的に設定
 			if ( $modalOverlay.length > 0 ) {
-				$modalOverlay.css( 'display', 'flex' );
+				$modalOverlay.css( 'display', 'flex' ).addClass( 'show' );
 			}
 			
 			console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
