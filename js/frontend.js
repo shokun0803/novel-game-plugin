@@ -1127,7 +1127,19 @@
 			$startButton.on( 'click', function( e ) {
 				e.preventDefault();
 				console.log( 'Start button clicked' );
-				openModal();
+				
+				// 現在のゲームデータを取得
+				var currentGameData = window.currentGameSelectionData;
+				
+				// gameData が存在する場合は明示的に渡す
+				if ( currentGameData && currentGameData.title && currentGameData.url ) {
+					console.log( '開始ボタン：現在のゲームデータを使用', currentGameData );
+					openModal( currentGameData );
+				} else {
+					// フォールバック：従来通りの動作
+					console.log( '開始ボタン：ゲームデータが不明のため従来通りの動作' );
+					openModal();
+				}
 			} );
 			
 			// 進捗クリアボタンクリックイベント
@@ -1662,17 +1674,34 @@
 					.on( 'click', function() {
 						console.log( 'タイトルに戻るボタンがクリックされました' );
 						
+						// 現在実行中のゲームデータを取得
+						var currentGameData = window.currentGameSelectionData;
+						
+						// gameData の妥当性チェック
+						if ( ! currentGameData || ! currentGameData.title || ! currentGameData.url ) {
+							console.warn( 'ゲームデータが不完全です。フォールバック処理を実行します。', currentGameData );
+							// フォールバック用のゲームデータを生成
+							currentGameData = {
+								title: extractGameTitleFromPage() || 'ゲーム',
+								url: window.location.href,
+								description: '',
+								subtitle: ''
+							};
+						}
+						
+						console.log( '使用するゲームデータ:', currentGameData );
+						
 						// 既存のモーダル再生成 API を使用してモーダルを削除・再生成
 						window.novelGameModalUtil.recreate().then( function() {
 							console.log( 'モーダル再生成完了、タイトル画面を表示します' );
 							
-							// 再生成後にタイトル画面を表示（状態変数はリセットしない）
-							openModal();
+							// 再生成後にタイトル画面を表示（現在のゲームデータを明示的に渡す）
+							openModal( currentGameData );
 							
 						} ).catch( function( error ) {
 							console.error( 'モーダル再生成に失敗しました:', error );
-							// フォールバック：直接タイトル画面を表示
-							openModal();
+							// フォールバック：直接タイトル画面を表示（現在のゲームデータを明示的に渡す）
+							openModal( currentGameData );
 						} );
 					});
 				
