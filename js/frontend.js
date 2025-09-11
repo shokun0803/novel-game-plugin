@@ -890,6 +890,11 @@
 						console.log( '最初から開始します' );
 						// 保存された進捗をクリア
 						clearGameProgress( currentGameTitle );
+						// インデックス変数を明示的にリセット（最初から開始のため）
+						currentPageIndex = 0;
+						currentDialogueIndex = 0;
+						dialogueIndex = 0; // 後方互換性のため
+						console.log( 'ダイアログでの最初から開始選択でインデックス変数をリセットしました' );
 						resolve();
 					}
 				} );
@@ -1259,6 +1264,12 @@
 						console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
 					}
 					
+					// インデックス変数を明示的にリセット（最初から開始のため）
+					currentPageIndex = 0;
+					currentDialogueIndex = 0;
+					dialogueIndex = 0; // 後方互換性のため
+					console.log( 'インデックス変数をリセットしました: currentPageIndex=0, currentDialogueIndex=0' );
+					
 					// タイトル画面を非表示にしてゲーム開始（データは保持）
 					hideTitleScreen( false );
 					setTimeout( function() {
@@ -1286,6 +1297,10 @@
 							resumeFromSavedProgress( savedProgress ).catch( function( error ) {
 								console.error( '進捗復元に失敗しました:', error );
 								// フォールバック：最初から開始
+								currentPageIndex = 0;
+								currentDialogueIndex = 0;
+								dialogueIndex = 0; // 後方互換性のため
+								console.log( 'フォールバック処理でインデックス変数をリセットしました' );
 								initializeGameContent();
 							} );
 						}, 300 );
@@ -1294,6 +1309,11 @@
 						// 進捗がない場合は最初から開始（タイトル画面経由のため進捗チェックはスキップ）
 						hideTitleScreen( false );
 						setTimeout( function() {
+							// インデックス変数を明示的にリセット（最初から開始のため）
+							currentPageIndex = 0;
+							currentDialogueIndex = 0;
+							dialogueIndex = 0; // 後方互換性のため
+							console.log( '進捗なしのためインデックス変数をリセットしました' );
 							initializeGameContent();
 						}, 300 );
 					}
