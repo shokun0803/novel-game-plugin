@@ -1838,7 +1838,14 @@
 					
 					$navigationContainer.append( $closeButton );
 				} else {
-					// 通常の場合は「ゲーム一覧に戻る」ボタン
+					// 通常の場合は「タイトルに戻る」と「ゲーム一覧に戻る」ボタンを表示
+					var $titleReturnButton = $( '<button>' )
+						.addClass( 'game-nav-button title-return-button' )
+						.text( 'タイトルに戻る' )
+						.on( 'click', function() {
+							returnToTitle();
+						});
+					
 					var $gameListButton = $( '<button>' )
 						.addClass( 'game-nav-button game-list-button' )
 						.text( 'ゲーム一覧に戻る' )
@@ -1846,7 +1853,7 @@
 							returnToGameList();
 						});
 					
-					$navigationContainer.append( $gameListButton );
+					$navigationContainer.append( $titleReturnButton, $gameListButton );
 				}
 				
 				$choicesContainer.append( $navigationContainer );
@@ -1854,6 +1861,14 @@
 				// キーボードイベントでもナビゲーション
 				$( document ).on( 'keydown.novel-end', function( e ) {
 					if ( e.which === 13 || e.which === 32 ) { // Enter or Space
+						e.preventDefault();
+						if ( isShortcodeUsed ) {
+							$closeButton.trigger( 'click' );
+						} else {
+							// デフォルトは「タイトルに戻る」を実行
+							$titleReturnButton.trigger( 'click' );
+						}
+					} else if ( e.which === 27 ) { // ESC key
 						e.preventDefault();
 						if ( isShortcodeUsed ) {
 							$closeButton.trigger( 'click' );
@@ -1868,6 +1883,26 @@
 			
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
+			
+			// キーボードイベントでもナビゲーション
+			$( document ).on( 'keydown.novel-end', function( e ) {
+				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
+					e.preventDefault();
+					if ( isShortcodeUsed ) {
+						$closeButton.trigger( 'click' );
+					} else {
+						// デフォルトは「タイトルに戻る」を実行
+						$titleReturnButton.trigger( 'click' );
+					}
+				} else if ( e.which === 27 ) { // ESC key
+					e.preventDefault();
+					if ( isShortcodeUsed ) {
+						$closeButton.trigger( 'click' );
+					} else {
+						$gameListButton.trigger( 'click' );
+					}
+				}
+			} );
 		}
 		
 		/**
@@ -1933,9 +1968,6 @@
 				console.log( 'currentGameSelectionDataが不完全、フォールバック処理を実行' );
 				currentGameData = createFallbackGameData( currentGameData );
 			}
-			
-			// フォールバック後のデータをグローバル変数に確実に設定
-			window.currentGameSelectionData = currentGameData;
 			
 			// ゲーム状態をリセット（表示状態のみ）
 			resetGameState();
