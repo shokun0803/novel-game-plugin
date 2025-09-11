@@ -382,6 +382,9 @@
 				currentGameData = createFallbackGameData( currentGameData );
 			}
 			
+			// フォールバック後のデータをグローバル変数に設定
+			window.currentGameSelectionData = currentGameData;
+			
 			// モーダル再生成後のDOM参照漏れを防ぐため、必ず最新のDOM要素を取得
 			$titleScreen = $( '#novel-title-screen' );
 			$titleMain = $( '#novel-title-main' );
@@ -1206,9 +1209,10 @@
 					console.log( '開始ボタン：現在のゲームデータを使用', currentGameData );
 					openModal( currentGameData );
 				} else {
-					// フォールバック：従来通りの動作
-					console.log( '開始ボタン：ゲームデータが不明のため従来通りの動作' );
-					openModal();
+					// フォールバック：データが不完全な場合は createFallbackGameData を使用
+					console.log( '開始ボタン：ゲームデータが不明のためフォールバック処理を実行' );
+					currentGameData = createFallbackGameData( currentGameData );
+					openModal( currentGameData );
 				}
 			} );
 			
@@ -1929,6 +1933,9 @@
 				console.log( 'currentGameSelectionDataが不完全、フォールバック処理を実行' );
 				currentGameData = createFallbackGameData( currentGameData );
 			}
+			
+			// フォールバック後のデータをグローバル変数に確実に設定
+			window.currentGameSelectionData = currentGameData;
 			
 			// ゲーム状態をリセット（表示状態のみ）
 			resetGameState();
