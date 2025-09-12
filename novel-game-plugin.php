@@ -579,6 +579,7 @@ function noveltool_game_list_shortcode( $atts ) {
     
     ob_start();
     
+    echo '<div class="noveltool-game-list noveltool-shortcode-container">';
     echo '<div class="noveltool-game-list-grid noveltool-columns-' . esc_attr( $columns ) . '">';
     
     foreach ( $game_titles as $game_title ) {
@@ -619,7 +620,7 @@ function noveltool_game_list_shortcode( $atts ) {
         
         if ( $display_image ) {
             echo '<div class="noveltool-game-thumbnail">';
-            echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '">';
+            echo '<a href="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $first_post->ID ) ) ) . '">';
             echo '<img src="' . esc_url( $display_image ) . '" alt="' . esc_attr( $game_title ) . '" />';
             echo '</a>';
             echo '</div>';
@@ -627,7 +628,7 @@ function noveltool_game_list_shortcode( $atts ) {
         
         echo '<div class="noveltool-game-content">';
         echo '<h3 class="noveltool-game-title">';
-        echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '">' . esc_html( $game_title ) . '</a>';
+        echo '<a href="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $first_post->ID ) ) ) . '">' . esc_html( $game_title ) . '</a>';
         echo '</h3>';
         
         if ( $show_description && $game_description ) {
@@ -656,7 +657,7 @@ function noveltool_game_list_shortcode( $atts ) {
         
         echo '<div class="noveltool-game-actions">';
         echo '<button class="noveltool-play-button" ' .
-             'data-game-url="' . esc_url( get_permalink( $first_post->ID ) ) . '" ' .
+             'data-game-url="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $first_post->ID ) ) ) . '" ' .
              'data-game-title="' . esc_attr( $game_title ) . '" ' .
              'data-game-description="' . esc_attr( $game_description ) . '" ' .
              'data-game-image="' . esc_attr( $game_title_image ) . '" ' .
@@ -670,6 +671,7 @@ function noveltool_game_list_shortcode( $atts ) {
     }
     
     echo '</div>'; // .noveltool-game-list-grid
+    echo '</div>'; // .noveltool-game-list
     
     // モーダルオーバーレイを追加（ゲーム表示用・タイトル画面統合版）
     echo '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">';
@@ -837,7 +839,7 @@ function noveltool_all_games_shortcode_output( $atts ) {
     
     ob_start();
     
-    echo '<div class="noveltool-all-games-list">';
+    echo '<div class="noveltool-all-games-list noveltool-shortcode-container">';
     echo '<h3>' . esc_html__( 'ゲーム一覧', 'novel-game-plugin' ) . '</h3>';
     echo '<div class="noveltool-games-grid">';
     
@@ -881,7 +883,7 @@ function noveltool_all_games_shortcode_output( $atts ) {
         $display_image = ! empty( $game_title_image ) ? $game_title_image : $background;
         
         echo '<div class="noveltool-game-item" ' .
-             'data-game-url="' . esc_attr( get_permalink( $first_post->ID ) ) . '" ' .
+             'data-game-url="' . esc_attr( add_query_arg( 'shortcode', '1', get_permalink( $first_post->ID ) ) ) . '" ' .
              'data-game-title="' . esc_attr( $game_title ) . '" ' .
              'data-game-description="' . esc_attr( $game_description ) . '" ' .
              'data-game-image="' . esc_attr( $game_title_image ) . '" ' .
@@ -899,7 +901,7 @@ function noveltool_all_games_shortcode_output( $atts ) {
             echo '<p class="noveltool-game-description">' . esc_html( wp_trim_words( $game_description, 15, '...' ) ) . '</p>';
         }
         echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
-        echo '<a href="' . esc_url( get_permalink( $first_post->ID ) ) . '" class="noveltool-game-link button">';
+        echo '<a href="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $first_post->ID ) ) ) . '" class="noveltool-game-link button">';
         echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
         echo '</a>';
         echo '</div>';

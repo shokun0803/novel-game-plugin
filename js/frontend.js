@@ -382,6 +382,9 @@
 				currentGameData = createFallbackGameData( currentGameData );
 			}
 			
+			// フォールバック後のデータをグローバル変数に設定
+			window.currentGameSelectionData = currentGameData;
+			
 			// モーダル再生成後のDOM参照漏れを防ぐため、必ず最新のDOM要素を取得
 			$titleScreen = $( '#novel-title-screen' );
 			$titleMain = $( '#novel-title-main' );
@@ -747,9 +750,9 @@
 			if ( $modalOverlay.length === 0 ) {
 				console.log( 'Modal overlay not found, redirecting to:', gameUrlOrData );
 				if ( typeof gameUrlOrData === 'string' ) {
-					window.location.href = gameUrlOrData;
+					navigateWithShortcodeParam( gameUrlOrData );
 				} else if ( gameUrlOrData && gameUrlOrData.url ) {
-					window.location.href = gameUrlOrData.url;
+					navigateWithShortcodeParam( gameUrlOrData.url );
 				}
 				return;
 			}
@@ -1262,7 +1265,20 @@
 			$startButton.on( 'click', function( e ) {
 				e.preventDefault();
 				console.log( 'Start button clicked' );
-				openModal();
+				
+				// 現在のゲームデータを取得
+				var currentGameData = window.currentGameSelectionData;
+				
+				// gameData が存在する場合は明示的に渡す
+				if ( currentGameData && currentGameData.title && currentGameData.url ) {
+					console.log( '開始ボタン：現在のゲームデータを使用', currentGameData );
+					openModal( currentGameData );
+				} else {
+					// フォールバック：データが不完全な場合は createFallbackGameData を使用
+					console.log( '開始ボタン：ゲームデータが不明のためフォールバック処理を実行' );
+					currentGameData = createFallbackGameData( currentGameData );
+					openModal( currentGameData );
+				}
 			} );
 			
 			// 進捗クリアボタンクリックイベント
@@ -1732,8 +1748,8 @@
 						initializeGameContent();
 					} ).catch( function( error ) {
 						console.error( '次のシーンの読み込みに失敗しました:', error );
-						// フォールバック：ページ遷移
-						window.location.href = nextScene;
+						// フォールバック：ページ遷移（ショートコードパラメータを保持）
+						navigateWithShortcodeParam( nextScene );
 					} );
 				}
 			}
@@ -1799,10 +1815,22 @@
 		function showGameEnd() {
 			$choicesContainer.empty();
 			
-			// ゲーム完了時に進捗をクリア
-			if ( currentGameTitle ) {
-				clearGameProgress( currentGameTitle );
-				console.log( 'ゲーム完了により進捗をクリアしました:', currentGameTitle );
+			// ショートコード使用の検出（関数の最初で実行）
+			var isShortcodeUsed = noveltool_is_shortcode_context();
+			
+			// ナビゲーションボタンの変数を関数スコープで宣言
+			var $closeButton, $titleReturnButton;
+			
+			// エンディング判定による処理分岐
+			if ( isEnding ) {
+				// エンディング画面：話者名枠を非表示にする
+				$speakerName.hide();
+			} else {
+				// 通常のゲーム完了：進捗をクリア
+				if ( currentGameTitle ) {
+					clearGameProgress( currentGameTitle );
+					console.log( 'ゲーム完了により進捗をクリアしました:', currentGameTitle );
+				}
 			}
 			
 			// 「おわり」メッセージを表示
@@ -1815,17 +1843,14 @@
 			// ナビゲーションボタンを追加
 			var $navigationContainer = $( '<div>' ).addClass( 'game-navigation' );
 			
-			// ショートコード使用の検出
-			var isShortcodeUsed = noveltool_is_shortcode_context();
-			
 			if ( isShortcodeUsed ) {
-				// ショートコードの場合は「閉じる」ボタン
-				var $closeButton = $( '<button>' )
+				// ショートコードの場合は「閉じる」ボタンのみ
+				$closeButton = $( '<button>' )
 					.addClass( 'game-nav-button close-button' )
 					.text( '閉じる' )
 					.on( 'click', function() {
-						// ショートコードコンテナを非表示にする
-						$gameContainer.closest( '.noveltool-shortcode-container' ).hide();
+						// ショートコードコンテナを非表示にする（最新のDOMから取得）
+						$( '#novel-game-container' ).closest( '.noveltool-shortcode-container' ).hide();
 						// または親ウィンドウを閉じる
 						if ( window.parent !== window ) {
 							window.parent.postMessage( 'close-game', '*' );
@@ -1834,22 +1859,15 @@
 				
 				$navigationContainer.append( $closeButton );
 			} else {
-				// 通常の場合は「タイトルに戻る」と「ゲーム一覧に戻る」ボタンを表示
-				var $titleReturnButton = $( '<button>' )
+				// 通常の場合は「タイトルに戻る」ボタンのみ
+				$titleReturnButton = $( '<button>' )
 					.addClass( 'game-nav-button title-return-button' )
 					.text( 'タイトルに戻る' )
 					.on( 'click', function() {
 						returnToTitle();
 					});
 				
-				var $gameListButton = $( '<button>' )
-					.addClass( 'game-nav-button game-list-button' )
-					.text( 'ゲーム一覧に戻る' )
-					.on( 'click', function() {
-						returnToGameList();
-					});
-				
-				$navigationContainer.append( $titleReturnButton, $gameListButton );
+				$navigationContainer.append( $titleReturnButton );
 			}
 			
 			$choicesContainer.append( $navigationContainer );
@@ -1858,22 +1876,30 @@
 			// 継続マーカーを非表示
 			$dialogueContinue.hide();
 			
-			// キーボードイベントでもナビゲーション
-			$( document ).on( 'keydown.novel-end', function( e ) {
+			// キーボードイベントでナビゲーション（一度だけ設定）
+			$( document ).off( 'keydown.novel-end' ).on( 'keydown.novel-end', function( e ) {
 				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
 					e.preventDefault();
 					if ( isShortcodeUsed ) {
-						$closeButton.trigger( 'click' );
+						if ( $closeButton ) {
+							$closeButton.trigger( 'click' );
+						}
 					} else {
-						// デフォルトは「タイトルに戻る」を実行
-						$titleReturnButton.trigger( 'click' );
+						if ( $titleReturnButton ) {
+							$titleReturnButton.trigger( 'click' );
+						}
 					}
 				} else if ( e.which === 27 ) { // ESC key
 					e.preventDefault();
 					if ( isShortcodeUsed ) {
-						$closeButton.trigger( 'click' );
+						if ( $closeButton ) {
+							$closeButton.trigger( 'click' );
+						}
 					} else {
-						$gameListButton.trigger( 'click' );
+						// ESCキーでも「タイトルに戻る」を実行
+						if ( $titleReturnButton ) {
+							$titleReturnButton.trigger( 'click' );
+						}
 					}
 				}
 			} );
@@ -1911,8 +1937,9 @@
 				return true;
 			}
 			
-			// 親要素にショートコードクラスがあるかチェック
-			if ( $gameContainer.closest( '.noveltool-shortcode-container' ).length > 0 ) {
+			// 親要素にショートコードクラスがあるかチェック（毎回最新のDOMから取得）
+			var $currentGameContainer = $( '#novel-game-container' );
+			if ( $currentGameContainer.closest( '.noveltool-shortcode-container' ).length > 0 ) {
 				return true;
 			}
 			
@@ -1928,6 +1955,25 @@
 			}
 			
 			return false;
+		}
+
+		/**
+		 * ショートコードパラメータを保持したURL遷移を行う
+		 *
+		 * @param {string} targetUrl 遷移先URL
+		 */
+		function navigateWithShortcodeParam( targetUrl ) {
+			// 現在のURLにshortcode=1パラメータが含まれているかチェック
+			var currentUrlParams = new URLSearchParams( window.location.search );
+			if ( currentUrlParams.get( 'shortcode' ) === '1' ) {
+				// 遷移先URLにshortcode=1を付与
+				var url = new URL( targetUrl, window.location.origin );
+				url.searchParams.set( 'shortcode', '1' );
+				window.location.href = url.toString();
+			} else {
+				// そのまま遷移
+				window.location.href = targetUrl;
+			}
 		}
 		
 		/**
@@ -1952,16 +1998,7 @@
 			}, 100 );
 		}
 		
-		/**
-		 * ゲーム一覧に戻る
-		 */
-		function returnToGameList() {
-			// アーカイブページのURLを取得
-			var archiveUrl = window.location.origin + window.location.pathname.replace( /\/[^\/]+\/?$/, '' );
-			// novel_gameアーカイブページのURLを構築
-			var gameArchiveUrl = archiveUrl.replace( /\/$/, '' ) + '/novel_game/';
-			window.location.href = gameArchiveUrl;
-		}
+
 
 		/**
 		 * ゲームコンテナのクリック/タッチイベント
@@ -2055,7 +2092,7 @@
 				prepareDialoguePages();
 				
 				// 現在の位置を可能な限り保持
-				if ( currentPageContent ) {
+				if ( currentPageContent && typeof currentPageContent === 'string' ) {
 					const newPageIndex = allDialoguePages.findIndex( function( page ) {
 						return page.includes( currentPageContent.substring( 0, 10 ) );
 					} );
@@ -2227,7 +2264,7 @@
 				if ( $modalOverlay.length === 0 ) {
 					console.log( 'Modal overlay not found, redirecting to:', gameUrl );
 					if ( gameUrl ) {
-						window.location.href = gameUrl;
+						navigateWithShortcodeParam( gameUrl );
 					}
 					return;
 				}
@@ -2241,7 +2278,7 @@
 				if ( $modalOverlay.length === 0 ) {
 					console.log( 'Modal overlay not found, opening game directly' );
 					if ( gameData && gameData.url ) {
-						window.location.href = gameData.url;
+						navigateWithShortcodeParam( gameData.url );
 					}
 					return;
 				}
