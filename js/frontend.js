@@ -750,9 +750,9 @@
 			if ( $modalOverlay.length === 0 ) {
 				console.log( 'Modal overlay not found, redirecting to:', gameUrlOrData );
 				if ( typeof gameUrlOrData === 'string' ) {
-					window.location.href = gameUrlOrData;
+					navigateWithShortcodeParam( gameUrlOrData );
 				} else if ( gameUrlOrData && gameUrlOrData.url ) {
-					window.location.href = gameUrlOrData.url;
+					navigateWithShortcodeParam( gameUrlOrData.url );
 				}
 				return;
 			}
@@ -1748,8 +1748,8 @@
 						initializeGameContent();
 					} ).catch( function( error ) {
 						console.error( '次のシーンの読み込みに失敗しました:', error );
-						// フォールバック：ページ遷移
-						window.location.href = nextScene;
+						// フォールバック：ページ遷移（ショートコードパラメータを保持）
+						navigateWithShortcodeParam( nextScene );
 					} );
 				}
 			}
@@ -1962,6 +1962,25 @@
 			
 			return false;
 		}
+
+		/**
+		 * ショートコードパラメータを保持したURL遷移を行う
+		 *
+		 * @param {string} targetUrl 遷移先URL
+		 */
+		function navigateWithShortcodeParam( targetUrl ) {
+			// 現在のURLにshortcode=1パラメータが含まれているかチェック
+			var currentUrlParams = new URLSearchParams( window.location.search );
+			if ( currentUrlParams.get( 'shortcode' ) === '1' ) {
+				// 遷移先URLにshortcode=1を付与
+				var url = new URL( targetUrl, window.location.origin );
+				url.searchParams.set( 'shortcode', '1' );
+				window.location.href = url.toString();
+			} else {
+				// そのまま遷移
+				window.location.href = targetUrl;
+			}
+		}
 		
 		/**
 		 * タイトル画面に戻る
@@ -1993,7 +2012,8 @@
 			var archiveUrl = window.location.origin + window.location.pathname.replace( /\/[^\/]+\/?$/, '' );
 			// novel_gameアーカイブページのURLを構築
 			var gameArchiveUrl = archiveUrl.replace( /\/$/, '' ) + '/novel_game/';
-			window.location.href = gameArchiveUrl;
+			// ショートコードパラメータを保持してURL遷移
+			navigateWithShortcodeParam( gameArchiveUrl );
 		}
 
 		/**
@@ -2260,7 +2280,7 @@
 				if ( $modalOverlay.length === 0 ) {
 					console.log( 'Modal overlay not found, redirecting to:', gameUrl );
 					if ( gameUrl ) {
-						window.location.href = gameUrl;
+						navigateWithShortcodeParam( gameUrl );
 					}
 					return;
 				}
@@ -2274,7 +2294,7 @@
 				if ( $modalOverlay.length === 0 ) {
 					console.log( 'Modal overlay not found, opening game directly' );
 					if ( gameData && gameData.url ) {
-						window.location.href = gameData.url;
+						navigateWithShortcodeParam( gameData.url );
 					}
 					return;
 				}
