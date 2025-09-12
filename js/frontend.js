@@ -887,11 +887,9 @@
 						console.log( '最初から開始します' );
 						// 保存された進捗をクリア
 						clearGameProgress( currentGameTitle );
-						// インデックス変数を明示的にリセット（最初から開始のため）
-						currentPageIndex = 0;
-						currentDialogueIndex = 0;
-						dialogueIndex = 0; // 後方互換性のため
-						console.log( 'ダイアログでの最初から開始選択でインデックス変数をリセットしました' );
+						// 全ての状態とデータを完全にリセット（最初から開始のため）
+						resetGameDataAndState();
+						console.log( 'ダイアログでの最初から開始選択で全ての状態をリセットしました' );
 						resolve();
 					}
 				} );
@@ -1189,6 +1187,68 @@
 		}
 
 		/**
+		 * ゲームデータと状態を完全にリセットする（最初から開始用）
+		 * 
+		 * @since 1.2.1
+		 */
+		function resetGameDataAndState() {
+			console.log( 'Resetting all game data and state completely...' );
+			
+			// セリフ関連のデータを完全にクリア
+			dialogueData = [];
+			dialogues = [];
+			allDialoguePages = [];
+			currentDialoguePages = [];
+			
+			// インデックス変数をリセット
+			currentDialogueIndex = 0;
+			currentPageIndex = 0;
+			dialogueIndex = 0;
+			
+			// 選択肢データをクリア
+			choices = [];
+			
+			// 背景画像データをクリア
+			baseBackground = '';
+			currentBackground = '';
+			
+			// キャラクターデータをクリア
+			charactersData = {};
+			
+			// エンディングフラグをリセット
+			isEnding = false;
+			
+			// DOM要素の表示をリセット
+			if ( $dialogueText && $dialogueText.length > 0 ) {
+				$dialogueText.text( '' );
+			}
+			if ( $speakerName && $speakerName.length > 0 ) {
+				$speakerName.text( '' );
+			}
+			if ( $choicesContainer && $choicesContainer.length > 0 ) {
+				$choicesContainer.empty().hide();
+			}
+			if ( $dialogueContinue && $dialogueContinue.length > 0 ) {
+				$dialogueContinue.hide();
+			}
+			if ( $dialogueBox && $dialogueBox.length > 0 ) {
+				$dialogueBox.show();
+			}
+			if ( $gameContainer && $gameContainer.length > 0 ) {
+				// 背景画像をクリア
+				$gameContainer.css( 'background-image', '' );
+			}
+			
+			// キャラクターの状態をリセット
+			$( '.novel-character' ).removeClass( 'speaking not-speaking' );
+			
+			// イベントハンドラーをクリーンアップ
+			$( document ).off( 'keydown.novel-dialogue keydown.novel-end keydown.novel-choices' );
+			
+			console.log( 'Complete game data and state reset completed' );
+		}
+
+		/**
 		 * モーダルイベントハンドラーの設定
 		 */
 		function setupModalEvents() {
@@ -1248,17 +1308,28 @@
 						console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
 					}
 					
-					// インデックス変数を明示的にリセット（最初から開始のため）
-					currentPageIndex = 0;
-					currentDialogueIndex = 0;
-					dialogueIndex = 0; // 後方互換性のため
-					console.log( 'インデックス変数をリセットしました: currentPageIndex=0, currentDialogueIndex=0' );
+					// 全ての状態とデータを完全にリセット（最初から開始のため）
+					resetGameDataAndState();
+					console.log( '「最初から開始」のため、全ての状態とデータをリセットしました' );
 					
 					// タイトル画面を非表示にしてゲーム開始（データは保持）
 					hideTitleScreen( false );
 					setTimeout( function() {
-						// タイトル画面経由での開始のため、進捗チェックをスキップして直接初期化
-						initializeGameContent();
+						// ゲームデータを再読み込みしてからゲームを初期化
+						if ( window.currentGameSelectionData.url ) {
+							loadGameData( window.currentGameSelectionData.url ).then( function() {
+								console.log( '「最初から開始」用にゲームデータを再読み込みしました' );
+								// タイトル画面経由での開始のため、進捗チェックをスキップして直接初期化
+								initializeGameContent();
+							} ).catch( function( error ) {
+								console.error( 'ゲームデータの再読み込みに失敗しました:', error );
+								// フォールバック：現在のデータで初期化を試行
+								initializeGameContent();
+							} );
+						} else {
+							// URLがない場合は現在のデータで初期化
+							initializeGameContent();
+						}
 					}, 300 );
 				}
 			} );
@@ -1281,10 +1352,8 @@
 							resumeFromSavedProgress( savedProgress ).catch( function( error ) {
 								console.error( '進捗復元に失敗しました:', error );
 								// フォールバック：最初から開始
-								currentPageIndex = 0;
-								currentDialogueIndex = 0;
-								dialogueIndex = 0; // 後方互換性のため
-								console.log( 'フォールバック処理でインデックス変数をリセットしました' );
+								resetGameDataAndState();
+								console.log( 'フォールバック処理で全ての状態とデータをリセットしました' );
 								initializeGameContent();
 							} );
 						}, 300 );
@@ -1293,11 +1362,9 @@
 						// 進捗がない場合は最初から開始（タイトル画面経由のため進捗チェックはスキップ）
 						hideTitleScreen( false );
 						setTimeout( function() {
-							// インデックス変数を明示的にリセット（最初から開始のため）
-							currentPageIndex = 0;
-							currentDialogueIndex = 0;
-							dialogueIndex = 0; // 後方互換性のため
-							console.log( '進捗なしのためインデックス変数をリセットしました' );
+							// 全ての状態とデータを完全にリセット（最初から開始のため）
+							resetGameDataAndState();
+							console.log( '進捗なしのため全ての状態とデータをリセットしました' );
 							initializeGameContent();
 						}, 300 );
 					}
