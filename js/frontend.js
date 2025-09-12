@@ -1849,8 +1849,8 @@
 					.addClass( 'game-nav-button close-button' )
 					.text( '閉じる' )
 					.on( 'click', function() {
-						// ショートコードコンテナを非表示にする
-						$gameContainer.closest( '.noveltool-shortcode-container' ).hide();
+						// ショートコードコンテナを非表示にする（最新のDOMから取得）
+						$( '#novel-game-container' ).closest( '.noveltool-shortcode-container' ).hide();
 						// または親ウィンドウを閉じる
 						if ( window.parent !== window ) {
 							window.parent.postMessage( 'close-game', '*' );
@@ -1943,8 +1943,9 @@
 				return true;
 			}
 			
-			// 親要素にショートコードクラスがあるかチェック
-			if ( $gameContainer.closest( '.noveltool-shortcode-container' ).length > 0 ) {
+			// 親要素にショートコードクラスがあるかチェック（毎回最新のDOMから取得）
+			var $currentGameContainer = $( '#novel-game-container' );
+			if ( $currentGameContainer.closest( '.noveltool-shortcode-container' ).length > 0 ) {
 				return true;
 			}
 			
