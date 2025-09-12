@@ -1819,7 +1819,7 @@
 			var isShortcodeUsed = noveltool_is_shortcode_context();
 			
 			// ナビゲーションボタンの変数を関数スコープで宣言
-			var $closeButton, $titleReturnButton, $gameListButton;
+			var $closeButton, $titleReturnButton;
 			
 			// エンディング判定による処理分岐
 			if ( isEnding ) {
@@ -1859,7 +1859,7 @@
 				
 				$navigationContainer.append( $closeButton );
 			} else {
-				// 通常の場合は「タイトルに戻る」と「ゲーム一覧に戻る」ボタンを表示
+				// 通常の場合は「タイトルに戻る」ボタンのみ
 				$titleReturnButton = $( '<button>' )
 					.addClass( 'game-nav-button title-return-button' )
 					.text( 'タイトルに戻る' )
@@ -1867,14 +1867,7 @@
 						returnToTitle();
 					});
 				
-				$gameListButton = $( '<button>' )
-					.addClass( 'game-nav-button game-list-button' )
-					.text( 'ゲーム一覧に戻る' )
-					.on( 'click', function() {
-						returnToGameList();
-					});
-				
-				$navigationContainer.append( $titleReturnButton, $gameListButton );
+				$navigationContainer.append( $titleReturnButton );
 			}
 			
 			$choicesContainer.append( $navigationContainer );
@@ -1903,8 +1896,9 @@
 							$closeButton.trigger( 'click' );
 						}
 					} else {
-						if ( $gameListButton ) {
-							$gameListButton.trigger( 'click' );
+						// ESCキーでも「タイトルに戻る」を実行
+						if ( $titleReturnButton ) {
+							$titleReturnButton.trigger( 'click' );
 						}
 					}
 				}
@@ -2004,17 +1998,7 @@
 			}, 100 );
 		}
 		
-		/**
-		 * ゲーム一覧に戻る
-		 */
-		function returnToGameList() {
-			// アーカイブページのURLを取得
-			var archiveUrl = window.location.origin + window.location.pathname.replace( /\/[^\/]+\/?$/, '' );
-			// novel_gameアーカイブページのURLを構築
-			var gameArchiveUrl = archiveUrl.replace( /\/$/, '' ) + '/novel_game/';
-			// ショートコードパラメータを保持してURL遷移
-			navigateWithShortcodeParam( gameArchiveUrl );
-		}
+
 
 		/**
 		 * ゲームコンテナのクリック/タッチイベント
