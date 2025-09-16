@@ -8,7 +8,18 @@
  * @since 1.1.0
  */
 
-get_header(); ?>
+// テーマに依存しない自己完結型のHTMLヘッダー
+?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?php wp_title( '|', true, 'right' ); ?><?php bloginfo( 'name' ); ?></title>
+    <?php wp_head(); ?>
+</head>
+<body <?php body_class(); ?>>
+<?php wp_body_open(); ?>
 
 <div id="novel-game-archive" class="novel-game-archive-container">
     <header class="archive-header">
@@ -405,6 +416,6 @@ get_header(); ?>
 }
 </style>
 
-
-
-<?php get_footer(); ?>
+<?php wp_footer(); ?>
+</body>
+</html>
