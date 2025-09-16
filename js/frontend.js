@@ -1810,6 +1810,14 @@
 		function showChoices() {
 			// 選択肢がある場合は、現在のシーンを最後の選択肢シーンとして記録
 			if ( choices.length > 0 ) {
+				// currentGameTitleが未設定の場合は、事前に設定する
+				if ( ! currentGameTitle ) {
+					var gameTitle = extractGameTitleFromPage();
+					if ( gameTitle ) {
+						setCurrentGameInfo( gameTitle, currentSceneUrl || window.location.href );
+					}
+				}
+				
 				lastChoiceSceneUrl = currentSceneUrl || window.location.href;
 				saveLastChoiceScene( lastChoiceSceneUrl );
 			}
