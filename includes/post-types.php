@@ -67,6 +67,10 @@ function noveltool_register_post_type() {
         'publicly_queryable'    => true,
         'capability_type'       => 'post',
         'show_in_rest'          => true,
+        'rewrite'               => array(
+            'slug'       => 'novel_game',
+            'with_front' => false,
+        ),
     );
 
     register_post_type( 'novel_game', $args );

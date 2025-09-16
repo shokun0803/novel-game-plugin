@@ -59,6 +59,37 @@ function noveltool_init() {
 add_action( 'plugins_loaded', 'noveltool_init' );
 
 /**
+ * プラグイン有効化時の処理
+ * 
+ * カスタム投稿タイプのリライトルールを登録するため、
+ * flush_rewrite_rules()を実行してパーマリンク構造を更新する
+ *
+ * @since 1.1.0
+ */
+function noveltool_activate_plugin() {
+    // カスタム投稿タイプを登録
+    noveltool_register_post_type();
+    
+    // リライトルールを再生成
+    flush_rewrite_rules();
+}
+register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
+
+/**
+ * プラグイン無効化時の処理
+ * 
+ * カスタム投稿タイプのリライトルールをクリーンアップするため、
+ * flush_rewrite_rules()を実行してパーマリンク構造をクリーンアップする
+ *
+ * @since 1.1.0
+ */
+function noveltool_deactivate_plugin() {
+    // リライトルールを再生成（カスタム投稿タイプのルールを削除）
+    flush_rewrite_rules();
+}
+register_deactivation_hook( __FILE__, 'noveltool_deactivate_plugin' );
+
+/**
  * ゲーム設定を取得するヘルパー関数
  *
  * @param string $key 設定キー (title, description, title_image)
@@ -526,6 +557,14 @@ function noveltool_load_custom_templates( $template ) {
     // アーカイブページのテンプレートを読み込む
     if ( is_post_type_archive( 'novel_game' ) ) {
         $custom_template = NOVEL_GAME_PLUGIN_PATH . 'templates/archive-novel_game.php';
+        if ( file_exists( $custom_template ) ) {
+            return $custom_template;
+        }
+    }
+    
+    // 単一投稿ページのテンプレート（必要に応じて）
+    if ( is_singular( 'novel_game' ) ) {
+        $custom_template = NOVEL_GAME_PLUGIN_PATH . 'templates/single-novel_game.php';
         if ( file_exists( $custom_template ) ) {
             return $custom_template;
         }
