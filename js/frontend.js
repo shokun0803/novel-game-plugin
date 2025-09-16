@@ -1264,6 +1264,9 @@
 			// セリフ表示インデックスをリセット
 			dialogueIndex = 0;
 			
+			// 直前の選択肢シーンURLをリセット
+			lastChoiceSceneUrl = '';
+			
 			// 背景表示の状態をリセット（データは保持）
 			if ( baseBackground ) {
 				currentBackground = baseBackground;
@@ -1316,6 +1319,9 @@
 			
 			// 選択肢データをクリア
 			choices = [];
+			
+			// 直前の選択肢シーンURLをリセット
+			lastChoiceSceneUrl = '';
 			
 			// 背景画像データをクリア
 			baseBackground = '';
