@@ -15,7 +15,20 @@ Thumbs.db
 
 # Node modules if added later
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Build artifacts
 dist/
 build/
+*.min.js
+*.min.css
+
+# WordPress specific
+wp-config.php
+.htaccess
+
+# Testing
+*.test.js
+*.spec.js

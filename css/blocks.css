@@ -1,0 +1,48 @@
+/**
+ * ノベルゲームブロック用スタイル
+ *
+ * @package NovelGamePlugin
+ * @since 1.2.0
+ */
+
+/* ブロックエディタ内でのプレビュースタイル */
+.noveltool-block-container {
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    padding: 20px;
+    margin: 10px 0;
+    text-align: center;
+    background-color: #f9f9f9;
+}
+
+.noveltool-block-container .components-placeholder {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+.noveltool-block-container .components-placeholder__label {
+    color: #555;
+    font-weight: 600;
+}
+
+.noveltool-block-container .components-placeholder__instructions {
+    color: #777;
+    margin-top: 8px;
+}
+
+/* アイコンの調整 */
+.noveltool-block-container .components-placeholder__fieldset .dashicon {
+    margin-bottom: 10px;
+}
+
+/* ブロックが選択されている場合のハイライト */
+.is-selected .noveltool-block-container {
+    border-color: #0073aa;
+    background-color: #f0f8ff;
+}
+
+/* ロード中のスピナー調整 */
+.noveltool-block-container .components-spinner {
+    margin: 10px auto;
+}
