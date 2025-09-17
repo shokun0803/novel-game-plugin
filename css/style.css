@@ -1201,6 +1201,28 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     -ms-user-select: none;
 }
 
+/* Game Over メッセージ */
+.game-over-message {
+    background: rgba(139, 0, 0, 0.9);
+    color: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: clamp(24px, 6vw, 36px);
+    font-weight: bold;
+    border: 2px solid #ff4444;
+    margin: 20px 0;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+}
+
 /* ゲームナビゲーションボタン */
 .game-navigation {
     margin-top: 20px;
@@ -1264,9 +1286,27 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     transform: none; /* ナビゲーションボタンがある場合は変形しない */
 }
 
+/* Game Over メッセージのホバー・アクティブ状態 */
+.game-over-message:hover {
+    background: rgba(139, 0, 0, 1);
+    border-color: #fff;
+    transform: none;
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4);
+}
+
+.game-over-message:active {
+    transform: none;
+}
+
 /* タッチデバイス用のゲーム終了メッセージ */
 @media (hover: none) and (pointer: coarse) {
     .game-end-message {
+        padding: 50px;
+        font-size: clamp(28px, 8vw, 42px);
+        min-height: 100px;
+    }
+    
+    .game-over-message {
         padding: 50px;
         font-size: clamp(28px, 8vw, 42px);
         min-height: 100px;
@@ -1284,6 +1324,12 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 /* 小画面での調整 */
 @media (max-width: 480px) {
     .game-end-message {
+        padding: 30px;
+        font-size: clamp(20px, 5vw, 28px);
+        min-height: 60px;
+    }
+    
+    .game-over-message {
         padding: 30px;
         font-size: clamp(20px, 5vw, 28px);
         min-height: 60px;

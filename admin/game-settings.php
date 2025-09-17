@@ -57,6 +57,7 @@ function noveltool_handle_game_settings_form() {
         $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
         $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
         $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
+        $game_over_text = isset( $_POST['game_over_text'] ) ? sanitize_text_field( wp_unslash( $_POST['game_over_text'] ) ) : 'Game Over';
 
         if ( empty( $game_title ) ) {
             $redirect_url = add_query_arg( 'error', 'empty_title', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
@@ -73,9 +74,10 @@ function noveltool_handle_game_settings_form() {
 
         // ゲームを保存
         $game_data = array(
-            'title'       => $game_title,
-            'description' => $game_description,
-            'title_image' => $game_title_image,
+            'title'         => $game_title,
+            'description'   => $game_description,
+            'title_image'   => $game_title_image,
+            'game_over_text' => $game_over_text,
         );
 
         $game_id = noveltool_save_game( $game_data );
@@ -103,6 +105,7 @@ function noveltool_handle_game_settings_form() {
         $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
         $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
         $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
+        $game_over_text = isset( $_POST['game_over_text'] ) ? sanitize_text_field( wp_unslash( $_POST['game_over_text'] ) ) : 'Game Over';
         $old_title = isset( $_POST['old_title'] ) ? sanitize_text_field( wp_unslash( $_POST['old_title'] ) ) : '';
 
         if ( empty( $game_title ) ) {
@@ -121,10 +124,11 @@ function noveltool_handle_game_settings_form() {
 
         // ゲームを更新
         $game_data = array(
-            'id'          => $game_id,
-            'title'       => $game_title,
-            'description' => $game_description,
-            'title_image' => $game_title_image,
+            'id'            => $game_id,
+            'title'         => $game_title,
+            'description'   => $game_description,
+            'title_image'   => $game_title_image,
+            'game_over_text' => $game_over_text,
         );
 
         $result = noveltool_save_game( $game_data );
@@ -381,6 +385,21 @@ function noveltool_game_settings_page() {
                                     </p>
                                 </td>
                             </tr>
+
+                            <tr>
+                                <th scope="row">
+                                    <label for="game_over_text"><?php esc_html_e( 'Game Over 画面テキスト', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" 
+                                           id="game_over_text" 
+                                           name="game_over_text" 
+                                           value="<?php echo esc_attr( isset( $editing_game['game_over_text'] ) ? $editing_game['game_over_text'] : 'Game Over' ); ?>" 
+                                           class="regular-text"
+                                           placeholder="<?php esc_attr_e( 'Game Over 画面に表示するテキスト', 'novel-game-plugin' ); ?>" />
+                                    <p class="description"><?php esc_html_e( '非エンディングで選択肢や次のシーンがない場合に表示されるテキストです。デフォルトは「Game Over」です。', 'novel-game-plugin' ); ?></p>
+                                </td>
+                            </tr>
                         </table>
 
                         <p class="submit">
@@ -507,6 +526,21 @@ function noveltool_game_settings_page() {
                                             <?php esc_html_e( '画像を削除', 'novel-game-plugin' ); ?>
                                         </button>
                                     </p>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th scope="row">
+                                    <label for="game_over_text"><?php esc_html_e( 'Game Over 画面テキスト', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" 
+                                           id="game_over_text" 
+                                           name="game_over_text" 
+                                           value="Game Over" 
+                                           class="regular-text"
+                                           placeholder="<?php esc_attr_e( 'Game Over 画面に表示するテキスト', 'novel-game-plugin' ); ?>" />
+                                    <p class="description"><?php esc_html_e( '非エンディングで選択肢や次のシーンがない場合に表示されるテキストです。デフォルトは「Game Over」です。', 'novel-game-plugin' ); ?></p>
                                 </td>
                             </tr>
                         </table>

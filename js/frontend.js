@@ -57,6 +57,13 @@
 		var allDialoguePages = [];
 		var isEnding = false;
 		
+		// エンディングとGame Overのテキスト
+		var endingText = 'おわり';
+		var gameOverText = 'Game Over';
+		
+		// 直前の選択肢シーンの記録用
+		var lastChoiceSceneUrl = '';
+		
 		// 表示設定
 		var displaySettings = {
 			maxCharsPerLine: 20,
@@ -89,6 +96,8 @@
 			var baseBackgroundData = $( '#novel-base-background' ).text();
 			var charactersDataRaw = $( '#novel-characters-data' ).text();
 			var endingDataRaw = $( '#novel-ending-data' ).text();
+			var endingTextRaw = $( '#novel-ending-text' ).text();
+			var gameOverTextRaw = $( '#novel-game-over-text' ).text();
 
 			if ( dialogueDataRaw ) {
 				dialogueData = JSON.parse( dialogueDataRaw );
@@ -121,6 +130,14 @@
 			
 			if ( endingDataRaw ) {
 				isEnding = JSON.parse( endingDataRaw );
+			}
+			
+			if ( endingTextRaw ) {
+				endingText = JSON.parse( endingTextRaw );
+			}
+			
+			if ( gameOverTextRaw ) {
+				gameOverText = JSON.parse( gameOverTextRaw );
 			}
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
@@ -255,6 +272,69 @@
 			} catch ( error ) {
 				console.warn( 'ゲーム進捗のクリアに失敗しました:', error );
 			}
+		}
+		
+		/**
+		 * 最後の選択肢シーンを保存する
+		 *
+		 * @param {string} sceneUrl シーンのURL
+		 * @since 1.3.0
+		 */
+		function saveLastChoiceScene( sceneUrl ) {
+			if ( ! sceneUrl || ! currentGameTitle ) {
+				return;
+			}
+			
+			try {
+				var storageKey = 'noveltool_last_choice_' + currentGameTitle;
+				var choiceData = {
+					url: sceneUrl,
+					timestamp: new Date().getTime()
+				};
+				localStorage.setItem( storageKey, JSON.stringify( choiceData ) );
+				console.log( '最後の選択肢シーンを保存しました:', sceneUrl );
+			} catch ( error ) {
+				console.warn( '最後の選択肢シーンの保存に失敗しました:', error );
+			}
+		}
+		
+		/**
+		 * 最後の選択肢シーンを取得する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {string|null} 最後の選択肢シーンのURL
+		 * @since 1.3.0
+		 */
+		function getLastChoiceScene( gameTitle ) {
+			if ( ! gameTitle ) {
+				return null;
+			}
+			
+			try {
+				var storageKey = 'noveltool_last_choice_' + gameTitle;
+				var choiceDataStr = localStorage.getItem( storageKey );
+				
+				if ( choiceDataStr ) {
+					var choiceData = JSON.parse( choiceDataStr );
+					
+					// 7日以内の記録のみ有効とする
+					var maxAge = 7 * 24 * 60 * 60 * 1000; // 7日をミリ秒で
+					var currentTime = new Date().getTime();
+					
+					if ( currentTime - choiceData.timestamp > maxAge ) {
+						console.log( '最後の選択肢シーンの記録が古いため削除します' );
+						localStorage.removeItem( storageKey );
+						return null;
+					}
+					
+					console.log( '最後の選択肢シーンを取得しました:', choiceData.url );
+					return choiceData.url;
+				}
+			} catch ( error ) {
+				console.warn( '最後の選択肢シーンの取得に失敗しました:', error );
+			}
+			
+			return null;
 		}
 		
 		/**
@@ -647,6 +727,32 @@
 								if ( endingDataText ) {
 									isEnding = JSON.parse( endingDataText );
 									console.log( 'Parsed ending data:', isEnding );
+								}
+							}
+							
+							// エンディングテキストを取得
+							var endingTextScript = $response.filter( 'script#novel-ending-text' );
+							if ( endingTextScript.length === 0 ) {
+								endingTextScript = $response.find( '#novel-ending-text' );
+							}
+							if ( endingTextScript.length > 0 ) {
+								var endingTextData = endingTextScript.text() || endingTextScript.html();
+								if ( endingTextData ) {
+									endingText = JSON.parse( endingTextData );
+									console.log( 'Parsed ending text:', endingText );
+								}
+							}
+							
+							// Game Overテキストを取得
+							var gameOverTextScript = $response.filter( 'script#novel-game-over-text' );
+							if ( gameOverTextScript.length === 0 ) {
+								gameOverTextScript = $response.find( '#novel-game-over-text' );
+							}
+							if ( gameOverTextScript.length > 0 ) {
+								var gameOverTextData = gameOverTextScript.text() || gameOverTextScript.html();
+								if ( gameOverTextData ) {
+									gameOverText = JSON.parse( gameOverTextData );
+									console.log( 'Parsed game over text:', gameOverText );
 								}
 							}
 							
@@ -1158,6 +1264,9 @@
 			// セリフ表示インデックスをリセット
 			dialogueIndex = 0;
 			
+			// 直前の選択肢シーンURLをリセット
+			lastChoiceSceneUrl = '';
+			
 			// 背景表示の状態をリセット（データは保持）
 			if ( baseBackground ) {
 				currentBackground = baseBackground;
@@ -1210,6 +1319,9 @@
 			
 			// 選択肢データをクリア
 			choices = [];
+			
+			// 直前の選択肢シーンURLをリセット
+			lastChoiceSceneUrl = '';
 			
 			// 背景画像データをクリア
 			baseBackground = '';
@@ -1361,17 +1473,45 @@
 					
 					if ( savedProgress ) {
 						console.log( '保存された進捗から再開します' );
+						
+						// 保存された進捗がGame Overになる可能性をチェック
+						// 最後の選択肢シーンがある場合はそこから再開
+						var lastChoiceUrl = getLastChoiceScene( gameTitle );
+						var useLastChoice = false;
+						
+						// 保存された進捗の検証（簡易的にチェック）
+						if ( lastChoiceUrl && lastChoiceUrl !== savedProgress.sceneUrl ) {
+							console.log( '最後の選択肢シーンが見つかりました:', lastChoiceUrl );
+							useLastChoice = true;
+						}
+						
 						// タイトル画面を非表示にして保存地点から再開（データは保持）
 						hideTitleScreen( false );
 						setTimeout( function() {
-							// 保存された進捗データから状態を復元（タイトル画面経由のため進捗チェックはスキップ）
-							resumeFromSavedProgress( savedProgress ).catch( function( error ) {
-								console.error( '進捗復元に失敗しました:', error );
-								// フォールバック：最初から開始
-								resetGameDataAndState();
-								console.log( 'フォールバック処理で全ての状態とデータをリセットしました' );
-								initializeGameContent();
-							} );
+							if ( useLastChoice ) {
+								// 最後の選択肢シーンから再開
+								console.log( '最後の選択肢シーンから再開します:', lastChoiceUrl );
+								loadGameData( lastChoiceUrl ).then( function() {
+									initializeGameContent();
+								} ).catch( function( error ) {
+									console.error( '最後の選択肢シーンの読み込みに失敗:', error );
+									// フォールバック：保存された進捗から再開
+									resumeFromSavedProgress( savedProgress ).catch( function( error ) {
+										console.error( '進捗復元に失敗しました:', error );
+										resetGameDataAndState();
+										initializeGameContent();
+									} );
+								} );
+							} else {
+								// 通常の保存された進捗から再開
+								resumeFromSavedProgress( savedProgress ).catch( function( error ) {
+									console.error( '進捗復元に失敗しました:', error );
+									// フォールバック：最初から開始
+									resetGameDataAndState();
+									console.log( 'フォールバック処理で全ての状態とデータをリセットしました' );
+									initializeGameContent();
+								} );
+							}
 						}, 300 );
 					} else {
 						console.log( '保存された進捗が見つかりません。最初から開始します。' );
@@ -1668,6 +1808,20 @@
 		 * 選択肢を表示、選択肢がない場合は「おわり」を表示
 		 */
 		function showChoices() {
+			// 選択肢がある場合は、現在のシーンを最後の選択肢シーンとして記録
+			if ( choices.length > 0 ) {
+				// currentGameTitleが未設定の場合は、事前に設定する
+				if ( ! currentGameTitle ) {
+					var gameTitle = extractGameTitleFromPage();
+					if ( gameTitle ) {
+						setCurrentGameInfo( gameTitle, currentSceneUrl || window.location.href );
+					}
+				}
+				
+				lastChoiceSceneUrl = currentSceneUrl || window.location.href;
+				saveLastChoiceScene( lastChoiceSceneUrl );
+			}
+			
 			// エンディング設定がある場合は選択肢に関係なくゲーム終了
 			if ( isEnding ) {
 				showGameEnd();
@@ -1675,8 +1829,8 @@
 			}
 			
 			if ( choices.length === 0 ) {
-				// 選択肢がない場合は「おわり」を表示
-				showGameEnd();
+				// 選択肢がない場合はGame Overを表示
+				showGameOver();
 				return;
 			}
 
@@ -1836,7 +1990,7 @@
 			// 「おわり」メッセージを表示
 			var $endMessage = $( '<div>' )
 				.addClass( 'game-end-message' )
-				.text( 'おわり' );
+				.text( endingText );
 			
 			$choicesContainer.append( $endMessage );
 			
@@ -1904,7 +2058,94 @@
 				}
 			} );
 		}
-		
+
+		/**
+		 * Game Over画面を表示
+		 */
+		function showGameOver() {
+			$choicesContainer.empty();
+			
+			// ショートコード使用の検出
+			var isShortcodeUsed = noveltool_is_shortcode_context();
+			
+			// ナビゲーションボタンの変数を関数スコープで宣言
+			var $closeButton, $titleReturnButton;
+			
+			// Game Over画面：話者名枠を非表示にする
+			$speakerName.hide();
+			
+			// 「Game Over」メッセージを表示
+			var $gameOverMessage = $( '<div>' )
+				.addClass( 'game-over-message' )
+				.text( gameOverText );
+			
+			$choicesContainer.append( $gameOverMessage );
+			
+			// ナビゲーションボタンを追加
+			var $navigationContainer = $( '<div>' ).addClass( 'game-navigation' );
+			
+			if ( isShortcodeUsed ) {
+				// ショートコードの場合は「閉じる」ボタンのみ
+				$closeButton = $( '<button>' )
+					.addClass( 'game-nav-button close-button' )
+					.text( '閉じる' )
+					.on( 'click', function() {
+						// ショートコードコンテナを非表示にする（最新のDOMから取得）
+						$( '#novel-game-container' ).closest( '.noveltool-shortcode-container' ).hide();
+						// または親ウィンドウを閉じる
+						if ( window.parent !== window ) {
+							window.parent.postMessage( 'close-game', '*' );
+						}
+					});
+				
+				$navigationContainer.append( $closeButton );
+			} else {
+				// 通常の場合は「タイトルに戻る」ボタンのみ
+				$titleReturnButton = $( '<button>' )
+					.addClass( 'game-nav-button title-return-button' )
+					.text( 'タイトルに戻る' )
+					.on( 'click', function() {
+						returnToTitle();
+					});
+				
+				$navigationContainer.append( $titleReturnButton );
+			}
+			
+			$choicesContainer.append( $navigationContainer );
+			$choicesContainer.show();
+			
+			// 継続マーカーを非表示
+			$dialogueContinue.hide();
+			
+			// キーボードイベントでナビゲーション（一度だけ設定）
+			$( document ).off( 'keydown.novel-gameover' ).on( 'keydown.novel-gameover', function( e ) {
+				if ( e.which === 13 || e.which === 32 ) { // Enter or Space
+					e.preventDefault();
+					if ( isShortcodeUsed ) {
+						if ( $closeButton ) {
+							$closeButton.trigger( 'click' );
+						}
+					} else {
+						if ( $titleReturnButton ) {
+							$titleReturnButton.trigger( 'click' );
+						}
+					}
+				} else if ( e.which === 27 ) { // ESC key
+					e.preventDefault();
+					if ( isShortcodeUsed ) {
+						if ( $closeButton ) {
+							$closeButton.trigger( 'click' );
+						}
+					} else {
+						// ESCキーでも「タイトルに戻る」を実行
+						if ( $titleReturnButton ) {
+							$titleReturnButton.trigger( 'click' );
+						}
+					}
+				}
+			} );
+		}
+
 		/**
 		 * 進捗クリアボタンの表示・非表示を更新する
 		 *

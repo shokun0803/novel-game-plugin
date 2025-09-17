@@ -305,6 +305,7 @@ function noveltool_filter_novel_game_content( $content ) {
     
     // エンディング設定の取得
     $is_ending = get_post_meta( $post->ID, '_is_ending', true );
+    $ending_text = get_post_meta( $post->ID, '_ending_text', true );
     
     // 後方互換性：既存の単一キャラクターをセンターに設定
     if ( $character && ! $character_center ) {
@@ -513,6 +514,24 @@ function noveltool_filter_novel_game_content( $content ) {
                 
                 <script id="novel-ending-data" type="application/json">
                     <?php echo wp_json_encode( (bool) $is_ending, JSON_UNESCAPED_UNICODE ); ?>
+                </script>
+
+                <script id="novel-ending-text" type="application/json">
+                    <?php echo wp_json_encode( $ending_text ? $ending_text : 'おわり', JSON_UNESCAPED_UNICODE ); ?>
+                </script>
+
+                <script id="novel-game-over-text" type="application/json">
+                    <?php 
+                    // Game Over テキストをゲーム設定から取得
+                    $game_over_text = 'Game Over'; // デフォルト
+                    if ( $game_title ) {
+                        $game_data = noveltool_get_game_by_title( $game_title );
+                        if ( $game_data && isset( $game_data['game_over_text'] ) && ! empty( $game_data['game_over_text'] ) ) {
+                            $game_over_text = $game_data['game_over_text'];
+                        }
+                    }
+                    echo wp_json_encode( $game_over_text, JSON_UNESCAPED_UNICODE ); 
+                    ?>
                 </script>
             </div>
         </div>

@@ -152,6 +152,7 @@ function noveltool_meta_box_callback( $post ) {
     
     // エンディング設定の取得
     $is_ending = get_post_meta( $post->ID, '_is_ending', true );
+    $ending_text = get_post_meta( $post->ID, '_ending_text', true );
     
     // 後方互換性：既存の単一キャラクター画像をセンター位置に移行
     if ( $character && ! $character_center ) {
@@ -837,6 +838,17 @@ function noveltool_meta_box_callback( $post ) {
                     <?php esc_html_e( 'このシーンをエンディング（ゲームの終了）として設定する', 'novel-game-plugin' ); ?>
                 </label>
                 <p class="description"><?php esc_html_e( 'チェックを入れると、このシーンでゲームが終了します。選択肢が設定されていてもエンディングが優先されます。', 'novel-game-plugin' ); ?></p>
+                
+                <div id="ending_text_setting" style="margin-top: 15px; <?php echo $is_ending ? '' : 'display: none;'; ?>">
+                    <label for="novel_ending_text"><?php esc_html_e( 'エンディング画面テキスト', 'novel-game-plugin' ); ?></label><br>
+                    <input type="text" 
+                           id="novel_ending_text" 
+                           name="ending_text" 
+                           value="<?php echo esc_attr( $ending_text ); ?>" 
+                           class="regular-text"
+                           placeholder="<?php esc_attr_e( 'エンディング画面に表示するテキスト（デフォルト: おわり）', 'novel-game-plugin' ); ?>" />
+                    <p class="description"><?php esc_html_e( 'エンディング画面に表示するテキストを設定します。空欄の場合は「おわり」が表示されます。', 'novel-game-plugin' ); ?></p>
+                </div>
             </td>
         </tr>
     </table>
@@ -945,6 +957,16 @@ function noveltool_save_meta_box_data( $post_id ) {
     } else {
         // チェックされていない場合はメタデータを削除
         delete_post_meta( $post_id, '_is_ending' );
+    }
+
+    // エンディングテキストの保存処理
+    if ( isset( $_POST['ending_text'] ) ) {
+        $ending_text = sanitize_text_field( wp_unslash( $_POST['ending_text'] ) );
+        if ( ! empty( $ending_text ) ) {
+            update_post_meta( $post_id, '_ending_text', $ending_text );
+        } else {
+            delete_post_meta( $post_id, '_ending_text' );
+        }
     }
 
     foreach ( $fields as $field => $meta_key ) {

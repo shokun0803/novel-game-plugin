@@ -921,4 +921,14 @@ jQuery( function( $ ) {
 
 	initializeMetaBox();
 	setupEventListeners();
+
+	// エンディング設定のチェックボックス切り替え機能
+	$( '#novel_is_ending' ).on( 'change', function() {
+		var $endingTextSetting = $( '#ending_text_setting' );
+		if ( $( this ).is( ':checked' ) ) {
+			$endingTextSetting.show();
+		} else {
+			$endingTextSetting.hide();
+		}
+	} );
 } );
