@@ -646,6 +646,10 @@
 								dialogueDataScript = $response.find( '#novel-dialogue-data' );
 							}
 							console.log( 'Dialogue data script found:', dialogueDataScript.length );
+
+							// 期待するゲームデータスクリプトが1つも見つからない場合は、リダイレクト等で誤ったHTMLを取得した可能性が高いので中断
+							// （例：shortcode=1 未付与でトップページが返却されたケース）
+							var earlyMissingAllGameData = dialogueDataScript.length === 0;
 							
 							if ( dialogueDataScript.length > 0 ) {
 								var dialogueDataText = dialogueDataScript.text() || dialogueDataScript.html();
@@ -675,6 +679,12 @@
 								choicesDataScript = $response.find( '#novel-choices-data' );
 							}
 							console.log( 'Choices data script found:', choicesDataScript.length );
+
+							if ( earlyMissingAllGameData && choicesDataScript.length === 0 ) {
+								console.error( 'Game data scripts missing (dialogue & choices). Rejecting to trigger fallback.' );
+								reject( new Error( 'Missing game data scripts' ) );
+								return;
+							}
 							
 							if ( choicesDataScript.length > 0 ) {
 								var choicesDataText = choicesDataScript.text() || choicesDataScript.html();
@@ -1878,6 +1888,8 @@
 			// 選択肢の実行関数
 			function executeChoice( index ) {
 				var nextScene = displayChoices[ index ].nextScene;
+				// リダイレクト回避のため shortcode=1 を強制付与
+				nextScene = ensureShortcodeParam( nextScene );
 				if ( nextScene ) {
 					// 既存のイベントハンドラーをクリーンアップ
 					$( document ).off( 'keydown.novel-choices' );
@@ -1895,8 +1907,12 @@
 					
 					// 3. 新しいシーンのデータを読み込み
 					loadGameData( nextScene ).then( function() {
-						// 4. シーン遷移後の進捗を保存
-						autoSaveGameProgress();
+						// 4. シーン遷移後の進捗を保存（dialogueData が空の場合は保存しない）
+						if ( dialogueData && dialogueData.length > 0 ) {
+							autoSaveGameProgress();
+						} else {
+							console.warn( 'Skipping autosave due to empty dialogueData after scene load' );
+						}
 						
 						// 5. ゲームコンテンツを初期化
 						initializeGameContent();
@@ -2214,6 +2230,29 @@
 			} else {
 				// そのまま遷移
 				window.location.href = targetUrl;
+			}
+		}
+
+		/**
+		 * URL に shortcode=1 パラメータを付与（既に存在する場合はそのまま）
+		 *
+		 * @param {string} targetUrl 対象URL
+		 * @return {string} 修正後URL
+		 * @since 1.1.1
+		 */
+		function ensureShortcodeParam( targetUrl ) {
+			try {
+				var urlObj = new URL( targetUrl, window.location.origin );
+				if ( urlObj.searchParams.get( 'shortcode' ) !== '1' ) {
+					urlObj.searchParams.set( 'shortcode', '1' );
+				}
+				return urlObj.toString();
+			} catch ( e ) {
+				// 相対URLや不正URLの場合のフォールバック
+				if ( targetUrl.indexOf( 'shortcode=1' ) !== -1 ) {
+					return targetUrl;
+				}
+				return targetUrl + ( targetUrl.indexOf( '?' ) > -1 ? '&' : '?' ) + 'shortcode=1';
 			}
 		}
 		
