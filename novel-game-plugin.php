@@ -285,6 +285,25 @@ function noveltool_filter_novel_game_content( $content ) {
         return $content;
     }
 
+    // ショートコードパラメータのチェック - フラグ制御はモーダル内でのみ有効
+    $is_shortcode_context = isset( $_GET['shortcode'] ) && $_GET['shortcode'] === '1';
+    
+    // フラグ条件による表示制御（ショートコード内でのみ適用）
+    if ( $is_shortcode_context ) {
+        $required_flags = get_post_meta( $post->ID, '_required_flags', true );
+        $flag_condition = get_post_meta( $post->ID, '_flag_condition', true );
+        $game_title = get_post_meta( $post->ID, '_game_title', true );
+        
+        // フラグ条件がある場合はJavaScriptでチェックするためのマークを追加
+        if ( $required_flags && $game_title ) {
+            $decoded_flags = json_decode( $required_flags, true );
+            if ( is_array( $decoded_flags ) && count( $decoded_flags ) > 0 ) {
+                // JavaScriptでのフラグチェック用の隠し要素を追加
+                $content = '<div id="scene-flag-check" data-required-flags="' . esc_attr( $required_flags ) . '" data-flag-condition="' . esc_attr( $flag_condition ? $flag_condition : 'AND' ) . '" data-game-title="' . esc_attr( $game_title ) . '" style="display:none;"></div>' . $content;
+            }
+        }
+    }
+
     // メタデータの取得
     $background = get_post_meta( $post->ID, '_background_image', true );
     $character  = get_post_meta( $post->ID, '_character_image', true );
@@ -307,6 +326,11 @@ function noveltool_filter_novel_game_content( $content ) {
     // エンディング設定の取得
     $is_ending = get_post_meta( $post->ID, '_is_ending', true );
     $ending_text = get_post_meta( $post->ID, '_ending_text', true );
+    
+    // フラグ設定の取得
+    $set_flags = get_post_meta( $post->ID, '_set_flags', true );
+    $required_flags = get_post_meta( $post->ID, '_required_flags', true );
+    $flag_condition = get_post_meta( $post->ID, '_flag_condition', true );
     
     // 後方互換性：既存の単一キャラクターをセンターに設定
     if ( $character && ! $character_center ) {
@@ -533,6 +557,38 @@ function noveltool_filter_novel_game_content( $content ) {
                     }
                     echo wp_json_encode( $game_over_text, JSON_UNESCAPED_UNICODE ); 
                     ?>
+                </script>
+
+                <script id="novel-set-flags" type="application/json">
+                    <?php 
+                    // シーン到達時に設定するフラグ
+                    $set_flags_array = array();
+                    if ( $set_flags ) {
+                        $decoded_set_flags = json_decode( $set_flags, true );
+                        if ( is_array( $decoded_set_flags ) ) {
+                            $set_flags_array = $decoded_set_flags;
+                        }
+                    }
+                    echo wp_json_encode( $set_flags_array, JSON_UNESCAPED_UNICODE ); 
+                    ?>
+                </script>
+
+                <script id="novel-required-flags" type="application/json">
+                    <?php 
+                    // シーン表示に必要なフラグ
+                    $required_flags_array = array();
+                    if ( $required_flags ) {
+                        $decoded_required_flags = json_decode( $required_flags, true );
+                        if ( is_array( $decoded_required_flags ) ) {
+                            $required_flags_array = $decoded_required_flags;
+                        }
+                    }
+                    echo wp_json_encode( $required_flags_array, JSON_UNESCAPED_UNICODE ); 
+                    ?>
+                </script>
+
+                <script id="novel-flag-condition" type="application/json">
+                    <?php echo wp_json_encode( $flag_condition ? $flag_condition : 'AND', JSON_UNESCAPED_UNICODE ); ?>
                 </script>
             </div>
         </div>

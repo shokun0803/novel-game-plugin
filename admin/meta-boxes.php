@@ -154,6 +154,11 @@ function noveltool_meta_box_callback( $post ) {
     $is_ending = get_post_meta( $post->ID, '_is_ending', true );
     $ending_text = get_post_meta( $post->ID, '_ending_text', true );
     
+    // フラグ設定の取得
+    $set_flags = get_post_meta( $post->ID, '_set_flags', true );
+    $required_flags = get_post_meta( $post->ID, '_required_flags', true );
+    $flag_condition = get_post_meta( $post->ID, '_flag_condition', true );
+    
     // 後方互換性：既存の単一キャラクター画像をセンター位置に移行
     if ( $character && ! $character_center ) {
         $character_center = $character;
@@ -306,6 +311,9 @@ function noveltool_meta_box_callback( $post ) {
             'character_center_name' => $character_center_name,
             'character_right_name' => $character_right_name,
             'is_ending' => (bool) $is_ending,
+            'set_flags' => $set_flags ? json_decode( $set_flags, true ) : array(),
+            'required_flags' => $required_flags ? json_decode( $required_flags, true ) : array(),
+            'flag_condition' => $flag_condition ? $flag_condition : 'AND',
         )
     );
 
@@ -851,7 +859,107 @@ function noveltool_meta_box_callback( $post ) {
                 </div>
             </td>
         </tr>
+
+        <tr>
+            <th scope="row">
+                <label><?php esc_html_e( 'フラグ設定', 'novel-game-plugin' ); ?></label>
+            </th>
+            <td>
+                <div id="novel-flag-settings">
+                    <!-- シーン到達時に設定するフラグ -->
+                    <div class="flag-section">
+                        <h4><?php esc_html_e( 'シーン到達時に設定するフラグ', 'novel-game-plugin' ); ?></h4>
+                        <p class="description"><?php esc_html_e( 'このシーンに到達した時にブラウザに保存されるフラグを設定します。', 'novel-game-plugin' ); ?></p>
+                        <div id="set-flags-list">
+                            <!-- JavaScript で動的に生成 -->
+                        </div>
+                        <button type="button" id="add-set-flag" class="button"><?php esc_html_e( 'フラグを追加', 'novel-game-plugin' ); ?></button>
+                    </div>
+
+                    <!-- シーン表示に必要なフラグ -->
+                    <div class="flag-section" style="margin-top: 20px;">
+                        <h4><?php esc_html_e( 'シーン表示に必要なフラグ', 'novel-game-plugin' ); ?></h4>
+                        <p class="description"><?php esc_html_e( 'これらのフラグ条件を満たした場合のみ、このシーンや選択肢が表示されます。', 'novel-game-plugin' ); ?></p>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <label for="flag_condition"><?php esc_html_e( '判定条件:', 'novel-game-plugin' ); ?></label>
+                            <select id="flag_condition" name="flag_condition">
+                                <option value="AND" <?php selected( $flag_condition, 'AND' ); ?>><?php esc_html_e( 'すべてのフラグが必要（AND）', 'novel-game-plugin' ); ?></option>
+                                <option value="OR" <?php selected( $flag_condition, 'OR' ); ?>><?php esc_html_e( 'いずれかのフラグが必要（OR）', 'novel-game-plugin' ); ?></option>
+                            </select>
+                        </div>
+                        
+                        <div id="required-flags-list">
+                            <!-- JavaScript で動的に生成 -->
+                        </div>
+                        <button type="button" id="add-required-flag" class="button"><?php esc_html_e( '必要フラグを追加', 'novel-game-plugin' ); ?></button>
+                    </div>
+                    
+                    <!-- 隠しフィールド -->
+                    <input type="hidden" id="set_flags_json" name="set_flags" value="<?php echo esc_attr( $set_flags ); ?>" />
+                    <input type="hidden" id="required_flags_json" name="required_flags" value="<?php echo esc_attr( $required_flags ); ?>" />
+                </div>
+            </td>
+        </tr>
     </table>
+
+    <style>
+    .flag-section {
+        border: 1px solid #ccd0d4;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f9f9f9;
+        border-radius: 4px;
+    }
+    
+    .flag-section h4 {
+        margin: 0 0 10px 0;
+        color: #333;
+    }
+    
+    .flag-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 8px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+    }
+    
+    .flag-input {
+        flex: 1;
+        padding: 4px 8px;
+        border: 1px solid #ccd0d4;
+        border-radius: 3px;
+    }
+    
+    .flag-remove {
+        background: #dc3232;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    
+    .flag-remove:hover {
+        background: #c62d2d;
+    }
+    
+    @media (max-width: 768px) {
+        .flag-item {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .flag-input {
+            margin-bottom: 8px;
+        }
+    }
+    </style>
     <?php
 }
 
@@ -966,6 +1074,54 @@ function noveltool_save_meta_box_data( $post_id ) {
             update_post_meta( $post_id, '_ending_text', $ending_text );
         } else {
             delete_post_meta( $post_id, '_ending_text' );
+        }
+    }
+
+    // フラグ設定の保存処理
+    if ( isset( $_POST['set_flags'] ) ) {
+        $set_flags = wp_unslash( $_POST['set_flags'] );
+        
+        // JSON文字列の場合は妥当性をチェックして保存
+        if ( is_string( $set_flags ) ) {
+            $decoded = json_decode( $set_flags, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+                // 配列の各要素をサニタイズ
+                $sanitized_flags = array_map( 'sanitize_text_field', $decoded );
+                // 空でない要素のみを保存
+                $sanitized_flags = array_filter( $sanitized_flags, function( $flag ) {
+                    return ! empty( trim( $flag ) );
+                } );
+                update_post_meta( $post_id, '_set_flags', wp_json_encode( array_values( $sanitized_flags ) ) );
+            }
+        } else {
+            delete_post_meta( $post_id, '_set_flags' );
+        }
+    }
+
+    if ( isset( $_POST['required_flags'] ) ) {
+        $required_flags = wp_unslash( $_POST['required_flags'] );
+        
+        // JSON文字列の場合は妥当性をチェックして保存
+        if ( is_string( $required_flags ) ) {
+            $decoded = json_decode( $required_flags, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+                // 配列の各要素をサニタイズ
+                $sanitized_flags = array_map( 'sanitize_text_field', $decoded );
+                // 空でない要素のみを保存
+                $sanitized_flags = array_filter( $sanitized_flags, function( $flag ) {
+                    return ! empty( trim( $flag ) );
+                } );
+                update_post_meta( $post_id, '_required_flags', wp_json_encode( array_values( $sanitized_flags ) ) );
+            }
+        } else {
+            delete_post_meta( $post_id, '_required_flags' );
+        }
+    }
+
+    if ( isset( $_POST['flag_condition'] ) ) {
+        $flag_condition = sanitize_text_field( wp_unslash( $_POST['flag_condition'] ) );
+        if ( in_array( $flag_condition, array( 'AND', 'OR' ), true ) ) {
+            update_post_meta( $post_id, '_flag_condition', $flag_condition );
         }
     }
 

@@ -347,6 +347,139 @@
 		function setCurrentGameInfo( gameTitle, sceneUrl ) {
 			currentGameTitle = gameTitle || '';
 			currentSceneUrl = sceneUrl || window.location.href;
+			console.log( 'ゲーム情報を設定しました:', { gameTitle: currentGameTitle, sceneUrl: currentSceneUrl } );
+		}
+
+		/**
+		 * フラグをlocalStorageに保存する
+		 *
+		 * @param {string} flagName フラグ名
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.0
+		 */
+		function setFlag( flagName, gameTitle ) {
+			if ( ! flagName || ! gameTitle ) {
+				return;
+			}
+
+			try {
+				var storageKey = 'noveltool_flags_' + generateSiteIdentifier();
+				var flags = JSON.parse( localStorage.getItem( storageKey ) || '{}' );
+				
+				if ( ! flags[gameTitle] ) {
+					flags[gameTitle] = {};
+				}
+				
+				flags[gameTitle][flagName] = {
+					value: true,
+					timestamp: new Date().getTime()
+				};
+				
+				localStorage.setItem( storageKey, JSON.stringify( flags ) );
+				console.log( 'フラグを設定しました:', flagName, 'for game:', gameTitle );
+			} catch ( error ) {
+				console.warn( 'フラグの保存に失敗しました:', error );
+			}
+		}
+
+		/**
+		 * フラグの状態を取得する
+		 *
+		 * @param {string} flagName フラグ名
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {boolean} フラグの状態
+		 * @since 1.4.0
+		 */
+		function getFlag( flagName, gameTitle ) {
+			if ( ! flagName || ! gameTitle ) {
+				return false;
+			}
+
+			try {
+				var storageKey = 'noveltool_flags_' + generateSiteIdentifier();
+				var flags = JSON.parse( localStorage.getItem( storageKey ) || '{}' );
+				
+				if ( flags[gameTitle] && flags[gameTitle][flagName] ) {
+					return flags[gameTitle][flagName].value === true;
+				}
+			} catch ( error ) {
+				console.warn( 'フラグの取得に失敗しました:', error );
+			}
+			
+			return false;
+		}
+
+		/**
+		 * 複数のフラグ条件をチェックする
+		 *
+		 * @param {Array} requiredFlags 必要なフラグの配列
+		 * @param {string} condition 判定条件（'AND' または 'OR'）
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {boolean} 条件を満たすかどうか
+		 * @since 1.4.0
+		 */
+		function checkFlagConditions( requiredFlags, condition, gameTitle ) {
+			if ( ! requiredFlags || requiredFlags.length === 0 ) {
+				return true; // フラグ条件が設定されていない場合は常に表示
+			}
+
+			if ( ! gameTitle ) {
+				return false;
+			}
+
+			var results = requiredFlags.map( function( flagName ) {
+				return getFlag( flagName, gameTitle );
+			} );
+
+			if ( condition === 'OR' ) {
+				// いずれかのフラグが設定されていればOK
+				return results.some( function( result ) {
+					return result === true;
+				} );
+			} else {
+				// すべてのフラグが設定されていればOK（デフォルト: AND）
+				return results.every( function( result ) {
+					return result === true;
+				} );
+			}
+		}
+
+		/**
+		 * シーン到達時にフラグを設定する
+		 *
+		 * @param {Array} setFlags 設定するフラグの配列
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.0
+		 */
+		function setSceneFlags( setFlags, gameTitle ) {
+			if ( ! setFlags || setFlags.length === 0 || ! gameTitle ) {
+				return;
+			}
+
+			setFlags.forEach( function( flagName ) {
+				if ( flagName && flagName.trim() ) {
+					setFlag( flagName.trim(), gameTitle );
+				}
+			} );
+		}
+
+		/**
+		 * サイト識別子を生成する
+		 *
+		 * @return {string} サイト識別子
+		 * @since 1.4.0
+		 */
+		function generateSiteIdentifier() {
+			try {
+				var hostname = window.location.hostname || 'localhost';
+				var pathname = window.location.pathname || '/';
+				var pathDir = pathname.substring( 0, pathname.lastIndexOf( '/' ) + 1 );
+				return hostname + pathDir.replace( /[^a-zA-Z0-9]/g, '_' );
+			} catch ( error ) {
+				console.warn( 'サイト識別子の生成に失敗しました:', error );
+				return 'default';
+			}
+		}
 			
 			console.log( '現在のゲーム情報を設定:', { gameTitle: currentGameTitle, sceneUrl: currentSceneUrl } );
 		}
@@ -763,6 +896,47 @@
 								if ( gameOverTextData ) {
 									gameOverText = JSON.parse( gameOverTextData );
 									console.log( 'Parsed game over text:', gameOverText );
+								}
+							}
+
+							// フラグデータを取得
+							var setFlagsScript = $response.filter( 'script#novel-set-flags' );
+							if ( setFlagsScript.length === 0 ) {
+								setFlagsScript = $response.find( '#novel-set-flags' );
+							}
+							if ( setFlagsScript.length > 0 ) {
+								var setFlagsText = setFlagsScript.text() || setFlagsScript.html();
+								if ( setFlagsText ) {
+									var setFlags = JSON.parse( setFlagsText );
+									console.log( 'Parsed set flags:', setFlags );
+									// シーン到達時にフラグを設定
+									if ( extractedGameTitle ) {
+										setSceneFlags( setFlags, extractedGameTitle );
+									}
+								}
+							}
+
+							// シーンレベルのフラグ条件をチェック
+							var sceneFlagCheck = $response.find( '#scene-flag-check' );
+							if ( sceneFlagCheck.length > 0 ) {
+								var requiredFlagsData = sceneFlagCheck.data( 'required-flags' );
+								var flagConditionData = sceneFlagCheck.data( 'flag-condition' );
+								var gameTitleData = sceneFlagCheck.data( 'game-title' );
+								
+								if ( requiredFlagsData && gameTitleData ) {
+									var requiredFlags = typeof requiredFlagsData === 'string' ? 
+										JSON.parse( requiredFlagsData ) : requiredFlagsData;
+									var condition = flagConditionData || 'AND';
+									
+									// フラグ条件をチェック
+									if ( ! checkFlagConditions( requiredFlags, condition, gameTitleData ) ) {
+										console.log( 'シーンのフラグ条件を満たしていません。Game Overを表示します。' );
+										// フラグ条件を満たしていない場合はGame Overシーンとして扱う
+										dialogueData = [{ text: 'このシーンにアクセスする条件を満たしていません。', background: '', speaker: '' }];
+										dialogues = ['このシーンにアクセスする条件を満たしていません。'];
+										choices = [];
+										isEnding = false; // Game Over扱い
+									}
 								}
 							}
 							
@@ -1838,14 +2012,17 @@
 				return;
 			}
 			
-			if ( choices.length === 0 ) {
-				// 選択肢がない場合はGame Overを表示
+			// フラグ条件に基づいて選択肢をフィルタリング
+			var filteredChoices = filterChoicesByFlags( choices );
+			
+			if ( filteredChoices.length === 0 ) {
+				// 表示可能な選択肢がない場合はGame Overを表示
 				showGameOver();
 				return;
 			}
 
 			// 最大4つの選択肢に制限
-			const displayChoices = choices.slice( 0, 4 );
+			const displayChoices = filteredChoices.slice( 0, 4 );
 			
 			$choicesContainer.empty();
 			
@@ -3012,6 +3189,30 @@
 		 */
 
 		console.log( 'モーダルDOM再生成ユーティリティが初期化されました' );
+
+		/**
+		 * フラグ条件に基づいて選択肢をフィルタリングする
+		 *
+		 * @param {Array} choicesList 選択肢の配列
+		 * @return {Array} フィルタリングされた選択肢の配列
+		 * @since 1.4.0
+		 */
+		function filterChoicesByFlags( choicesList ) {
+			if ( ! choicesList || choicesList.length === 0 || ! currentGameTitle ) {
+				return choicesList;
+			}
+
+			return choicesList.filter( function( choice ) {
+				// 選択肢にフラグ条件が設定されていない場合は表示
+				if ( ! choice.requiredFlags || choice.requiredFlags.length === 0 ) {
+					return true;
+				}
+
+				// フラグ条件をチェック
+				var condition = choice.flagCondition || 'AND';
+				return checkFlagConditions( choice.requiredFlags, condition, currentGameTitle );
+			} );
+		}
 	} );
 
 } )( jQuery );

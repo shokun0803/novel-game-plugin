@@ -931,4 +931,178 @@ jQuery( function( $ ) {
 			$endingTextSetting.hide();
 		}
 	} );
+
+	/**
+	 * フラグ設定機能の初期化
+	 */
+	function initializeFlagSettings() {
+		// 既存のフラグデータを読み込み
+		var setFlags = novelGameMeta.set_flags || [];
+		var requiredFlags = novelGameMeta.required_flags || [];
+
+		// 設定するフラグのリストを初期化
+		renderSetFlagsList( setFlags );
+
+		// 必要なフラグのリストを初期化
+		renderRequiredFlagsList( requiredFlags );
+
+		// イベントリスナーの設定
+		$( '#add-set-flag' ).on( 'click', function() {
+			addSetFlag();
+		} );
+
+		$( '#add-required-flag' ).on( 'click', function() {
+			addRequiredFlag();
+		} );
+
+		// フラグ条件変更時にJSONを更新
+		$( '#flag_condition' ).on( 'change', function() {
+			updateFlagJSON();
+		} );
+	}
+
+	/**
+	 * 設定するフラグのリストを描画
+	 */
+	function renderSetFlagsList( flags ) {
+		var $container = $( '#set-flags-list' );
+		$container.empty();
+
+		if ( flags.length === 0 ) {
+			flags = [''];
+		}
+
+		flags.forEach( function( flag, index ) {
+			var $item = $( '<div class="flag-item">' );
+			var $input = $( '<input type="text" class="flag-input" placeholder="フラグ名（例: chapter1_cleared）" />' );
+			$input.val( flag );
+			$input.on( 'input', updateSetFlagsJSON );
+
+			var $removeBtn = $( '<button type="button" class="flag-remove">削除</button>' );
+			$removeBtn.on( 'click', function() {
+				$item.remove();
+				updateSetFlagsJSON();
+			} );
+
+			$item.append( $input );
+			$item.append( $removeBtn );
+			$container.append( $item );
+		} );
+	}
+
+	/**
+	 * 必要なフラグのリストを描画
+	 */
+	function renderRequiredFlagsList( flags ) {
+		var $container = $( '#required-flags-list' );
+		$container.empty();
+
+		if ( flags.length === 0 ) {
+			flags = [''];
+		}
+
+		flags.forEach( function( flag, index ) {
+			var $item = $( '<div class="flag-item">' );
+			var $input = $( '<input type="text" class="flag-input" placeholder="必要なフラグ名（例: chapter1_cleared）" />' );
+			$input.val( flag );
+			$input.on( 'input', updateRequiredFlagsJSON );
+
+			var $removeBtn = $( '<button type="button" class="flag-remove">削除</button>' );
+			$removeBtn.on( 'click', function() {
+				$item.remove();
+				updateRequiredFlagsJSON();
+			} );
+
+			$item.append( $input );
+			$item.append( $removeBtn );
+			$container.append( $item );
+		} );
+	}
+
+	/**
+	 * 設定するフラグを追加
+	 */
+	function addSetFlag() {
+		var $container = $( '#set-flags-list' );
+		var $item = $( '<div class="flag-item">' );
+		var $input = $( '<input type="text" class="flag-input" placeholder="フラグ名（例: chapter1_cleared）" />' );
+		$input.on( 'input', updateSetFlagsJSON );
+
+		var $removeBtn = $( '<button type="button" class="flag-remove">削除</button>' );
+		$removeBtn.on( 'click', function() {
+			$item.remove();
+			updateSetFlagsJSON();
+		} );
+
+		$item.append( $input );
+		$item.append( $removeBtn );
+		$container.append( $item );
+
+		$input.focus();
+		updateSetFlagsJSON();
+	}
+
+	/**
+	 * 必要なフラグを追加
+	 */
+	function addRequiredFlag() {
+		var $container = $( '#required-flags-list' );
+		var $item = $( '<div class="flag-item">' );
+		var $input = $( '<input type="text" class="flag-input" placeholder="必要なフラグ名（例: chapter1_cleared）" />' );
+		$input.on( 'input', updateRequiredFlagsJSON );
+
+		var $removeBtn = $( '<button type="button" class="flag-remove">削除</button>' );
+		$removeBtn.on( 'click', function() {
+			$item.remove();
+			updateRequiredFlagsJSON();
+		} );
+
+		$item.append( $input );
+		$item.append( $removeBtn );
+		$container.append( $item );
+
+		$input.focus();
+		updateRequiredFlagsJSON();
+	}
+
+	/**
+	 * 設定するフラグのJSONを更新
+	 */
+	function updateSetFlagsJSON() {
+		var flags = [];
+		$( '#set-flags-list .flag-input' ).each( function() {
+			var value = $( this ).val().trim();
+			if ( value ) {
+				flags.push( value );
+			}
+		} );
+
+		$( '#set_flags_json' ).val( JSON.stringify( flags ) );
+	}
+
+	/**
+	 * 必要なフラグのJSONを更新
+	 */
+	function updateRequiredFlagsJSON() {
+		var flags = [];
+		$( '#required-flags-list .flag-input' ).each( function() {
+			var value = $( this ).val().trim();
+			if ( value ) {
+				flags.push( value );
+			}
+		} );
+
+		$( '#required_flags_json' ).val( JSON.stringify( flags ) );
+	}
+
+	/**
+	 * フラグJSONを更新（条件変更時）
+	 */
+	function updateFlagJSON() {
+		updateSetFlagsJSON();
+		updateRequiredFlagsJSON();
+	}
+
+	// フラグ設定機能の初期化
+	initializeFlagSettings();
 } );
