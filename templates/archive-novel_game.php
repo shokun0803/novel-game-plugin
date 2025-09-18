@@ -125,7 +125,7 @@
                 }
                 ?>
                 <div class="novel-game-card noveltool-game-item" 
-                     data-game-url="<?php echo esc_url(get_permalink($game->first_scene_id)); ?>" 
+                     data-game-url="<?php echo esc_url(add_query_arg('shortcode', '1', get_permalink($game->first_scene_id))); ?>" 
                      data-game-title="<?php echo esc_attr($game_title); ?>"
                      data-game-description="<?php echo esc_attr($game_description); ?>"
                      data-game-image="<?php echo esc_attr($game_image); ?>"

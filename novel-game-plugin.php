@@ -595,6 +595,53 @@ function noveltool_load_custom_templates( $template ) {
 add_filter( 'template_include', 'noveltool_load_custom_templates' );
 
 /**
+ * 個別シーンURL直接アクセス時のリダイレクト処理
+ *
+ * @since 1.1.1
+ */
+function noveltool_redirect_single_scene_direct_access() {
+    // 個別シーンページかどうかをチェック
+    if ( ! is_singular( 'novel_game' ) ) {
+        return;
+    }
+    
+    // shortcode=1パラメータが付いている場合はモーダル表示用なのでリダイレクトしない
+    if ( isset( $_GET['shortcode'] ) && $_GET['shortcode'] === '1' ) {
+        return;
+    }
+    
+    // Ajax リクエストの場合はリダイレクトしない
+    if ( wp_doing_ajax() ) {
+        return;
+    }
+    
+    // 管理画面からのアクセスの場合はリダイレクトしない
+    if ( is_admin() ) {
+        return;
+    }
+    
+    // REST API リクエストの場合はリダイレクトしない
+    if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+        return;
+    }
+    
+    // プレビュー表示の場合はリダイレクトしない
+    if ( is_preview() ) {
+        return;
+    }
+    
+    // 404エラーページの場合はリダイレクトしない
+    if ( is_404() ) {
+        return;
+    }
+    
+    // サイトトップページにリダイレクト
+    wp_redirect( home_url( '/' ) );
+    exit;
+}
+add_action( 'template_redirect', 'noveltool_redirect_single_scene_direct_access' );
+
+/**
  * 複数ゲーム一覧専用のショートコード
  *
  * @param array $atts ショートコードの属性
