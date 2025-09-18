@@ -818,63 +818,91 @@ function noveltool_game_posts_shortcode( $atts ) {
         return '<p>' . esc_html__( 'このゲームには投稿がありません。', 'novel-game-plugin' ) . '</p>';
     }
     
+    // 個別ゲーム紹介画面の表示
+    $first_post = $posts[0];
+    $background = get_post_meta( $first_post->ID, '_background_image', true );
+    
+    // ゲーム説明とタイトル画像を取得
+    $game_description = '';
+    $game_title_image = '';
+    $game = noveltool_get_game_by_title( $game_title );
+    if ( $game ) {
+        $game_description = ! empty( $game['description'] ) ? $game['description'] : '';
+        $game_title_image = ! empty( $game['title_image'] ) ? $game['title_image'] : '';
+    }
+    
+    // 表示用の画像を決定：タイトル画像を優先、なければ最初のシーンの背景画像
+    $display_image = ! empty( $game_title_image ) ? $game_title_image : $background;
+    
     // 出力の開始
     ob_start();
     
-    echo '<div class="noveltool-game-posts-list noveltool-shortcode-container">';
+    echo '<div class="noveltool-single-game-display noveltool-shortcode-container">';
     
-    if ( $show_title ) {
-        echo '<h3 class="noveltool-game-title">' . esc_html( $game_title ) . '</h3>';
+    // 背景画像とタイトルのオーバーレイ表示
+    if ( $display_image ) {
+        echo '<div class="noveltool-game-hero" style="background-image: url(\'' . esc_url( $display_image ) . '\');">';
+        echo '<div class="noveltool-game-hero-overlay">';
+        if ( $show_title ) {
+            echo '<h1 class="noveltool-game-hero-title">' . esc_html( $game_title ) . '</h1>';
+        }
+        echo '</div>'; // .noveltool-game-hero-overlay
+        echo '</div>'; // .noveltool-game-hero
+    } else {
+        // 画像がない場合は通常のタイトル表示
+        if ( $show_title ) {
+            echo '<h1 class="noveltool-game-title-fallback">' . esc_html( $game_title ) . '</h1>';
+        }
     }
     
-    if ( $show_navigation ) {
-        echo '<div class="noveltool-game-start-navigation">';
-        echo '<a href="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $posts[0]->ID ) ) ) . '" class="noveltool-start-button button">';
-        echo esc_html__( 'スタート', 'novel-game-plugin' );
-        echo '</a>';
+    // 概要テキストの表示
+    if ( $game_description ) {
+        echo '<div class="noveltool-game-description-section">';
+        echo '<p class="noveltool-game-description">' . esc_html( $game_description ) . '</p>';
         echo '</div>';
     }
     
-    echo '<div class="noveltool-posts-grid">';
+    // スタートボタンの配置
+    echo '<div class="noveltool-game-start-section">';
+    echo '<button class="noveltool-single-game-start-button" ';
+    echo 'data-game-url="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $first_post->ID ) ) ) . '" ';
+    echo 'data-game-title="' . esc_attr( $game_title ) . '" ';
+    echo 'data-game-description="' . esc_attr( $game_description ) . '" ';
+    echo 'data-game-image="' . esc_attr( $game_title_image ) . '" ';
+    echo 'data-game-subtitle="">';
+    echo esc_html__( 'ゲームを開始', 'novel-game-plugin' );
+    echo '</button>';
+    echo '</div>';
     
-    foreach ( $posts as $post ) {
-        setup_postdata( $post );
-        
-        $background = get_post_meta( $post->ID, '_background_image', true );
-        $dialogue   = get_post_meta( $post->ID, '_dialogue_text', true );
-        
-        echo '<div class="noveltool-post-item">';
-        
-        if ( $background ) {
-            echo '<div class="noveltool-post-thumbnail">';
-            echo '<img src="' . esc_url( $background ) . '" alt="' . esc_attr( $post->post_title ) . '" />';
-            echo '</div>';
-        }
-        
-        echo '<div class="noveltool-post-content">';
-        echo '<h4 class="noveltool-post-title">';
-        echo '<a href="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $post->ID ) ) ) . '">' . esc_html( $post->post_title ) . '</a>';
-        echo '</h4>';
-        
-        if ( $dialogue ) {
-            $dialogue_preview = mb_substr( strip_tags( $dialogue ), 0, 100 );
-            echo '<p class="noveltool-post-dialogue">' . esc_html( $dialogue_preview ) . '...</p>';
-        }
-        
-        if ( $show_date ) {
-            echo '<p class="noveltool-post-date">' . esc_html( get_the_date( 'Y年m月d日', $post->ID ) ) . '</p>';
-        }
-        
-        echo '<a href="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $post->ID ) ) ) . '" class="noveltool-post-link button">';
-        echo esc_html__( 'プレイ', 'novel-game-plugin' );
-        echo '</a>';
-        
-        echo '</div>'; // .noveltool-post-content
-        echo '</div>'; // .noveltool-post-item
-    }
+    echo '</div>'; // .noveltool-single-game-display
     
-    echo '</div>'; // .noveltool-posts-grid
-    echo '</div>'; // .noveltool-game-posts-list
+    // モーダルオーバーレイを追加（個別ゲーム表示用）
+    echo '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">';
+    echo '    <div id="novel-game-modal-content" class="novel-game-modal-content">';
+    echo '        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '" title="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '">';
+    echo '            <span class="close-icon">×</span>';
+    echo '        </button>';
+    echo '        <!-- タイトル画面 -->';
+    echo '        <div id="novel-title-screen" class="novel-title-screen" style="display: none;">';
+    echo '            <div class="novel-title-content">';
+    echo '                <h2 id="novel-title-main" class="novel-title-main"></h2>';
+    echo '                <p id="novel-title-subtitle" class="novel-title-subtitle"></p>';
+    echo '                <p id="novel-title-description" class="novel-title-description"></p>';
+    echo '                <div class="novel-title-buttons">';
+    echo '                    <button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">';
+    echo                          esc_html__( '最初から開始', 'novel-game-plugin' );
+    echo '                    </button>';
+    echo '                    <button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">';
+    echo                          esc_html__( '続きから始める', 'novel-game-plugin' );
+    echo '                    </button>';
+    echo '                </div>';
+    echo '            </div>';
+    echo '        </div>';
+    echo '        <div id="novel-game-container" class="novel-game-container">';
+    echo '            <!-- ゲーム内容は動的に読み込まれます -->';
+    echo '        </div>';
+    echo '    </div>';
+    echo '</div>';
     
     wp_reset_postdata();
     
@@ -1198,6 +1226,156 @@ function noveltool_shortcode_styles() {
     .noveltool-game-actions {
         text-align: center;
         margin-top: 10px;
+    }
+    
+    /* 新しい個別ゲーム表示のスタイル */
+    .noveltool-single-game-display {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .noveltool-game-hero {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        margin-bottom: 30px;
+    }
+    
+    .noveltool-game-hero-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+        padding: 40px 30px 30px;
+        color: white;
+    }
+    
+    .noveltool-game-hero-title {
+        margin: 0;
+        font-size: 2.5em;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        line-height: 1.2;
+    }
+    
+    .noveltool-game-title-fallback {
+        text-align: center;
+        font-size: 2.2em;
+        margin: 0 0 30px 0;
+        color: #333;
+    }
+    
+    .noveltool-game-description-section {
+        margin-bottom: 40px;
+        padding: 0 20px;
+    }
+    
+    .noveltool-game-description {
+        font-size: 1.1em;
+        line-height: 1.6;
+        color: #555;
+        margin: 0;
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .noveltool-game-start-section {
+        text-align: center;
+        margin-top: 40px;
+    }
+    
+    .noveltool-single-game-start-button {
+        display: inline-block;
+        padding: 18px 40px;
+        background: linear-gradient(135deg, #ff6b6b, #ff5252);
+        color: white;
+        text-decoration: none;
+        border-radius: 50px;
+        font-size: 1.2em;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .noveltool-single-game-start-button:hover {
+        background: linear-gradient(135deg, #ff5252, #e53935);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+    }
+    
+    .noveltool-single-game-start-button:active {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    }
+    
+    /* レスポンシブ対応 */
+    @media (max-width: 768px) {
+        .noveltool-single-game-display {
+            padding: 15px;
+        }
+        
+        .noveltool-game-hero {
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .noveltool-game-hero-title {
+            font-size: 1.8em;
+        }
+        
+        .noveltool-game-title-fallback {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        
+        .noveltool-game-description-section {
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+        
+        .noveltool-game-description {
+            font-size: 1em;
+        }
+        
+        .noveltool-single-game-start-button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .noveltool-game-hero {
+            height: 250px;
+            border-radius: 8px;
+        }
+        
+        .noveltool-game-hero-title {
+            font-size: 1.5em;
+        }
+        
+        .noveltool-game-hero-overlay {
+            padding: 30px 20px 20px;
+        }
+        
+        .noveltool-single-game-start-button {
+            padding: 12px 25px;
+            font-size: 1em;
+            border-radius: 30px;
+        }
     }
     </style>
     <?php

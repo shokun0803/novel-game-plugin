@@ -1528,7 +1528,7 @@
 			} );
 
 			// ゲームカード・プレイボタンクリックイベント（委譲イベント）
-			$( document ).on( 'click', '.noveltool-game-item, .noveltool-play-button', function( e ) {
+			$( document ).on( 'click', '.noveltool-game-item, .noveltool-play-button, .noveltool-single-game-start-button', function( e ) {
 				e.preventDefault();
 				e.stopPropagation();
 				
