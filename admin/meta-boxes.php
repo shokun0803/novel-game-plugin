@@ -288,6 +288,11 @@ function noveltool_meta_box_callback( $post ) {
         'selectTitle'        => __( '新しいシーンのタイトルを入力してください', 'novel-game-plugin' ),
         'selectNextTitle'    => __( '次のコマンドのタイトルを入力してください', 'novel-game-plugin' ),
         'redirectingMessage' => __( '作成中です...', 'novel-game-plugin' ),
+        // フラグ関連の翻訳文字列
+        'flagPlaceholder'        => __( 'フラグ名（例: chapter1_cleared）', 'novel-game-plugin' ),
+        'requiredFlagPlaceholder' => __( '必要なフラグ名（例: chapter1_cleared）', 'novel-game-plugin' ),
+        'addFlag'               => __( 'フラグを追加', 'novel-game-plugin' ),
+        'addRequiredFlag'       => __( '必要フラグを追加', 'novel-game-plugin' ),
     );
 
     // データをJavaScriptに渡す

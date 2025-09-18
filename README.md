@@ -14,6 +14,7 @@ WordPressでサウンドノベル・ビジュアルノベルゲームを作成�
 - **カスタム投稿タイプ「ノベルゲーム」** - 各シーンを投稿として管理
 - **直感的な管理画面** - 背景・キャラクター・セリフ・選択肢を視覚的に編集
 - **分岐システム** - 選択肢による複雑なストーリー分岐をサポート
+- **フラグシステム** - シーン到達時のフラグ設定と条件分岐をサポート
 - **メディア統合** - WordPressメディアライブラリから画像を簡単選択
 - **ゲーム基本情報設定** - タイトル・説明・タイトル画像の一元管理
 
@@ -29,6 +30,7 @@ WordPressでサウンドノベル・ビジュアルノベルゲームを作成�
 - **インタラクティブUI** - クリック・タップでのセリフ進行
 - **アーカイブページ** - ゲーム一覧の美しい表示
 - **選択肢システム** - 直感的な選択肢表示と分岐
+- **フラグ分岐システム** - ブラウザ内フラグによる高度な条件分岐
 - **カスタムテンプレート** - テーマとの統合
 
 ### 🔧 技術的機能
@@ -135,6 +137,64 @@ cd novel-game-plugin
 
 # 開発ブランチで作業
 git checkout -b feature/new-feature
+```
+
+## フラグシステム
+
+### 概要
+「かまいたちの夜」のようなサウンドノベルで使用される条件分岐システムを実装。シーン到達時にフラグを設定し、他のシーンや選択肢の表示条件として利用できます。
+
+### データ仕様
+
+#### フラグ配列形式
+```php
+// 設定するフラグ（_set_flags）
+["chapter1_cleared", "tutorial_done", "boss_defeated"]
+
+// 必要なフラグ（_required_flags）
+["start_game", "weapon_acquired"]
+```
+
+#### localStorage保存形式
+```javascript
+// ストレージキー: noveltool_flags_{サイト識別子}
+{
+  "test_game": {
+    "chapter1_cleared": {
+      "value": true,
+      "timestamp": 1640995200000
+    },
+    "tutorial_done": {
+      "value": true, 
+      "timestamp": 1640995300000
+    }
+  }
+}
+```
+
+#### メタフィールド
+- `_set_flags`: シーン到達時に設定するフラグ（JSON配列）
+- `_required_flags`: シーン表示に必要なフラグ（JSON配列）
+- `_flag_condition`: フラグ判定条件（'AND' または 'OR'）
+
+### 使用方法
+
+#### 管理画面での設定
+1. 投稿編集画面の「フラグ設定」セクションを開く
+2. 「シーン到達時に設定するフラグ」で自動設定されるフラグを指定
+3. 「シーン表示に必要なフラグ」で表示条件となるフラグを指定
+4. AND/OR条件で複数フラグの論理判定を選択
+
+#### JavaScript API
+```javascript
+// フラグ設定
+setFlag('chapter1_cleared', 'test_game');
+
+// フラグ取得
+var hasFlag = getFlag('chapter1_cleared', 'test_game');
+
+// 条件判定
+var canShow = checkFlagConditions(['flag1', 'flag2'], 'AND', 'test_game');
 ```
 
 ### コーディング規約

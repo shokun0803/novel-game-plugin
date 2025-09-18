@@ -934,6 +934,8 @@ jQuery( function( $ ) {
 
 	/**
 	 * フラグ設定機能の初期化
+	 *
+	 * @since 1.4.0
 	 */
 	function initializeFlagSettings() {
 		// 既存のフラグデータを読み込み
@@ -962,10 +964,16 @@ jQuery( function( $ ) {
 	}
 
 	/**
-	 * 設定するフラグのリストを描画
+	 * 汎用フラグリスト描画関数
+	 *
+	 * @param {string} containerSelector コンテナのセレクタ
+	 * @param {Array} flags フラグの配列
+	 * @param {string} placeholder プレースホルダーテキスト
+	 * @param {Function} updateCallback 更新時のコールバック関数
+	 * @since 1.4.0
 	 */
-	function renderSetFlagsList( flags ) {
-		var $container = $( '#set-flags-list' );
+	function renderFlagList( containerSelector, flags, placeholder, updateCallback ) {
+		var $container = $( containerSelector );
 		$container.empty();
 
 		if ( flags.length === 0 ) {
@@ -974,99 +982,100 @@ jQuery( function( $ ) {
 
 		flags.forEach( function( flag, index ) {
 			var $item = $( '<div class="flag-item">' );
-			var $input = $( '<input type="text" class="flag-input" placeholder="フラグ名（例: chapter1_cleared）" />' );
+			var $input = $( '<input type="text" class="flag-input" />' );
+			$input.attr( 'placeholder', placeholder );
 			$input.val( flag );
-			$input.on( 'input', updateSetFlagsJSON );
+			$input.on( 'input', updateCallback );
 
-			var $removeBtn = $( '<button type="button" class="flag-remove">削除</button>' );
+			var $removeBtn = $( '<button type="button" class="flag-remove"></button>' );
+			$removeBtn.text( novelGameMeta.strings.remove || '削除' );
 			$removeBtn.on( 'click', function() {
 				$item.remove();
-				updateSetFlagsJSON();
+				updateCallback();
 			} );
 
 			$item.append( $input );
 			$item.append( $removeBtn );
 			$container.append( $item );
 		} );
+	}
+
+	/**
+	 * 汎用フラグ追加関数
+	 *
+	 * @param {string} containerSelector コンテナのセレクタ
+	 * @param {string} placeholder プレースホルダーテキスト
+	 * @param {Function} updateCallback 更新時のコールバック関数
+	 * @since 1.4.0
+	 */
+	function addFlagToList( containerSelector, placeholder, updateCallback ) {
+		var $container = $( containerSelector );
+		var $item = $( '<div class="flag-item">' );
+		var $input = $( '<input type="text" class="flag-input" />' );
+		$input.attr( 'placeholder', placeholder );
+		$input.on( 'input', updateCallback );
+
+		var $removeBtn = $( '<button type="button" class="flag-remove"></button>' );
+		$removeBtn.text( novelGameMeta.strings.remove || '削除' );
+		$removeBtn.on( 'click', function() {
+			$item.remove();
+			updateCallback();
+		} );
+
+		$item.append( $input );
+		$item.append( $removeBtn );
+		$container.append( $item );
+
+		$input.focus();
+		updateCallback();
+	}
+
+	/**
+	 * 設定するフラグのリストを描画
+	 *
+	 * @param {Array} flags フラグの配列
+	 * @since 1.4.0
+	 */
+	function renderSetFlagsList( flags ) {
+		var placeholder = novelGameMeta.strings.flagPlaceholder || 'フラグ名（例: chapter1_cleared）';
+		renderFlagList( '#set-flags-list', flags, placeholder, updateSetFlagsJSON );
 	}
 
 	/**
 	 * 必要なフラグのリストを描画
+	 *
+	 * @param {Array} flags フラグの配列
+	 * @since 1.4.0
 	 */
 	function renderRequiredFlagsList( flags ) {
-		var $container = $( '#required-flags-list' );
-		$container.empty();
-
-		if ( flags.length === 0 ) {
-			flags = [''];
-		}
-
-		flags.forEach( function( flag, index ) {
-			var $item = $( '<div class="flag-item">' );
-			var $input = $( '<input type="text" class="flag-input" placeholder="必要なフラグ名（例: chapter1_cleared）" />' );
-			$input.val( flag );
-			$input.on( 'input', updateRequiredFlagsJSON );
-
-			var $removeBtn = $( '<button type="button" class="flag-remove">削除</button>' );
-			$removeBtn.on( 'click', function() {
-				$item.remove();
-				updateRequiredFlagsJSON();
-			} );
-
-			$item.append( $input );
-			$item.append( $removeBtn );
-			$container.append( $item );
-		} );
+		var placeholder = novelGameMeta.strings.requiredFlagPlaceholder || '必要なフラグ名（例: chapter1_cleared）';
+		renderFlagList( '#required-flags-list', flags, placeholder, updateRequiredFlagsJSON );
 	}
 
 	/**
 	 * 設定するフラグを追加
+	 *
+	 * @since 1.4.0
 	 */
 	function addSetFlag() {
-		var $container = $( '#set-flags-list' );
-		var $item = $( '<div class="flag-item">' );
-		var $input = $( '<input type="text" class="flag-input" placeholder="フラグ名（例: chapter1_cleared）" />' );
-		$input.on( 'input', updateSetFlagsJSON );
-
-		var $removeBtn = $( '<button type="button" class="flag-remove">削除</button>' );
-		$removeBtn.on( 'click', function() {
-			$item.remove();
-			updateSetFlagsJSON();
-		} );
-
-		$item.append( $input );
-		$item.append( $removeBtn );
-		$container.append( $item );
-
-		$input.focus();
-		updateSetFlagsJSON();
+		var placeholder = novelGameMeta.strings.flagPlaceholder || 'フラグ名（例: chapter1_cleared）';
+		addFlagToList( '#set-flags-list', placeholder, updateSetFlagsJSON );
 	}
 
 	/**
 	 * 必要なフラグを追加
+	 *
+	 * @since 1.4.0
 	 */
 	function addRequiredFlag() {
-		var $container = $( '#required-flags-list' );
-		var $item = $( '<div class="flag-item">' );
-		var $input = $( '<input type="text" class="flag-input" placeholder="必要なフラグ名（例: chapter1_cleared）" />' );
-		$input.on( 'input', updateRequiredFlagsJSON );
-
-		var $removeBtn = $( '<button type="button" class="flag-remove">削除</button>' );
-		$removeBtn.on( 'click', function() {
-			$item.remove();
-			updateRequiredFlagsJSON();
-		} );
-
-		$item.append( $input );
-		$item.append( $removeBtn );
-		$container.append( $item );
-
-		$input.focus();
-		updateRequiredFlagsJSON();
+		var placeholder = novelGameMeta.strings.requiredFlagPlaceholder || '必要なフラグ名（例: chapter1_cleared）';
+		addFlagToList( '#required-flags-list', placeholder, updateRequiredFlagsJSON );
 	}
 
 	/**
 	 * 設定するフラグのJSONを更新
+	 *
+	 * @since 1.4.0
 	 */
 	function updateSetFlagsJSON() {
 		var flags = [];
@@ -1082,6 +1091,8 @@ jQuery( function( $ ) {
 
 	/**
 	 * 必要なフラグのJSONを更新
+	 *
+	 * @since 1.4.0
 	 */
 	function updateRequiredFlagsJSON() {
 		var flags = [];
@@ -1097,6 +1108,8 @@ jQuery( function( $ ) {
 
 	/**
 	 * フラグJSONを更新（条件変更時）
+	 *
+	 * @since 1.4.0
 	 */
 	function updateFlagJSON() {
 		updateSetFlagsJSON();

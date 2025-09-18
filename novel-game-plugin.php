@@ -566,10 +566,11 @@ function noveltool_filter_novel_game_content( $content ) {
                     if ( $set_flags ) {
                         $decoded_set_flags = json_decode( $set_flags, true );
                         if ( is_array( $decoded_set_flags ) ) {
-                            $set_flags_array = $decoded_set_flags;
+                            // 文字列のみを許可し、XSS対策でサニタイズ
+                            $set_flags_array = array_map( 'sanitize_text_field', array_filter( $decoded_set_flags, 'is_string' ) );
                         }
                     }
-                    echo wp_json_encode( $set_flags_array, JSON_UNESCAPED_UNICODE ); 
+                    echo wp_json_encode( $set_flags_array, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP ); 
                     ?>
                 </script>
 
@@ -580,15 +581,23 @@ function noveltool_filter_novel_game_content( $content ) {
                     if ( $required_flags ) {
                         $decoded_required_flags = json_decode( $required_flags, true );
                         if ( is_array( $decoded_required_flags ) ) {
-                            $required_flags_array = $decoded_required_flags;
+                            // 文字列のみを許可し、XSS対策でサニタイズ
+                            $required_flags_array = array_map( 'sanitize_text_field', array_filter( $decoded_required_flags, 'is_string' ) );
                         }
                     }
-                    echo wp_json_encode( $required_flags_array, JSON_UNESCAPED_UNICODE ); 
+                    echo wp_json_encode( $required_flags_array, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP ); 
                     ?>
                 </script>
 
                 <script id="novel-flag-condition" type="application/json">
-                    <?php echo wp_json_encode( $flag_condition ? $flag_condition : 'AND', JSON_UNESCAPED_UNICODE ); ?>
+                    <?php 
+                    // フラグ条件の安全化
+                    $safe_condition = 'AND';
+                    if ( $flag_condition && in_array( $flag_condition, array( 'AND', 'OR' ), true ) ) {
+                        $safe_condition = $flag_condition;
+                    }
+                    echo wp_json_encode( $safe_condition, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP ); 
+                    ?>
                 </script>
             </div>
         </div>
@@ -611,6 +620,16 @@ function noveltool_enqueue_scripts() {
         array( 'jquery' ),
         NOVEL_GAME_PLUGIN_VERSION,
         true
+    );
+
+    // フロントエンド用翻訳文字列
+    wp_localize_script(
+        'novel-game-frontend',
+        'noveltoolFlagsI18n',
+        array(
+            'sceneLocked' => __( 'このシーンにアクセスする条件を満たしていません。', 'novel-game-plugin' ),
+            'remove'      => __( '削除', 'novel-game-plugin' ),
+        )
     );
 
     wp_enqueue_style(

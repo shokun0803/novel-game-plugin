@@ -100,7 +100,7 @@
 			var gameOverTextRaw = $( '#novel-game-over-text' ).text();
 
 			if ( dialogueDataRaw ) {
-				dialogueData = JSON.parse( dialogueDataRaw );
+				dialogueData = safeParseJSON( dialogueDataRaw, [] );
 				
 				// 後方互換性のため、文字列配列の場合は変換
 				if ( dialogueData.length > 0 && typeof dialogueData[0] === 'string' ) {
@@ -116,28 +116,28 @@
 			}
 
 			if ( choicesData ) {
-				choices = JSON.parse( choicesData );
+				choices = safeParseJSON( choicesData, [] );
 			}
 			
 			if ( baseBackgroundData ) {
-				baseBackground = JSON.parse( baseBackgroundData );
+				baseBackground = safeParseJSON( baseBackgroundData, '' );
 				currentBackground = baseBackground;
 			}
 			
 			if ( charactersDataRaw ) {
-				charactersData = JSON.parse( charactersDataRaw );
+				charactersData = safeParseJSON( charactersDataRaw, {} );
 			}
 			
 			if ( endingDataRaw ) {
-				isEnding = JSON.parse( endingDataRaw );
+				isEnding = safeParseJSON( endingDataRaw, false );
 			}
 			
 			if ( endingTextRaw ) {
-				endingText = JSON.parse( endingTextRaw );
+				endingText = safeParseJSON( endingTextRaw, 'おわり' );
 			}
 			
 			if ( gameOverTextRaw ) {
-				gameOverText = JSON.parse( gameOverTextRaw );
+				gameOverText = safeParseJSON( gameOverTextRaw, 'Game Over' );
 			}
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
@@ -231,7 +231,14 @@
 				var savedData = localStorage.getItem( storageKey );
 				
 				if ( savedData ) {
-					var progressData = JSON.parse( savedData );
+					var progressData = safeParseJSON( savedData, null );
+					
+					// progressDataがnullの場合は無効なデータとして扱う
+					if ( ! progressData ) {
+						console.warn( 'Invalid progress data found, removing' );
+						localStorage.removeItem( storageKey );
+						return null;
+					}
 					
 					// データの有効性をチェック（30日以内のデータのみ有効）
 					var currentTime = Date.now();
@@ -315,7 +322,14 @@
 				var choiceDataStr = localStorage.getItem( storageKey );
 				
 				if ( choiceDataStr ) {
-					var choiceData = JSON.parse( choiceDataStr );
+					var choiceData = safeParseJSON( choiceDataStr, null );
+					
+					// choiceDataがnullの場合は無効なデータとして扱う
+					if ( ! choiceData ) {
+						console.warn( 'Invalid choice data found, removing' );
+						localStorage.removeItem( storageKey );
+						return null;
+					}
 					
 					// 7日以内の記録のみ有効とする
 					var maxAge = 7 * 24 * 60 * 60 * 1000; // 7日をミリ秒で
@@ -348,6 +362,23 @@
 			currentGameTitle = gameTitle || '';
 			currentSceneUrl = sceneUrl || window.location.href;
 			console.log( 'ゲーム情報を設定しました:', { gameTitle: currentGameTitle, sceneUrl: currentSceneUrl } );
+		}
+
+		/**
+		 * 安全にJSONをパースする
+		 *
+		 * @param {string} str JSON文字列
+		 * @param {*} fallback パース失敗時のフォールバック値
+		 * @return {*} パース結果またはフォールバック値
+		 * @since 1.4.0
+		 */
+		function safeParseJSON( str, fallback ) {
+			try {
+				return JSON.parse( str );
+			} catch ( error ) {
+				console.warn( 'Invalid JSON:', error );
+				return fallback;
+			}
 		}
 		
 		/**
@@ -654,7 +685,7 @@
 								var dialogueDataText = dialogueDataScript.text() || dialogueDataScript.html();
 								console.log( 'Dialogue data text length:', dialogueDataText ? dialogueDataText.length : 0 );
 								if ( dialogueDataText ) {
-									dialogueData = JSON.parse( dialogueDataText );
+									dialogueData = safeParseJSON( dialogueDataText, [] );
 									console.log( 'Parsed dialogue data:', dialogueData.length );
 									
 									// 後方互換性のため、文字列配列の場合は変換
@@ -688,7 +719,7 @@
 							if ( choicesDataScript.length > 0 ) {
 								var choicesDataText = choicesDataScript.text() || choicesDataScript.html();
 								if ( choicesDataText ) {
-									choices = JSON.parse( choicesDataText );
+									choices = safeParseJSON( choicesDataText, [] );
 									console.log( 'Parsed choices data:', choices.length );
 								}
 							}
@@ -703,7 +734,7 @@
 							if ( backgroundDataScript.length > 0 ) {
 								var backgroundDataText = backgroundDataScript.text() || backgroundDataScript.html();
 								if ( backgroundDataText ) {
-									baseBackground = JSON.parse( backgroundDataText );
+									baseBackground = safeParseJSON( backgroundDataText, '' );
 									currentBackground = baseBackground;
 									console.log( 'Parsed background data:', baseBackground );
 								}
@@ -719,7 +750,7 @@
 							if ( charactersDataScript.length > 0 ) {
 								var charactersDataText = charactersDataScript.text() || charactersDataScript.html();
 								if ( charactersDataText ) {
-									charactersData = JSON.parse( charactersDataText );
+									charactersData = safeParseJSON( charactersDataText, {} );
 									console.log( 'Parsed characters data:', charactersData );
 								}
 							}
@@ -734,7 +765,7 @@
 							if ( endingDataScript.length > 0 ) {
 								var endingDataText = endingDataScript.text() || endingDataScript.html();
 								if ( endingDataText ) {
-									isEnding = JSON.parse( endingDataText );
+									isEnding = safeParseJSON( endingDataText, false );
 									console.log( 'Parsed ending data:', isEnding );
 								}
 							}
@@ -747,7 +778,7 @@
 							if ( endingTextScript.length > 0 ) {
 								var endingTextData = endingTextScript.text() || endingTextScript.html();
 								if ( endingTextData ) {
-									endingText = JSON.parse( endingTextData );
+									endingText = safeParseJSON( endingTextData, 'おわり' );
 									console.log( 'Parsed ending text:', endingText );
 								}
 							}
@@ -760,7 +791,7 @@
 							if ( gameOverTextScript.length > 0 ) {
 								var gameOverTextData = gameOverTextScript.text() || gameOverTextScript.html();
 								if ( gameOverTextData ) {
-									gameOverText = JSON.parse( gameOverTextData );
+									gameOverText = safeParseJSON( gameOverTextData, 'Game Over' );
 									console.log( 'Parsed game over text:', gameOverText );
 								}
 							}
@@ -773,7 +804,7 @@
 							if ( setFlagsScript.length > 0 ) {
 								var setFlagsText = setFlagsScript.text() || setFlagsScript.html();
 								if ( setFlagsText ) {
-									var setFlags = JSON.parse( setFlagsText );
+									var setFlags = safeParseJSON( setFlagsText, [] );
 									console.log( 'Parsed set flags:', setFlags );
 									// シーン到達時にフラグを設定
 									if ( extractedGameTitle ) {
@@ -791,15 +822,18 @@
 								
 								if ( requiredFlagsData && gameTitleData ) {
 									var requiredFlags = typeof requiredFlagsData === 'string' ? 
-										JSON.parse( requiredFlagsData ) : requiredFlagsData;
+										safeParseJSON( requiredFlagsData, [] ) : 
+										( Array.isArray( requiredFlagsData ) ? requiredFlagsData : [] );
 									var condition = flagConditionData || 'AND';
 									
 									// フラグ条件をチェック
 									if ( ! checkFlagConditions( requiredFlags, condition, gameTitleData ) ) {
 										console.log( 'シーンのフラグ条件を満たしていません。Game Overを表示します。' );
 										// フラグ条件を満たしていない場合はGame Overシーンとして扱う
-										dialogueData = [{ text: 'このシーンにアクセスする条件を満たしていません。', background: '', speaker: '' }];
-										dialogues = ['このシーンにアクセスする条件を満たしていません。'];
+										var sceneLockMessage = ( typeof noveltoolFlagsI18n !== 'undefined' && noveltoolFlagsI18n.sceneLocked ) ? 
+											noveltoolFlagsI18n.sceneLocked : 'このシーンにアクセスする条件を満たしていません。';
+										dialogueData = [{ text: sceneLockMessage, background: '', speaker: '' }];
+										dialogues = [sceneLockMessage];
 										choices = [];
 										isEnding = false; // Game Over扱い
 									}
