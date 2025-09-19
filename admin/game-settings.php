@@ -174,6 +174,67 @@ function noveltool_handle_game_settings_form() {
         wp_safe_redirect( $redirect_url );
         exit;
     }
+
+    // フラグ追加の処理
+    if ( isset( $_POST['add_flag'] ) ) {
+        // nonceチェック
+        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_flags' ) ) {
+            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
+        $flag_name = isset( $_POST['flag_name'] ) ? sanitize_text_field( wp_unslash( $_POST['flag_name'] ) ) : '';
+        $flag_description = isset( $_POST['flag_description'] ) ? sanitize_text_field( wp_unslash( $_POST['flag_description'] ) ) : '';
+
+        if ( empty( $game_title ) || empty( $flag_name ) ) {
+            $redirect_url = add_query_arg( array( 'error' => 'empty_flag_data', 'game' => $game_title ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        $result = noveltool_add_game_flag( $game_title, $flag_name, $flag_description );
+
+        if ( $result ) {
+            $redirect_url = add_query_arg( array( 'success' => 'flag_added', 'game' => $game_title ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+        } else {
+            $redirect_url = add_query_arg( array( 'error' => 'flag_add_failed', 'game' => $game_title ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+        }
+
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    // フラグ削除の処理
+    if ( isset( $_POST['delete_flag'] ) ) {
+        // nonceチェック
+        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_flags' ) ) {
+            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
+        $flag_name = isset( $_POST['flag_name'] ) ? sanitize_text_field( wp_unslash( $_POST['flag_name'] ) ) : '';
+
+        if ( empty( $game_title ) || empty( $flag_name ) ) {
+            $redirect_url = add_query_arg( array( 'error' => 'empty_flag_data', 'game' => $game_title ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        $result = noveltool_remove_game_flag( $game_title, $flag_name );
+
+        if ( $result ) {
+            $redirect_url = add_query_arg( array( 'success' => 'flag_deleted', 'game' => $game_title ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+        } else {
+            $redirect_url = add_query_arg( array( 'error' => 'flag_delete_failed', 'game' => $game_title ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+        }
+
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
 }
 add_action( 'admin_init', 'noveltool_handle_game_settings_form' );
 
@@ -284,6 +345,15 @@ function noveltool_game_settings_page() {
             case 'invalid_id':
                 $error_message = __( '無効なゲームIDです。', 'novel-game-plugin' );
                 break;
+            case 'empty_flag_data':
+                $error_message = __( 'フラグ名とゲームタイトルを入力してください。', 'novel-game-plugin' );
+                break;
+            case 'flag_add_failed':
+                $error_message = __( 'フラグの追加に失敗しました。同名のフラグが既に存在する可能性があります。', 'novel-game-plugin' );
+                break;
+            case 'flag_delete_failed':
+                $error_message = __( 'フラグの削除に失敗しました。', 'novel-game-plugin' );
+                break;
         }
     }
     
@@ -297,6 +367,12 @@ function noveltool_game_settings_page() {
                 break;
             case 'deleted':
                 $success_message = __( 'ゲームが正常に削除されました。', 'novel-game-plugin' );
+                break;
+            case 'flag_added':
+                $success_message = __( 'フラグが正常に追加されました。', 'novel-game-plugin' );
+                break;
+            case 'flag_deleted':
+                $success_message = __( 'フラグが正常に削除されました。', 'novel-game-plugin' );
                 break;
         }
     }
@@ -401,6 +477,98 @@ function noveltool_game_settings_page() {
                                 </td>
                             </tr>
                         </table>
+
+                        <h3><?php esc_html_e( 'フラグ管理', 'novel-game-plugin' ); ?></h3>
+                        <?php
+                        $current_flags = noveltool_get_game_flag_master( $editing_game['title'] );
+                        ?>
+                        
+                        <div class="noveltool-flags-section">
+                            <h4><?php esc_html_e( '現在のフラグ一覧', 'novel-game-plugin' ); ?></h4>
+                            
+                            <?php if ( ! empty( $current_flags ) ) : ?>
+                                <table class="widefat striped">
+                                    <thead>
+                                        <tr>
+                                            <th><?php esc_html_e( 'ID', 'novel-game-plugin' ); ?></th>
+                                            <th><?php esc_html_e( 'フラグ名', 'novel-game-plugin' ); ?></th>
+                                            <th><?php esc_html_e( '説明', 'novel-game-plugin' ); ?></th>
+                                            <th><?php esc_html_e( '操作', 'novel-game-plugin' ); ?></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ( $current_flags as $flag ) : ?>
+                                            <tr>
+                                                <td><?php echo esc_html( $flag['id'] ); ?></td>
+                                                <td><code><?php echo esc_html( $flag['name'] ); ?></code></td>
+                                                <td><?php echo esc_html( $flag['description'] ); ?></td>
+                                                <td>
+                                                    <form method="post" action="" style="display: inline;">
+                                                        <?php wp_nonce_field( 'manage_flags' ); ?>
+                                                        <input type="hidden" name="game_title" value="<?php echo esc_attr( $editing_game['title'] ); ?>" />
+                                                        <input type="hidden" name="flag_name" value="<?php echo esc_attr( $flag['name'] ); ?>" />
+                                                        <input type="submit" 
+                                                               name="delete_flag" 
+                                                               class="button button-small" 
+                                                               value="<?php esc_attr_e( '削除', 'novel-game-plugin' ); ?>"
+                                                               onclick="return confirm('<?php esc_attr_e( '本当にこのフラグを削除しますか？', 'novel-game-plugin' ); ?>');" />
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            <?php else : ?>
+                                <p><?php esc_html_e( 'このゲームにはまだフラグが設定されていません。', 'novel-game-plugin' ); ?></p>
+                            <?php endif; ?>
+                            
+                            <h4><?php esc_html_e( '新しいフラグを追加', 'novel-game-plugin' ); ?></h4>
+                            <form method="post" action="" class="noveltool-add-flag-form">
+                                <?php wp_nonce_field( 'manage_flags' ); ?>
+                                <input type="hidden" name="game_title" value="<?php echo esc_attr( $editing_game['title'] ); ?>" />
+                                
+                                <table class="form-table">
+                                    <tr>
+                                        <th scope="row">
+                                            <label for="flag_name"><?php esc_html_e( 'フラグ名', 'novel-game-plugin' ); ?></label>
+                                        </th>
+                                        <td>
+                                            <input type="text" 
+                                                   id="flag_name" 
+                                                   name="flag_name" 
+                                                   class="regular-text" 
+                                                   placeholder="<?php esc_attr_e( '例: visited_library', 'novel-game-plugin' ); ?>" 
+                                                   pattern="[a-zA-Z_][a-zA-Z0-9_]*"
+                                                   title="<?php esc_attr_e( '英数字とアンダースコアのみ使用可能、数字で始めることはできません', 'novel-game-plugin' ); ?>" />
+                                            <p class="description"><?php esc_html_e( '英数字とアンダースコアのみ使用可能です。数字で始めることはできません。', 'novel-game-plugin' ); ?></p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">
+                                            <label for="flag_description"><?php esc_html_e( '説明', 'novel-game-plugin' ); ?></label>
+                                        </th>
+                                        <td>
+                                            <input type="text" 
+                                                   id="flag_description" 
+                                                   name="flag_description" 
+                                                   class="regular-text" 
+                                                   placeholder="<?php esc_attr_e( '例: 図書館を訪れた', 'novel-game-plugin' ); ?>" />
+                                            <p class="description"><?php esc_html_e( 'フラグの用途を説明する任意のテキストです。', 'novel-game-plugin' ); ?></p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <p class="submit">
+                                    <input type="submit" 
+                                           name="add_flag" 
+                                           class="button button-secondary" 
+                                           value="<?php esc_attr_e( 'フラグを追加', 'novel-game-plugin' ); ?>" />
+                                </p>
+                            </form>
+                        </div>
+
+                        <h3><?php esc_html_e( 'ゲーム基本情報', 'novel-game-plugin' ); ?></h3>
+                        <table class="form-table">
 
                         <p class="submit">
                             <input type="submit" 
