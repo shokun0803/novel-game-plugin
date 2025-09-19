@@ -851,6 +851,106 @@ function noveltool_meta_box_callback( $post ) {
                 </div>
             </td>
         </tr>
+
+        <tr>
+            <th scope="row">
+                <label><?php esc_html_e( 'フラグ設定', 'novel-game-plugin' ); ?></label>
+            </th>
+            <td>
+                <?php
+                // 現在のゲームタイトルからフラグマスタを取得
+                $current_flag_master = array();
+                if ( $game_title ) {
+                    $current_flag_master = noveltool_get_game_flag_master( $game_title );
+                }
+                
+                // シーン到達時フラグの取得
+                $scene_arrival_flags = get_post_meta( $post->ID, '_scene_arrival_flags', true );
+                if ( ! is_array( $scene_arrival_flags ) ) {
+                    $scene_arrival_flags = array();
+                }
+                ?>
+                
+                <div class="noveltool-flags-container">
+                    <h4><?php esc_html_e( 'シーン到達時に設定するフラグ', 'novel-game-plugin' ); ?></h4>
+                    <p class="description"><?php esc_html_e( 'このシーンに到達した時に自動的に設定されるフラグを選択してください。', 'novel-game-plugin' ); ?></p>
+                    
+                    <?php if ( ! empty( $current_flag_master ) ) : ?>
+                        <div class="noveltool-scene-flags">
+                            <?php foreach ( $current_flag_master as $flag ) : ?>
+                                <label class="noveltool-flag-checkbox">
+                                    <input type="checkbox" 
+                                           name="scene_arrival_flags[]" 
+                                           value="<?php echo esc_attr( $flag['name'] ); ?>"
+                                           <?php checked( in_array( $flag['name'], $scene_arrival_flags, true ) ); ?> />
+                                    <code><?php echo esc_html( $flag['name'] ); ?></code>
+                                    <?php if ( $flag['description'] ) : ?>
+                                        <span class="flag-description">（<?php echo esc_html( $flag['description'] ); ?>）</span>
+                                    <?php endif; ?>
+                                </label><br>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else : ?>
+                        <div class="no-flags-message">
+                            <p><?php esc_html_e( 'このゲームにはまだフラグが設定されていません。', 'novel-game-plugin' ); ?>
+                               <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" target="_blank">
+                                   <?php esc_html_e( 'ゲーム基本情報でフラグを管理', 'novel-game-plugin' ); ?>
+                               </a>
+                            </p>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <h4 style="margin-top: 20px;"><?php esc_html_e( 'セリフレベルのフラグ条件', 'novel-game-plugin' ); ?></h4>
+                    <p class="description"><?php esc_html_e( '各セリフに個別のフラグ条件を設定する場合は、セリフ編集時に設定してください。フラグ条件を満たさない場合、そのセリフは表示されません。', 'novel-game-plugin' ); ?></p>
+                    
+                    <div id="noveltool-dialogue-flags-info">
+                        <p><em><?php esc_html_e( 'セリフのフラグ条件は、上記の「セリフ」セクションで各セリフを編集する際に設定できます。', 'novel-game-plugin' ); ?></em></p>
+                    </div>
+                </div>
+                
+                <style>
+                .noveltool-flags-container {
+                    border: 1px solid #ddd;
+                    padding: 15px;
+                    border-radius: 4px;
+                    background: #f9f9f9;
+                }
+                
+                .noveltool-scene-flags {
+                    margin: 10px 0;
+                }
+                
+                .noveltool-flag-checkbox {
+                    display: block;
+                    margin-bottom: 8px;
+                    padding: 5px 0;
+                }
+                
+                .noveltool-flag-checkbox input[type="checkbox"] {
+                    margin-right: 8px;
+                }
+                
+                .noveltool-flag-checkbox code {
+                    font-weight: bold;
+                    background: #e8e8e8;
+                    padding: 2px 6px;
+                    border-radius: 3px;
+                }
+                
+                .flag-description {
+                    color: #666;
+                    margin-left: 8px;
+                }
+                
+                .no-flags-message {
+                    padding: 10px;
+                    background: #fff;
+                    border: 1px solid #ddd;
+                    border-radius: 3px;
+                }
+                </style>
+            </td>
+        </tr>
     </table>
     <?php
 }
@@ -967,6 +1067,14 @@ function noveltool_save_meta_box_data( $post_id ) {
         } else {
             delete_post_meta( $post_id, '_ending_text' );
         }
+    }
+
+    // シーン到達時フラグの保存処理
+    if ( isset( $_POST['scene_arrival_flags'] ) && is_array( $_POST['scene_arrival_flags'] ) ) {
+        $scene_arrival_flags = array_map( 'sanitize_text_field', wp_unslash( $_POST['scene_arrival_flags'] ) );
+        update_post_meta( $post_id, '_scene_arrival_flags', $scene_arrival_flags );
+    } else {
+        delete_post_meta( $post_id, '_scene_arrival_flags' );
     }
 
     foreach ( $fields as $field => $meta_key ) {

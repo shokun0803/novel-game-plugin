@@ -710,6 +710,24 @@ function noveltool_filter_novel_game_content( $content ) {
                     <?php echo wp_json_encode( $ending_text ? $ending_text : 'おわり', JSON_UNESCAPED_UNICODE ); ?>
                 </script>
 
+                <script id="novel-scene-arrival-flags" type="application/json">
+                    <?php 
+                    // シーン到達時フラグの取得
+                    $scene_arrival_flags = get_post_meta( $post->ID, '_scene_arrival_flags', true );
+                    if ( ! is_array( $scene_arrival_flags ) ) {
+                        $scene_arrival_flags = array();
+                    }
+                    
+                    // フラグ名をキーとしたフラグ設定オブジェクトに変換
+                    $scene_flags_object = array();
+                    foreach ( $scene_arrival_flags as $flag_name ) {
+                        $scene_flags_object[ $flag_name ] = true; // フラグをONに設定
+                    }
+                    
+                    echo wp_json_encode( $scene_flags_object, JSON_UNESCAPED_UNICODE ); 
+                    ?>
+                </script>
+
                 <script id="novel-game-over-text" type="application/json">
                     <?php 
                     // Game Over テキストをゲーム設定から取得
@@ -721,6 +739,17 @@ function noveltool_filter_novel_game_content( $content ) {
                         }
                     }
                     echo wp_json_encode( $game_over_text, JSON_UNESCAPED_UNICODE ); 
+                    ?>
+                </script>
+
+                <script id="novel-flag-master" type="application/json">
+                    <?php 
+                    // フラグマスタデータをフロントエンドに渡す
+                    $flag_master_data = array();
+                    if ( $game_title ) {
+                        $flag_master_data = noveltool_get_game_flag_master( $game_title );
+                    }
+                    echo wp_json_encode( $flag_master_data, JSON_UNESCAPED_UNICODE ); 
                     ?>
                 </script>
             </div>

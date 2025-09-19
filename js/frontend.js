@@ -139,6 +139,26 @@
 			if ( gameOverTextRaw ) {
 				gameOverText = JSON.parse( gameOverTextRaw );
 			}
+			
+			// フラグマスタデータを読み込み、グローバル変数に設定
+			var flagMasterDataRaw = $( '#novel-flag-master' ).text();
+			if ( flagMasterDataRaw ) {
+				var flagMasterData = JSON.parse( flagMasterDataRaw );
+				// グローバル変数に設定（ゲームタイトル別）
+				if ( ! window.novelGameFlagMaster ) {
+					window.novelGameFlagMaster = {};
+				}
+				
+				// 現在のゲームタイトルを取得
+				var currentGameTitleElement = $( '#novel-game-title' );
+				if ( currentGameTitleElement.length > 0 ) {
+					var gameTitle = currentGameTitleElement.text().trim();
+					if ( gameTitle ) {
+						window.novelGameFlagMaster[ gameTitle ] = flagMasterData;
+						console.log( 'フラグマスタデータを設定しました:', gameTitle, flagMasterData );
+					}
+				}
+			}
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
 			return;
