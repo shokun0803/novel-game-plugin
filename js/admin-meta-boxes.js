@@ -305,18 +305,43 @@ jQuery( function( $ ) {
 	 * @param {string} str 選択肢文字列
 	 * @return {Array} 選択肢オブジェクト配列
 	 */
+	/**
+	 * 選択肢データをパースする（JSON形式とレガシー形式の両方をサポート）
+	 */
 	function parseChoices( str ) {
 		var arr = [];
 		if ( ! str ) {
 			return arr;
 		}
 
+		// JSON形式を試行
+		try {
+			var jsonData = JSON.parse( str );
+			if ( Array.isArray( jsonData ) ) {
+				return jsonData.map( function( item ) {
+					return {
+						text: item.text || '',
+						next: item.next || '',
+						flagConditions: item.flagConditions || [],
+						flagConditionLogic: item.flagConditionLogic || 'AND',
+						setFlags: item.setFlags || []
+					};
+				} );
+			}
+		} catch ( e ) {
+			// JSON解析失敗時はレガシー形式として処理
+		}
+
+		// レガシー形式（"テキスト | 投稿ID" の行形式）
 		str.split( '\n' ).forEach( function( line ) {
 			var parts = line.split( '|' );
 			if ( parts.length === 2 ) {
 				arr.push( {
 					text: parts[0].trim(),
-					next: parts[1].trim()
+					next: parts[1].trim(),
+					flagConditions: [],
+					flagConditionLogic: 'AND',
+					setFlags: []
 				} );
 			}
 		} );
@@ -353,6 +378,65 @@ jQuery( function( $ ) {
 
 			$select.append( '<option value="__new__">' + novelGameMeta.strings.createNew + '</option>' );
 			$row.append( $( '<td>' ).append( $select ) );
+
+			// フラグ条件UI
+			var $flagConditionsCell = $( '<td style="min-width: 200px;"></td>' );
+			var $flagConditionsContainer = $( '<div class="flag-conditions-container"></div>' );
+			
+			// フラグ条件選択（最大3つ）
+			for ( var i = 0; i < 3; i++ ) {
+				var $conditionRow = $( '<div class="flag-condition-row" style="margin-bottom: 5px;"></div>' );
+				
+				// フラグ選択
+				var $flagSelect = $( '<select class="flag-condition-select" style="width: 120px; margin-right: 5px;"></select>' );
+				$flagSelect.append( '<option value="">-- フラグ選択 --</option>' );
+				
+				// 現在のゲームのフラグマスタから選択肢を生成
+				if ( novelGameFlagData && novelGameFlagData.flagMaster && Array.isArray( novelGameFlagData.flagMaster ) ) {
+					novelGameFlagData.flagMaster.forEach( function( flag ) {
+						var selected = ( choice.flagConditions[i] && choice.flagConditions[i].name === flag.name ) ? 'selected' : '';
+						$flagSelect.append( '<option value="' + flag.name + '" ' + selected + '>' + flag.name + '</option>' );
+					} );
+				}
+				
+				// ON/OFF選択
+				var $stateSelect = $( '<select class="flag-state-select" style="width: 60px;"></select>' );
+				var currentState = ( choice.flagConditions[i] && choice.flagConditions[i].state !== undefined ) ? choice.flagConditions[i].state : true;
+				$stateSelect.append( '<option value="true"' + ( currentState ? ' selected' : '' ) + '>ON</option>' );
+				$stateSelect.append( '<option value="false"' + ( ! currentState ? ' selected' : '' ) + '>OFF</option>' );
+				
+				$conditionRow.append( $flagSelect ).append( $stateSelect );
+				$flagConditionsContainer.append( $conditionRow );
+			}
+			
+			// AND/OR選択
+			var $logicSelect = $( '<select class="flag-logic-select" style="width: 60px; margin-top: 5px;"></select>' );
+			$logicSelect.append( '<option value="AND"' + ( choice.flagConditionLogic === 'AND' ? ' selected' : '' ) + '>AND</option>' );
+			$logicSelect.append( '<option value="OR"' + ( choice.flagConditionLogic === 'OR' ? ' selected' : '' ) + '>OR</option>' );
+			$flagConditionsContainer.append( $logicSelect );
+			
+			$flagConditionsCell.append( $flagConditionsContainer );
+			$row.append( $flagConditionsCell );
+
+			// フラグ設定UI
+			var $flagSetCell = $( '<td style="min-width: 150px;"></td>' );
+			var $flagSetContainer = $( '<div class="flag-set-container"></div>' );
+			
+			// フラグ設定選択（複数選択可能）
+			if ( novelGameFlagData && novelGameFlagData.flagMaster && Array.isArray( novelGameFlagData.flagMaster ) ) {
+				novelGameFlagData.flagMaster.forEach( function( flag ) {
+					var checked = ( choice.setFlags && choice.setFlags.includes( flag.name ) ) ? ' checked' : '';
+					var $checkbox = $( '<label style="display: block; font-size: 11px;"><input type="checkbox" class="flag-set-checkbox" value="' + flag.name + '"' + checked + '> ' + flag.name + '</label>' );
+					$flagSetContainer.append( $checkbox );
+				} );
+			}
+			
+			if ( $flagSetContainer.children().length === 0 ) {
+				$flagSetContainer.append( '<small style="color: #666;">フラグなし</small>' );
+			}
+			
+			$flagSetCell.append( $flagSetContainer );
+			$row.append( $flagSetCell );
 
 			// 操作エリア（削除ボタン + 編集ボタン）
 			var $actionCell = $( '<td></td>' );
@@ -412,21 +496,56 @@ jQuery( function( $ ) {
 	}
 
 	/**
-	 * 選択肢の hidden フィールドを更新
+	 * 選択肢の hidden フィールドを更新（JSON形式で保存）
 	 */
 	function updateChoicesHidden() {
 		var arr = [];
 
 		$( '#novel-choices-table tbody tr' ).each( function() {
-			var text = $( this ).find( '.choice-text' ).val();
-			var next = $( this ).find( '.choice-next' ).val();
+			var $row = $( this );
+			var text = $row.find( '.choice-text' ).val();
+			var next = $row.find( '.choice-next' ).val();
 
 			if ( text && next && next !== '__new__' ) {
-				arr.push( text + ' | ' + next );
+				// フラグ条件を収集
+				var flagConditions = [];
+				$row.find( '.flag-condition-row' ).each( function() {
+					var $conditionRow = $( this );
+					var flagName = $conditionRow.find( '.flag-condition-select' ).val();
+					var flagState = $conditionRow.find( '.flag-state-select' ).val() === 'true';
+					
+					if ( flagName ) {
+						flagConditions.push( {
+							name: flagName,
+							state: flagState
+						} );
+					}
+				} );
+				
+				// フラグ設定を収集
+				var setFlags = [];
+				$row.find( '.flag-set-checkbox:checked' ).each( function() {
+					setFlags.push( $( this ).val() );
+				} );
+				
+				// フラグ条件ロジック
+				var flagConditionLogic = $row.find( '.flag-logic-select' ).val() || 'AND';
+				
+				// 選択肢オブジェクトを作成
+				var choiceObject = {
+					text: text,
+					next: next,
+					flagConditions: flagConditions,
+					flagConditionLogic: flagConditionLogic,
+					setFlags: setFlags
+				};
+				
+				arr.push( choiceObject );
 			}
 		} );
 
-		$( '#novel_choices_hidden' ).val( arr.join( '\n' ) );
+		// JSON形式で保存
+		$( '#novel_choices_hidden' ).val( JSON.stringify( arr ) );
 	}
 
 	/**

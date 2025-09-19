@@ -102,6 +102,30 @@ function noveltool_admin_enqueue_scripts( $hook ) {
         NOVEL_GAME_PLUGIN_VERSION,
         true
     );
+    
+    // メタボックス用スクリプトの読み込み
+    wp_enqueue_script(
+        'novel-game-admin-meta-boxes',
+        NOVEL_GAME_PLUGIN_URL . 'js/admin-meta-boxes.js',
+        array( 'jquery', 'jquery-ui-sortable' ),
+        NOVEL_GAME_PLUGIN_VERSION,
+        true
+    );
+    
+    // 現在の投稿のゲームタイトルからフラグマスタを取得
+    $current_game_title = get_post_meta( $post->ID, '_game_title', true );
+    $flag_master = array();
+    if ( $current_game_title ) {
+        $flag_master = noveltool_get_game_flag_master( $current_game_title );
+    }
+    
+    // JavaScriptに渡すデータ
+    $js_data = array(
+        'flagMaster' => $flag_master,
+        'gameTitle' => $current_game_title,
+    );
+    
+    wp_localize_script( 'novel-game-admin-meta-boxes', 'novelGameFlagData', $js_data );
 }
 add_action( 'admin_enqueue_scripts', 'noveltool_admin_enqueue_scripts' );
 /**
@@ -796,6 +820,8 @@ function noveltool_meta_box_callback( $post ) {
                                 <th style="width: 30px;"><?php esc_html_e( '順序', 'novel-game-plugin' ); ?></th>
                                 <th><?php esc_html_e( 'テキスト', 'novel-game-plugin' ); ?></th>
                                 <th><?php esc_html_e( '次のシーン', 'novel-game-plugin' ); ?></th>
+                                <th><?php esc_html_e( 'フラグ条件', 'novel-game-plugin' ); ?></th>
+                                <th><?php esc_html_e( 'フラグ設定', 'novel-game-plugin' ); ?></th>
                                 <th><?php esc_html_e( '操作', 'novel-game-plugin' ); ?></th>
                             </tr>
                         </thead>
@@ -819,7 +845,11 @@ function noveltool_meta_box_callback( $post ) {
                            id="novel_choices_hidden"
                            name="choices"
                            value="<?php echo esc_attr( $choices ); ?>" />
-                    <p class="description"><?php esc_html_e( 'プレイヤーが選択できる選択肢を設定します。', 'novel-game-plugin' ); ?></p>
+                    <p class="description">
+                        <?php esc_html_e( 'プレイヤーが選択できる選択肢を設定します。', 'novel-game-plugin' ); ?><br>
+                        <strong><?php esc_html_e( 'フラグ条件：', 'novel-game-plugin' ); ?></strong><?php esc_html_e( '表示に必要なフラグ条件（最大3つ、AND/OR指定可能）', 'novel-game-plugin' ); ?><br>
+                        <strong><?php esc_html_e( 'フラグ設定：', 'novel-game-plugin' ); ?></strong><?php esc_html_e( 'この選択肢を選んだ時に設定されるフラグ', 'novel-game-plugin' ); ?>
+                    </p>
                 </div>
             </td>
         </tr>
