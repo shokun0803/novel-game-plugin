@@ -338,6 +338,255 @@
 		}
 		
 		/**
+		 * ゲーム固有のフラグストレージキーを生成する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {string} フラグストレージキー
+		 * @since 1.2.0
+		 */
+		function generateFlagStorageKey( gameTitle ) {
+			if ( ! gameTitle ) {
+				return '';
+			}
+			
+			try {
+				// サイトのホスト名とパスを取得
+				var hostname = window.location.hostname || 'localhost';
+				var pathname = window.location.pathname || '/';
+				
+				// ホスト名とパスからディレクトリ部分を抽出
+				var pathDir = pathname.substring( 0, pathname.lastIndexOf( '/' ) + 1 );
+				var siteId = hostname + pathDir;
+				
+				// ゲームタイトルをBase64エンコードして安全な文字列に変換
+				var encodedTitle = btoa( unescape( encodeURIComponent( gameTitle ) ) ).replace( /[^a-zA-Z0-9]/g, '' );
+				
+				// サイトIDもBase64エンコードして安全な文字列に変換
+				var encodedSiteId = btoa( unescape( encodeURIComponent( siteId ) ) ).replace( /[^a-zA-Z0-9]/g, '' );
+				
+				return 'novel_flags_' + encodedSiteId + '_' + encodedTitle;
+			} catch ( error ) {
+				console.warn( 'フラグストレージキーの生成に失敗しました:', error );
+				return 'novel_flags_' + gameTitle.replace( /[^a-zA-Z0-9]/g, '' );
+			}
+		}
+
+		/**
+		 * フラグを設定する（ID配列での軽量保存）
+		 *
+		 * @param {Object} flags フラグ設定オブジェクト {flagName: boolean, ...}
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.2.0
+		 */
+		function setSceneFlags( flags, gameTitle ) {
+			if ( ! flags || ! gameTitle ) {
+				return;
+			}
+			
+			try {
+				// 現在のフラグ状態を取得
+				var currentFlags = getGameFlags( gameTitle );
+				
+				// フラグマスタデータを取得（WordPress側から）
+				var flagMaster = getGameFlagMaster( gameTitle );
+				if ( ! flagMaster || ! Array.isArray( flagMaster ) ) {
+					console.warn( 'フラグマスタデータが見つかりません:', gameTitle );
+					return;
+				}
+				
+				// フラグ名からIDへの変換と設定
+				for ( var flagName in flags ) {
+					if ( flags.hasOwnProperty( flagName ) ) {
+						var flagId = getFlagIdByName( flagName, flagMaster );
+						if ( flagId !== null ) {
+							// フラグ状態を更新（0または1で保存）
+							currentFlags[ flagId ] = flags[ flagName ] ? 1 : 0;
+						}
+					}
+				}
+				
+				// フラグデータを軽量形式で保存
+				saveFlagsToStorage( currentFlags, gameTitle );
+				
+				console.log( 'フラグを設定しました:', flags, 'ゲーム:', gameTitle );
+			} catch ( error ) {
+				console.warn( 'フラグの設定に失敗しました:', error );
+			}
+		}
+
+		/**
+		 * フラグ条件をチェックする（AND/OR論理判定、最大3フラグ）
+		 *
+		 * @param {Array} requiredFlags 必要なフラグ配列 [{name: 'flag1', state: true}, ...]
+		 * @param {string} condition 条件（'AND' または 'OR'）
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {boolean} 条件を満たすかどうか
+		 * @since 1.2.0
+		 */
+		function checkFlagConditions( requiredFlags, condition, gameTitle ) {
+			if ( ! requiredFlags || ! Array.isArray( requiredFlags ) || requiredFlags.length === 0 ) {
+				return true; // 条件がない場合は常に表示
+			}
+			
+			// 最大3フラグまでの制限
+			if ( requiredFlags.length > 3 ) {
+				console.warn( 'フラグ条件は最大3つまでです。最初の3つのみを使用します。' );
+				requiredFlags = requiredFlags.slice( 0, 3 );
+			}
+			
+			try {
+				// 現在のフラグ状態を取得
+				var currentFlags = getGameFlags( gameTitle );
+				
+				// フラグマスタデータを取得
+				var flagMaster = getGameFlagMaster( gameTitle );
+				if ( ! flagMaster || ! Array.isArray( flagMaster ) ) {
+					console.warn( 'フラグマスタデータが見つかりません:', gameTitle );
+					return true; // マスタデータがない場合は表示
+				}
+				
+				var results = [];
+				
+				// 各フラグ条件をチェック
+				for ( var i = 0; i < requiredFlags.length; i++ ) {
+					var flag = requiredFlags[ i ];
+					if ( ! flag.name ) {
+						continue;
+					}
+					
+					var flagId = getFlagIdByName( flag.name, flagMaster );
+					if ( flagId === null ) {
+						results.push( false );
+						continue;
+					}
+					
+					var currentState = currentFlags[ flagId ] || 0;
+					var requiredState = flag.state ? 1 : 0;
+					results.push( currentState === requiredState );
+				}
+				
+				// AND/OR条件で判定
+				if ( condition === 'OR' ) {
+					return results.some( function( result ) { return result; } );
+				} else {
+					// デフォルトはAND条件
+					return results.every( function( result ) { return result; } );
+				}
+			} catch ( error ) {
+				console.warn( 'フラグ条件のチェックに失敗しました:', error );
+				return true; // エラー時は表示
+			}
+		}
+
+		/**
+		 * ゲームのフラグ状態を取得する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {Object} フラグ状態オブジェクト {flagId: 0/1, ...}
+		 * @since 1.2.0
+		 */
+		function getGameFlags( gameTitle ) {
+			if ( ! gameTitle ) {
+				return {};
+			}
+			
+			try {
+				var storageKey = generateFlagStorageKey( gameTitle );
+				var flagsStr = localStorage.getItem( storageKey );
+				
+				if ( flagsStr ) {
+					// 軽量形式から復元：文字列の各文字が0または1
+					var flags = {};
+					for ( var i = 0; i < flagsStr.length; i++ ) {
+						flags[ i ] = parseInt( flagsStr.charAt( i ), 10 );
+					}
+					return flags;
+				}
+			} catch ( error ) {
+				console.warn( 'フラグの取得に失敗しました:', error );
+			}
+			
+			return {};
+		}
+
+		/**
+		 * フラグをlocalStorageに保存する（軽量形式）
+		 *
+		 * @param {Object} flags フラグ状態オブジェクト {flagId: 0/1, ...}
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.2.0
+		 */
+		function saveFlagsToStorage( flags, gameTitle ) {
+			if ( ! gameTitle ) {
+				return;
+			}
+			
+			try {
+				var storageKey = generateFlagStorageKey( gameTitle );
+				
+				// 軽量形式で保存：ID順に0/1の文字列として保存
+				var flagStr = '';
+				var maxId = -1;
+				
+				// 最大IDを確認
+				for ( var id in flags ) {
+					if ( flags.hasOwnProperty( id ) && ! isNaN( id ) ) {
+						maxId = Math.max( maxId, parseInt( id, 10 ) );
+					}
+				}
+				
+				// ID順に0/1の文字列を構築
+				for ( var i = 0; i <= maxId; i++ ) {
+					flagStr += ( flags[ i ] || 0 ).toString();
+				}
+				
+				localStorage.setItem( storageKey, flagStr );
+				console.log( 'フラグを保存しました:', flagStr, 'ゲーム:', gameTitle );
+			} catch ( error ) {
+				console.warn( 'フラグの保存に失敗しました:', error );
+			}
+		}
+
+		/**
+		 * フラグ名からIDを取得する
+		 *
+		 * @param {string} flagName フラグ名
+		 * @param {Array} flagMaster フラグマスタ配列
+		 * @return {number|null} フラグID
+		 * @since 1.2.0
+		 */
+		function getFlagIdByName( flagName, flagMaster ) {
+			if ( ! flagName || ! flagMaster || ! Array.isArray( flagMaster ) ) {
+				return null;
+			}
+			
+			for ( var i = 0; i < flagMaster.length; i++ ) {
+				if ( flagMaster[ i ].name === flagName ) {
+					return flagMaster[ i ].id;
+				}
+			}
+			
+			return null;
+		}
+
+		/**
+		 * ゲームのフラグマスタデータを取得する（WordPress側から）
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {Array|null} フラグマスタ配列
+		 * @since 1.2.0
+		 */
+		function getGameFlagMaster( gameTitle ) {
+			// 現在は暫定的にグローバル変数から取得
+			// 後でWordPress側からAjaxで取得する実装に変更予定
+			if ( window.novelGameFlagMaster && window.novelGameFlagMaster[ gameTitle ] ) {
+				return window.novelGameFlagMaster[ gameTitle ];
+			}
+			
+			return null;
+		}
+
+		/**
 		 * 現在のゲーム情報を設定する
 		 *
 		 * @param {string} gameTitle ゲームタイトル
@@ -825,6 +1074,11 @@
 								console.error( 'No valid game content found in response' );
 							}
 							
+							// シーン到達時のフラグ設定処理
+							if ( extractedGameTitle ) {
+								processSceneArrivalFlags( $response, extractedGameTitle );
+							}
+							
 							resolve();
 						} catch ( error ) {
 							console.error( 'ゲームデータの解析に失敗しました:', error );
@@ -838,6 +1092,40 @@
 				} );
 			} );
 		}
+		
+		/**
+		 * シーン到達時のフラグ設定処理
+		 *
+		 * @param {jQuery} $response ページレスポンス
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.2.0
+		 */
+		function processSceneArrivalFlags( $response, gameTitle ) {
+			try {
+				// シーン到達時フラグデータを取得
+				var sceneArrivalFlagsScript = $response.filter( 'script#novel-scene-arrival-flags' );
+				if ( sceneArrivalFlagsScript.length === 0 ) {
+					sceneArrivalFlagsScript = $response.find( '#novel-scene-arrival-flags' );
+				}
+				
+				if ( sceneArrivalFlagsScript.length > 0 ) {
+					var flagsDataText = sceneArrivalFlagsScript.text() || sceneArrivalFlagsScript.html();
+					if ( flagsDataText ) {
+						var arrivalFlags = JSON.parse( flagsDataText );
+						console.log( 'シーン到達時フラグを取得:', arrivalFlags );
+						
+						// フラグを設定
+						if ( arrivalFlags && Object.keys( arrivalFlags ).length > 0 ) {
+							setSceneFlags( arrivalFlags, gameTitle );
+							console.log( 'シーン到達時フラグを設定しました:', arrivalFlags );
+						}
+					}
+				}
+			} catch ( error ) {
+				console.warn( 'シーン到達時フラグの処理に失敗しました:', error );
+			}
+		}
+		
 		/**
 		 * モーダルを開く（タイトル画面表示モードまたは直接ゲーム開始モード）
 		 *
