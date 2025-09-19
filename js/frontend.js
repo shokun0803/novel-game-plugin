@@ -2123,6 +2123,32 @@
 		}
 
 		/**
+		 * 選択肢のフラグ条件をチェックする
+		 *
+		 * @param {Object} choice 選択肢オブジェクト
+		 * @return {boolean} 表示するかどうか
+		 * @since 1.2.0
+		 */
+		function checkChoiceFlagConditions( choice ) {
+			// フラグ条件が設定されていない場合は常に表示
+			if ( ! choice.flagConditions || ! Array.isArray( choice.flagConditions ) || choice.flagConditions.length === 0 ) {
+				return true;
+			}
+			
+			// フラグ条件をチェック
+			var requiredFlags = choice.flagConditions.filter( function( condition ) {
+				return condition.name; // フラグ名が設定されているもののみ
+			} );
+			
+			if ( requiredFlags.length === 0 ) {
+				return true; // 有効なフラグ条件がない場合は表示
+			}
+			
+			var condition = choice.flagConditionLogic || 'AND';
+			return checkFlagConditions( requiredFlags, condition, currentGameTitle );
+		}
+
+		/**
 		 * 選択肢を表示、選択肢がない場合は「おわり」を表示
 		 */
 		function showChoices() {
@@ -2152,8 +2178,16 @@
 				return;
 			}
 
-			// 最大4つの選択肢に制限
-			const displayChoices = choices.slice( 0, 4 );
+			// 最大4つの選択肢に制限する前に、フラグ条件でフィルタリング
+			var filteredChoices = [];
+			choices.forEach( function( choice ) {
+				// フラグ条件をチェック
+				if ( checkChoiceFlagConditions( choice ) ) {
+					filteredChoices.push( choice );
+				}
+			} );
+			
+			const displayChoices = filteredChoices.slice( 0, 4 );
 			
 			$choicesContainer.empty();
 			
@@ -2201,6 +2235,21 @@
 				if ( nextScene ) {
 					// 既存のイベントハンドラーをクリーンアップ
 					$( document ).off( 'keydown.novel-choices' );
+					
+					// 選択肢に設定されたフラグを処理
+					var selectedChoice = displayChoices[ index ];
+					if ( selectedChoice && selectedChoice.setFlags && selectedChoice.setFlags.length > 0 ) {
+						// フラグ設定オブジェクトを作成
+						var flagsToSet = {};
+						selectedChoice.setFlags.forEach( function( flagName ) {
+							flagsToSet[ flagName ] = true; // フラグをONに設定
+						} );
+						
+						// フラグを設定
+						if ( currentGameTitle ) {
+							setSceneFlags( flagsToSet, currentGameTitle );
+						}
+					}
 					
 					// 1. まず古いデータを完全にクリア
 					dialogueData = [];

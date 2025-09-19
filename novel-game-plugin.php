@@ -578,20 +578,57 @@ function noveltool_filter_novel_game_content( $content ) {
         );
     }
 
-    // 選択肢の処理
+    // 選択肢の処理（JSON形式とレガシー形式の両方に対応）
     $choices = array();
     if ( $choices_raw ) {
-        foreach ( explode( "\n", $choices_raw ) as $line ) {
-            $parts = explode( '|', $line );
-            if ( count( $parts ) === 2 ) {
-                $post_id   = intval( trim( $parts[1] ) );
-                $permalink = get_permalink( $post_id );
+        // JSON形式を試行
+        $json_choices = json_decode( $choices_raw, true );
+        if ( json_last_error() === JSON_ERROR_NONE && is_array( $json_choices ) ) {
+            // JSON形式の場合
+            foreach ( $json_choices as $choice_data ) {
+                if ( isset( $choice_data['text'], $choice_data['next'] ) ) {
+                    $post_id = intval( $choice_data['next'] );
+                    $permalink = get_permalink( $post_id );
+                    
+                    if ( $permalink ) {
+                        $choice_item = array(
+                            'text' => sanitize_text_field( $choice_data['text'] ),
+                            'nextScene' => $permalink,
+                        );
+                        
+                        // フラグ条件がある場合は追加
+                        if ( isset( $choice_data['flagConditions'] ) && is_array( $choice_data['flagConditions'] ) ) {
+                            $choice_item['flagConditions'] = $choice_data['flagConditions'];
+                        }
+                        
+                        // フラグ条件ロジックがある場合は追加
+                        if ( isset( $choice_data['flagConditionLogic'] ) ) {
+                            $choice_item['flagConditionLogic'] = sanitize_text_field( $choice_data['flagConditionLogic'] );
+                        }
+                        
+                        // 設定フラグがある場合は追加
+                        if ( isset( $choice_data['setFlags'] ) && is_array( $choice_data['setFlags'] ) ) {
+                            $choice_item['setFlags'] = array_map( 'sanitize_text_field', $choice_data['setFlags'] );
+                        }
+                        
+                        $choices[] = $choice_item;
+                    }
+                }
+            }
+        } else {
+            // レガシー形式（"テキスト | 投稿ID" の行形式）
+            foreach ( explode( "\n", $choices_raw ) as $line ) {
+                $parts = explode( '|', $line );
+                if ( count( $parts ) === 2 ) {
+                    $post_id   = intval( trim( $parts[1] ) );
+                    $permalink = get_permalink( $post_id );
 
-                if ( $permalink ) {
-                    $choices[] = array(
-                        'text'      => trim( $parts[0] ),
-                        'nextScene' => $permalink,
-                    );
+                    if ( $permalink ) {
+                        $choices[] = array(
+                            'text'      => trim( $parts[0] ),
+                            'nextScene' => $permalink,
+                        );
+                    }
                 }
             }
         }
