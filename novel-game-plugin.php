@@ -716,11 +716,11 @@ function noveltool_filter_novel_game_content( $content ) {
                 <div id="novel-choices" class="novel-choices"></div>
 
                 <script id="novel-dialogue-data" type="application/json">
-                    <?php echo wp_json_encode( $dialogue_data, JSON_UNESCAPED_UNICODE ); ?>
+                    <?php echo wp_json_encode( $dialogue_data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
                 </script>
                 
                 <script id="novel-base-background" type="application/json">
-                    <?php echo wp_json_encode( $background, JSON_UNESCAPED_UNICODE ); ?>
+                    <?php echo wp_json_encode( $background, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
                 </script>
                 
                 <script id="novel-characters-data" type="application/json">
@@ -732,19 +732,19 @@ function noveltool_filter_novel_game_content( $content ) {
                         'left_name' => $character_left_name,
                         'center_name' => $character_center_name,
                         'right_name' => $character_right_name,
-                    ), JSON_UNESCAPED_UNICODE ); ?>
+                    ), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
                 </script>
 
                 <script id="novel-choices-data" type="application/json">
-                    <?php echo wp_json_encode( $choices, JSON_UNESCAPED_UNICODE ); ?>
+                    <?php echo wp_json_encode( $choices, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
                 </script>
                 
                 <script id="novel-ending-data" type="application/json">
-                    <?php echo wp_json_encode( (bool) $is_ending, JSON_UNESCAPED_UNICODE ); ?>
+                    <?php echo wp_json_encode( (bool) $is_ending, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
                 </script>
 
                 <script id="novel-ending-text" type="application/json">
-                    <?php echo wp_json_encode( $ending_text ? $ending_text : 'おわり', JSON_UNESCAPED_UNICODE ); ?>
+                    <?php echo wp_json_encode( $ending_text ? $ending_text : 'おわり', JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
                 </script>
 
                 <script id="novel-scene-arrival-flags" type="application/json">
@@ -761,7 +761,7 @@ function noveltool_filter_novel_game_content( $content ) {
                         $scene_flags_object[ $flag_name ] = true; // フラグをONに設定
                     }
                     
-                    echo wp_json_encode( $scene_flags_object, JSON_UNESCAPED_UNICODE ); 
+                    echo wp_json_encode( $scene_flags_object, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); 
                     ?>
                 </script>
 
@@ -775,7 +775,7 @@ function noveltool_filter_novel_game_content( $content ) {
                             $game_over_text = $game_data['game_over_text'];
                         }
                     }
-                    echo wp_json_encode( $game_over_text, JSON_UNESCAPED_UNICODE ); 
+                    echo wp_json_encode( $game_over_text, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); 
                     ?>
                 </script>
 
@@ -786,7 +786,7 @@ function noveltool_filter_novel_game_content( $content ) {
                     if ( $game_title ) {
                         $flag_master_data = noveltool_get_game_flag_master( $game_title );
                     }
-                    echo wp_json_encode( $flag_master_data, JSON_UNESCAPED_UNICODE ); 
+                    echo wp_json_encode( $flag_master_data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); 
                     ?>
                 </script>
             </div>

@@ -64,6 +64,28 @@
 		// 直前の選択肢シーンの記録用
 		var lastChoiceSceneUrl = '';
 		
+		// フラグデータキャッシュ（パフォーマンス最適化）
+		var flagsCache = {};
+		var flagsCacheTimestamp = {};
+		var CACHE_DURATION = 10000; // 10秒間キャッシュ
+		
+		// デバッグフラグ（本番環境でのログ出力制御）
+		var novelGameDebug = typeof window.novelGameDebug !== 'undefined' ? window.novelGameDebug : false;
+		
+		/**
+		 * デバッグログ出力（本番環境では無効化）
+		 *
+		 * @param {string} message ログメッセージ
+		 * @param {...*} args 追加引数
+		 * @since 1.2.0
+		 */
+		function debugLog( message ) {
+			if ( novelGameDebug ) {
+				var args = Array.prototype.slice.call( arguments );
+				console.log.apply( console, args );
+			}
+		}
+		
 		// 表示設定
 		var displaySettings = {
 			maxCharsPerLine: 20,
@@ -155,7 +177,7 @@
 					var gameTitle = currentGameTitleElement.text().trim();
 					if ( gameTitle ) {
 						window.novelGameFlagMaster[ gameTitle ] = flagMasterData;
-						console.log( 'フラグマスタデータを設定しました:', gameTitle, flagMasterData );
+						debugLog( 'フラグマスタデータを設定しました:', gameTitle, flagMasterData );
 					}
 				}
 			}
@@ -428,7 +450,7 @@
 				// フラグデータを軽量形式で保存
 				saveFlagsToStorage( currentFlags, gameTitle );
 				
-				console.log( 'フラグを設定しました:', flags, 'ゲーム:', gameTitle );
+				debugLog( 'フラグを設定しました:', flags, 'ゲーム:', gameTitle );
 			} catch ( error ) {
 				console.warn( 'フラグの設定に失敗しました:', error );
 			}
@@ -450,7 +472,7 @@
 			
 			// 最大3フラグまでの制限
 			if ( requiredFlags.length > 3 ) {
-				console.warn( 'フラグ条件は最大3つまでです。最初の3つのみを使用します。' );
+				debugLog( 'フラグ条件は最大3つまでです。最初の3つのみを使用します。', requiredFlags );
 				requiredFlags = requiredFlags.slice( 0, 3 );
 			}
 			
@@ -499,7 +521,7 @@
 		}
 
 		/**
-		 * ゲームのフラグ状態を取得する
+		 * ゲームのフラグ状態を取得する（キャッシュ機能付き）
 		 *
 		 * @param {string} gameTitle ゲームタイトル
 		 * @return {Object} フラグ状態オブジェクト {flagId: 0/1, ...}
@@ -511,17 +533,32 @@
 			}
 			
 			try {
+				var currentTime = new Date().getTime();
+				var cacheKey = gameTitle;
+				
+				// キャッシュが有効かチェック
+				if ( flagsCache[ cacheKey ] && 
+					 flagsCacheTimestamp[ cacheKey ] && 
+					 currentTime - flagsCacheTimestamp[ cacheKey ] < CACHE_DURATION ) {
+					return flagsCache[ cacheKey ];
+				}
+				
 				var storageKey = generateFlagStorageKey( gameTitle );
 				var flagsStr = localStorage.getItem( storageKey );
+				var flags = {};
 				
 				if ( flagsStr ) {
 					// 軽量形式から復元：文字列の各文字が0または1
-					var flags = {};
 					for ( var i = 0; i < flagsStr.length; i++ ) {
 						flags[ i ] = parseInt( flagsStr.charAt( i ), 10 );
 					}
-					return flags;
 				}
+				
+				// キャッシュに保存
+				flagsCache[ cacheKey ] = flags;
+				flagsCacheTimestamp[ cacheKey ] = currentTime;
+				
+				return flags;
 			} catch ( error ) {
 				console.warn( 'フラグの取得に失敗しました:', error );
 			}
@@ -561,7 +598,15 @@
 				}
 				
 				localStorage.setItem( storageKey, flagStr );
-				console.log( 'フラグを保存しました:', flagStr, 'ゲーム:', gameTitle );
+				
+				// キャッシュを無効化（最新データを反映するため）
+				var cacheKey = gameTitle;
+				if ( flagsCache[ cacheKey ] ) {
+					delete flagsCache[ cacheKey ];
+					delete flagsCacheTimestamp[ cacheKey ];
+				}
+				
+				debugLog( 'フラグを保存しました:', flagStr, 'ゲーム:', gameTitle );
 			} catch ( error ) {
 				console.warn( 'フラグの保存に失敗しました:', error );
 			}
@@ -1132,12 +1177,12 @@
 					var flagsDataText = sceneArrivalFlagsScript.text() || sceneArrivalFlagsScript.html();
 					if ( flagsDataText ) {
 						var arrivalFlags = JSON.parse( flagsDataText );
-						console.log( 'シーン到達時フラグを取得:', arrivalFlags );
+						debugLog( 'シーン到達時フラグを取得:', arrivalFlags );
 						
 						// フラグを設定
 						if ( arrivalFlags && Object.keys( arrivalFlags ).length > 0 ) {
 							setSceneFlags( arrivalFlags, gameTitle );
-							console.log( 'シーン到達時フラグを設定しました:', arrivalFlags );
+							debugLog( 'シーン到達時フラグを設定しました:', arrivalFlags );
 						}
 					}
 				}
