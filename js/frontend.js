@@ -1990,13 +1990,103 @@
 		}
 		
 		/**
-		 * すべてのセリフをページに分割して準備する
+		 * セリフのフラグ条件をチェックする
+		 *
+		 * @param {Object} dialogue セリフオブジェクト
+		 * @return {boolean} 表示するかどうか
+		 * @since 1.2.0
+		 */
+		function checkDialogueFlagConditions( dialogue ) {
+			// 通常表示の場合は常に表示
+			if ( ! dialogue.displayMode || dialogue.displayMode === 'normal' ) {
+				return true;
+			}
+			
+			// フラグ条件が設定されていない場合は表示
+			if ( ! dialogue.flagConditions || ! Array.isArray( dialogue.flagConditions ) || dialogue.flagConditions.length === 0 ) {
+				return true;
+			}
+			
+			// フラグ条件をチェック
+			var requiredFlags = dialogue.flagConditions.filter( function( condition ) {
+				return condition && condition.name; // フラグ名が設定されているもののみ
+			} );
+			
+			if ( requiredFlags.length === 0 ) {
+				return true; // 有効なフラグ条件がない場合は表示
+			}
+			
+			var condition = dialogue.flagConditionLogic || 'AND';
+			var flagsMatch = checkFlagConditions( requiredFlags, condition, currentGameTitle );
+			
+			// 表示モードに応じて判定
+			if ( dialogue.displayMode === 'hidden' ) {
+				// 条件で非表示：条件を満たす場合は非表示
+				return ! flagsMatch;
+			} else if ( dialogue.displayMode === 'alternative' ) {
+				// 条件で内容変更：条件チェック結果をそのまま返す
+				return true; // 表示は常に行い、内容を変更する
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * セリフの表示テキストを取得する
+		 *
+		 * @param {Object} dialogue セリフオブジェクト
+		 * @return {string} 表示テキスト
+		 * @since 1.2.0
+		 */
+		function getDialogueDisplayText( dialogue ) {
+			// 通常表示またはalternativeでない場合はそのまま返す
+			if ( ! dialogue.displayMode || dialogue.displayMode !== 'alternative' ) {
+				return dialogue.text;
+			}
+			
+			// alternative modeの場合、フラグ条件をチェックして内容を決定
+			if ( dialogue.flagConditions && Array.isArray( dialogue.flagConditions ) && dialogue.flagConditions.length > 0 ) {
+				var requiredFlags = dialogue.flagConditions.filter( function( condition ) {
+					return condition && condition.name;
+				} );
+				
+				if ( requiredFlags.length > 0 ) {
+					var condition = dialogue.flagConditionLogic || 'AND';
+					var flagsMatch = checkFlagConditions( requiredFlags, condition, currentGameTitle );
+					
+					// フラグ条件を満たす場合は通常テキスト、満たさない場合は代替テキスト
+					if ( flagsMatch ) {
+						return dialogue.text;
+					} else {
+						// 代替テキストがある場合はそれを使用、なければ空文字
+						return dialogue.alternativeText || '';
+					}
+				}
+			}
+			
+			return dialogue.text;
+		}
+
+		/**
+		 * すべてのセリフをページに分割して準備する（フラグ条件チェック付き）
 		 */
 		function prepareDialoguePages() {
 			allDialoguePages = [];
 			
 			dialogueData.forEach( function( dialogue, dialogueIndex ) {
-				const pages = splitTextIntoPages( dialogue.text );
+				// フラグ条件をチェック
+				if ( ! checkDialogueFlagConditions( dialogue ) ) {
+					debugLog( 'セリフ', dialogueIndex, 'はフラグ条件を満たさないためスキップします' );
+					return; // このセリフをスキップ
+				}
+				
+				// 表示モードに応じてテキストを決定
+				var displayText = getDialogueDisplayText( dialogue );
+				if ( ! displayText ) {
+					return; // テキストがない場合はスキップ
+				}
+				
+				const pages = splitTextIntoPages( displayText );
 				
 				pages.forEach( function( pageText, pageIndex ) {
 					allDialoguePages.push( {

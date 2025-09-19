@@ -568,14 +568,36 @@ function noveltool_filter_novel_game_content( $content ) {
     // セリフ話者の処理（既に上で処理済み）
     // $dialogue_speakers_array は既に定義済み
     
+    // セリフフラグ条件データの取得
+    $dialogue_flag_conditions = get_post_meta( $post->ID, '_dialogue_flag_conditions', true );
+    if ( ! is_array( $dialogue_flag_conditions ) ) {
+        $dialogue_flag_conditions = array();
+    }
+    
     // セリフと背景と話者を組み合わせた配列を作成
     $dialogue_data = array();
     foreach ( $dialogue_lines as $index => $line ) {
-        $dialogue_data[] = array(
+        $dialogue_item = array(
             'text' => $line,
             'background' => isset( $dialogue_backgrounds_array[ $index ] ) ? $dialogue_backgrounds_array[ $index ] : '',
             'speaker' => isset( $dialogue_speakers_array[ $index ] ) ? $dialogue_speakers_array[ $index ] : ''
         );
+        
+        // フラグ条件データがある場合は追加
+        if ( isset( $dialogue_flag_conditions[ $index ] ) && is_array( $dialogue_flag_conditions[ $index ] ) ) {
+            $flag_condition = $dialogue_flag_conditions[ $index ];
+            
+            $dialogue_item['flagConditions'] = isset( $flag_condition['conditions'] ) ? $flag_condition['conditions'] : array();
+            $dialogue_item['flagConditionLogic'] = isset( $flag_condition['logic'] ) ? $flag_condition['logic'] : 'AND';
+            $dialogue_item['displayMode'] = isset( $flag_condition['displayMode'] ) ? $flag_condition['displayMode'] : 'normal';
+        } else {
+            // デフォルト値
+            $dialogue_item['flagConditions'] = array();
+            $dialogue_item['flagConditionLogic'] = 'AND';
+            $dialogue_item['displayMode'] = 'normal';
+        }
+        
+        $dialogue_data[] = $dialogue_item;
     }
 
     // 選択肢の処理（JSON形式とレガシー形式の両方に対応）

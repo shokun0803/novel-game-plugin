@@ -44,16 +44,21 @@ jQuery( function( $ ) {
 		var existingLines = novelGameMeta.dialogue_lines || [];
 		var existingBackgrounds = novelGameMeta.dialogue_backgrounds || [];
 		var existingSpeakers = novelGameMeta.dialogue_speakers || [];
+		var existingFlagConditions = novelGameMeta.dialogue_flag_conditions || [];
 		
 		// 常に新しいデータでリセット（初期化時）
 		dialogueData = [];
 		
 		// 既存のセリフ行をデータ配列に変換
 		existingLines.forEach( function( line, index ) {
+			var flagConditionData = existingFlagConditions[index] || {};
 			dialogueData.push( {
 				text: line,
 				background: existingBackgrounds[index] || '',
-				speaker: existingSpeakers[index] || ''
+				speaker: existingSpeakers[index] || '',
+				flagConditions: flagConditionData.conditions || [],
+				flagConditionLogic: flagConditionData.logic || 'AND',
+				displayMode: flagConditionData.displayMode || 'normal'
 			} );
 		} );
 		
@@ -62,7 +67,10 @@ jQuery( function( $ ) {
 			dialogueData.push( {
 				text: '',
 				background: '',
-				speaker: ''
+				speaker: '',
+				flagConditions: [],
+				flagConditionLogic: 'AND',
+				displayMode: 'normal'
 			} );
 		}
 		
@@ -129,6 +137,9 @@ jQuery( function( $ ) {
 			
 			$imageContainer.append( $imageInput, $imagePreview, '<br>', $imageButton, $imageClearButton );
 			
+			// フラグ制御UI
+			var $flagContainer = createDialogueFlagUI( dialogue, index );
+			
 			// 削除ボタン
 			var $deleteButton = $( '<button type="button" class="button dialogue-delete-button">削除</button>' );
 			$deleteButton.on( 'click', function() {
@@ -156,6 +167,8 @@ jQuery( function( $ ) {
 			$item.append( $speakerContainer );
 			$item.append( '<p><strong>背景画像:</strong></p>' );
 			$item.append( $imageContainer );
+			$item.append( '<p><strong>フラグ制御:</strong></p>' );
+			$item.append( $flagContainer );
 			$item.append( $controls );
 			$item.append( '<hr>' );
 			
@@ -205,7 +218,10 @@ jQuery( function( $ ) {
 		dialogueData.push( {
 			text: '',
 			background: '',
-			speaker: ''
+			speaker: '',
+			flagConditions: [],
+			flagConditionLogic: 'AND',
+			displayMode: 'normal' // normal, hidden, alternative
 		} );
 		renderDialogueList();
 		updateDialogueTextarea();
@@ -251,6 +267,132 @@ jQuery( function( $ ) {
 	}
 	
 	/**
+	 * セリフのフラグ制御UIを作成
+	 *
+	 * @param {Object} dialogue セリフデータ
+	 * @param {number} index セリフインデックス
+	 * @return {jQuery} フラグUIコンテナ
+	 */
+	function createDialogueFlagUI( dialogue, index ) {
+		var $container = $( '<div class="dialogue-flag-container">' );
+		
+		// 表示モード選択
+		var $displayModeContainer = $( '<div class="flag-display-mode">' );
+		var $displayModeLabel = $( '<label>表示制御:</label>' );
+		var $displayModeSelect = $( '<select class="dialogue-display-mode-select">' );
+		$displayModeSelect.append( '<option value="normal"' + ( dialogue.displayMode === 'normal' ? ' selected' : '' ) + '>通常表示</option>' );
+		$displayModeSelect.append( '<option value="hidden"' + ( dialogue.displayMode === 'hidden' ? ' selected' : '' ) + '>条件で非表示</option>' );
+		$displayModeSelect.append( '<option value="alternative"' + ( dialogue.displayMode === 'alternative' ? ' selected' : '' ) + '>条件で内容変更</option>' );
+		
+		$displayModeSelect.on( 'change', function() {
+			dialogueData[index].displayMode = $( this ).val();
+			updateDialogueTextarea();
+			renderDialogueList(); // フラグ条件UIの表示切り替え
+		} );
+		
+		$displayModeContainer.append( $displayModeLabel, $displayModeSelect );
+		$container.append( $displayModeContainer );
+		
+		// フラグ条件UI（通常表示以外の場合のみ表示）
+		if ( dialogue.displayMode !== 'normal' ) {
+			var $flagConditionsContainer = $( '<div class="flag-conditions-container">' );
+			
+			// フラグ条件（最大3つ）
+			for ( var i = 0; i < 3; i++ ) {
+				var $conditionRow = $( '<div class="flag-condition-row">' );
+				
+				// フラグ選択
+				var $flagSelect = $( '<select class="dialogue-flag-condition-select">' );
+				$flagSelect.append( '<option value="">-- フラグ選択 --</option>' );
+				
+				// 現在のゲームのフラグマスタから選択肢を生成
+				if ( novelGameFlagData && novelGameFlagData.flagMaster && Array.isArray( novelGameFlagData.flagMaster ) ) {
+					novelGameFlagData.flagMaster.forEach( function( flag ) {
+						var selected = ( dialogue.flagConditions[i] && dialogue.flagConditions[i].name === flag.name ) ? ' selected' : '';
+						$flagSelect.append( '<option value="' + flag.name + '"' + selected + '>' + flag.name + '</option>' );
+					} );
+				}
+				
+				// ON/OFF選択
+				var $stateSelect = $( '<select class="dialogue-flag-state-select">' );
+				var currentState = ( dialogue.flagConditions[i] && dialogue.flagConditions[i].state !== undefined ) ? dialogue.flagConditions[i].state : true;
+				$stateSelect.append( '<option value="true"' + ( currentState ? ' selected' : '' ) + '>ON</option>' );
+				$stateSelect.append( '<option value="false"' + ( ! currentState ? ' selected' : '' ) + '>OFF</option>' );
+				
+				// イベントハンドラ
+				( function( conditionIndex ) {
+					$flagSelect.on( 'change', function() {
+						updateDialogueFlagCondition( index, conditionIndex );
+					} );
+					
+					$stateSelect.on( 'change', function() {
+						updateDialogueFlagCondition( index, conditionIndex );
+					} );
+				} )( i );
+				
+				$conditionRow.append( 
+					'<label>フラグ' + ( i + 1 ) + ':</label> ',
+					$flagSelect, ' ',
+					$stateSelect
+				);
+				$flagConditionsContainer.append( $conditionRow );
+			}
+			
+			// AND/OR選択
+			var $logicContainer = $( '<div class="flag-logic-container">' );
+			var $logicLabel = $( '<label>条件:</label>' );
+			var $logicSelect = $( '<select class="dialogue-flag-logic-select">' );
+			$logicSelect.append( '<option value="AND"' + ( dialogue.flagConditionLogic === 'AND' ? ' selected' : '' ) + '>AND（すべて）</option>' );
+			$logicSelect.append( '<option value="OR"' + ( dialogue.flagConditionLogic === 'OR' ? ' selected' : '' ) + '>OR（いずれか）</option>' );
+			
+			$logicSelect.on( 'change', function() {
+				dialogueData[index].flagConditionLogic = $( this ).val();
+				updateDialogueTextarea();
+			} );
+			
+			$logicContainer.append( $logicLabel, $logicSelect );
+			$flagConditionsContainer.append( $logicContainer );
+			
+			$container.append( $flagConditionsContainer );
+		}
+		
+		return $container;
+	}
+	
+	/**
+	 * セリフのフラグ条件を更新
+	 *
+	 * @param {number} dialogueIndex セリフインデックス
+	 * @param {number} conditionIndex 条件インデックス
+	 */
+	function updateDialogueFlagCondition( dialogueIndex, conditionIndex ) {
+		var $item = $( '.novel-dialogue-item[data-index="' + dialogueIndex + '"]' );
+		var $conditionRow = $item.find( '.flag-condition-row' ).eq( conditionIndex );
+		
+		var flagName = $conditionRow.find( '.dialogue-flag-condition-select' ).val();
+		var flagState = $conditionRow.find( '.dialogue-flag-state-select' ).val() === 'true';
+		
+		// フラグ条件配列を初期化
+		if ( ! dialogueData[dialogueIndex].flagConditions ) {
+			dialogueData[dialogueIndex].flagConditions = [];
+		}
+		
+		if ( flagName ) {
+			dialogueData[dialogueIndex].flagConditions[conditionIndex] = {
+				name: flagName,
+				state: flagState
+			};
+		} else {
+			// フラグが選択されていない場合は削除
+			if ( dialogueData[dialogueIndex].flagConditions[conditionIndex] ) {
+				delete dialogueData[dialogueIndex].flagConditions[conditionIndex];
+			}
+		}
+		
+		updateDialogueTextarea();
+	}
+	
+	/**
 	 * 隠しテキストエリアの更新（後方互換性のため）
 	 */
 	function updateDialogueTextarea() {
@@ -277,6 +419,15 @@ jQuery( function( $ ) {
 			return dialogue.text;
 		} );
 		
+		// フラグ条件データの更新
+		var flagConditions = dialogueData.map( function( dialogue ) {
+			return {
+				conditions: dialogue.flagConditions || [],
+				logic: dialogue.flagConditionLogic || 'AND',
+				displayMode: dialogue.displayMode || 'normal'
+			};
+		} );
+		
 		// 隠しフィールドに背景データを設定
 		var $existingBackgroundInput = $( 'input[name="dialogue_backgrounds"]' );
 		if ( $existingBackgroundInput.length === 0 ) {
@@ -297,6 +448,13 @@ jQuery( function( $ ) {
 			$( '<input type="hidden" name="dialogue_texts">' ).appendTo( '#novel-dialogue-container' );
 		}
 		$( 'input[name="dialogue_texts"]' ).val( JSON.stringify( texts ) );
+		
+		// 隠しフィールドにフラグ条件データを設定
+		var $existingFlagConditionsInput = $( 'input[name="dialogue_flag_conditions"]' );
+		if ( $existingFlagConditionsInput.length === 0 ) {
+			$( '<input type="hidden" name="dialogue_flag_conditions">' ).appendTo( '#novel-dialogue-container' );
+		}
+		$( 'input[name="dialogue_flag_conditions"]' ).val( JSON.stringify( flagConditions ) );
 	}
 
 	/**

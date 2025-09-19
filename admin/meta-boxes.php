@@ -178,6 +178,12 @@ function noveltool_meta_box_callback( $post ) {
     $is_ending = get_post_meta( $post->ID, '_is_ending', true );
     $ending_text = get_post_meta( $post->ID, '_ending_text', true );
     
+    // セリフフラグ条件データの取得
+    $dialogue_flag_conditions = get_post_meta( $post->ID, '_dialogue_flag_conditions', true );
+    if ( ! is_array( $dialogue_flag_conditions ) ) {
+        $dialogue_flag_conditions = array();
+    }
+    
     // 後方互換性：既存の単一キャラクター画像をセンター位置に移行
     if ( $character && ! $character_center ) {
         $character_center = $character;
@@ -330,6 +336,7 @@ function noveltool_meta_box_callback( $post ) {
             'character_center_name' => $character_center_name,
             'character_right_name' => $character_right_name,
             'is_ending' => (bool) $is_ending,
+            'dialogue_flag_conditions' => $dialogue_flag_conditions,
         )
     );
 
@@ -1105,6 +1112,84 @@ function noveltool_save_meta_box_data( $post_id ) {
         update_post_meta( $post_id, '_scene_arrival_flags', $scene_arrival_flags );
     } else {
         delete_post_meta( $post_id, '_scene_arrival_flags' );
+    }
+
+    // セリフフラグ条件データの保存処理
+    if ( isset( $_POST['dialogue_flag_conditions'] ) ) {
+        $dialogue_flag_conditions = wp_unslash( $_POST['dialogue_flag_conditions'] );
+        
+        // JSON文字列の場合は妥当性をチェックして保存
+        if ( is_string( $dialogue_flag_conditions ) ) {
+            $decoded = json_decode( $dialogue_flag_conditions, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+                // 配列の各要素をサニタイズ
+                $sanitized_flag_conditions = array();
+                foreach ( $decoded as $flag_condition ) {
+                    if ( is_array( $flag_condition ) ) {
+                        $sanitized_item = array();
+                        
+                        // conditionsの処理
+                        if ( isset( $flag_condition['conditions'] ) && is_array( $flag_condition['conditions'] ) ) {
+                            $sanitized_conditions = array();
+                            foreach ( $flag_condition['conditions'] as $condition ) {
+                                if ( is_array( $condition ) && isset( $condition['name'] ) ) {
+                                    $sanitized_conditions[] = array(
+                                        'name' => sanitize_text_field( $condition['name'] ),
+                                        'state' => isset( $condition['state'] ) ? (bool) $condition['state'] : true
+                                    );
+                                }
+                            }
+                            $sanitized_item['conditions'] = $sanitized_conditions;
+                        }
+                        
+                        // logicの処理
+                        if ( isset( $flag_condition['logic'] ) ) {
+                            $sanitized_item['logic'] = sanitize_text_field( $flag_condition['logic'] );
+                        }
+                        
+                        // displayModeの処理
+                        if ( isset( $flag_condition['displayMode'] ) ) {
+                            $sanitized_item['displayMode'] = sanitize_text_field( $flag_condition['displayMode'] );
+                        }
+                        
+                        $sanitized_flag_conditions[] = $sanitized_item;
+                    }
+                }
+                update_post_meta( $post_id, '_dialogue_flag_conditions', $sanitized_flag_conditions );
+            }
+        } elseif ( is_array( $dialogue_flag_conditions ) ) {
+            // 配列の場合は直接サニタイズ
+            $sanitized_flag_conditions = array();
+            foreach ( $dialogue_flag_conditions as $flag_condition ) {
+                if ( is_array( $flag_condition ) ) {
+                    $sanitized_item = array();
+                    
+                    if ( isset( $flag_condition['conditions'] ) && is_array( $flag_condition['conditions'] ) ) {
+                        $sanitized_conditions = array();
+                        foreach ( $flag_condition['conditions'] as $condition ) {
+                            if ( is_array( $condition ) && isset( $condition['name'] ) ) {
+                                $sanitized_conditions[] = array(
+                                    'name' => sanitize_text_field( $condition['name'] ),
+                                    'state' => isset( $condition['state'] ) ? (bool) $condition['state'] : true
+                                );
+                            }
+                        }
+                        $sanitized_item['conditions'] = $sanitized_conditions;
+                    }
+                    
+                    if ( isset( $flag_condition['logic'] ) ) {
+                        $sanitized_item['logic'] = sanitize_text_field( $flag_condition['logic'] );
+                    }
+                    
+                    if ( isset( $flag_condition['displayMode'] ) ) {
+                        $sanitized_item['displayMode'] = sanitize_text_field( $flag_condition['displayMode'] );
+                    }
+                    
+                    $sanitized_flag_conditions[] = $sanitized_item;
+                }
+            }
+            update_post_meta( $post_id, '_dialogue_flag_conditions', $sanitized_flag_conditions );
+        }
     }
 
     foreach ( $fields as $field => $meta_key ) {
