@@ -1192,12 +1192,87 @@ function noveltool_save_meta_box_data( $post_id ) {
         }
     }
 
+    // 選択肢フラグデータの保存処理
+    if ( isset( $_POST['choices'] ) ) {
+        $choices_data = wp_unslash( $_POST['choices'] );
+        
+        // JSON文字列の場合は妥当性をチェックして保存
+        if ( is_string( $choices_data ) ) {
+            $decoded_choices = json_decode( $choices_data, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded_choices ) ) {
+                // JSON形式の場合：フラグ関連データを抽出してサニタイズ
+                $sanitized_choices = array();
+                foreach ( $decoded_choices as $choice_data ) {
+                    if ( is_array( $choice_data ) ) {
+                        $sanitized_choice = array();
+                        
+                        // 基本データのサニタイズ
+                        if ( isset( $choice_data['text'] ) ) {
+                            $sanitized_choice['text'] = sanitize_text_field( $choice_data['text'] );
+                        }
+                        if ( isset( $choice_data['next'] ) ) {
+                            $sanitized_choice['next'] = intval( $choice_data['next'] );
+                        }
+                        
+                        // フラグ条件データのサニタイズ
+                        if ( isset( $choice_data['flagConditions'] ) && is_array( $choice_data['flagConditions'] ) ) {
+                            $sanitized_conditions = array();
+                            foreach ( $choice_data['flagConditions'] as $condition ) {
+                                if ( is_array( $condition ) && isset( $condition['name'] ) ) {
+                                    $sanitized_conditions[] = array(
+                                        'name' => sanitize_text_field( $condition['name'] ),
+                                        'state' => isset( $condition['state'] ) ? (bool) $condition['state'] : true
+                                    );
+                                }
+                            }
+                            $sanitized_choice['flagConditions'] = $sanitized_conditions;
+                        }
+                        
+                        // フラグ条件ロジックのサニタイズ
+                        if ( isset( $choice_data['flagConditionLogic'] ) ) {
+                            $sanitized_choice['flagConditionLogic'] = sanitize_text_field( $choice_data['flagConditionLogic'] );
+                        }
+                        
+                        // 設定フラグデータのサニタイズ
+                        if ( isset( $choice_data['setFlags'] ) && is_array( $choice_data['setFlags'] ) ) {
+                            $sanitized_set_flags = array();
+                            foreach ( $choice_data['setFlags'] as $flag_name ) {
+                                if ( is_string( $flag_name ) ) {
+                                    $sanitized_set_flags[] = sanitize_text_field( $flag_name );
+                                }
+                            }
+                            $sanitized_choice['setFlags'] = $sanitized_set_flags;
+                        }
+                        
+                        $sanitized_choices[] = $sanitized_choice;
+                    }
+                }
+                
+                // サニタイズ済みデータをJSON形式で保存
+                update_post_meta( $post_id, '_choices', wp_json_encode( $sanitized_choices ) );
+            } else {
+                // JSON形式でない場合は従来通りの処理
+                $value = sanitize_textarea_field( $choices_data );
+                update_post_meta( $post_id, '_choices', $value );
+            }
+        } elseif ( is_array( $choices_data ) ) {
+            // 配列の場合は直接サニタイズ（通常は発生しない）
+            $value = sanitize_textarea_field( wp_json_encode( $choices_data ) );
+            update_post_meta( $post_id, '_choices', $value );
+        }
+    }
+
     foreach ( $fields as $field => $meta_key ) {
         if ( isset( $_POST[ $field ] ) ) {
             $value = wp_unslash( $_POST[ $field ] );
 
+            // choicesフィールドは上で専用処理済みなのでスキップ
+            if ( $field === 'choices' ) {
+                continue;
+            }
+
             // サニタイズ処理
-            if ( in_array( $field, array( 'dialogue_text', 'choices' ), true ) ) {
+            if ( in_array( $field, array( 'dialogue_text' ), true ) ) {
                 $value = sanitize_textarea_field( $value );
             } else {
                 $value = sanitize_text_field( $value );
