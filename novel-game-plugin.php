@@ -424,35 +424,6 @@ function noveltool_remove_game_flag( $game_title, $flag_name ) {
     return noveltool_save_game_flag_master( $game_title, $new_flag_master );
 }
 
-/**
- * シーンのゲームタイトルを更新する関数
- *
- * @param string $old_title 古いゲームタイトル
- * @param string $new_title 新しいゲームタイトル
- * @return bool 更新成功の場合true
- * @since 1.2.0
- */
-function noveltool_update_scenes_game_title( $old_title, $new_title ) {
-    if ( ! $old_title || ! $new_title ) {
-        return false;
-    }
-    
-    global $wpdb;
-    
-    $result = $wpdb->update(
-        $wpdb->postmeta,
-        array( 'meta_value' => sanitize_text_field( $new_title ) ),
-        array( 
-            'meta_key' => '_game_title',
-            'meta_value' => sanitize_text_field( $old_title )
-        ),
-        array( '%s' ),
-        array( '%s', '%s' )
-    );
-    
-    return $result !== false;
-}
-
 
 /**
  * カスタム投稿タイプ「novel_game」のコンテンツをノベルゲームビューに置き換える
