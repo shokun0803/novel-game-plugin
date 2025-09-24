@@ -34,6 +34,9 @@ jQuery( function( $ ) {
 				dialogueData[index].background = background || '';
 			}
 		} );
+		
+		// 選択肢データも同期（フラグ設定含む）
+		updateChoicesHidden();
 	}
 	
 	/**
@@ -890,6 +893,16 @@ jQuery( function( $ ) {
 			// 現在のフォームデータを最新の状態に更新
 			syncCurrentFormData();
 			updateDialogueTextarea();
+			// 選択肢データの明示的同期
+			updateChoicesHidden();
+		} );
+		
+		// 公開・更新ボタンクリック時の明示的同期
+		$( '#publish, #save-post' ).on( 'click', function() {
+			// 投稿保存前に最新のフラグ設定を確実に隠しフィールドに反映
+			syncCurrentFormData();
+			updateDialogueTextarea();
+			updateChoicesHidden();
 		} );
 		
 		// ページ離脱時にもデータを保存
@@ -960,7 +973,7 @@ jQuery( function( $ ) {
 		} );
 
 		// 入力変更時の処理
-		$( '#novel-choices-table' ).on( 'change', '.choice-text, .choice-next', function() {
+		$( '#novel-choices-table' ).on( 'change', '.choice-text, .choice-next, .flag-condition-select, .flag-state-select, .flag-logic-select, .flag-set-checkbox', function() {
 			updateChoicesHidden();
 			
 			// 次のシーンの選択変更時に編集ボタンを更新
