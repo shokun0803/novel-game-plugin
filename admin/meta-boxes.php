@@ -1249,7 +1249,7 @@ function noveltool_save_meta_box_data( $post_id ) {
                 }
                 
                 // サニタイズ済みデータをJSON形式で保存
-                update_post_meta( $post_id, '_choices', wp_json_encode( $sanitized_choices ) );
+                update_post_meta( $post_id, '_choices', wp_json_encode( $sanitized_choices, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
             } else {
                 // JSON形式でない場合は従来通りの処理
                 $value = sanitize_textarea_field( $choices_data );
