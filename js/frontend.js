@@ -8,6 +8,30 @@
 ( function( $ ) {
 	'use strict';
 
+	// --- 初期化前でも呼べるデバッグ用シムを公開 -----------------------------
+	// ページ読み込みのタイミングやキャッシュの影響で初回に未定義になるのを避けるため、
+	// 簡易版を先に公開し、初期化完了後に本実装で上書きします。
+	if ( typeof window.novelGameSetDebug !== 'function' ) {
+		/**
+		 * 初期化前でも動作する簡易版デバッグ切替
+		 * @param {boolean} enabled
+		 */
+		window.novelGameSetDebug = function( enabled ) {
+			window.novelGameDebug = !!enabled;
+			try { console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。（初期化前シム）' ); } catch (e) {}
+		};
+	}
+
+	if ( typeof window.novelGameShowFlags !== 'function' ) {
+		/**
+		 * 初期化前の簡易版フラグ表示（初期化後に本実装で上書き）
+		 */
+		window.novelGameShowFlags = function() {
+			try { console.warn( 'ゲーム初期化前のため、フラグ一覧は初期化後に再度お試しください。' ); } catch (e) {}
+		};
+	}
+
+
 	// DOMの読み込み完了を待つ
 	$( document ).ready( function() {
 
@@ -85,6 +109,49 @@
 				console.log.apply( console, args );
 			}
 		}
+		
+		/**
+		 * デバッグ用：現在のフラグ状態とマスタデータを表示
+		 * ブラウザのコンソールで window.novelGameShowFlags() を実行
+		 *
+		 * @since 1.2.0
+		 */
+		window.novelGameShowFlags = function() {
+			if ( ! currentGameTitle ) {
+				console.log( '現在ゲームが読み込まれていません。' );
+				return;
+			}
+			
+			var flags = getGameFlags( currentGameTitle );
+			var master = getGameFlagMaster( currentGameTitle );
+			
+			console.log( '=== フラグ状態デバッグ情報 ===', {
+				gameTitle: currentGameTitle,
+				flags: flags,
+				flagMaster: master
+			} );
+			
+			if ( master && Array.isArray( master ) ) {
+				console.log( '=== フラグ名とID一覧 ===' );
+				master.forEach( function( flag ) {
+					var currentState = flags[ flag.id ] || 0;
+					console.log( `ID: ${flag.id}, 名前: ${flag.name}, 現在状態: ${currentState}` );
+				} );
+			}
+		};
+		
+		/**
+		 * デバッグ用：デバッグモードを有効/無効にする
+		 * ブラウザのコンソールで window.novelGameSetDebug(true) を実行
+		 *
+		 * @param {boolean} enabled デバッグモードを有効にするか
+		 * @since 1.2.0
+		 */
+		window.novelGameSetDebug = function( enabled ) {
+			window.novelGameDebug = !!enabled;
+			novelGameDebug = !!enabled;
+			console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。' );
+		};
 		
 		// 表示設定
 		var displaySettings = {
@@ -479,6 +546,7 @@
 			try {
 				// 現在のフラグ状態を取得
 				var currentFlags = getGameFlags( gameTitle );
+				debugLog( 'フラグ条件チェック開始 - 現在のフラグ状態:', currentFlags, 'ゲーム:', gameTitle );
 				
 				// フラグマスタデータを取得
 				var flagMaster = getGameFlagMaster( gameTitle );
@@ -486,6 +554,7 @@
 					console.warn( 'フラグマスタデータが見つかりません:', gameTitle );
 					return true; // マスタデータがない場合は表示
 				}
+				debugLog( 'フラグマスタデータ:', flagMaster );
 				
 				var results = [];
 				
@@ -498,22 +567,39 @@
 					
 					var flagId = getFlagIdByName( flag.name, flagMaster );
 					if ( flagId === null ) {
+						debugLog( 'フラグIDが見つかりません:', flag.name );
 						results.push( false );
 						continue;
 					}
 					
 					var currentState = currentFlags[ flagId ] || 0;
 					var requiredState = flag.state ? 1 : 0;
-					results.push( currentState === requiredState );
+					var isMatch = currentState === requiredState;
+					
+					debugLog( 'フラグ条件詳細:', {
+						name: flag.name,
+						id: flagId,
+						currentState: currentState,
+						requiredState: requiredState,
+						isMatch: isMatch
+					});
+					
+					results.push( isMatch );
 				}
 				
+				debugLog( 'フラグ条件チェック結果:', results, '条件:', condition );
+				
 				// AND/OR条件で判定
+				var finalResult;
 				if ( condition === 'OR' ) {
-					return results.some( function( result ) { return result; } );
+					finalResult = results.some( function( result ) { return result; } );
 				} else {
 					// デフォルトはAND条件
-					return results.every( function( result ) { return result; } );
+					finalResult = results.every( function( result ) { return result; } );
 				}
+				
+				debugLog( 'フラグ条件最終結果:', finalResult );
+				return finalResult;
 			} catch ( error ) {
 				console.warn( 'フラグ条件のチェックに失敗しました:', error );
 				return true; // エラー時は表示
@@ -929,6 +1015,14 @@
 		 * @param {string} gameUrl ゲームのURL
 		 */
 		function loadGameData( gameUrl ) {
+			// リダイレクト回避とインラインJSON取得のため、必ず shortcode=1 を付与
+			try {
+				var normalizedUrl = ensureShortcodeParam( gameUrl );
+				if ( normalizedUrl !== gameUrl ) {
+					console.log( 'Normalized game URL with shortcode=1:', normalizedUrl );
+				}
+				gameUrl = normalizedUrl;
+			} catch (e) {}
 			console.log( 'loadGameData called with URL:', gameUrl );
 			
 			return new Promise( function( resolve, reject ) {
@@ -1139,6 +1233,11 @@
 								console.error( 'No valid game content found in response' );
 							}
 							
+							// フラグマスタデータの処理（動的読み込み時にも必要）
+							if ( extractedGameTitle ) {
+								processFlagMasterData( $response, extractedGameTitle );
+							}
+							
 							// シーン到達時のフラグ設定処理
 							if ( extractedGameTitle ) {
 								processSceneArrivalFlags( $response, extractedGameTitle );
@@ -1188,6 +1287,42 @@
 				}
 			} catch ( error ) {
 				console.warn( 'シーン到達時フラグの処理に失敗しました:', error );
+			}
+		}
+		
+		/**
+		 * フラグマスタデータの処理（動的読み込み時にも対応）
+		 *
+		 * @param {jQuery} $response ページレスポンス
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.2.0
+		 */
+		function processFlagMasterData( $response, gameTitle ) {
+			try {
+				// フラグマスタデータを取得
+				var flagMasterDataScript = $response.filter( 'script#novel-flag-master' );
+				if ( flagMasterDataScript.length === 0 ) {
+					flagMasterDataScript = $response.find( '#novel-flag-master' );
+				}
+				
+				if ( flagMasterDataScript.length > 0 ) {
+					var flagMasterDataText = flagMasterDataScript.text() || flagMasterDataScript.html();
+					if ( flagMasterDataText ) {
+						var flagMasterData = JSON.parse( flagMasterDataText );
+						
+						// グローバル変数に設定（ゲームタイトル別）
+						if ( ! window.novelGameFlagMaster ) {
+							window.novelGameFlagMaster = {};
+						}
+						
+						if ( gameTitle ) {
+							window.novelGameFlagMaster[ gameTitle ] = flagMasterData;
+							debugLog( 'フラグマスタデータを設定しました:', gameTitle, flagMasterData );
+						}
+					}
+				}
+			} catch ( error ) {
+				console.warn( 'フラグマスタデータの処理に失敗しました:', error );
 			}
 		}
 		
@@ -2270,6 +2405,8 @@
 				return true;
 			}
 			
+			debugLog( '選択肢フラグ条件チェック開始:', choice.text, choice.flagConditions );
+			
 			// フラグ条件をチェック
 			var requiredFlags = choice.flagConditions.filter( function( condition ) {
 				return condition.name; // フラグ名が設定されているもののみ
@@ -2280,7 +2417,11 @@
 			}
 			
 			var condition = choice.flagConditionLogic || 'AND';
-			return checkFlagConditions( requiredFlags, condition, currentGameTitle );
+			var result = checkFlagConditions( requiredFlags, condition, currentGameTitle );
+			
+			debugLog( '選択肢フラグ条件チェック結果:', choice.text, 'result:', result );
+			
+			return result;
 		}
 
 		/**

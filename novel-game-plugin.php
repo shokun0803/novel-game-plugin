@@ -22,7 +22,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // プラグインの基本定数を定義
 if ( ! defined( 'NOVEL_GAME_PLUGIN_VERSION' ) ) {
-    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.1.0' );
+    // キャッシュ更新のためバージョンを更新
+    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.1.1' );
 }
 if ( ! defined( 'NOVEL_GAME_PLUGIN_URL' ) ) {
     define( 'NOVEL_GAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
