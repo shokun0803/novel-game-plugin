@@ -1,4 +1,71 @@
 <!-- I want to review in Japanese. -->
+
+## ブランチ運用ポリシー（Git Workflow）
+
+本リポジトリでは以下のポリシーに基づきブランチ運用を行います。GitHub Copilot はこれを常に参照し、指示がない限り逸脱した操作（不要な push / force-push / dev への直接コミット 等）を行わないこと。
+
+### ブランチ種別と役割
+
+- `master`: リリース済み安定版。WordPress 公式公開を意識した基準ブランチ。直接コミット禁止。`dev` からの明示的マージのみ。
+- `dev`: 統合開発ブランチ。進行中 PR の変更を段階的に取り込み検証する場。**リモートでは常に `master` と同期状態を基本とし、ローカルでのみ PR ブランチをマージして動作検証を行う**。
+	- すべての新規プルリクエストの **base (比較先)** として使用する。GitHub Copilot Agent は PR 作成時に `master` を base に選択してはならない。
+- `feature/<name>` / `fix/<name>` / `chore/<name>` など: 個別機能・修正用一時ブランチ。作業完了後 PR 作成 → dev へマージ後速やかに削除。
+- `pr-<number>` や `copilot/fix-<issue>`: 自動生成/一時用途。dev へ取り込み次第ローカル削除。リモートに残っていても再利用しない。
+
+### 基本フロー
+1. 新機能開始時: `master` から一時ブランチ作成（例: `git checkout -b feature/flag-dialogue origin/master`）。
+2. 実装 → ローカルで `dev` にマージ（検証用。リモートには push しない）。
+3. 問題なければ一時ブランチを元に PR を作成（必ず base: `dev`。**`master` を base に指定することは禁止**）。
+4. レビュー完了後: `dev` へマージ（--no-ff 推奨で履歴明確化）。
+5. 定期的に `dev` が安定した段階で `master` にマージ（リリース）。
+6. マージ済み一時ブランチはローカル/リモートとも削除。
+
+### ローカル dev ブランチ運用ルール
+- ローカル `dev` は進行中 PR の検証集約用として自由にマージ可（未完成でも可）。
+- リモート `dev` は原則 `master` と同期状態を維持（= 余計な先行コミットを置かない）。
+- リモート `dev` へ push / force-push は **明示指示がある場合のみ** 実行。
+
+### 禁止事項（Copilot は自動で行わない）
+- 指示なしの `git push origin dev`
+- 指示なしの `--force` / `--force-with-lease`
+- 安定ブランチ（`master`,`dev` リモート）への直接コミット
+- 未確認 PR ブランチの勝手な rebase / squash
+
+### マージポリシー
+- PR マージは `--no-ff` を基本とし 1 PR = 1 マージコミットを保持。
+- コンフリクト解消は専用一時ブランチで実施し、内容を最小限に限定。
+
+### ブランチ削除基準
+- `git branch --merged dev` で dev に完全マージ済みの一時ブランチのみ削除。
+- 未マージ判定: `git log dev..<branch>` に出力があれば削除禁止。
+
+### 例: ローカル検証手順（リモートに影響を与えない）
+```bash
+git fetch --prune
+git checkout dev
+git merge --no-ff origin/feature/xxx   # ここで検証
+# 動作確認後 reset で元に戻せるよう必要なら一時タグ
+git tag temp-dev-test-<date>
+```
+
+### 差分破棄とクリーンアップ例
+```bash
+git checkout dev
+git reset --hard origin/dev
+git branch --merged dev | grep -vE '^(\*|dev|master)$' | xargs -r -n1 git branch -d
+```
+
+### Copilot への追加指針
+- 「リモートへ push して」等の明示文言が無い限り push しない。
+- master/dev の履歴を書き換える操作は常にユーザー確認を要求。
+- PR ブランチ削除前に必ず dev へのマージ有無を判定し結果を提示。
+- PR 作成時: base ブランチに `dev` 以外（特に `master`）が自動選択されている場合は作成を中断し、ユーザーへ `dev` への変更を促す。
+- 既存 PR が `master` を base にしている場合: 直ちにコメントで `dev` へのリターゲットを提案し、自動マージ・レビューを進めない。
+- 前提: `master` は「公開用」、`dev` は「開発統合用」。`master` 直マージをトリガーするブラウザ上の Merge ボタン操作を誘発する挙動を避ける。
+
+---
+（この節はリポジトリ運用規約の一部であり、変更が必要な場合は別途 PR を作成してください）
+
 # copilot-instructions.md
 
 ## プロジェクト概要
