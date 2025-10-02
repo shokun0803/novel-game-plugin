@@ -1,0 +1,65 @@
+name: 機能追加（テンプレート）
+description: 機能追加 Issue をこのフォームで作成します
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        以下のフォームに沿って、必要事項をすべて日本語で記入してください。
+        すべての PR は base: dev を必須とします。タイトル・概要の後追い変更は行わないでください。
+  - type: input
+    id: title
+    attributes:
+      label: タイトル
+      description: 機能名（短く簡潔に）
+      placeholder: 例）○○機能の追加
+    validations:
+      required: true
+  - type: textarea
+    id: overview
+    attributes:
+      label: 概要
+      description: 目的、背景、達成したいことを具体的に記載してください
+      placeholder: |
+        例）この機能は○○の改善を目的とし、△△の課題を解決します。管理画面/フロント側のどちらに影響するか、想定するユーザー動線、表示/保存の要件などを記述してください。
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: 要件
+      description: 必須要件を箇条書きで記述してください（機能・UI・保存方式・表示条件など）
+      placeholder: |
+        - ○○の入力UIを追加（管理画面の◻︎◻︎に設置）
+        - △△の表示制御（条件: ◻︎◻︎、AND/OR の論理判定 等）
+        - データ保存方式（例: ブラウザ内/WordPressメタ など）
+        - 既存機能への影響と互換性の扱い（後方互換維持 等）
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: チェックリスト
+      options:
+        - label: 実装（バックエンド/フロントエンド）
+        - label: 国際化対応（翻訳文字列の追加・置換）
+        - label: 既存機能の回帰がないことを確認
+        - label: ドキュメント更新（README/管理画面の説明）
+        - label: テスト/手動検証（複数条件・境界ケース）
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: |
+        ## 重要事項
+        - /.github/copilot-instructions.md の指示に基づく運用を コメントによる追加修正時でも 徹底
+        - タイトルや概要、コメントはルールに則り 日本語 で投稿
+        - 一度作成したプルリクエストのタイトルや概要の内容を追加修正に伴って変更することは 絶対に行わない
+        - プルリクエストの機能追加、バグ修正に伴って正常動作している機能を損なわないように 細心の注意 を払う
+        - すべての PR は base: dev（master 直は不可）
+  - type: markdown
+    attributes:
+      value: |
+        ## 参考
+        - 関連仕様/資料（必要に応じて起票後に追記）
+        - リポジトリ運用規約: .github/copilot-instructions.md
