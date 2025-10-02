@@ -102,6 +102,30 @@ function noveltool_admin_enqueue_scripts( $hook ) {
         NOVEL_GAME_PLUGIN_VERSION,
         true
     );
+    
+    // メタボックス用スクリプトの読み込み
+    wp_enqueue_script(
+        'novel-game-admin-meta-boxes',
+        NOVEL_GAME_PLUGIN_URL . 'js/admin-meta-boxes.js',
+        array( 'jquery', 'jquery-ui-sortable' ),
+        NOVEL_GAME_PLUGIN_VERSION,
+        true
+    );
+    
+    // 現在の投稿のゲームタイトルからフラグマスタを取得
+    $current_game_title = get_post_meta( $post->ID, '_game_title', true );
+    $flag_master = array();
+    if ( $current_game_title ) {
+        $flag_master = noveltool_get_game_flag_master( $current_game_title );
+    }
+    
+    // JavaScriptに渡すデータ
+    $js_data = array(
+        'flagMaster' => $flag_master,
+        'gameTitle' => $current_game_title,
+    );
+    
+    wp_localize_script( 'novel-game-admin-meta-boxes', 'novelGameFlagData', $js_data );
 }
 add_action( 'admin_enqueue_scripts', 'noveltool_admin_enqueue_scripts' );
 /**
@@ -153,6 +177,12 @@ function noveltool_meta_box_callback( $post ) {
     // エンディング設定の取得
     $is_ending = get_post_meta( $post->ID, '_is_ending', true );
     $ending_text = get_post_meta( $post->ID, '_ending_text', true );
+    
+    // セリフフラグ条件データの取得
+    $dialogue_flag_conditions = get_post_meta( $post->ID, '_dialogue_flag_conditions', true );
+    if ( ! is_array( $dialogue_flag_conditions ) ) {
+        $dialogue_flag_conditions = array();
+    }
     
     // 後方互換性：既存の単一キャラクター画像をセンター位置に移行
     if ( $character && ! $character_center ) {
@@ -306,6 +336,7 @@ function noveltool_meta_box_callback( $post ) {
             'character_center_name' => $character_center_name,
             'character_right_name' => $character_right_name,
             'is_ending' => (bool) $is_ending,
+            'dialogue_flag_conditions' => $dialogue_flag_conditions,
         )
     );
 
@@ -796,6 +827,8 @@ function noveltool_meta_box_callback( $post ) {
                                 <th style="width: 30px;"><?php esc_html_e( '順序', 'novel-game-plugin' ); ?></th>
                                 <th><?php esc_html_e( 'テキスト', 'novel-game-plugin' ); ?></th>
                                 <th><?php esc_html_e( '次のシーン', 'novel-game-plugin' ); ?></th>
+                                <th><?php esc_html_e( 'フラグ条件', 'novel-game-plugin' ); ?></th>
+                                <th><?php esc_html_e( 'フラグ設定', 'novel-game-plugin' ); ?></th>
                                 <th><?php esc_html_e( '操作', 'novel-game-plugin' ); ?></th>
                             </tr>
                         </thead>
@@ -819,7 +852,11 @@ function noveltool_meta_box_callback( $post ) {
                            id="novel_choices_hidden"
                            name="choices"
                            value="<?php echo esc_attr( $choices ); ?>" />
-                    <p class="description"><?php esc_html_e( 'プレイヤーが選択できる選択肢を設定します。', 'novel-game-plugin' ); ?></p>
+                    <p class="description">
+                        <?php esc_html_e( 'プレイヤーが選択できる選択肢を設定します。', 'novel-game-plugin' ); ?><br>
+                        <strong><?php esc_html_e( 'フラグ条件：', 'novel-game-plugin' ); ?></strong><?php esc_html_e( '表示に必要なフラグ条件（最大3つ、AND/OR指定可能）', 'novel-game-plugin' ); ?><br>
+                        <strong><?php esc_html_e( 'フラグ設定：', 'novel-game-plugin' ); ?></strong><?php esc_html_e( 'この選択肢を選んだ時に設定されるフラグ', 'novel-game-plugin' ); ?>
+                    </p>
                 </div>
             </td>
         </tr>
@@ -849,6 +886,106 @@ function noveltool_meta_box_callback( $post ) {
                            placeholder="<?php esc_attr_e( 'エンディング画面に表示するテキスト（デフォルト: おわり）', 'novel-game-plugin' ); ?>" />
                     <p class="description"><?php esc_html_e( 'エンディング画面に表示するテキストを設定します。空欄の場合は「おわり」が表示されます。', 'novel-game-plugin' ); ?></p>
                 </div>
+            </td>
+        </tr>
+
+        <tr>
+            <th scope="row">
+                <label><?php esc_html_e( 'フラグ設定', 'novel-game-plugin' ); ?></label>
+            </th>
+            <td>
+                <?php
+                // 現在のゲームタイトルからフラグマスタを取得
+                $current_flag_master = array();
+                if ( $game_title ) {
+                    $current_flag_master = noveltool_get_game_flag_master( $game_title );
+                }
+                
+                // シーン到達時フラグの取得
+                $scene_arrival_flags = get_post_meta( $post->ID, '_scene_arrival_flags', true );
+                if ( ! is_array( $scene_arrival_flags ) ) {
+                    $scene_arrival_flags = array();
+                }
+                ?>
+                
+                <div class="noveltool-flags-container">
+                    <h4><?php esc_html_e( 'シーン到達時に設定するフラグ', 'novel-game-plugin' ); ?></h4>
+                    <p class="description"><?php esc_html_e( 'このシーンに到達した時に自動的に設定されるフラグを選択してください。', 'novel-game-plugin' ); ?></p>
+                    
+                    <?php if ( ! empty( $current_flag_master ) ) : ?>
+                        <div class="noveltool-scene-flags">
+                            <?php foreach ( $current_flag_master as $flag ) : ?>
+                                <label class="noveltool-flag-checkbox">
+                                    <input type="checkbox" 
+                                           name="scene_arrival_flags[]" 
+                                           value="<?php echo esc_attr( $flag['name'] ); ?>"
+                                           <?php checked( in_array( $flag['name'], $scene_arrival_flags, true ) ); ?> />
+                                    <code><?php echo esc_html( $flag['name'] ); ?></code>
+                                    <?php if ( $flag['description'] ) : ?>
+                                        <span class="flag-description">（<?php echo esc_html( $flag['description'] ); ?>）</span>
+                                    <?php endif; ?>
+                                </label><br>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else : ?>
+                        <div class="no-flags-message">
+                            <p><?php esc_html_e( 'このゲームにはまだフラグが設定されていません。', 'novel-game-plugin' ); ?>
+                               <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" target="_blank">
+                                   <?php esc_html_e( 'ゲーム基本情報でフラグを管理', 'novel-game-plugin' ); ?>
+                               </a>
+                            </p>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <h4 style="margin-top: 20px;"><?php esc_html_e( 'セリフレベルのフラグ条件', 'novel-game-plugin' ); ?></h4>
+                    <p class="description"><?php esc_html_e( '各セリフに個別のフラグ条件を設定する場合は、セリフ編集時に設定してください。フラグ条件を満たさない場合、そのセリフは表示されません。', 'novel-game-plugin' ); ?></p>
+                    
+                    <div id="noveltool-dialogue-flags-info">
+                        <p><em><?php esc_html_e( 'セリフのフラグ条件は、上記の「セリフ」セクションで各セリフを編集する際に設定できます。', 'novel-game-plugin' ); ?></em></p>
+                    </div>
+                </div>
+                
+                <style>
+                .noveltool-flags-container {
+                    border: 1px solid #ddd;
+                    padding: 15px;
+                    border-radius: 4px;
+                    background: #f9f9f9;
+                }
+                
+                .noveltool-scene-flags {
+                    margin: 10px 0;
+                }
+                
+                .noveltool-flag-checkbox {
+                    display: block;
+                    margin-bottom: 8px;
+                    padding: 5px 0;
+                }
+                
+                .noveltool-flag-checkbox input[type="checkbox"] {
+                    margin-right: 8px;
+                }
+                
+                .noveltool-flag-checkbox code {
+                    font-weight: bold;
+                    background: #e8e8e8;
+                    padding: 2px 6px;
+                    border-radius: 3px;
+                }
+                
+                .flag-description {
+                    color: #666;
+                    margin-left: 8px;
+                }
+                
+                .no-flags-message {
+                    padding: 10px;
+                    background: #fff;
+                    border: 1px solid #ddd;
+                    border-radius: 3px;
+                }
+                </style>
             </td>
         </tr>
     </table>
@@ -969,12 +1106,187 @@ function noveltool_save_meta_box_data( $post_id ) {
         }
     }
 
+    // シーン到達時フラグの保存処理
+    if ( isset( $_POST['scene_arrival_flags'] ) && is_array( $_POST['scene_arrival_flags'] ) ) {
+        $scene_arrival_flags = array_map( 'sanitize_text_field', wp_unslash( $_POST['scene_arrival_flags'] ) );
+        update_post_meta( $post_id, '_scene_arrival_flags', $scene_arrival_flags );
+    } else {
+        delete_post_meta( $post_id, '_scene_arrival_flags' );
+    }
+
+    // セリフフラグ条件データの保存処理
+    if ( isset( $_POST['dialogue_flag_conditions'] ) ) {
+        $dialogue_flag_conditions = wp_unslash( $_POST['dialogue_flag_conditions'] );
+        
+        // JSON文字列の場合は妥当性をチェックして保存
+        if ( is_string( $dialogue_flag_conditions ) ) {
+            $decoded = json_decode( $dialogue_flag_conditions, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+                // 配列の各要素をサニタイズ
+                $sanitized_flag_conditions = array();
+                foreach ( $decoded as $flag_condition ) {
+                    if ( is_array( $flag_condition ) ) {
+                        $sanitized_item = array();
+                        
+                        // conditionsの処理
+                        if ( isset( $flag_condition['conditions'] ) && is_array( $flag_condition['conditions'] ) ) {
+                            $sanitized_conditions = array();
+                            foreach ( $flag_condition['conditions'] as $condition ) {
+                                if ( is_array( $condition ) && isset( $condition['name'] ) ) {
+                                    $sanitized_conditions[] = array(
+                                        'name' => sanitize_text_field( $condition['name'] ),
+                                        'state' => isset( $condition['state'] ) ? (bool) $condition['state'] : true
+                                    );
+                                }
+                            }
+                            $sanitized_item['conditions'] = $sanitized_conditions;
+                        }
+                        
+                        // logicの処理
+                        if ( isset( $flag_condition['logic'] ) ) {
+                            $sanitized_item['logic'] = sanitize_text_field( $flag_condition['logic'] );
+                        }
+                        
+                        // displayModeの処理
+                        if ( isset( $flag_condition['displayMode'] ) ) {
+                            $sanitized_item['displayMode'] = sanitize_text_field( $flag_condition['displayMode'] );
+                        }
+                        
+                        $sanitized_flag_conditions[] = $sanitized_item;
+                    }
+                }
+                update_post_meta( $post_id, '_dialogue_flag_conditions', $sanitized_flag_conditions );
+            }
+        } elseif ( is_array( $dialogue_flag_conditions ) ) {
+            // 配列の場合は直接サニタイズ
+            $sanitized_flag_conditions = array();
+            foreach ( $dialogue_flag_conditions as $flag_condition ) {
+                if ( is_array( $flag_condition ) ) {
+                    $sanitized_item = array();
+                    
+                    if ( isset( $flag_condition['conditions'] ) && is_array( $flag_condition['conditions'] ) ) {
+                        $sanitized_conditions = array();
+                        foreach ( $flag_condition['conditions'] as $condition ) {
+                            if ( is_array( $condition ) && isset( $condition['name'] ) ) {
+                                $sanitized_conditions[] = array(
+                                    'name' => sanitize_text_field( $condition['name'] ),
+                                    'state' => isset( $condition['state'] ) ? (bool) $condition['state'] : true
+                                );
+                            }
+                        }
+                        $sanitized_item['conditions'] = $sanitized_conditions;
+                    }
+                    
+                    if ( isset( $flag_condition['logic'] ) ) {
+                        $sanitized_item['logic'] = sanitize_text_field( $flag_condition['logic'] );
+                    }
+                    
+                    if ( isset( $flag_condition['displayMode'] ) ) {
+                        $sanitized_item['displayMode'] = sanitize_text_field( $flag_condition['displayMode'] );
+                    }
+                    
+                    $sanitized_flag_conditions[] = $sanitized_item;
+                }
+            }
+            update_post_meta( $post_id, '_dialogue_flag_conditions', $sanitized_flag_conditions );
+        }
+    }
+
+    // 選択肢フラグデータの保存処理
+    if ( isset( $_POST['choices'] ) ) {
+        $choices_data = wp_unslash( $_POST['choices'] );
+        
+        // JSON文字列の場合は妥当性をチェックして保存
+        if ( is_string( $choices_data ) ) {
+            $decoded_choices = json_decode( $choices_data, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded_choices ) ) {
+                // JSON形式の場合：フラグ関連データを抽出してサニタイズ
+                $sanitized_choices = array();
+                foreach ( $decoded_choices as $choice_data ) {
+                    if ( is_array( $choice_data ) ) {
+                        $sanitized_choice = array();
+                        
+                        // 基本データのサニタイズ
+                        if ( isset( $choice_data['text'] ) ) {
+                            $sanitized_choice['text'] = sanitize_text_field( $choice_data['text'] );
+                        }
+                        if ( isset( $choice_data['next'] ) ) {
+                            $sanitized_choice['next'] = intval( $choice_data['next'] );
+                        }
+                        
+                        // フラグ条件データのサニタイズ
+                        if ( isset( $choice_data['flagConditions'] ) && is_array( $choice_data['flagConditions'] ) ) {
+                            $sanitized_conditions = array();
+                            foreach ( $choice_data['flagConditions'] as $condition ) {
+                                if ( is_array( $condition ) && isset( $condition['name'] ) ) {
+                                    $sanitized_conditions[] = array(
+                                        'name' => sanitize_text_field( $condition['name'] ),
+                                        'state' => isset( $condition['state'] ) ? (bool) $condition['state'] : true
+                                    );
+                                }
+                            }
+                            $sanitized_choice['flagConditions'] = $sanitized_conditions;
+                        }
+                        
+                        // フラグ条件ロジックのサニタイズ
+                        if ( isset( $choice_data['flagConditionLogic'] ) ) {
+                            $sanitized_choice['flagConditionLogic'] = sanitize_text_field( $choice_data['flagConditionLogic'] );
+                        }
+                        
+                        // 設定フラグデータのサニタイズ（新旧両形式対応）
+                        if ( isset( $choice_data['setFlags'] ) && is_array( $choice_data['setFlags'] ) ) {
+                            $sanitized_set_flags = array();
+                            foreach ( $choice_data['setFlags'] as $flag_data ) {
+                                if ( is_string( $flag_data ) ) {
+                                    // 旧形式（文字列）: 空文字列を除外
+                                    $trimmed_flag = trim( sanitize_text_field( $flag_data ) );
+                                    if ( $trimmed_flag !== '' ) {
+                                        $sanitized_set_flags[] = $trimmed_flag;
+                                    }
+                                } elseif ( is_array( $flag_data ) && isset( $flag_data['name'] ) ) {
+                                    // 新形式（オブジェクト）: nameが空でない場合のみ保存
+                                    $trimmed_name = trim( sanitize_text_field( $flag_data['name'] ) );
+                                    if ( $trimmed_name !== '' ) {
+                                        $sanitized_flag_obj = array(
+                                            'name' => $trimmed_name,
+                                            'state' => isset( $flag_data['state'] ) ? (bool) $flag_data['state'] : true
+                                        );
+                                        $sanitized_set_flags[] = $sanitized_flag_obj;
+                                    }
+                                }
+                            }
+                            $sanitized_choice['setFlags'] = $sanitized_set_flags;
+                        }
+                        
+                        $sanitized_choices[] = $sanitized_choice;
+                    }
+                }
+                
+                // サニタイズ済みデータをJSON形式で保存
+                update_post_meta( $post_id, '_choices', wp_json_encode( $sanitized_choices, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+            } else {
+                // JSON形式でない場合は従来通りの処理
+                $value = sanitize_textarea_field( $choices_data );
+                update_post_meta( $post_id, '_choices', $value );
+            }
+        } elseif ( is_array( $choices_data ) ) {
+            // 配列の場合は直接サニタイズ（通常は発生しない）
+            $value = sanitize_textarea_field( wp_json_encode( $choices_data ) );
+            update_post_meta( $post_id, '_choices', $value );
+        }
+    }
+
     foreach ( $fields as $field => $meta_key ) {
         if ( isset( $_POST[ $field ] ) ) {
             $value = wp_unslash( $_POST[ $field ] );
 
+            // choicesフィールドは上で専用処理済みなのでスキップ
+            if ( $field === 'choices' ) {
+                continue;
+            }
+
             // サニタイズ処理
-            if ( in_array( $field, array( 'dialogue_text', 'choices' ), true ) ) {
+            if ( in_array( $field, array( 'dialogue_text' ), true ) ) {
                 $value = sanitize_textarea_field( $value );
             } else {
                 $value = sanitize_text_field( $value );

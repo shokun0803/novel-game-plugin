@@ -3,7 +3,7 @@
  * Plugin Name: Novel Game Plugin
  * Plugin URI: https://github.com/shokun0803/novel-game-plugin
  * Description: WordPressでノベルゲームを作成できるプラグイン。
- * Version: 1.1.0
+ * Version: 1.1.2
  * Author: Your Name
  * Author URI: https://github.com/shokun0803
  * Text Domain: novel-game-plugin
@@ -22,7 +22,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // プラグインの基本定数を定義
 if ( ! defined( 'NOVEL_GAME_PLUGIN_VERSION' ) ) {
-    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.1.0' );
+    // キャッシュ更新のためバージョンを更新
+    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.1.2' );
 }
 if ( ! defined( 'NOVEL_GAME_PLUGIN_URL' ) ) {
     define( 'NOVEL_GAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -261,7 +262,167 @@ function noveltool_delete_game( $game_id ) {
         }
     }
     
+    // ゲーム削除時にフラグマスタも削除
+    delete_option( 'noveltool_game_flags_' . $game_id );
+    
     return update_option( 'noveltool_games', $filtered_games );
+}
+
+/**
+ * ゲームのフラグマスタを取得する関数
+ *
+ * @param string $game_title ゲームタイトル
+ * @return array フラグマスタ配列
+ * @since 1.2.0
+ */
+function noveltool_get_game_flag_master( $game_title ) {
+    if ( ! $game_title ) {
+        return array();
+    }
+    
+    // ゲームIDを取得
+    $game_id = noveltool_get_game_id_by_title( $game_title );
+    if ( ! $game_id ) {
+        return array();
+    }
+    
+    $flag_master = get_option( 'noveltool_game_flags_' . $game_id, array() );
+    
+    // データの整合性チェック
+    if ( ! is_array( $flag_master ) ) {
+        return array();
+    }
+    
+    return $flag_master;
+}
+
+/**
+ * ゲームのフラグマスタを保存する関数
+ *
+ * @param string $game_title ゲームタイトル
+ * @param array $flag_master フラグマスタ配列
+ * @return bool 保存成功の場合true
+ * @since 1.2.0
+ */
+function noveltool_save_game_flag_master( $game_title, $flag_master ) {
+    if ( ! $game_title || ! is_array( $flag_master ) ) {
+        return false;
+    }
+    
+    // ゲームIDを取得
+    $game_id = noveltool_get_game_id_by_title( $game_title );
+    if ( ! $game_id ) {
+        return false;
+    }
+    
+    // フラグマスタデータの検証とサニタイズ
+    $sanitized_flags = array();
+    foreach ( $flag_master as $flag ) {
+        if ( isset( $flag['id'], $flag['name'] ) ) {
+            $sanitized_flags[] = array(
+                'id'          => intval( $flag['id'] ),
+                'name'        => sanitize_text_field( $flag['name'] ),
+                'description' => isset( $flag['description'] ) ? sanitize_text_field( $flag['description'] ) : '',
+            );
+        }
+    }
+    
+    return update_option( 'noveltool_game_flags_' . $game_id, $sanitized_flags );
+}
+
+/**
+ * ゲームタイトルからゲームIDを取得する関数
+ *
+ * @param string $game_title ゲームタイトル
+ * @return int|null ゲームID
+ * @since 1.2.0
+ */
+function noveltool_get_game_id_by_title( $game_title ) {
+    if ( ! $game_title ) {
+        return null;
+    }
+    
+    $games = noveltool_get_all_games();
+    foreach ( $games as $game ) {
+        if ( $game['title'] === $game_title ) {
+            return $game['id'];
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * ゲームにフラグを追加する関数
+ *
+ * @param string $game_title ゲームタイトル
+ * @param string $flag_name フラグ名
+ * @param string $flag_description フラグの説明
+ * @return bool 追加成功の場合true
+ * @since 1.2.0
+ */
+function noveltool_add_game_flag( $game_title, $flag_name, $flag_description = '' ) {
+    if ( ! $game_title || ! $flag_name ) {
+        return false;
+    }
+    
+    $flag_master = noveltool_get_game_flag_master( $game_title );
+    
+    // 既存のフラグ名が重複していないかチェック
+    foreach ( $flag_master as $flag ) {
+        if ( $flag['name'] === $flag_name ) {
+            return false; // 重複エラー
+        }
+    }
+    
+    // 新しいIDを生成（最大ID + 1）
+    $max_id = -1;
+    foreach ( $flag_master as $flag ) {
+        $max_id = max( $max_id, $flag['id'] );
+    }
+    
+    $new_flag = array(
+        'id'          => $max_id + 1,
+        'name'        => sanitize_text_field( $flag_name ),
+        'description' => sanitize_text_field( $flag_description ),
+    );
+    
+    $flag_master[] = $new_flag;
+    
+    return noveltool_save_game_flag_master( $game_title, $flag_master );
+}
+
+/**
+ * ゲームからフラグを削除する関数
+ *
+ * @param string $game_title ゲームタイトル
+ * @param string $flag_name フラグ名
+ * @return bool 削除成功の場合true
+ * @since 1.2.0
+ */
+function noveltool_remove_game_flag( $game_title, $flag_name ) {
+    if ( ! $game_title || ! $flag_name ) {
+        return false;
+    }
+    
+    $flag_master = noveltool_get_game_flag_master( $game_title );
+    
+    $new_flag_master = array();
+    $found = false;
+    
+    foreach ( $flag_master as $flag ) {
+        if ( $flag['name'] !== $flag_name ) {
+            $new_flag_master[] = $flag;
+        } else {
+            $found = true;
+        }
+    }
+    
+    if ( ! $found ) {
+        return false; // フラグが見つからない
+    }
+    
+    return noveltool_save_game_flag_master( $game_title, $new_flag_master );
 }
 
 
@@ -379,30 +540,124 @@ function noveltool_filter_novel_game_content( $content ) {
     // セリフ話者の処理（既に上で処理済み）
     // $dialogue_speakers_array は既に定義済み
     
+    // セリフフラグ条件データの取得
+    $dialogue_flag_conditions = get_post_meta( $post->ID, '_dialogue_flag_conditions', true );
+    if ( ! is_array( $dialogue_flag_conditions ) ) {
+        $dialogue_flag_conditions = array();
+    }
+    
     // セリフと背景と話者を組み合わせた配列を作成
     $dialogue_data = array();
     foreach ( $dialogue_lines as $index => $line ) {
-        $dialogue_data[] = array(
+        $dialogue_item = array(
             'text' => $line,
             'background' => isset( $dialogue_backgrounds_array[ $index ] ) ? $dialogue_backgrounds_array[ $index ] : '',
             'speaker' => isset( $dialogue_speakers_array[ $index ] ) ? $dialogue_speakers_array[ $index ] : ''
         );
+        
+        // フラグ条件データがある場合は追加
+        if ( isset( $dialogue_flag_conditions[ $index ] ) && is_array( $dialogue_flag_conditions[ $index ] ) ) {
+            $flag_condition = $dialogue_flag_conditions[ $index ];
+            
+            $dialogue_item['flagConditions'] = isset( $flag_condition['conditions'] ) ? $flag_condition['conditions'] : array();
+            $dialogue_item['flagConditionLogic'] = isset( $flag_condition['logic'] ) ? $flag_condition['logic'] : 'AND';
+            $dialogue_item['displayMode'] = isset( $flag_condition['displayMode'] ) ? $flag_condition['displayMode'] : 'normal';
+        } else {
+            // デフォルト値
+            $dialogue_item['flagConditions'] = array();
+            $dialogue_item['flagConditionLogic'] = 'AND';
+            $dialogue_item['displayMode'] = 'normal';
+        }
+        
+        $dialogue_data[] = $dialogue_item;
     }
 
-    // 選択肢の処理
+    // 選択肢の処理（JSON形式とレガシー形式の両方に対応）
     $choices = array();
     if ( $choices_raw ) {
-        foreach ( explode( "\n", $choices_raw ) as $line ) {
-            $parts = explode( '|', $line );
-            if ( count( $parts ) === 2 ) {
-                $post_id   = intval( trim( $parts[1] ) );
-                $permalink = get_permalink( $post_id );
+        // JSON形式を試行
+        $json_choices = json_decode( $choices_raw, true );
+        if ( json_last_error() === JSON_ERROR_NONE && is_array( $json_choices ) ) {
+            // JSON形式の場合
+            foreach ( $json_choices as $choice_data ) {
+                if ( isset( $choice_data['text'], $choice_data['next'] ) ) {
+                    $post_id = intval( $choice_data['next'] );
+                    $permalink = get_permalink( $post_id );
+                    
+                    if ( $permalink ) {
+                        $choice_item = array(
+                            'text' => sanitize_text_field( $choice_data['text'] ),
+                            'nextScene' => $permalink,
+                        );
+                        
+                        // フラグ条件がある場合はサニタイズして追加（name/state のみ許可）
+                        if ( isset( $choice_data['flagConditions'] ) && is_array( $choice_data['flagConditions'] ) ) {
+                            $sanitized_conditions = array();
+                            foreach ( $choice_data['flagConditions'] as $condition ) {
+                                if ( is_array( $condition ) && isset( $condition['name'] ) ) {
+                                    $name = trim( sanitize_text_field( $condition['name'] ) );
+                                    if ( $name !== '' ) {
+                                        $sanitized_conditions[] = array(
+                                            'name'  => $name,
+                                            'state' => isset( $condition['state'] ) ? (bool) $condition['state'] : true,
+                                        );
+                                    }
+                                }
+                            }
+                            if ( ! empty( $sanitized_conditions ) ) {
+                                $choice_item['flagConditions'] = $sanitized_conditions;
+                            } else {
+                                $choice_item['flagConditions'] = array();
+                            }
+                        }
+                        
+                        // フラグ条件ロジックがある場合は追加
+                        if ( isset( $choice_data['flagConditionLogic'] ) ) {
+                            $choice_item['flagConditionLogic'] = sanitize_text_field( $choice_data['flagConditionLogic'] );
+                        }
+                        
+                        // 設定フラグがある場合はサニタイズして追加（新旧両形式対応）
+                        if ( isset( $choice_data['setFlags'] ) && is_array( $choice_data['setFlags'] ) ) {
+                            $sanitized_set_flags = array();
+                            foreach ( $choice_data['setFlags'] as $flag_data ) {
+                                if ( is_string( $flag_data ) ) {
+                                    // 旧形式: "flagName"（常にON）
+                                    $name = trim( sanitize_text_field( $flag_data ) );
+                                    if ( $name !== '' ) {
+                                        $sanitized_set_flags[] = $name; // 旧形式は文字列のまま（フロントでtrue扱い）
+                                    }
+                                } elseif ( is_array( $flag_data ) && isset( $flag_data['name'] ) ) {
+                                    // 新形式: { name: string, state: bool }
+                                    $name = trim( sanitize_text_field( $flag_data['name'] ) );
+                                    if ( $name !== '' ) {
+                                        $sanitized_set_flags[] = array(
+                                            'name'  => $name,
+                                            'state' => isset( $flag_data['state'] ) ? (bool) $flag_data['state'] : true,
+                                        );
+                                    }
+                                }
+                            }
+                            $choice_item['setFlags'] = $sanitized_set_flags;
+                        }
+                        
+                        $choices[] = $choice_item;
+                    }
+                }
+            }
+        } else {
+            // レガシー形式（"テキスト | 投稿ID" の行形式）
+            foreach ( explode( "\n", $choices_raw ) as $line ) {
+                $parts = explode( '|', $line );
+                if ( count( $parts ) === 2 ) {
+                    $post_id   = intval( trim( $parts[1] ) );
+                    $permalink = get_permalink( $post_id );
 
-                if ( $permalink ) {
-                    $choices[] = array(
-                        'text'      => trim( $parts[0] ),
-                        'nextScene' => $permalink,
-                    );
+                    if ( $permalink ) {
+                        $choices[] = array(
+                            'text'      => trim( $parts[0] ),
+                            'nextScene' => $permalink,
+                        );
+                    }
                 }
             }
         }
@@ -490,11 +745,11 @@ function noveltool_filter_novel_game_content( $content ) {
                 <div id="novel-choices" class="novel-choices"></div>
 
                 <script id="novel-dialogue-data" type="application/json">
-                    <?php echo wp_json_encode( $dialogue_data, JSON_UNESCAPED_UNICODE ); ?>
+                    <?php echo wp_json_encode( $dialogue_data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
                 </script>
                 
                 <script id="novel-base-background" type="application/json">
-                    <?php echo wp_json_encode( $background, JSON_UNESCAPED_UNICODE ); ?>
+                    <?php echo wp_json_encode( $background, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
                 </script>
                 
                 <script id="novel-characters-data" type="application/json">
@@ -506,19 +761,37 @@ function noveltool_filter_novel_game_content( $content ) {
                         'left_name' => $character_left_name,
                         'center_name' => $character_center_name,
                         'right_name' => $character_right_name,
-                    ), JSON_UNESCAPED_UNICODE ); ?>
+                    ), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
                 </script>
 
                 <script id="novel-choices-data" type="application/json">
-                    <?php echo wp_json_encode( $choices, JSON_UNESCAPED_UNICODE ); ?>
+                    <?php echo wp_json_encode( $choices, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
                 </script>
                 
                 <script id="novel-ending-data" type="application/json">
-                    <?php echo wp_json_encode( (bool) $is_ending, JSON_UNESCAPED_UNICODE ); ?>
+                    <?php echo wp_json_encode( (bool) $is_ending, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
                 </script>
 
                 <script id="novel-ending-text" type="application/json">
-                    <?php echo wp_json_encode( $ending_text ? $ending_text : 'おわり', JSON_UNESCAPED_UNICODE ); ?>
+                    <?php echo wp_json_encode( $ending_text ? $ending_text : 'おわり', JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>
+                </script>
+
+                <script id="novel-scene-arrival-flags" type="application/json">
+                    <?php 
+                    // シーン到達時フラグの取得
+                    $scene_arrival_flags = get_post_meta( $post->ID, '_scene_arrival_flags', true );
+                    if ( ! is_array( $scene_arrival_flags ) ) {
+                        $scene_arrival_flags = array();
+                    }
+                    
+                    // フラグ名をキーとしたフラグ設定オブジェクトに変換
+                    $scene_flags_object = array();
+                    foreach ( $scene_arrival_flags as $flag_name ) {
+                        $scene_flags_object[ $flag_name ] = true; // フラグをONに設定
+                    }
+                    
+                    echo wp_json_encode( $scene_flags_object, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); 
+                    ?>
                 </script>
 
                 <script id="novel-game-over-text" type="application/json">
@@ -531,7 +804,18 @@ function noveltool_filter_novel_game_content( $content ) {
                             $game_over_text = $game_data['game_over_text'];
                         }
                     }
-                    echo wp_json_encode( $game_over_text, JSON_UNESCAPED_UNICODE ); 
+                    echo wp_json_encode( $game_over_text, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); 
+                    ?>
+                </script>
+
+                <script id="novel-flag-master" type="application/json">
+                    <?php 
+                    // フラグマスタデータをフロントエンドに渡す
+                    $flag_master_data = array();
+                    if ( $game_title ) {
+                        $flag_master_data = noveltool_get_game_flag_master( $game_title );
+                    }
+                    echo wp_json_encode( $flag_master_data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); 
                     ?>
                 </script>
             </div>
