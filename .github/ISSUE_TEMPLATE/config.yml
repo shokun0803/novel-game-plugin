@@ -1,0 +1,9 @@
+# GitHub Issue templates configuration
+# 空の Issue 作成を禁止し、テンプレート利用を促す
+blank_issues_enabled: false
+
+# 必要に応じて問い合わせリンクを追加できます（任意）
+# contact_links:
+#   - name: 運用ポリシー（ブランチ/PR）
+#     url: https://github.com/shokun0803/novel-game-plugin/blob/master/.github/copilot-instructions.md
+#     about: 本リポジトリのPR運用・コーディング規約の確認はこちら
