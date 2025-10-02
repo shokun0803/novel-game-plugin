@@ -1,0 +1,71 @@
+name: 機能追加（フラグ分岐など）
+description: 添付の様式に沿って新しい機能要望を作成します
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        以下のフォームに沿って、必要事項をすべて日本語で記入してください。
+        すべての PR は base: dev を必須とします。タイトル・概要の後追い変更は行わないでください。
+  - type: input
+    id: title
+    attributes:
+      label: タイトル
+      description: 例）フラグによる分岐機能の追加
+      placeholder: フラグによる分岐機能の追加
+    validations:
+      required: true
+  - type: textarea
+    id: overview
+    attributes:
+      label: 概要
+      description: 概要を具体的に記述してください
+      placeholder: |
+        特定のシーン到達時に Cookie 等を使ってフラグを保存し、他のシーンや選択肢でフラグの有無によって表示・非表示を分岐できる機能を追加してください。フラグ情報は WordPress 側ではなく、ユーザー個別のブラウザ内で保持します。投稿編集画面でシーン到達時に設定するフラグ、分岐条件（AND/OR 論理判定）を設定できるようにしてください。
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: 要件
+      description: 箇条書きで記述してください
+      placeholder: |
+        - シーン到達時にフラグを localStorage で保存
+        - 他のシーンや選択肢でフラグ有無により表示制御
+        - フラグは WordPress 側には保存しない
+        - 投稿編集画面でフラグ設定／分岐条件（AND/OR）の指定が可能
+        - 分岐条件は複数フラグの論理判定（AND/OR）に対応
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: チェックリスト
+      options:
+        - label: シーン到達時のフラグ保存機能を実装
+        - label: フラグの有無による分岐制御機能を実装
+        - label: 投稿編集画面でフラグ設定 UI を追加
+        - label: 投稿編集画面で分岐条件（AND/OR）指定 UI を追加
+        - label: フラグ情報はブラウザ内のみ保持（WordPress 側保存なし）
+        - label: AND/OR 複数条件分岐の動作検証
+    validations:
+      required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: 重要事項
+      description: 運用上の注意点を記載してください
+      placeholder: |
+        - /.github/copilot-instructions.md の指示に基づく運用を コメントによる追加修正時でも 徹底
+        - タイトルや概要、コメントはルールに則り 日本語 で投稿
+        - 一度作成したプルリクエストのタイトルや概要の内容を追加修正に伴って変更することは 絶対に行わない
+        - プルリクエストの機能追加、バグ修正に伴って正常動作している機能を損なわないように 細心の注意 を払う
+    validations:
+      required: false
+  - type: textarea
+    id: reference
+    attributes:
+      label: 参考
+      description: 関連仕様/資料があれば記載してください
+      placeholder: |
+        - ノベルゲーム仕様（「かまいたちの夜」等）
