@@ -1,36 +1,31 @@
-<!-- I want to review in Japanese. --><!-- I want to review in Japanese. -->
+<!-- I want to review in Japanese. -->
 
+## 内容
+xxxの改修をしました。
 
+## 動作確認項目
+- [x] xxxxxx
 
-## 内容## 内容
+## 重要事項（固定）
+- PR の base は dev（master 直は不可）
+- タイトルや概要、コメントはルールに則り日本語で記載
+- 一度作成したPRのタイトル/概要は後追い変更しない
+- リポジトリ運用規約: .github/copilot-instructions.md
 
-xxxの改修をしました。xxxの改修をしました。
+## チェックリスト（必須・都度作成）
+<!-- このPRの内容に応じて具体的な確認項目を記載してください -->
+- [ ]
 
+<!-- for GitHub Copilot review rule -->
+<!--
+レビューする際には、以下のprefix(接頭辞)をつけてください
 
-
-## 動作確認項目## 動作確認項目
-
-- [x] xxxxxx- [x] xxxxxx
-
-
-
-<!-- for GitHub Copilot review rule --><!-- for GitHub Copilot review rule -->
-
-<!--<!--
-
-レビューする際には、以下のprefix(接頭辞)をつけてくださいレビューする際には、以下のprefix(接頭辞)をつけてください
-
-[must][must]
-
-[imo] (in my opinion)[imo] (in my opinion)
-
-[nits] (nitpick)[nits] (nitpick)
-
-[ask][ask]
-
-[fyi][fyi]
-
--->-->
+[must]
+[imo] (in my opinion)
+[nits] (nitpick)
+[ask]
+[fyi]
+-->
 
 <!--
 複数テンプレート運用中です。用途に応じて以下も利用できます：
