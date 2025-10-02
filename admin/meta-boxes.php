@@ -1376,73 +1376,11 @@ function noveltool_save_revision_meta( $revision_id ) {
         $meta_value = get_post_meta( $parent_id, $meta_key, true );
         
         if ( false !== $meta_value ) {
-            add_metadata( 'post', $revision_id, $meta_key, $meta_value );
+            update_metadata( 'post', $revision_id, $meta_key, $meta_value );
         }
     }
 }
-add_action( 'wp_insert_post_data', 'noveltool_save_revision_meta_on_insert', 10, 2 );
-
-/**
- * 投稿データ挿入時にリビジョンメタを保存（wp_insert_post_data用）
- *
- * @param array $data    投稿データ配列
- * @param array $postarr 投稿データ配列（元の）
- * @return array 投稿データ配列
- * @since 1.2.0
- */
-function noveltool_save_revision_meta_on_insert( $data, $postarr ) {
-    // リビジョンの場合のみ処理
-    if ( 'revision' === $data['post_type'] && isset( $postarr['post_parent'] ) ) {
-        // post_parentのメタデータを保存するためにadd_actionで後処理を登録
-        $post_parent = $postarr['post_parent'];
-        
-        add_action( 'save_post', function( $post_id ) use ( $post_parent ) {
-            $post = get_post( $post_id );
-            if ( ! $post || 'revision' !== $post->post_type ) {
-                return;
-            }
-            
-            // 親投稿のタイプをチェック
-            $parent = get_post( $post_parent );
-            if ( ! $parent || 'novel_game' !== $parent->post_type ) {
-                return;
-            }
-            
-            // リビジョンに保存するカスタムメタフィールドのリスト
-            $meta_keys = array(
-                '_background_image',
-                '_character_image',
-                '_character_left',
-                '_character_center',
-                '_character_right',
-                '_character_left_name',
-                '_character_center_name',
-                '_character_right_name',
-                '_dialogue_text',
-                '_dialogue_texts',
-                '_dialogue_speakers',
-                '_dialogue_backgrounds',
-                '_dialogue_flag_conditions',
-                '_choices',
-                '_game_title',
-                '_is_ending',
-                '_ending_text',
-                '_scene_arrival_flags',
-            );
-            
-            // 各メタフィールドをリビジョンにコピー
-            foreach ( $meta_keys as $meta_key ) {
-                $meta_value = get_post_meta( $post_parent, $meta_key, true );
-                
-                if ( false !== $meta_value ) {
-                    update_metadata( 'post', $post_id, $meta_key, $meta_value );
-                }
-            }
-        }, 10, 1 );
-    }
-    
-    return $data;
-}
+add_action( 'save_post', 'noveltool_save_revision_meta' );
 
 /**
  * リビジョン復元時にカスタムメタフィールドを復元
