@@ -480,12 +480,35 @@ jQuery( function( $ ) {
 			var jsonData = JSON.parse( str );
 			if ( Array.isArray( jsonData ) ) {
 				return jsonData.map( function( item ) {
+					// setFlagsのクリーンアップ（空文字列や無効データを除去）
+					var cleanSetFlags = [];
+					if ( item.setFlags && Array.isArray( item.setFlags ) ) {
+						item.setFlags.forEach( function( flagData ) {
+							if ( typeof flagData === 'string' ) {
+								// 旧形式：空文字列を除外
+								var trimmedFlag = flagData.trim();
+								if ( trimmedFlag !== '' ) {
+									cleanSetFlags.push( trimmedFlag );
+								}
+							} else if ( typeof flagData === 'object' && flagData.name ) {
+								// 新形式：nameが空でない場合のみ保持
+								var trimmedName = flagData.name.trim();
+								if ( trimmedName !== '' ) {
+									cleanSetFlags.push( {
+										name: trimmedName,
+										state: flagData.state || false
+									} );
+								}
+							}
+						} );
+					}
+					
 					return {
 						text: item.text || '',
 						next: item.next || '',
 						flagConditions: item.flagConditions || [],
 						flagConditionLogic: item.flagConditionLogic || 'AND',
-						setFlags: item.setFlags || []
+						setFlags: cleanSetFlags
 					};
 				} );
 			}
@@ -580,15 +603,45 @@ jQuery( function( $ ) {
 			$row.append( $flagConditionsCell );
 
 			// フラグ設定UI
-			var $flagSetCell = $( '<td style="min-width: 150px;"></td>' );
+			var $flagSetCell = $( '<td style="min-width: 180px;"></td>' );
 			var $flagSetContainer = $( '<div class="flag-set-container"></div>' );
 			
-			// フラグ設定選択（複数選択可能）
+			// フラグ設定選択（ON/OFF/設定しない）
 			if ( novelGameFlagData && novelGameFlagData.flagMaster && Array.isArray( novelGameFlagData.flagMaster ) ) {
 				novelGameFlagData.flagMaster.forEach( function( flag ) {
-					var checked = ( choice.setFlags && choice.setFlags.includes( flag.name ) ) ? ' checked' : '';
-					var $checkbox = $( '<label style="display: block; font-size: 11px;"><input type="checkbox" class="flag-set-checkbox" value="' + flag.name + '"' + checked + '> ' + flag.name + '</label>' );
-					$flagSetContainer.append( $checkbox );
+					// 現在の設定値を取得（新旧両形式対応）
+					var currentSetting = 'none'; // デフォルトは「設定しない」
+					if ( choice.setFlags && Array.isArray( choice.setFlags ) ) {
+						choice.setFlags.forEach( function( flagData ) {
+							if ( typeof flagData === 'object' && flagData.name === flag.name ) {
+								// 新形式: { name: "flag1", state: true/false }
+								currentSetting = flagData.state ? 'on' : 'off';
+							} else if ( typeof flagData === 'string' && flagData === flag.name ) {
+								// 旧形式: "flag1" (常にON扱い)
+								currentSetting = 'on';
+							}
+						} );
+					}
+					
+					var $flagRow = $( '<div style="display: flex; align-items: center; margin-bottom: 4px; font-size: 11px;"></div>' );
+					var $flagLabel = $( '<span style="min-width: 60px; margin-right: 8px;">' + flag.name + ':</span>' );
+					var $flagSelect = $( '<select class="flag-set-select" data-flag-name="' + flag.name + '" style="font-size: 11px; padding: 1px 2px;">' +
+						'<option value="none"' + (currentSetting === 'none' ? ' selected' : '') + '>設定しない</option>' +
+						'<option value="on"' + (currentSetting === 'on' ? ' selected' : '') + '>ON</option>' +
+						'<option value="off"' + (currentSetting === 'off' ? ' selected' : '') + '>OFF</option>' +
+						'</select>' );
+					
+					// フラグ設定変更時のデバッグログ
+					$flagSelect.on( 'change', function() {
+						var flagName = $( this ).data( 'flag-name' );
+						var newValue = $( this ).val();
+						console.log( 'フラグ設定変更:', flagName, '→', newValue );
+						// 選択肢データの自動更新をトリガー
+						setTimeout( updateChoicesHidden, 10 );
+					} );
+					
+					$flagRow.append( $flagLabel ).append( $flagSelect );
+					$flagSetContainer.append( $flagRow );
 				} );
 			}
 			
@@ -683,10 +736,20 @@ jQuery( function( $ ) {
 					}
 				} );
 				
-				// フラグ設定を収集
+				// フラグ設定を収集（新形式: ON/OFF/設定しない）
 				var setFlags = [];
-				$row.find( '.flag-set-checkbox:checked' ).each( function() {
-					setFlags.push( $( this ).val() );
+				$row.find( '.flag-set-select' ).each( function() {
+					var $select = $( this );
+					var flagName = $select.data( 'flag-name' );
+					var flagSetting = $select.val();
+					
+					if ( flagName && flagSetting !== 'none' ) {
+						// 新形式: { name: "flag1", state: true/false }
+						setFlags.push( {
+							name: flagName,
+							state: flagSetting === 'on'
+						} );
+					}
 				} );
 				
 				// フラグ条件ロジック

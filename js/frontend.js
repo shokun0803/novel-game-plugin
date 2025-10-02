@@ -459,18 +459,17 @@
 			}
 			
 			try {
-				// サイトのホスト名とパスを取得
-				var hostname = window.location.hostname || 'localhost';
-				var pathname = window.location.pathname || '/';
-				
-				// ホスト名とパスからディレクトリ部分を抽出
-				var pathDir = pathname.substring( 0, pathname.lastIndexOf( '/' ) + 1 );
-				var siteId = hostname + pathDir;
+				// これまでの実装では location.pathname のディレクトリ単位まで含めていたため、
+				// シーンURLごとにキーが変わり、シーン跨ぎでフラグが共有されない不具合が発生していた。
+				// 根本対策として、ホスト名のみ（= サイト単位）でキーを安定化させる。
+				var protocol = window.location.protocol || 'http:';
+				var host = window.location.host || window.location.hostname || 'localhost';
+				var siteId = protocol + '//' + host; // パスを含めない
 				
 				// ゲームタイトルをBase64エンコードして安全な文字列に変換
 				var encodedTitle = btoa( unescape( encodeURIComponent( gameTitle ) ) ).replace( /[^a-zA-Z0-9]/g, '' );
 				
-				// サイトIDもBase64エンコードして安全な文字列に変換
+				// サイトIDもBase64エンコードして安全な文字列に変換（ホスト名ベース）
 				var encodedSiteId = btoa( unescape( encodeURIComponent( siteId ) ) ).replace( /[^a-zA-Z0-9]/g, '' );
 				
 				return 'novel_flags_' + encodedSiteId + '_' + encodedTitle;
@@ -572,7 +571,8 @@
 						continue;
 					}
 					
-					var currentState = currentFlags[ flagId ] || 0;
+					var rawState = currentFlags[ flagId ];
+					var currentState = (rawState === 0 || rawState === 1) ? rawState : 0; // 未設定(undefined)は0扱い
 					var requiredState = flag.state ? 1 : 0;
 					var isMatch = currentState === requiredState;
 					
@@ -580,6 +580,7 @@
 						name: flag.name,
 						id: flagId,
 						currentState: currentState,
+						rawState: rawState,
 						requiredState: requiredState,
 						isMatch: isMatch
 					});
@@ -631,6 +632,32 @@
 				
 				var storageKey = generateFlagStorageKey( gameTitle );
 				var flagsStr = localStorage.getItem( storageKey );
+				
+				// 互換: 旧キー（パスを含むキー）からの移行対応
+				if ( ! flagsStr ) {
+					try {
+						// 旧キーは location.pathname のディレクトリに依存していたため、
+						// 現在のlocalStorage内から該当ゲームタイトルのキーを走査して検出・移行する。
+						var encodedTitle = btoa( unescape( encodeURIComponent( gameTitle ) ) ).replace( /[^a-zA-Z0-9]/g, '' );
+						var suffix = '_' + encodedTitle;
+						for ( var i = 0; i < localStorage.length; i++ ) {
+							var key = localStorage.key( i );
+							if ( key && key.indexOf( 'novel_flags_' ) === 0 && key.endsWith( suffix ) ) {
+								var legacyStr = localStorage.getItem( key );
+								if ( legacyStr ) {
+									// 新キーへ移行
+									localStorage.setItem( storageKey, legacyStr );
+									flagsStr = legacyStr;
+									// 旧データは残しても害はないが、混乱防止のため削除
+									try { localStorage.removeItem( key ); } catch (e) {}
+									break;
+								}
+							}
+						}
+					} catch (e) {
+						console.warn( '旧フラグキーからの移行に失敗:', e );
+					}
+				}
 				var flags = {};
 				
 				if ( flagsStr ) {
@@ -708,15 +735,20 @@
 		 */
 		function getFlagIdByName( flagName, flagMaster ) {
 			if ( ! flagName || ! flagMaster || ! Array.isArray( flagMaster ) ) {
+				debugLog( 'getFlagIdByName: 無効な引数', { flagName: flagName, flagMaster: flagMaster } );
 				return null;
 			}
 			
+			debugLog( 'getFlagIdByName: フラグ名検索', flagName, 'マスタ内容:', flagMaster );
+			
 			for ( var i = 0; i < flagMaster.length; i++ ) {
 				if ( flagMaster[ i ].name === flagName ) {
+					debugLog( 'getFlagIdByName: フラグ見つかった', flagName, '-> ID:', flagMaster[ i ].id );
 					return flagMaster[ i ].id;
 				}
 			}
 			
+			debugLog( 'getFlagIdByName: フラグが見つかりません', flagName );
 			return null;
 		}
 
@@ -2455,15 +2487,28 @@
 			}
 
 			// 最大4つの選択肢に制限する前に、フラグ条件でフィルタリング
+			debugLog( '選択肢フィルタリング開始 - 全選択肢:', choices.length );
 			var filteredChoices = [];
-			choices.forEach( function( choice ) {
+			choices.forEach( function( choice, choiceIndex ) {
+				debugLog( '選択肢[' + choiceIndex + ']チェック:', choice.text, 'フラグ条件:', choice.flagConditions );
 				// フラグ条件をチェック
-				if ( checkChoiceFlagConditions( choice ) ) {
+				var conditionResult = checkChoiceFlagConditions( choice );
+				debugLog( '選択肢[' + choiceIndex + ']結果:', conditionResult );
+				if ( conditionResult ) {
 					filteredChoices.push( choice );
 				}
 			} );
 			
+			debugLog( 'フィルタリング結果:', filteredChoices.length, '件の選択肢が条件を満たしています' );
 			const displayChoices = filteredChoices.slice( 0, 4 );
+			
+			if ( displayChoices.length === 0 ) {
+				debugLog( '表示可能な選択肢がありません。Game Overを表示します。' );
+				debugLog( '元の選択肢数:', choices.length );
+				debugLog( '現在のフラグ状態:', currentGameTitle ? getGameFlags( currentGameTitle ) : 'ゲームタイトル未設定' );
+				showGameOver();
+				return;
+			}
 			
 			$choicesContainer.empty();
 			
@@ -2514,16 +2559,40 @@
 					
 					// 選択肢に設定されたフラグを処理
 					var selectedChoice = displayChoices[ index ];
+					var choiceFlagsToApply = {}; // 選択肢フラグを一時保存
+					debugLog( '選択肢データ詳細:', selectedChoice );
 					if ( selectedChoice && selectedChoice.setFlags && selectedChoice.setFlags.length > 0 ) {
+						debugLog( 'setFlagsデータ:', selectedChoice.setFlags );
 						// フラグ設定オブジェクトを作成
 						var flagsToSet = {};
-						selectedChoice.setFlags.forEach( function( flagName ) {
-							flagsToSet[ flagName ] = true; // フラグをONに設定
+						selectedChoice.setFlags.forEach( function( flagData, dataIndex ) {
+							debugLog( 'フラグデータ[' + dataIndex + ']:', flagData, 'type:', typeof flagData );
+							// 新形式（オブジェクト）と旧形式（文字列）の両方に対応
+							if ( typeof flagData === 'object' && flagData.name ) {
+								// 新形式: { name: "flag1", state: true/false }
+								if ( flagData.name.trim() !== '' ) { // 空文字列チェック追加
+									flagsToSet[ flagData.name ] = flagData.state;
+									choiceFlagsToApply[ flagData.name ] = flagData.state; // 後で再適用するため保存
+									debugLog( 'フラグ設定（新形式）:', flagData.name, '=', flagData.state );
+								} else {
+									debugLog( 'フラグ名が空のため無視:', flagData );
+								}
+							} else if ( typeof flagData === 'string' ) {
+								// 旧形式: "flag1" (常にON)
+								if ( flagData.trim() !== '' ) { // 空文字列チェック追加
+									flagsToSet[ flagData ] = true;
+									choiceFlagsToApply[ flagData ] = true; // 後で再適用するため保存
+									debugLog( 'フラグ設定（旧形式）:', flagData, '= true' );
+								} else {
+									debugLog( 'フラグ名が空のため無視:', flagData );
+								}
+							}
 						} );
 						
 						// フラグを設定
-						if ( currentGameTitle ) {
+						if ( currentGameTitle && Object.keys( flagsToSet ).length > 0 ) {
 							setSceneFlags( flagsToSet, currentGameTitle );
+							debugLog( '選択肢フラグ設定完了:', flagsToSet );
 						}
 					}
 					
@@ -2540,6 +2609,12 @@
 					
 					// 3. 新しいシーンのデータを読み込み
 					loadGameData( nextScene ).then( function() {
+						// 選択肢で設定したフラグを再適用（シーン到達時フラグによる上書きを防ぐ）
+						if ( currentGameTitle && Object.keys( choiceFlagsToApply ).length > 0 ) {
+							setSceneFlags( choiceFlagsToApply, currentGameTitle );
+							debugLog( '選択肢フラグ再適用完了:', choiceFlagsToApply );
+						}
+						
 						// 4. シーン遷移後の進捗を保存（dialogueData が空の場合は保存しない）
 						if ( dialogueData && dialogueData.length > 0 ) {
 							autoSaveGameProgress();

@@ -1233,12 +1233,26 @@ function noveltool_save_meta_box_data( $post_id ) {
                             $sanitized_choice['flagConditionLogic'] = sanitize_text_field( $choice_data['flagConditionLogic'] );
                         }
                         
-                        // 設定フラグデータのサニタイズ
+                        // 設定フラグデータのサニタイズ（新旧両形式対応）
                         if ( isset( $choice_data['setFlags'] ) && is_array( $choice_data['setFlags'] ) ) {
                             $sanitized_set_flags = array();
-                            foreach ( $choice_data['setFlags'] as $flag_name ) {
-                                if ( is_string( $flag_name ) ) {
-                                    $sanitized_set_flags[] = sanitize_text_field( $flag_name );
+                            foreach ( $choice_data['setFlags'] as $flag_data ) {
+                                if ( is_string( $flag_data ) ) {
+                                    // 旧形式（文字列）: 空文字列を除外
+                                    $trimmed_flag = trim( sanitize_text_field( $flag_data ) );
+                                    if ( $trimmed_flag !== '' ) {
+                                        $sanitized_set_flags[] = $trimmed_flag;
+                                    }
+                                } elseif ( is_array( $flag_data ) && isset( $flag_data['name'] ) ) {
+                                    // 新形式（オブジェクト）: nameが空でない場合のみ保存
+                                    $trimmed_name = trim( sanitize_text_field( $flag_data['name'] ) );
+                                    if ( $trimmed_name !== '' ) {
+                                        $sanitized_flag_obj = array(
+                                            'name' => $trimmed_name,
+                                            'state' => isset( $flag_data['state'] ) ? (bool) $flag_data['state'] : true
+                                        );
+                                        $sanitized_set_flags[] = $sanitized_flag_obj;
+                                    }
                                 }
                             }
                             $sanitized_choice['setFlags'] = $sanitized_set_flags;

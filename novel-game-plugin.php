@@ -3,7 +3,7 @@
  * Plugin Name: Novel Game Plugin
  * Plugin URI: https://github.com/shokun0803/novel-game-plugin
  * Description: WordPressでノベルゲームを作成できるプラグイン。
- * Version: 1.1.0
+ * Version: 1.1.2
  * Author: Your Name
  * Author URI: https://github.com/shokun0803
  * Text Domain: novel-game-plugin
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // プラグインの基本定数を定義
 if ( ! defined( 'NOVEL_GAME_PLUGIN_VERSION' ) ) {
     // キャッシュ更新のためバージョンを更新
-    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.1.1' );
+    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.1.2' );
 }
 if ( ! defined( 'NOVEL_GAME_PLUGIN_URL' ) ) {
     define( 'NOVEL_GAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -590,9 +590,25 @@ function noveltool_filter_novel_game_content( $content ) {
                             'nextScene' => $permalink,
                         );
                         
-                        // フラグ条件がある場合は追加
+                        // フラグ条件がある場合はサニタイズして追加（name/state のみ許可）
                         if ( isset( $choice_data['flagConditions'] ) && is_array( $choice_data['flagConditions'] ) ) {
-                            $choice_item['flagConditions'] = $choice_data['flagConditions'];
+                            $sanitized_conditions = array();
+                            foreach ( $choice_data['flagConditions'] as $condition ) {
+                                if ( is_array( $condition ) && isset( $condition['name'] ) ) {
+                                    $name = trim( sanitize_text_field( $condition['name'] ) );
+                                    if ( $name !== '' ) {
+                                        $sanitized_conditions[] = array(
+                                            'name'  => $name,
+                                            'state' => isset( $condition['state'] ) ? (bool) $condition['state'] : true,
+                                        );
+                                    }
+                                }
+                            }
+                            if ( ! empty( $sanitized_conditions ) ) {
+                                $choice_item['flagConditions'] = $sanitized_conditions;
+                            } else {
+                                $choice_item['flagConditions'] = array();
+                            }
                         }
                         
                         // フラグ条件ロジックがある場合は追加
@@ -600,9 +616,28 @@ function noveltool_filter_novel_game_content( $content ) {
                             $choice_item['flagConditionLogic'] = sanitize_text_field( $choice_data['flagConditionLogic'] );
                         }
                         
-                        // 設定フラグがある場合は追加
+                        // 設定フラグがある場合はサニタイズして追加（新旧両形式対応）
                         if ( isset( $choice_data['setFlags'] ) && is_array( $choice_data['setFlags'] ) ) {
-                            $choice_item['setFlags'] = array_map( 'sanitize_text_field', $choice_data['setFlags'] );
+                            $sanitized_set_flags = array();
+                            foreach ( $choice_data['setFlags'] as $flag_data ) {
+                                if ( is_string( $flag_data ) ) {
+                                    // 旧形式: "flagName"（常にON）
+                                    $name = trim( sanitize_text_field( $flag_data ) );
+                                    if ( $name !== '' ) {
+                                        $sanitized_set_flags[] = $name; // 旧形式は文字列のまま（フロントでtrue扱い）
+                                    }
+                                } elseif ( is_array( $flag_data ) && isset( $flag_data['name'] ) ) {
+                                    // 新形式: { name: string, state: bool }
+                                    $name = trim( sanitize_text_field( $flag_data['name'] ) );
+                                    if ( $name !== '' ) {
+                                        $sanitized_set_flags[] = array(
+                                            'name'  => $name,
+                                            'state' => isset( $flag_data['state'] ) ? (bool) $flag_data['state'] : true,
+                                        );
+                                    }
+                                }
+                            }
+                            $choice_item['setFlags'] = $sanitized_set_flags;
                         }
                         
                         $choices[] = $choice_item;
