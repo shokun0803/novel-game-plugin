@@ -50,22 +50,18 @@ body:
         - label: AND/OR 複数条件分岐の動作検証
     validations:
       required: false
-  - type: textarea
-    id: notes
+  - type: markdown
     attributes:
-      label: 重要事項
-      description: 運用上の注意点を記載してください
-      placeholder: |
+      value: |
+        ## 重要事項
         - /.github/copilot-instructions.md の指示に基づく運用を コメントによる追加修正時でも 徹底
         - タイトルや概要、コメントはルールに則り 日本語 で投稿
         - 一度作成したプルリクエストのタイトルや概要の内容を追加修正に伴って変更することは 絶対に行わない
         - プルリクエストの機能追加、バグ修正に伴って正常動作している機能を損なわないように 細心の注意 を払う
-    validations:
-      required: false
-  - type: textarea
-    id: reference
+        - すべての PR は base: dev（master 直は不可）
+  - type: markdown
     attributes:
-      label: 参考
-      description: 関連仕様/資料があれば記載してください
-      placeholder: |
+      value: |
+        ## 参考
         - ノベルゲーム仕様（「かまいたちの夜」等）
+        - リポジトリ運用規約: .github/copilot-instructions.md
