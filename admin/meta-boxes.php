@@ -1613,8 +1613,37 @@ function noveltool_create_revision_on_meta_change( $post_id ) {
     $processing_post_ids[ $post_id ] = true;
     
     // メタ変更検出用ハッシュ生成
+    // 定義済みフィールドのみを対象にしてスコープを限定
+    $tracked_meta_keys = array(
+        '_background_image',
+        '_character_image',
+        '_character_left',
+        '_character_center',
+        '_character_right',
+        '_character_left_name',
+        '_character_center_name',
+        '_character_right_name',
+        '_dialogue_text',
+        '_dialogue_texts',
+        '_dialogue_speakers',
+        '_dialogue_backgrounds',
+        '_dialogue_flag_conditions',
+        '_choices',
+        '_game_title',
+        '_is_ending',
+        '_ending_text',
+        '_scene_arrival_flags',
+    );
+    
+    $meta_data = array();
+    foreach ( $tracked_meta_keys as $meta_key ) {
+        $value = get_post_meta( $post_id, $meta_key, true );
+        if ( $value !== '' && $value !== false ) {
+            $meta_data[ $meta_key ] = $value;
+        }
+    }
+    
     $timestamp = current_time( 'Y-m-d H:i:s' );
-    $meta_data = get_post_meta( $post_id );
     $meta_hash = substr( md5( serialize( $meta_data ) ), 0, 12 );
     
     $new_excerpt = sprintf(
