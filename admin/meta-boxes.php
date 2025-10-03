@@ -1298,3 +1298,159 @@ function noveltool_save_meta_box_data( $post_id ) {
 }
 add_action( 'save_post', 'noveltool_save_meta_box_data' );
 
+/**
+ * カスタムメタフィールドをリビジョンに追加
+ *
+ * @param array $fields リビジョンフィールド
+ * @return array 修正されたリビジョンフィールド
+ * @since 1.2.0
+ */
+function noveltool_add_revision_fields( $fields ) {
+    // リビジョン対応するカスタムメタフィールドを追加
+    $fields['_background_image']         = __( '背景画像', 'novel-game-plugin' );
+    $fields['_character_image']          = __( 'キャラクター画像', 'novel-game-plugin' );
+    $fields['_character_left']           = __( '左キャラクター画像', 'novel-game-plugin' );
+    $fields['_character_center']         = __( '中央キャラクター画像', 'novel-game-plugin' );
+    $fields['_character_right']          = __( '右キャラクター画像', 'novel-game-plugin' );
+    $fields['_character_left_name']      = __( '左キャラクター名', 'novel-game-plugin' );
+    $fields['_character_center_name']    = __( '中央キャラクター名', 'novel-game-plugin' );
+    $fields['_character_right_name']     = __( '右キャラクター名', 'novel-game-plugin' );
+    $fields['_dialogue_text']            = __( 'セリフテキスト', 'novel-game-plugin' );
+    $fields['_dialogue_texts']           = __( 'セリフテキスト（JSON）', 'novel-game-plugin' );
+    $fields['_dialogue_speakers']        = __( 'セリフ話者', 'novel-game-plugin' );
+    $fields['_dialogue_backgrounds']     = __( 'セリフ背景', 'novel-game-plugin' );
+    $fields['_dialogue_flag_conditions'] = __( 'セリフフラグ条件', 'novel-game-plugin' );
+    $fields['_choices']                  = __( '選択肢', 'novel-game-plugin' );
+    $fields['_game_title']               = __( 'ゲームタイトル', 'novel-game-plugin' );
+    $fields['_is_ending']                = __( 'エンディング', 'novel-game-plugin' );
+    $fields['_ending_text']              = __( 'エンディングテキスト', 'novel-game-plugin' );
+    $fields['_scene_arrival_flags']      = __( 'シーン到達時フラグ', 'novel-game-plugin' );
+    
+    return $fields;
+}
+add_filter( '_wp_post_revision_fields', 'noveltool_add_revision_fields' );
+
+/**
+ * カスタムメタフィールドをリビジョンに保存
+ *
+ * @param int $revision_id リビジョンID
+ * @since 1.2.0
+ */
+function noveltool_save_revision_meta( $revision_id ) {
+    $parent_id = wp_is_post_revision( $revision_id );
+    
+    if ( ! $parent_id ) {
+        return;
+    }
+    
+    // 投稿タイプをチェック
+    $parent = get_post( $parent_id );
+    if ( ! $parent || 'novel_game' !== $parent->post_type ) {
+        return;
+    }
+    
+    // リビジョンに保存するカスタムメタフィールドのリスト
+    $meta_keys = array(
+        '_background_image',
+        '_character_image',
+        '_character_left',
+        '_character_center',
+        '_character_right',
+        '_character_left_name',
+        '_character_center_name',
+        '_character_right_name',
+        '_dialogue_text',
+        '_dialogue_texts',
+        '_dialogue_speakers',
+        '_dialogue_backgrounds',
+        '_dialogue_flag_conditions',
+        '_choices',
+        '_game_title',
+        '_is_ending',
+        '_ending_text',
+        '_scene_arrival_flags',
+    );
+    
+    // 各メタフィールドをリビジョンにコピー
+    foreach ( $meta_keys as $meta_key ) {
+        $meta_value = get_post_meta( $parent_id, $meta_key, true );
+        
+        if ( false !== $meta_value ) {
+            update_metadata( 'post', $revision_id, $meta_key, $meta_value );
+        }
+    }
+}
+add_action( 'save_post', 'noveltool_save_revision_meta' );
+
+/**
+ * リビジョン復元時にカスタムメタフィールドを復元
+ *
+ * @param int $post_id     投稿ID
+ * @param int $revision_id リビジョンID
+ * @since 1.2.0
+ */
+function noveltool_restore_revision_meta( $post_id, $revision_id ) {
+    // 投稿タイプの確認
+    if ( get_post_type( $post_id ) !== 'novel_game' ) {
+        return;
+    }
+    
+    // 権限チェック
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        return;
+    }
+    
+    // リビジョンの存在確認
+    $revision = get_post( $revision_id );
+    if ( ! $revision || 'revision' !== $revision->post_type ) {
+        return;
+    }
+    
+    // デバッグログ出力
+    if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log(
+            sprintf(
+                'Novel Game: リビジョン復元実行 - 投稿ID: %d, リビジョンID: %d',
+                $post_id,
+                $revision_id
+            )
+        );
+    }
+    
+    // リビジョンから復元するカスタムメタフィールドのリスト
+    $meta_keys = array(
+        '_background_image',
+        '_character_image',
+        '_character_left',
+        '_character_center',
+        '_character_right',
+        '_character_left_name',
+        '_character_center_name',
+        '_character_right_name',
+        '_dialogue_text',
+        '_dialogue_texts',
+        '_dialogue_speakers',
+        '_dialogue_backgrounds',
+        '_dialogue_flag_conditions',
+        '_choices',
+        '_game_title',
+        '_is_ending',
+        '_ending_text',
+        '_scene_arrival_flags',
+    );
+    
+    // 各メタフィールドをリビジョンから復元
+    foreach ( $meta_keys as $meta_key ) {
+        $meta_value = get_metadata( 'post', $revision_id, $meta_key, true );
+        
+        // メタデータが存在し、空文字列でない場合は更新
+        if ( false !== $meta_value && '' !== $meta_value ) {
+            update_post_meta( $post_id, $meta_key, $meta_value );
+        } else {
+            // リビジョンにメタが存在しない、または空の場合は削除
+            delete_post_meta( $post_id, $meta_key );
+        }
+    }
+}
+add_action( 'wp_restore_post_revision', 'noveltool_restore_revision_meta', 10, 2 );
+
