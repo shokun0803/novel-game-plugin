@@ -126,6 +126,7 @@ WordPress標準のリビジョンAPIを使用しているため、以下の機�
 ## テスト項目
 
 - [x] 投稿保存時のリビジョン作成
+- [x] カスタムメタ変更時のリビジョン自動作成（v1.2.1で実装）
 - [ ] リビジョン復元の動作確認
 - [ ] カスタムメタデータの正確な保存・復元
 - [ ] 既存投稿への影響確認
@@ -133,6 +134,58 @@ WordPress標準のリビジョンAPIを使用しているため、以下の機�
 
 ## バージョン履歴
 
+### 1.2.1
+- カスタムメタフィールド変更時の自動リビジョン作成機能を追加
+- post_excerpt を利用したリビジョントリガー機構の実装
+- 無限ループ防止機構の追加
+- フロントエンド・RSSでのpost_excerpt非表示フィルタ追加
+- post_type に 'excerpt' サポートを追加
+
 ### 1.2.0
 - リビジョン機能の初期実装
 - 全カスタムメタフィールドのリビジョン対応
+
+## v1.2.1での追加実装内容
+
+### 問題点
+PR #110で実装されたリビジョン機能では、WordPressが標準で `post_title`、`post_content`、`post_excerpt` の変更時のみリビジョンを作成するため、カスタムメタフィールドのみの変更ではリビジョンが作成されない問題がありました。
+
+### 解決策
+カスタムメタフィールド変更時に `post_excerpt` を自動更新することで、WordPress標準のリビジョン作成機能をトリガーする方式を採用しました。
+
+### 追加された関数
+
+#### `noveltool_create_revision_on_meta_change()`
+- フック: `save_post` (優先度: 20)
+- 機能: カスタムメタ変更検出時に post_excerpt を更新してリビジョン作成を強制
+- 実装内容:
+  - メタデータのハッシュと更新日時を含む excerpt を生成
+  - 無限ループ防止のための static 変数使用
+  - save_post フックの一時削除と復元
+  - nonce チェックと権限チェック
+
+#### `noveltool_filter_excerpt_rss()`
+- フック: `the_excerpt_rss`
+- 機能: RSSフィードから post_excerpt を除外
+- 目的: リビジョン用の excerpt がRSSに表示されないようにする
+
+#### `noveltool_filter_excerpt_display()`
+- フック: `get_the_excerpt`
+- 機能: フロントエンド表示で post_excerpt を非表示
+- 目的: リビジョン用の excerpt がページ上に表示されないようにする
+
+### post_type 設定の変更
+`includes/post-types.php` の `supports` 配列に `'excerpt'` を追加：
+```php
+'supports' => array( 'title', 'excerpt', 'revisions', 'custom-fields' ),
+```
+
+### 動作フロー
+1. ユーザーがカスタムメタフィールドを変更して保存
+2. `noveltool_save_meta_box_data()` がメタデータを保存
+3. `noveltool_create_revision_on_meta_change()` が実行される
+4. メタデータのハッシュを含む excerpt が生成・更新される
+5. excerpt の変更により WordPress がリビジョンを作成
+6. `noveltool_save_revision_meta()` がカスタムメタをリビジョンにコピー
+7. リビジョンメタボックスに新しいリビジョンが表示される
+
