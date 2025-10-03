@@ -1521,6 +1521,9 @@ function noveltool_restore_revision_meta( $post_id, $revision_id ) {
         return;
     }
     
+    // WordPressの自動リビジョン作成を一時無効化（復元処理中の再帰防止）
+    add_filter( 'wp_save_post_revision_check_for_changes', '__return_false' );
+    
     // デバッグログ出力
     if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
         error_log(
@@ -1574,6 +1577,9 @@ function noveltool_restore_revision_meta( $post_id, $revision_id ) {
             delete_post_meta( $post_id, $meta_key );
         }
     }
+    
+    // リビジョンチェックフィルターを削除
+    remove_filter( 'wp_save_post_revision_check_for_changes', '__return_false' );
 }
 add_action( 'wp_restore_post_revision', 'noveltool_restore_revision_meta', 10, 2 );
 
