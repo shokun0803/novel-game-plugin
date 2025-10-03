@@ -1511,7 +1511,15 @@ function noveltool_restore_revision_meta( $post_id, $revision_id ) {
         
         // メタデータが存在し、空文字列でない場合は更新
         if ( false !== $meta_value && '' !== $meta_value ) {
-            update_post_meta( $post_id, $meta_key, $meta_value );
+            // シリアライズされたデータを適切に復元
+            $meta_value = maybe_unserialize( $meta_value );
+            
+            // データ型の最終検証
+            if ( is_string( $meta_value ) && $meta_value === '' ) {
+                delete_post_meta( $post_id, $meta_key );
+            } else {
+                update_post_meta( $post_id, $meta_key, $meta_value );
+            }
         } else {
             // リビジョンにメタが存在しない、または空の場合は削除
             delete_post_meta( $post_id, $meta_key );
