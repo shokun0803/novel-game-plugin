@@ -1331,6 +1331,68 @@ function noveltool_add_revision_fields( $fields ) {
 add_filter( '_wp_post_revision_fields', 'noveltool_add_revision_fields' );
 
 /**
+ * 配列形式カスタムメタのリビジョン表示処理（セリフテキスト）
+ *
+ * @param mixed   $value 表示する値
+ * @param string  $field フィールド名
+ * @param WP_Post $post  投稿オブジェクト
+ * @return string 表示用文字列
+ * @since 1.2.1
+ */
+function noveltool_display_revision_field_dialogue_texts( $value, $field, $post ) {
+    if ( is_array( $value ) || is_object( $value ) ) {
+        return wp_json_encode( $value, JSON_UNESCAPED_UNICODE );
+    }
+    return $value;
+}
+
+/**
+ * 配列形式カスタムメタのリビジョン表示処理（選択肢）
+ *
+ * @param mixed   $value 表示する値
+ * @param string  $field フィールド名
+ * @param WP_Post $post  投稿オブジェクト
+ * @return string 表示用文字列
+ * @since 1.2.1
+ */
+function noveltool_display_revision_field_choices( $value, $field, $post ) {
+    if ( is_array( $value ) ) {
+        $formatted = array();
+        foreach ( $value as $choice ) {
+            if ( is_array( $choice ) && isset( $choice['text'] ) ) {
+                $formatted[] = $choice['text'];
+            }
+        }
+        return implode( ', ', $formatted );
+    }
+    return $value;
+}
+
+/**
+ * 配列形式カスタムメタのリビジョン表示処理（汎用配列）
+ *
+ * @param mixed   $value 表示する値
+ * @param string  $field フィールド名
+ * @param WP_Post $post  投稿オブジェクト
+ * @return string 表示用文字列
+ * @since 1.2.1
+ */
+function noveltool_display_revision_field_array( $value, $field, $post ) {
+    if ( is_array( $value ) ) {
+        return implode( ', ', $value );
+    }
+    return $value;
+}
+
+// 配列フィールド用フィルター登録
+add_filter( '_wp_post_revision_field__dialogue_texts', 'noveltool_display_revision_field_dialogue_texts', 10, 3 );
+add_filter( '_wp_post_revision_field__choices', 'noveltool_display_revision_field_choices', 10, 3 );
+add_filter( '_wp_post_revision_field__dialogue_speakers', 'noveltool_display_revision_field_array', 10, 3 );
+add_filter( '_wp_post_revision_field__dialogue_backgrounds', 'noveltool_display_revision_field_array', 10, 3 );
+add_filter( '_wp_post_revision_field__dialogue_flag_conditions', 'noveltool_display_revision_field_array', 10, 3 );
+add_filter( '_wp_post_revision_field__scene_arrival_flags', 'noveltool_display_revision_field_array', 10, 3 );
+
+/**
  * カスタムメタフィールドをリビジョンに保存
  *
  * @param int $revision_id リビジョンID
@@ -1376,6 +1438,10 @@ function noveltool_save_revision_meta( $revision_id ) {
         $meta_value = get_post_meta( $parent_id, $meta_key, true );
         
         if ( false !== $meta_value ) {
+            // メタデータの型安全性確保
+            if ( is_array( $meta_value ) || is_object( $meta_value ) ) {
+                $meta_value = maybe_serialize( $meta_value );
+            }
             update_metadata( 'post', $revision_id, $meta_key, $meta_value );
         }
     }
