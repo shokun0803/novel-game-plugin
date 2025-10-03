@@ -1393,6 +1393,52 @@ add_filter( '_wp_post_revision_field__dialogue_flag_conditions', 'noveltool_disp
 add_filter( '_wp_post_revision_field__scene_arrival_flags', 'noveltool_display_revision_field_array', 10, 3 );
 
 /**
+ * 文字列フィールド用の安全な表示処理
+ *
+ * @param mixed   $value 表示する値
+ * @param string  $field フィールド名
+ * @param WP_Post $post  投稿オブジェクト
+ * @return string 表示用文字列
+ * @since 1.2.1
+ */
+function noveltool_display_revision_field_safe_string( $value, $field, $post ) {
+    if ( is_array( $value ) || is_object( $value ) ) {
+        return wp_json_encode( $value, JSON_UNESCAPED_UNICODE );
+    }
+    return (string) $value;
+}
+
+/**
+ * 真偽値フィールド用の表示処理
+ *
+ * @param mixed   $value 表示する値
+ * @param string  $field フィールド名
+ * @param WP_Post $post  投稿オブジェクト
+ * @return string 表示用文字列
+ * @since 1.2.1
+ */
+function noveltool_display_revision_field_boolean( $value, $field, $post ) {
+    if ( is_array( $value ) || is_object( $value ) ) {
+        return wp_json_encode( $value, JSON_UNESCAPED_UNICODE );
+    }
+    return $value ? __( 'はい', 'novel-game-plugin' ) : __( 'いいえ', 'novel-game-plugin' );
+}
+
+// 文字列フィールド用フィルター登録
+add_filter( '_wp_post_revision_field__background_image', 'noveltool_display_revision_field_safe_string', 10, 3 );
+add_filter( '_wp_post_revision_field__character_image', 'noveltool_display_revision_field_safe_string', 10, 3 );
+add_filter( '_wp_post_revision_field__character_left', 'noveltool_display_revision_field_safe_string', 10, 3 );
+add_filter( '_wp_post_revision_field__character_center', 'noveltool_display_revision_field_safe_string', 10, 3 );
+add_filter( '_wp_post_revision_field__character_right', 'noveltool_display_revision_field_safe_string', 10, 3 );
+add_filter( '_wp_post_revision_field__character_left_name', 'noveltool_display_revision_field_safe_string', 10, 3 );
+add_filter( '_wp_post_revision_field__character_center_name', 'noveltool_display_revision_field_safe_string', 10, 3 );
+add_filter( '_wp_post_revision_field__character_right_name', 'noveltool_display_revision_field_safe_string', 10, 3 );
+add_filter( '_wp_post_revision_field__dialogue_text', 'noveltool_display_revision_field_safe_string', 10, 3 );
+add_filter( '_wp_post_revision_field__game_title', 'noveltool_display_revision_field_safe_string', 10, 3 );
+add_filter( '_wp_post_revision_field__ending_text', 'noveltool_display_revision_field_safe_string', 10, 3 );
+add_filter( '_wp_post_revision_field__is_ending', 'noveltool_display_revision_field_boolean', 10, 3 );
+
+/**
  * カスタムメタフィールドをリビジョンに保存
  *
  * @param int $revision_id リビジョンID
