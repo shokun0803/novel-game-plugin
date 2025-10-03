@@ -1390,10 +1390,31 @@ add_action( 'save_post', 'noveltool_save_revision_meta' );
  * @since 1.2.0
  */
 function noveltool_restore_revision_meta( $post_id, $revision_id ) {
-    // 投稿タイプをチェック
-    $post = get_post( $post_id );
-    if ( ! $post || 'novel_game' !== $post->post_type ) {
+    // 投稿タイプの確認
+    if ( get_post_type( $post_id ) !== 'novel_game' ) {
         return;
+    }
+    
+    // 権限チェック
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        return;
+    }
+    
+    // リビジョンの存在確認
+    $revision = get_post( $revision_id );
+    if ( ! $revision || 'revision' !== $revision->post_type ) {
+        return;
+    }
+    
+    // デバッグログ出力
+    if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log(
+            sprintf(
+                'Novel Game: リビジョン復元実行 - 投稿ID: %d, リビジョンID: %d',
+                $post_id,
+                $revision_id
+            )
+        );
     }
     
     // リビジョンから復元するカスタムメタフィールドのリスト
@@ -1422,10 +1443,11 @@ function noveltool_restore_revision_meta( $post_id, $revision_id ) {
     foreach ( $meta_keys as $meta_key ) {
         $meta_value = get_metadata( 'post', $revision_id, $meta_key, true );
         
-        if ( false !== $meta_value ) {
+        // メタデータが存在し、空文字列でない場合は更新
+        if ( false !== $meta_value && '' !== $meta_value ) {
             update_post_meta( $post_id, $meta_key, $meta_value );
         } else {
-            // リビジョンにメタが存在しない場合は削除
+            // リビジョンにメタが存在しない、または空の場合は削除
             delete_post_meta( $post_id, $meta_key );
         }
     }
