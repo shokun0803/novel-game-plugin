@@ -1495,7 +1495,7 @@ function noveltool_create_revision_on_meta_change( $post_id ) {
     // メタ変更検出用ハッシュ生成
     $timestamp = current_time( 'Y-m-d H:i:s' );
     $meta_data = get_post_meta( $post_id );
-    $meta_hash = substr( md5( serialize( $meta_data ) ), 0, 8 );
+    $meta_hash = substr( md5( serialize( $meta_data ) ), 0, 12 );
     
     $new_excerpt = sprintf(
         'Novel meta updated: %s [%s]',
@@ -1508,10 +1508,22 @@ function noveltool_create_revision_on_meta_change( $post_id ) {
     remove_action( 'save_post', 'noveltool_save_meta_box_data' );
     remove_action( 'save_post', 'noveltool_save_revision_meta' );
     
-    wp_update_post( array(
+    $result = wp_update_post( array(
         'ID' => $post_id,
         'post_excerpt' => $new_excerpt
     ) );
+    
+    if ( is_wp_error( $result ) || $result === 0 ) {
+        error_log( 'Novel Game Plugin: Failed to update post excerpt for revision creation. Post ID: ' . $post_id );
+        
+        // フック復元
+        add_action( 'save_post', 'noveltool_save_meta_box_data' );
+        add_action( 'save_post', 'noveltool_save_revision_meta' );
+        add_action( 'save_post', 'noveltool_create_revision_on_meta_change', 20 );
+        
+        unset( $processing_post_ids[ $post_id ] );
+        return;
+    }
     
     // フック復元
     add_action( 'save_post', 'noveltool_save_meta_box_data' );
