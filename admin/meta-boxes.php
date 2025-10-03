@@ -1454,3 +1454,102 @@ function noveltool_restore_revision_meta( $post_id, $revision_id ) {
 }
 add_action( 'wp_restore_post_revision', 'noveltool_restore_revision_meta', 10, 2 );
 
+/**
+ * カスタムメタ変更時にpost_excerptを更新してリビジョン作成を強制
+ *
+ * WordPressは post_title、post_content、post_excerpt の変更時のみリビジョンを作成するため、
+ * カスタムメタフィールドのみの変更時にもリビジョンが作成されるよう、
+ * post_excerpt を自動更新する。
+ *
+ * @param int $post_id 投稿ID
+ * @since 1.2.1
+ */
+function noveltool_create_revision_on_meta_change( $post_id ) {
+    // 基本チェック
+    if ( get_post_type( $post_id ) !== 'novel_game' ) {
+        return;
+    }
+    
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+        return;
+    }
+    
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        return;
+    }
+    
+    // nonceチェック
+    if ( ! isset( $_POST['novel_game_meta_box_nonce'] ) ||
+         ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['novel_game_meta_box_nonce'] ) ), 'novel_game_meta_box' ) ) {
+        return;
+    }
+    
+    // 無限ループ防止
+    static $processing_post_ids = array();
+    if ( isset( $processing_post_ids[ $post_id ] ) ) {
+        return;
+    }
+    
+    $processing_post_ids[ $post_id ] = true;
+    
+    // メタ変更検出用ハッシュ生成
+    $timestamp = current_time( 'Y-m-d H:i:s' );
+    $meta_data = get_post_meta( $post_id );
+    $meta_hash = substr( md5( serialize( $meta_data ) ), 0, 8 );
+    
+    $new_excerpt = sprintf(
+        'Novel meta updated: %s [%s]',
+        $timestamp,
+        $meta_hash
+    );
+    
+    // save_post フックを一時削除して wp_update_post 実行
+    remove_action( 'save_post', 'noveltool_create_revision_on_meta_change', 20 );
+    remove_action( 'save_post', 'noveltool_save_meta_box_data' );
+    remove_action( 'save_post', 'noveltool_save_revision_meta' );
+    
+    wp_update_post( array(
+        'ID' => $post_id,
+        'post_excerpt' => $new_excerpt
+    ) );
+    
+    // フック復元
+    add_action( 'save_post', 'noveltool_save_meta_box_data' );
+    add_action( 'save_post', 'noveltool_save_revision_meta' );
+    add_action( 'save_post', 'noveltool_create_revision_on_meta_change', 20 );
+    
+    unset( $processing_post_ids[ $post_id ] );
+}
+add_action( 'save_post', 'noveltool_create_revision_on_meta_change', 20 );
+
+/**
+ * RSSフィードからpost_excerptを除外
+ *
+ * @param string $excerpt 抜粋テキスト
+ * @return string フィルタ後の抜粋テキスト
+ * @since 1.2.1
+ */
+function noveltool_filter_excerpt_rss( $excerpt ) {
+    if ( get_post_type() === 'novel_game' ) {
+        return '';
+    }
+    return $excerpt;
+}
+add_filter( 'the_excerpt_rss', 'noveltool_filter_excerpt_rss' );
+
+/**
+ * フロントエンドでのpost_excerpt表示を制御
+ *
+ * @param string  $excerpt 抜粋テキスト
+ * @param WP_Post $post    投稿オブジェクト
+ * @return string フィルタ後の抜粋テキスト
+ * @since 1.2.1
+ */
+function noveltool_filter_excerpt_display( $excerpt, $post ) {
+    if ( $post && $post->post_type === 'novel_game' ) {
+        return '';
+    }
+    return $excerpt;
+}
+add_filter( 'get_the_excerpt', 'noveltool_filter_excerpt_display', 10, 2 );
+
