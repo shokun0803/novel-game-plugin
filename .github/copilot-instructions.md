@@ -55,6 +55,29 @@ git reset --hard origin/dev
 git branch --merged dev | grep -vE '^(\*|dev|master)$' | xargs -r -n1 git branch -d
 ```
 
+### 🚨 VS Code GitHub Copilot Agent 専用規約
+
+#### リモート操作の厳格制御
+- **「ローカル」指示の場合：絶対にリモート操作（push/force-push）を含めない**
+- **「ローカルマージ」＝リモートpush禁止**。一般的なGit運用として自動でpushしない
+- **リモート操作は「リモートにpushしてください」等の明示指示がある場合のみ実行**
+
+#### 作業完了時の報告義務
+- **ローカル作業完了時：「リモート操作は実行していません」と明記**
+- **リモート操作実行時：「リモート[ブランチ名]に反映済み」と明記**
+
+#### 禁止コマンド（明示指示なしでは絶対実行禁止）
+```bash
+git push origin dev              # ❌ 明示指示なしでは絶対禁止
+git push --force origin dev      # ❌ 明示指示なしでは絶対禁止  
+git push --force-with-lease origin dev  # ❌ 明示指示なしでは絶対禁止
+```
+
+#### Git操作前チェックリスト
+- [ ] リモート操作が含まれていないか？
+- [ ] 明示的な「リモートpush」指示があるか？
+- [ ] 「ローカル」指示の場合、ローカルのみで完結するか？
+
 ### Copilot への追加指針
 - 「リモートへ push して」等の明示文言が無い限り push しない。
 - master/dev の履歴を書き換える操作は常にユーザー確認を要求。
