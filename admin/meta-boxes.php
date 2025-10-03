@@ -1484,9 +1484,12 @@ function noveltool_save_revision_meta( $revision_id ) {
         $meta_value = get_post_meta( $parent_id, $meta_key, true );
         
         if ( false !== $meta_value ) {
-            // メタデータの型安全性確保
+            // 配列・オブジェクトは必ず文字列化してからメタデータに保存
             if ( is_array( $meta_value ) || is_object( $meta_value ) ) {
-                $meta_value = maybe_serialize( $meta_value );
+                $meta_value = serialize( $meta_value );
+            } else {
+                // 文字列データも安全性のため文字列型にキャスト
+                $meta_value = (string) $meta_value;
             }
             update_metadata( 'post', $revision_id, $meta_key, $meta_value );
         }
@@ -1657,10 +1660,16 @@ function noveltool_create_revision_on_meta_change( $post_id ) {
     remove_action( 'save_post', 'noveltool_save_meta_box_data' );
     remove_action( 'save_post', 'noveltool_save_revision_meta' );
     
+    // WordPressの自動リビジョン作成を一時無効化
+    add_filter( 'wp_save_post_revision_check_for_changes', '__return_false' );
+    
     $result = wp_update_post( array(
         'ID' => $post_id,
         'post_excerpt' => $new_excerpt
     ) );
+    
+    // リビジョンチェックフィルターを削除
+    remove_filter( 'wp_save_post_revision_check_for_changes', '__return_false' );
     
     if ( is_wp_error( $result ) || $result === 0 ) {
         error_log( 'Novel Game Plugin: Failed to update post excerpt for revision creation. Post ID: ' . $post_id );
