@@ -1521,8 +1521,9 @@ function noveltool_restore_revision_meta( $post_id, $revision_id ) {
         return;
     }
     
-    // WordPressの自動リビジョン作成を一時無効化（復元処理中の再帰防止）
-    add_filter( 'wp_save_post_revision_check_for_changes', '__return_false' );
+    // WordPressの自動リビジョン作成フックを完全に削除（復元処理中の再帰防止）
+    remove_action( 'post_updated', 'wp_save_post_revision', 10 );
+    remove_action( 'wp_after_insert_post', 'wp_save_post_revision_on_insert', 10 );
     
     // デバッグログ出力
     if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
@@ -1578,8 +1579,9 @@ function noveltool_restore_revision_meta( $post_id, $revision_id ) {
         }
     }
     
-    // リビジョンチェックフィルターを削除
-    remove_filter( 'wp_save_post_revision_check_for_changes', '__return_false' );
+    // リビジョン作成フックを復元
+    add_action( 'post_updated', 'wp_save_post_revision', 10, 1 );
+    add_action( 'wp_after_insert_post', 'wp_save_post_revision_on_insert', 10, 4 );
 }
 add_action( 'wp_restore_post_revision', 'noveltool_restore_revision_meta', 10, 2 );
 
@@ -1666,16 +1668,18 @@ function noveltool_create_revision_on_meta_change( $post_id ) {
     remove_action( 'save_post', 'noveltool_save_meta_box_data' );
     remove_action( 'save_post', 'noveltool_save_revision_meta' );
     
-    // WordPressの自動リビジョン作成を一時無効化
-    add_filter( 'wp_save_post_revision_check_for_changes', '__return_false' );
+    // WordPressの自動リビジョン作成フックを完全に削除
+    remove_action( 'post_updated', 'wp_save_post_revision', 10 );
+    remove_action( 'wp_after_insert_post', 'wp_save_post_revision_on_insert', 10 );
     
     $result = wp_update_post( array(
         'ID' => $post_id,
         'post_excerpt' => $new_excerpt
     ) );
     
-    // リビジョンチェックフィルターを削除
-    remove_filter( 'wp_save_post_revision_check_for_changes', '__return_false' );
+    // リビジョン作成フックを復元
+    add_action( 'post_updated', 'wp_save_post_revision', 10, 1 );
+    add_action( 'wp_after_insert_post', 'wp_save_post_revision_on_insert', 10, 4 );
     
     if ( is_wp_error( $result ) || $result === 0 ) {
         error_log( 'Novel Game Plugin: Failed to update post excerpt for revision creation. Post ID: ' . $post_id );
