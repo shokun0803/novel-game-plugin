@@ -1521,10 +1521,6 @@ function noveltool_restore_revision_meta( $post_id, $revision_id ) {
         return;
     }
     
-    // WordPressの自動リビジョン作成フックを完全に削除（復元処理中の再帰防止）
-    remove_action( 'post_updated', 'wp_save_post_revision', 10 );
-    remove_action( 'wp_after_insert_post', 'wp_save_post_revision_on_insert', 10 );
-    
     // デバッグログ出力
     if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
         error_log(
@@ -1578,129 +1574,44 @@ function noveltool_restore_revision_meta( $post_id, $revision_id ) {
             delete_post_meta( $post_id, $meta_key );
         }
     }
-    
-    // リビジョン作成フックを復元
-    add_action( 'post_updated', 'wp_save_post_revision', 10, 1 );
-    add_action( 'wp_after_insert_post', 'wp_save_post_revision_on_insert', 10, 4 );
 }
 add_action( 'wp_restore_post_revision', 'noveltool_restore_revision_meta', 10, 2 );
 
 /**
- * カスタムメタ変更時にpost_excerptを更新してリビジョン作成を強制
+ * novel_game投稿タイプでWordPressリビジョンシステムを無効化
+ * 
+ * カスタムメタフィールドの配列データとWordPressコアのリビジョン処理が非互換のため、
+ * novel_game投稿タイプでのみリビジョン機能を無効化する
  *
- * WordPressは post_title、post_content、post_excerpt の変更時のみリビジョンを作成するため、
- * カスタムメタフィールドのみの変更時にもリビジョンが作成されるよう、
- * post_excerpt を自動更新する。
- *
- * @param int $post_id 投稿ID
  * @since 1.2.1
  */
-function noveltool_create_revision_on_meta_change( $post_id ) {
-    // 基本チェック
-    if ( get_post_type( $post_id ) !== 'novel_game' ) {
+function noveltool_disable_wp_revisions_for_novel_game() {
+    global $pagenow;
+    
+    // 管理画面の投稿編集ページでのみ実行
+    if ( ! is_admin() || ( $pagenow !== 'post.php' && $pagenow !== 'post-new.php' ) ) {
         return;
     }
     
-    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-        return;
+    // novel_game投稿タイプのみリビジョン作成を無効化
+    $post_type = '';
+    if ( isset( $_GET['post'] ) ) {
+        $post_type = get_post_type( absint( $_GET['post'] ) );
+    } elseif ( isset( $_POST['post_ID'] ) ) {
+        $post_type = get_post_type( absint( $_POST['post_ID'] ) );
+    } elseif ( isset( $_POST['post_type'] ) ) {
+        $post_type = sanitize_text_field( wp_unslash( $_POST['post_type'] ) );
+    } elseif ( isset( $_GET['post_type'] ) ) {
+        $post_type = sanitize_text_field( wp_unslash( $_GET['post_type'] ) );
     }
     
-    if ( ! current_user_can( 'edit_post', $post_id ) ) {
-        return;
+    if ( $post_type === 'novel_game' ) {
+        remove_action( 'post_updated', 'wp_save_post_revision', 10 );
+        remove_action( 'wp_after_insert_post', 'wp_save_post_revision_on_insert', 10 );
     }
-    
-    // nonceチェック
-    if ( ! isset( $_POST['novel_game_meta_box_nonce'] ) ||
-         ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['novel_game_meta_box_nonce'] ) ), 'novel_game_meta_box' ) ) {
-        return;
-    }
-    
-    // 無限ループ防止
-    static $processing_post_ids = array();
-    if ( isset( $processing_post_ids[ $post_id ] ) ) {
-        return;
-    }
-    
-    $processing_post_ids[ $post_id ] = true;
-    
-    // メタ変更検出用ハッシュ生成
-    // 定義済みフィールドのみを対象にしてスコープを限定
-    $tracked_meta_keys = array(
-        '_background_image',
-        '_character_image',
-        '_character_left',
-        '_character_center',
-        '_character_right',
-        '_character_left_name',
-        '_character_center_name',
-        '_character_right_name',
-        '_dialogue_text',
-        '_dialogue_texts',
-        '_dialogue_speakers',
-        '_dialogue_backgrounds',
-        '_dialogue_flag_conditions',
-        '_choices',
-        '_game_title',
-        '_is_ending',
-        '_ending_text',
-        '_scene_arrival_flags',
-    );
-    
-    $meta_data = array();
-    foreach ( $tracked_meta_keys as $meta_key ) {
-        $value = get_post_meta( $post_id, $meta_key, true );
-        if ( $value !== '' && $value !== false ) {
-            $meta_data[ $meta_key ] = $value;
-        }
-    }
-    
-    $timestamp = current_time( 'Y-m-d H:i:s' );
-    $meta_hash = substr( md5( serialize( $meta_data ) ), 0, 12 );
-    
-    $new_excerpt = sprintf(
-        'Novel meta updated: %s [%s]',
-        $timestamp,
-        $meta_hash
-    );
-    
-    // save_post フックを一時削除して wp_update_post 実行
-    remove_action( 'save_post', 'noveltool_create_revision_on_meta_change', 20 );
-    remove_action( 'save_post', 'noveltool_save_meta_box_data' );
-    remove_action( 'save_post', 'noveltool_save_revision_meta' );
-    
-    // WordPressの自動リビジョン作成フックを完全に削除
-    remove_action( 'post_updated', 'wp_save_post_revision', 10 );
-    remove_action( 'wp_after_insert_post', 'wp_save_post_revision_on_insert', 10 );
-    
-    $result = wp_update_post( array(
-        'ID' => $post_id,
-        'post_excerpt' => $new_excerpt
-    ) );
-    
-    // リビジョン作成フックを復元
-    add_action( 'post_updated', 'wp_save_post_revision', 10, 1 );
-    add_action( 'wp_after_insert_post', 'wp_save_post_revision_on_insert', 10, 4 );
-    
-    if ( is_wp_error( $result ) || $result === 0 ) {
-        error_log( 'Novel Game Plugin: Failed to update post excerpt for revision creation. Post ID: ' . $post_id );
-        
-        // フック復元
-        add_action( 'save_post', 'noveltool_save_meta_box_data' );
-        add_action( 'save_post', 'noveltool_save_revision_meta' );
-        add_action( 'save_post', 'noveltool_create_revision_on_meta_change', 20 );
-        
-        unset( $processing_post_ids[ $post_id ] );
-        return;
-    }
-    
-    // フック復元
-    add_action( 'save_post', 'noveltool_save_meta_box_data' );
-    add_action( 'save_post', 'noveltool_save_revision_meta' );
-    add_action( 'save_post', 'noveltool_create_revision_on_meta_change', 20 );
-    
-    unset( $processing_post_ids[ $post_id ] );
 }
-add_action( 'save_post', 'noveltool_create_revision_on_meta_change', 20 );
+add_action( 'admin_init', 'noveltool_disable_wp_revisions_for_novel_game', 1 );
+add_action( 'wp_loaded', 'noveltool_disable_wp_revisions_for_novel_game', 1 );
 
 /**
  * RSSフィードからpost_excerptを除外

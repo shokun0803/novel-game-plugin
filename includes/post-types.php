@@ -51,7 +51,7 @@ function noveltool_register_post_type() {
         'label'                 => __( 'ノベルゲーム', 'novel-game-plugin' ),
         'description'           => __( 'ノベルゲームのシーンを管理', 'novel-game-plugin' ),
         'labels'                => $labels,
-        'supports'              => array( 'title', 'excerpt', 'revisions', 'custom-fields' ),
+        'supports'              => array( 'title', 'excerpt', 'custom-fields' ),
         'taxonomies'            => array(),
         'hierarchical'          => false,
         'public'                => true,
