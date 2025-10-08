@@ -32,3 +32,4 @@ wp-config.php
 # Testing
 *.test.js
 *.spec.js
+validate-*.php
