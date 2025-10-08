@@ -41,6 +41,7 @@ if ( ! defined( 'NOVEL_GAME_PLUGIN_TEXT_DOMAIN' ) ) {
 // 必要なファイルをインクルード
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/post-types.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/blocks.php';
+require_once NOVEL_GAME_PLUGIN_PATH . 'includes/revisions.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/meta-boxes.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/new-game.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/game-settings.php';
