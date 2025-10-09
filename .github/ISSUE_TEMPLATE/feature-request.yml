@@ -52,14 +52,15 @@ body:
     attributes:
       value: |
         ## 重要事項
+        以下の運用ルールを遵守してください。
         - /.github/copilot-instructions.md の指示に基づく運用を コメントによる追加修正時でも 徹底
         - タイトルや概要、コメントはルールに則り 日本語 で投稿
         - 一度作成したプルリクエストのタイトルや概要の内容を追加修正に伴って変更することは 絶対に行わない
         - プルリクエストの機能追加、バグ修正に伴って正常動作している機能を損なわないように 細心の注意 を払う
-        - すべての PR は base: dev（master 直は不可）
+        - PR の base は必ず dev（master 直は不可）
   - type: markdown
     attributes:
       value: |
         ## 参考
-        - 関連仕様/資料（必要に応じて起票後に追記）
+        - ノベルゲーム仕様（「かまいたちの夜」等）
         - リポジトリ運用規約: .github/copilot-instructions.md
