@@ -93,7 +93,7 @@ jQuery( function( $ ) {
 			$item.attr( 'data-index', index );
 			
 			// セリフテキスト入力
-			var $textArea = $( '<textarea class="dialogue-text large-text" rows="2" placeholder="セリフを入力してください"></textarea>' );
+			var $textArea = $( '<textarea class="dialogue-text large-text" rows="2" placeholder="' + novelGameMeta.strings.dialoguePlaceholder + '"></textarea>' );
 			$textArea.val( dialogue.text );
 			$textArea.on( 'input change blur', function() {
 				dialogueData[index].text = $( this ).val();
@@ -102,13 +102,13 @@ jQuery( function( $ ) {
 			
 			// 話者選択
 			var $speakerContainer = $( '<div class="dialogue-speaker-container">' );
-			var $speakerLabel = $( '<label>話者:</label>' );
+			var $speakerLabel = $( '<label>' + novelGameMeta.strings.speaker + '</label>' );
 			var $speakerSelect = $( '<select class="dialogue-speaker-select">' );
-			$speakerSelect.append( '<option value="">-- 話者を選択 --</option>' );
-			$speakerSelect.append( '<option value="left"' + ( dialogue.speaker === 'left' ? ' selected' : '' ) + '>左キャラクター</option>' );
-			$speakerSelect.append( '<option value="center"' + ( dialogue.speaker === 'center' ? ' selected' : '' ) + '>中央キャラクター</option>' );
-			$speakerSelect.append( '<option value="right"' + ( dialogue.speaker === 'right' ? ' selected' : '' ) + '>右キャラクター</option>' );
-			$speakerSelect.append( '<option value="narrator"' + ( dialogue.speaker === 'narrator' ? ' selected' : '' ) + '>ナレーター</option>' );
+			$speakerSelect.append( '<option value="">' + novelGameMeta.strings.selectSpeaker + '</option>' );
+			$speakerSelect.append( '<option value="left"' + ( dialogue.speaker === 'left' ? ' selected' : '' ) + '>' + novelGameMeta.strings.leftCharacter + '</option>' );
+			$speakerSelect.append( '<option value="center"' + ( dialogue.speaker === 'center' ? ' selected' : '' ) + '>' + novelGameMeta.strings.centerCharacter + '</option>' );
+			$speakerSelect.append( '<option value="right"' + ( dialogue.speaker === 'right' ? ' selected' : '' ) + '>' + novelGameMeta.strings.rightCharacter + '</option>' );
+			$speakerSelect.append( '<option value="narrator"' + ( dialogue.speaker === 'narrator' ? ' selected' : '' ) + '>' + novelGameMeta.strings.narrator + '</option>' );
 			
 			$speakerSelect.on( 'change blur', function() {
 				dialogueData[index].speaker = $( this ).val();
@@ -125,8 +125,8 @@ jQuery( function( $ ) {
 			if ( dialogue.background ) {
 				$imagePreview.attr( 'src', dialogue.background ).show();
 			}
-			var $imageButton = $( '<button type="button" class="button dialogue-background-button">背景画像を選択</button>' );
-			var $imageClearButton = $( '<button type="button" class="button dialogue-background-clear" style="display: ' + ( dialogue.background ? 'inline-block' : 'none' ) + ';">削除</button>' );
+			var $imageButton = $( '<button type="button" class="button dialogue-background-button">' + novelGameMeta.strings.selectBackgroundImage + '</button>' );
+			var $imageClearButton = $( '<button type="button" class="button dialogue-background-clear" style="display: ' + ( dialogue.background ? 'inline-block' : 'none' ) + ';">' + novelGameMeta.strings.remove + '</button>' );
 			
 			$imageButton.on( 'click', function() {
 				selectDialogueBackground( index );
@@ -144,7 +144,7 @@ jQuery( function( $ ) {
 			var $flagContainer = createDialogueFlagUI( dialogue, index );
 			
 			// 削除ボタン
-			var $deleteButton = $( '<button type="button" class="button dialogue-delete-button">削除</button>' );
+			var $deleteButton = $( '<button type="button" class="button dialogue-delete-button">' + novelGameMeta.strings.remove + '</button>' );
 			$deleteButton.on( 'click', function() {
 				deleteDialogue( index );
 			} );
@@ -165,12 +165,12 @@ jQuery( function( $ ) {
 			var $controls = $( '<div class="dialogue-controls">' );
 			$controls.append( $moveUpButton, $moveDownButton, $deleteButton );
 			
-			$item.append( '<p><strong>セリフ ' + ( index + 1 ) + '</strong></p>' );
+			$item.append( '<p><strong>' + novelGameMeta.strings.dialogue + ' ' + ( index + 1 ) + '</strong></p>' );
 			$item.append( $textArea );
 			$item.append( $speakerContainer );
-			$item.append( '<p><strong>背景画像:</strong></p>' );
+			$item.append( '<p><strong>' + novelGameMeta.strings.backgroundImage + '</strong></p>' );
 			$item.append( $imageContainer );
-			$item.append( '<p><strong>フラグ制御:</strong></p>' );
+			$item.append( '<p><strong>' + novelGameMeta.strings.flagControl + '</strong></p>' );
 			$item.append( $flagContainer );
 			$item.append( $controls );
 			$item.append( '<hr>' );
@@ -184,11 +184,11 @@ jQuery( function( $ ) {
 	 */
 	function deleteDialogue( index ) {
 		if ( dialogueData.length <= 1 ) {
-			alert( '最低1つのセリフは必要です。' );
+			alert( novelGameMeta.strings.minDialogueRequired );
 			return;
 		}
 		
-		if ( confirm( '本当にこのセリフを削除しますか？' ) ) {
+		if ( confirm( novelGameMeta.strings.confirmDeleteDialogue ) ) {
 			dialogueData.splice( index, 1 );
 			renderDialogueList();
 			updateDialogueTextarea();
@@ -235,18 +235,18 @@ jQuery( function( $ ) {
 	 */
 	function selectDialogueBackground( index ) {
 		if ( typeof wp.media === 'undefined' ) {
-			alert( 'メディアライブラリが利用できません。' );
+			alert( novelGameMeta.strings.mediaLibraryUnavailable );
 			return;
 		}
 		
 		var frame = wp.media( {
-			title: '背景画像を選択',
+			title: novelGameMeta.strings.selectBackgroundImage,
 			multiple: false,
 			library: {
 				type: 'image'
 			},
 			button: {
-				text: 'この画像を使用'
+				text: novelGameMeta.strings.useThisImage
 			}
 		} );
 		
@@ -281,11 +281,11 @@ jQuery( function( $ ) {
 		
 		// 表示モード選択
 		var $displayModeContainer = $( '<div class="flag-display-mode">' );
-		var $displayModeLabel = $( '<label>表示制御:</label>' );
+		var $displayModeLabel = $( '<label>' + novelGameMeta.strings.displayControl + '</label>' );
 		var $displayModeSelect = $( '<select class="dialogue-display-mode-select">' );
-		$displayModeSelect.append( '<option value="normal"' + ( dialogue.displayMode === 'normal' ? ' selected' : '' ) + '>通常表示</option>' );
-		$displayModeSelect.append( '<option value="hidden"' + ( dialogue.displayMode === 'hidden' ? ' selected' : '' ) + '>条件で非表示</option>' );
-		$displayModeSelect.append( '<option value="alternative"' + ( dialogue.displayMode === 'alternative' ? ' selected' : '' ) + '>条件で内容変更</option>' );
+		$displayModeSelect.append( '<option value="normal"' + ( dialogue.displayMode === 'normal' ? ' selected' : '' ) + '>' + novelGameMeta.strings.normalDisplay + '</option>' );
+		$displayModeSelect.append( '<option value="hidden"' + ( dialogue.displayMode === 'hidden' ? ' selected' : '' ) + '>' + novelGameMeta.strings.hiddenByCondition + '</option>' );
+		$displayModeSelect.append( '<option value="alternative"' + ( dialogue.displayMode === 'alternative' ? ' selected' : '' ) + '>' + novelGameMeta.strings.alternativeByCondition + '</option>' );
 		
 		$displayModeSelect.on( 'change', function() {
 			dialogueData[index].displayMode = $( this ).val();
@@ -306,7 +306,7 @@ jQuery( function( $ ) {
 				
 				// フラグ選択
 				var $flagSelect = $( '<select class="dialogue-flag-condition-select">' );
-				$flagSelect.append( '<option value="">-- フラグ選択 --</option>' );
+				$flagSelect.append( '<option value="">' + novelGameMeta.strings.selectFlag + '</option>' );
 				
 				// 現在のゲームのフラグマスタから選択肢を生成
 				if ( novelGameFlagData && novelGameFlagData.flagMaster && Array.isArray( novelGameFlagData.flagMaster ) ) {
@@ -334,7 +334,7 @@ jQuery( function( $ ) {
 				} )( i );
 				
 				$conditionRow.append( 
-					'<label>フラグ' + ( i + 1 ) + ':</label> ',
+					'<label>' + novelGameMeta.strings.flagLabel + ( i + 1 ) + ':</label> ',
 					$flagSelect, ' ',
 					$stateSelect
 				);
@@ -343,10 +343,10 @@ jQuery( function( $ ) {
 			
 			// AND/OR選択
 			var $logicContainer = $( '<div class="flag-logic-container">' );
-			var $logicLabel = $( '<label>条件:</label>' );
+			var $logicLabel = $( '<label>' + novelGameMeta.strings.condition + '</label>' );
 			var $logicSelect = $( '<select class="dialogue-flag-logic-select">' );
-			$logicSelect.append( '<option value="AND"' + ( dialogue.flagConditionLogic === 'AND' ? ' selected' : '' ) + '>AND（すべて）</option>' );
-			$logicSelect.append( '<option value="OR"' + ( dialogue.flagConditionLogic === 'OR' ? ' selected' : '' ) + '>OR（いずれか）</option>' );
+			$logicSelect.append( '<option value="AND"' + ( dialogue.flagConditionLogic === 'AND' ? ' selected' : '' ) + '>' + novelGameMeta.strings.conditionAnd + '</option>' );
+			$logicSelect.append( '<option value="OR"' + ( dialogue.flagConditionLogic === 'OR' ? ' selected' : '' ) + '>' + novelGameMeta.strings.conditionOr + '</option>' );
 			
 			$logicSelect.on( 'change', function() {
 				dialogueData[index].flagConditionLogic = $( this ).val();
@@ -573,7 +573,7 @@ jQuery( function( $ ) {
 				
 				// フラグ選択
 				var $flagSelect = $( '<select class="flag-condition-select" style="width: 120px; margin-right: 5px;"></select>' );
-				$flagSelect.append( '<option value="">-- フラグ選択 --</option>' );
+				$flagSelect.append( '<option value="">' + novelGameMeta.strings.selectFlag + '</option>' );
 				
 				// 現在のゲームのフラグマスタから選択肢を生成
 				if ( novelGameFlagData && novelGameFlagData.flagMaster && Array.isArray( novelGameFlagData.flagMaster ) ) {
@@ -610,7 +610,7 @@ jQuery( function( $ ) {
 			if ( novelGameFlagData && novelGameFlagData.flagMaster && Array.isArray( novelGameFlagData.flagMaster ) ) {
 				novelGameFlagData.flagMaster.forEach( function( flag ) {
 					// 現在の設定値を取得（新旧両形式対応）
-					var currentSetting = 'none'; // デフォルトは「設定しない」
+					var currentSetting = 'none'; // novelGameMeta.strings.defaultDoNotSet
 					if ( choice.setFlags && Array.isArray( choice.setFlags ) ) {
 						choice.setFlags.forEach( function( flagData ) {
 							if ( typeof flagData === 'object' && flagData.name === flag.name ) {
@@ -626,7 +626,7 @@ jQuery( function( $ ) {
 					var $flagRow = $( '<div style="display: flex; align-items: center; margin-bottom: 4px; font-size: 11px;"></div>' );
 					var $flagLabel = $( '<span style="min-width: 60px; margin-right: 8px;">' + flag.name + ':</span>' );
 					var $flagSelect = $( '<select class="flag-set-select" data-flag-name="' + flag.name + '" style="font-size: 11px; padding: 1px 2px;">' +
-						'<option value="none"' + (currentSetting === 'none' ? ' selected' : '') + '>設定しない</option>' +
+						'<option value="none"' + (currentSetting === 'none' ? ' selected' : '') + '>' + novelGameMeta.strings.doNotSet + '</option>' +
 						'<option value="on"' + (currentSetting === 'on' ? ' selected' : '') + '>ON</option>' +
 						'<option value="off"' + (currentSetting === 'off' ? ' selected' : '') + '>OFF</option>' +
 						'</select>' );
@@ -635,7 +635,7 @@ jQuery( function( $ ) {
 					$flagSelect.on( 'change', function() {
 						var flagName = $( this ).data( 'flag-name' );
 						var newValue = $( this ).val();
-						console.log( 'フラグ設定変更:', flagName, '→', newValue );
+						console.log( novelGameMeta.strings.flagSettingChange, flagName, '→', newValue );
 						// 選択肢データの自動更新をトリガー
 						setTimeout( updateChoicesHidden, 10 );
 					} );
@@ -646,7 +646,7 @@ jQuery( function( $ ) {
 			}
 			
 			if ( $flagSetContainer.children().length === 0 ) {
-				$flagSetContainer.append( '<small style="color: #666;">フラグなし</small>' );
+				$flagSetContainer.append( '<small style="color: #666;">' + novelGameMeta.strings.noFlags + '</small>' );
 			}
 			
 			$flagSetCell.append( $flagSetContainer );
@@ -659,13 +659,13 @@ jQuery( function( $ ) {
 			
 			// 次のシーンが選択されている場合は編集ボタンを表示
 			if ( choice.next && choice.next !== '__new__' && choice.next !== '' ) {
-				var $editButton = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + choice.next + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">編集</a>' );
+				var $editButton = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + choice.next + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">' + novelGameMeta.strings.edit + '</a>' );
 				$actionCell.append( $editButton );
 				
 				// 編集ボタンにクリックイベントを追加（投稿保存確認）
 				$editButton.on( 'click', function( e ) {
 					if ( ! noveltool_is_post_saved() ) {
-						var confirmMessage = '現在の投稿に未保存の変更があります。\n\n保存せずに編集画面を開きますか？\n\n「キャンセル」を選択すると、まず現在の投稿を保存できます。';
+						var confirmMessage = novelGameMeta.strings.unsavedChanges;
 						if ( ! confirm( confirmMessage ) ) {
 							e.preventDefault();
 							return false;
@@ -793,7 +793,7 @@ jQuery( function( $ ) {
 		if ( allowedExtensions.indexOf( extension ) === -1 ) {
 			return {
 				valid: false,
-				message: 'サポートされていないファイル形式です。jpg, jpeg, png, gif, webp のみアップロード可能です。'
+				message: novelGameMeta.strings.unsupportedFileExtension
 			};
 		}
 		
@@ -801,7 +801,7 @@ jQuery( function( $ ) {
 		if ( allowedMimeTypes.indexOf( attachment.mime ) === -1 ) {
 			return {
 				valid: false,
-				message: 'サポートされていないファイル形式です。画像ファイルのみアップロード可能です。'
+				message: novelGameMeta.strings.unsupportedMimeType
 			};
 		}
 		
@@ -809,7 +809,7 @@ jQuery( function( $ ) {
 		if ( attachment.filesizeInBytes > maxSize ) {
 			return {
 				valid: false,
-				message: 'ファイルサイズが大きすぎます。5MB以下のファイルをアップロードしてください。'
+				message: novelGameMeta.strings.fileSizeExceeded
 			};
 		}
 		
@@ -872,9 +872,9 @@ jQuery( function( $ ) {
 			e.preventDefault();
 
 			var customUploader = wp.media( {
-				title: 'キャラクター画像を選択',
+				title: novelGameMeta.strings.selectCharacterImage,
 				button: {
-					text: 'この画像を使用'
+					text: novelGameMeta.strings.useThisImage
 				},
 				multiple: false,
 				library: {
@@ -1014,13 +1014,13 @@ jQuery( function( $ ) {
 			// 削除確認メッセージにより詳細な情報を追加
 			var confirmMessage = novelGameMeta.strings.confirmDelete;
 			if ( currentChoiceText ) {
-				confirmMessage += '\n\n削除対象: 「' + currentChoiceText + '」';
+				confirmMessage += '\n\n' + novelGameMeta.strings.deleteTarget + ' 「' + currentChoiceText + '」';
 			}
 			
 			// 他の選択肢への影響をチェック
 			var remainingChoices = $( '#novel-choices-table tbody tr' ).not( $row ).length;
 			if ( remainingChoices === 0 ) {
-				confirmMessage += '\n\n注意: これは最後の選択肢です。削除すると選択肢が無くなります。';
+				confirmMessage += '\n\n' + novelGameMeta.strings.lastChoiceWarning;
 			}
 			
 			if ( confirm( confirmMessage ) ) {
@@ -1030,7 +1030,7 @@ jQuery( function( $ ) {
 				// 削除後のテーブルが空になった場合の処理
 				if ( $( '#novel-choices-table tbody tr' ).length === 0 ) {
 					// 空のメッセージを表示（オプション）
-					console.log( '選択肢が全て削除されました。' );
+					console.log( novelGameMeta.strings.allChoicesDeleted );
 				}
 			}
 		} );
@@ -1050,13 +1050,13 @@ jQuery( function( $ ) {
 				
 				// 次のシーンが選択されている場合は編集ボタンを追加
 				if ( selectedSceneId && selectedSceneId !== '__new__' && selectedSceneId !== '' ) {
-					var $editButton = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + selectedSceneId + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">編集</a>' );
+					var $editButton = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + selectedSceneId + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">' + novelGameMeta.strings.edit + '</a>' );
 					$actionCell.append( $editButton );
 					
 					// 編集ボタンにクリックイベントを追加（投稿保存確認）
 					$editButton.on( 'click', function( e ) {
 						if ( ! noveltool_is_post_saved() ) {
-							var confirmMessage = '現在の投稿に未保存の変更があります。\n\n保存せずに編集画面を開きますか？\n\n「キャンセル」を選択すると、まず現在の投稿を保存できます。';
+							var confirmMessage = novelGameMeta.strings.unsavedChanges;
 							if ( ! confirm( confirmMessage ) ) {
 								e.preventDefault();
 								return false;
@@ -1107,7 +1107,7 @@ jQuery( function( $ ) {
 		$( '#novel-create-next-command' ).on( 'click', function() {
 			// 投稿が保存されているかチェック
 			if ( ! noveltool_is_post_saved() ) {
-				if ( confirm( '投稿が保存されていません。保存してから新しいコマンドを作成しますか？' ) ) {
+				if ( confirm( novelGameMeta.strings.postNotSaved ) ) {
 					// 投稿を保存
 					$( '#publish' ).click();
 					
@@ -1173,13 +1173,13 @@ jQuery( function( $ ) {
 						
 						// 編集リンクを削除ボタンと同じセルに追加
 						var $actionCell = $row.find( 'td:last' );
-						var $editLink = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + response.data.ID + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">編集</a>' );
+						var $editLink = $( '<a href="' + novelGameMeta.admin_url + 'post.php?post=' + response.data.ID + '&action=edit" target="_blank" class="button button-small edit-scene-link" style="margin-left: 5px;">' + novelGameMeta.strings.edit + '</a>' );
 						$actionCell.append( $editLink );
 						
 						// 編集ボタンにクリックイベントを追加（投稿保存確認）
 						$editLink.on( 'click', function( e ) {
 							if ( ! noveltool_is_post_saved() ) {
-								var confirmMessage = '現在の投稿に未保存の変更があります。\n\n保存せずに編集画面を開きますか？\n\n「キャンセル」を選択すると、まず現在の投稿を保存できます。';
+								var confirmMessage = novelGameMeta.strings.unsavedChanges;
 								if ( ! confirm( confirmMessage ) ) {
 									e.preventDefault();
 									return false;
@@ -1190,7 +1190,7 @@ jQuery( function( $ ) {
 						// 隠しフィールドを更新
 						updateChoicesHidden();
 						
-						alert( '新しいシーン「' + response.data.title + '」が作成されました。編集リンクから編集できます。' );
+						alert( novelGameMeta.strings.newSceneCreated.replace( '%s', response.data.title ) );
 					} else {
 						alert( novelGameMeta.strings.createFailed );
 						$row.remove(); // 失敗時は行を削除
