@@ -1,4 +1,4 @@
-# Novel Game Plugin - Portable Object Template
+# Japanese translations for Novel Game Plugin
 # Copyright (C) 2024 Novel Game Plugin
 # This file is distributed under the same license as the Novel Game Plugin package.
 msgid ""
@@ -6,71 +6,72 @@ msgstr ""
 "Project-Id-Version: Novel Game Plugin 1.1.2\n"
 "Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin/issues\n"
 "POT-Creation-Date: 2025-01-09 07:27+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2025-01-09 07:30+0000\n"
+"Last-Translator: Novel Game Plugin Team\n"
+"Language-Team: Japanese\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: xgettext\n"
 "X-Domain: novel-game-plugin\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: novel-game-plugin.php:1034 novel-game-plugin.php:1322
 #: templates/archive-novel_game.php:148
 #, php-format
 msgid "%d シーン"
-msgstr ""
+msgstr "%d シーン"
 
 #: includes/post-types.php:419
 #, php-format
 msgid "%d 投稿"
-msgstr ""
+msgstr "%d 投稿"
 
 #: admin/new-game.php:221
 #, php-format
 msgid "%s - 開始シーン"
-msgstr ""
+msgstr "%s - 開始シーン"
 
 #: admin/meta-boxes.php:843
 msgid "+ セリフを追加"
-msgstr ""
+msgstr "+ セリフを追加"
 
 #: admin/meta-boxes.php:307
 msgid "+ 新規作成..."
-msgstr ""
+msgstr "+ 新規作成..."
 
 #: includes/post-types.php:317
 msgid "-- ゲームを選択 --"
-msgstr ""
+msgstr "-- ゲームを選択 --"
 
 #: admin/meta-boxes.php:656
 msgid "-- ゲームを選択してください --"
-msgstr ""
+msgstr "-- ゲームを選択してください --"
 
 #: admin/meta-boxes.php:330
 msgid "-- フラグ選択 --"
-msgstr ""
+msgstr "-- フラグ選択 --"
 
 #: admin/meta-boxes.php:318
 msgid "-- 話者を選択 --"
-msgstr ""
+msgstr "-- 話者を選択 --"
 
 #: admin/meta-boxes.php:306
 msgid "-- 選択 --"
-msgstr ""
+msgstr "-- 選択 --"
 
 #: admin/meta-boxes.php:333
 msgid "AND（すべて）"
-msgstr ""
+msgstr "AND（すべて）"
 
 #: admin/game-settings.php:475 admin/game-settings.php:710
 msgid "Game Over 画面に表示するテキスト"
-msgstr ""
+msgstr "Game Over 画面に表示するテキスト"
 
 #: admin/game-settings.php:467 admin/game-settings.php:702
 msgid "Game Over 画面テキスト"
-msgstr ""
+msgstr "Game Over 画面テキスト"
 
 #: admin/game-settings.php:746
 msgid ""
@@ -88,7 +89,7 @@ msgstr ""
 
 #: admin/meta-boxes.php:334
 msgid "OR（いずれか）"
-msgstr ""
+msgstr "OR（いずれか）"
 
 #: admin/game-settings.php:762
 msgid "columns"
@@ -120,115 +121,115 @@ msgstr ""
 
 #: includes/revisions.php:414
 msgid "いいえ"
-msgstr ""
+msgstr "いいえ"
 
 #: admin/game-settings.php:779
 msgid "ここでは、複数のノベルゲームの基本情報を管理できます。"
-msgstr ""
+msgstr "ここでは、複数のノベルゲームの基本情報を管理できます。"
 
 #: admin/meta-boxes.php:970 admin/game-settings.php:522
 msgid "このゲームにはまだフラグが設定されていません。"
-msgstr ""
+msgstr "このゲームにはまだフラグが設定されていません。"
 
 #: includes/post-types.php:338
 msgid "このゲームにはまだ投稿がありません。"
-msgstr ""
+msgstr "このゲームにはまだ投稿がありません。"
 
 #: novel-game-plugin.php:1150
 msgid "このゲームには投稿がありません。"
-msgstr ""
+msgstr "このゲームには投稿がありません。"
 
 #: admin/new-game.php:124
 msgid "このゲームタイトルは既に使用されています。"
-msgstr ""
+msgstr "このゲームタイトルは既に使用されています。"
 
 #: admin/meta-boxes.php:675
 msgid "このシーンが属するゲームのタイトルを入力してください"
-msgstr ""
+msgstr "このシーンが属するゲームのタイトルを入力してください"
 
 #: admin/meta-boxes.php:664
 msgid "このシーンが属するゲームを選択してください。"
-msgstr ""
+msgstr "このシーンが属するゲームを選択してください。"
 
 #: admin/meta-boxes.php:951
 msgid "このシーンに到達した時に自動的に設定されるフラグを選択してください。"
-msgstr ""
+msgstr "このシーンに到達した時に自動的に設定されるフラグを選択してください。"
 
 #: admin/meta-boxes.php:913
 msgid "このシーンをエンディング（ゲームの終了）として設定する"
-msgstr ""
+msgstr "このシーンをエンディング（ゲームの終了）として設定する"
 
 #: admin/new-game.php:168
 msgid "このタイトルは全体のゲームタイトルとして使用されます。"
-msgstr ""
+msgstr "このタイトルは全体のゲームタイトルとして使用されます。"
 
 #: includes/post-types.php:44
 msgid "このノベルゲームにアップロード"
-msgstr ""
+msgstr "このノベルゲームにアップロード"
 
 #: admin/new-game.php:47 admin/new-game.php:110 admin/game-settings.php:44
 #: admin/game-settings.php:307 includes/post-types.php:291
 msgid "このページにアクセスする権限がありません。"
-msgstr ""
+msgstr "このページにアクセスする権限がありません。"
 
 #: admin/meta-boxes.php:310 admin/game-settings.php:1011
 msgid "この画像を使う"
-msgstr ""
+msgstr "この画像を使う"
 
 #: admin/meta-boxes.php:896
 msgid "この選択肢を選んだ時に設定されるフラグ"
-msgstr ""
+msgstr "この選択肢を選んだ時に設定されるフラグ"
 
 #: includes/post-types.php:234
 msgid "すべてのゲーム"
-msgstr ""
+msgstr "すべてのゲーム"
 
 #: includes/post-types.php:28
 msgid "すべてのノベルゲーム"
-msgstr ""
+msgstr "すべてのノベルゲーム"
 
 #: admin/game-settings.php:337
 msgid "そのタイトルのゲームは既に存在します。"
-msgstr ""
+msgstr "そのタイトルのゲームは既に存在します。"
 
 #: includes/revisions.php:414
 msgid "はい"
-msgstr ""
+msgstr "はい"
 
 #: admin/game-settings.php:630 novel-game-plugin.php:958
 #: novel-game-plugin.php:1256 includes/post-types.php:307
 #: templates/archive-novel_game.php:162
 msgid "まだゲームが作成されていません。"
-msgstr ""
+msgstr "まだゲームが作成されていません。"
 
 #: admin/new-game.php:241
 #, php-format
 msgid "ようこそ「%s」へ！"
-msgstr ""
+msgstr "ようこそ「%s」へ！"
 
 #: includes/post-types.php:39
 msgid "アイキャッチ画像"
-msgstr ""
+msgstr "アイキャッチ画像"
 
 #: includes/post-types.php:42
 msgid "アイキャッチ画像として使用"
-msgstr ""
+msgstr "アイキャッチ画像として使用"
 
 #: includes/post-types.php:41
 msgid "アイキャッチ画像を削除"
-msgstr ""
+msgstr "アイキャッチ画像を削除"
 
 #: includes/post-types.php:40
 msgid "アイキャッチ画像を設定"
-msgstr ""
+msgstr "アイキャッチ画像を設定"
 
 #: includes/revisions.php:390
 msgid "エンディング"
-msgstr ""
+msgstr "エンディング"
 
 #: includes/revisions.php:391
 msgid "エンディングテキスト"
-msgstr ""
+msgstr "エンディングテキスト"
 
 #: admin/meta-boxes.php:925
 msgid ""
@@ -238,139 +239,139 @@ msgstr ""
 
 #: admin/meta-boxes.php:924
 msgid "エンディング画面に表示するテキスト（デフォルト: おわり）"
-msgstr ""
+msgstr "エンディング画面に表示するテキスト（デフォルト: おわり）"
 
 #: admin/meta-boxes.php:918
 msgid "エンディング画面テキスト"
-msgstr ""
+msgstr "エンディング画面テキスト"
 
 #: admin/meta-boxes.php:904
 msgid "エンディング設定"
-msgstr ""
+msgstr "エンディング設定"
 
 #: includes/revisions.php:195
 msgid "カスタムフィールドデータ"
-msgstr ""
+msgstr "カスタムフィールドデータ"
 
 #: novel-game-plugin.php:732
 msgid "キャラクター"
-msgstr ""
+msgstr "キャラクター"
 
 #: admin/meta-boxes.php:726 admin/meta-boxes.php:761 admin/meta-boxes.php:796
 msgid "キャラクター名"
-msgstr ""
+msgstr "キャラクター名"
 
 #: admin/meta-boxes.php:731 admin/meta-boxes.php:766 admin/meta-boxes.php:801
 msgid "キャラクター名を入力"
-msgstr ""
+msgstr "キャラクター名を入力"
 
 #: admin/meta-boxes.php:712
 msgid "キャラクター画像"
-msgstr ""
+msgstr "キャラクター画像"
 
 #: admin/meta-boxes.php:339
 msgid "キャラクター画像を選択"
-msgstr ""
+msgstr "キャラクター画像を選択"
 
 #: includes/revisions.php:376
 msgid "キャラクター画像（旧）"
-msgstr ""
+msgstr "キャラクター画像（旧）"
 
 #: admin/game-settings.php:579
 msgid "キャンセル"
-msgstr ""
+msgstr "キャンセル"
 
 #: js/blocks.js:60
 msgid "ゲーム"
-msgstr ""
+msgstr "ゲーム"
 
 #: includes/post-types.php:330
 #, php-format
 msgid "ゲーム: %s"
-msgstr ""
+msgstr "ゲーム: %s"
 
 #: js/blocks.js:158
 msgid "ゲーム「{title}」が表示されます"
-msgstr ""
+msgstr "ゲーム「{title}」が表示されます"
 
 #: admin/game-settings.php:369
 msgid "ゲームが正常に削除されました。"
-msgstr ""
+msgstr "ゲームが正常に削除されました。"
 
 #: admin/game-settings.php:366
 msgid "ゲームが正常に更新されました。"
-msgstr ""
+msgstr "ゲームが正常に更新されました。"
 
 #: admin/game-settings.php:363
 msgid "ゲームが正常に追加されました。"
-msgstr ""
+msgstr "ゲームが正常に追加されました。"
 
 #: admin/game-settings.php:418 admin/game-settings.php:653
 msgid "ゲームのタイトルを入力してください"
-msgstr ""
+msgstr "ゲームのタイトルを入力してください"
 
 #: admin/new-game.php:127
 msgid "ゲームの作成に失敗しました。"
-msgstr ""
+msgstr "ゲームの作成に失敗しました。"
 
 #: admin/game-settings.php:340
 msgid "ゲームの保存に失敗しました。"
-msgstr ""
+msgstr "ゲームの保存に失敗しました。"
 
 #: admin/game-settings.php:343
 msgid "ゲームの削除に失敗しました。"
-msgstr ""
+msgstr "ゲームの削除に失敗しました。"
 
 #: admin/game-settings.php:432 admin/game-settings.php:667
 msgid "ゲームの概要・説明を入力してください"
-msgstr ""
+msgstr "ゲームの概要・説明を入力してください"
 
 #: admin/new-game.php:179
 msgid "ゲームを作成"
-msgstr ""
+msgstr "ゲームを作成"
 
 #: admin/game-settings.php:577
 msgid "ゲームを更新"
-msgstr ""
+msgstr "ゲームを更新"
 
 #: admin/meta-boxes.php:666 admin/meta-boxes.php:679
 msgid "ゲームを管理"
-msgstr ""
+msgstr "ゲームを管理"
 
 #: admin/game-settings.php:400
 msgid "ゲームを編集"
-msgstr ""
+msgstr "ゲームを編集"
 
 #: admin/game-settings.php:720
 msgid "ゲームを追加"
-msgstr ""
+msgstr "ゲームを追加"
 
 #: includes/post-types.php:315
 msgid "ゲームを選択:"
-msgstr ""
+msgstr "ゲームを選択:"
 
 #: js/blocks.js:160
 msgid "ゲームを選択してください"
-msgstr ""
+msgstr "ゲームを選択してください"
 
 #: novel-game-plugin.php:694 novel-game-plugin.php:1070
 #: novel-game-plugin.php:1214 templates/archive-novel_game.php:178
 msgid "ゲームを閉じる"
-msgstr ""
+msgstr "ゲームを閉じる"
 
 #: novel-game-plugin.php:682 novel-game-plugin.php:1205
 msgid "ゲームを開始"
-msgstr ""
+msgstr "ゲームを開始"
 
 #: admin/meta-boxes.php:648 admin/new-game.php:157 admin/game-settings.php:409
 #: admin/game-settings.php:644 includes/post-types.php:88
 #: includes/revisions.php:389
 msgid "ゲームタイトル"
-msgstr ""
+msgstr "ゲームタイトル"
 
 #: admin/game-settings.php:780
 msgid "ゲームタイトルは、シーン作成時に選択できます。"
-msgstr ""
+msgstr "ゲームタイトルは、シーン作成時に選択できます。"
 
 #: admin/new-game.php:186
 msgid ""
@@ -381,70 +382,70 @@ msgstr ""
 #: admin/new-game.php:121 admin/game-settings.php:334
 #: admin/game-settings.php:1013
 msgid "ゲームタイトルを入力してください。"
-msgstr ""
+msgstr "ゲームタイトルを入力してください。"
 
 #: js/blocks.js:236
 msgid "ゲームデータを読み込み中..."
-msgstr ""
+msgstr "ゲームデータを読み込み中..."
 
 #: admin/game-settings.php:586 novel-game-plugin.php:1262
 #: includes/post-types.php:274 includes/post-types.php:275
 msgid "ゲーム一覧"
-msgstr ""
+msgstr "ゲーム一覧"
 
 #: admin/game-settings.php:751
 msgid "ゲーム一覧ショートコード（[novel_game_list]）のオプション"
-msgstr ""
+msgstr "ゲーム一覧ショートコード（[novel_game_list]）のオプション"
 
 #: admin/meta-boxes.php:677
 msgid "ゲーム全体のタイトルを設定します。"
-msgstr ""
+msgstr "ゲーム全体のタイトルを設定します。"
 
 #: admin/game-settings.php:22 admin/game-settings.php:23
 #: admin/game-settings.php:570
 msgid "ゲーム基本情報"
-msgstr ""
+msgstr "ゲーム基本情報"
 
 #: admin/meta-boxes.php:972
 msgid "ゲーム基本情報でフラグを管理"
-msgstr ""
+msgstr "ゲーム基本情報でフラグを管理"
 
 #: admin/game-settings.php:424 admin/game-settings.php:659
 #: includes/post-types.php:410
 msgid "ゲーム概要"
-msgstr ""
+msgstr "ゲーム概要"
 
 #: admin/game-settings.php:781
 msgid "ゲーム概要は、ゲームの紹介やあらすじを記載してください。"
-msgstr ""
+msgstr "ゲーム概要は、ゲームの紹介やあらすじを記載してください。"
 
 #: js/blocks.js:167
 msgid "ゲーム設定"
-msgstr ""
+msgstr "ゲーム設定"
 
 #: admin/game-settings.php:759
 msgid "ゲーム説明の表示（true/false、デフォルト: false）"
-msgstr ""
+msgstr "ゲーム説明の表示（true/false、デフォルト: false）"
 
 #: js/blocks.js:197
 msgid "ゲーム説明を表示"
-msgstr ""
+msgstr "ゲーム説明を表示"
 
 #: js/blocks.js:180
 msgid "ゲーム選択"
-msgstr ""
+msgstr "ゲーム選択"
 
 #: templates/archive-novel_game.php:152
 msgid "ゲーム開始"
-msgstr ""
+msgstr "ゲーム開始"
 
 #: admin/game-settings.php:738
 msgid "コピー"
-msgstr ""
+msgstr "コピー"
 
 #: includes/post-types.php:38
 msgid "ゴミ箱にノベルゲームが見つかりません"
-msgstr ""
+msgstr "ゴミ箱にノベルゲームが見つかりません"
 
 #: admin/meta-boxes.php:351
 msgid ""
@@ -459,43 +460,43 @@ msgstr ""
 
 #: admin/game-settings.php:729
 msgid "ショートコード"
-msgstr ""
+msgstr "ショートコード"
 
 #: admin/meta-boxes.php:706
 msgid "シーンの背景画像を設定します。"
-msgstr ""
+msgstr "シーンの背景画像を設定します。"
 
 #: admin/meta-boxes.php:139
 msgid "シーンデータ"
-msgstr ""
+msgstr "シーンデータ"
 
 #: admin/meta-boxes.php:950
 msgid "シーン到達時に設定するフラグ"
-msgstr ""
+msgstr "シーン到達時に設定するフラグ"
 
 #: includes/revisions.php:392
 msgid "シーン到達時フラグ"
-msgstr ""
+msgstr "シーン到達時フラグ"
 
 #: admin/game-settings.php:755
 msgid "シーン数の表示（true/false、デフォルト: true）"
-msgstr ""
+msgstr "シーン数の表示（true/false、デフォルト: true）"
 
 #: js/blocks.js:190
 msgid "シーン数を表示"
-msgstr ""
+msgstr "シーン数を表示"
 
 #: includes/post-types.php:357
 msgid "ステータス"
-msgstr ""
+msgstr "ステータス"
 
 #: admin/meta-boxes.php:27 admin/new-game.php:118 admin/game-settings.php:331
 msgid "セキュリティチェックに失敗しました。"
-msgstr ""
+msgstr "セキュリティチェックに失敗しました。"
 
 #: admin/meta-boxes.php:335 admin/meta-boxes.php:834
 msgid "セリフ"
-msgstr ""
+msgstr "セリフ"
 
 #: admin/meta-boxes.php:982
 msgid ""
@@ -505,51 +506,51 @@ msgstr ""
 
 #: admin/meta-boxes.php:316
 msgid "セリフを入力してください"
-msgstr ""
+msgstr "セリフを入力してください"
 
 #: includes/revisions.php:384
 msgid "セリフテキスト"
-msgstr ""
+msgstr "セリフテキスト"
 
 #: includes/revisions.php:383
 msgid "セリフテキスト（旧）"
-msgstr ""
+msgstr "セリフテキスト（旧）"
 
 #: includes/revisions.php:387
 msgid "セリフフラグ条件"
-msgstr ""
+msgstr "セリフフラグ条件"
 
 #: admin/meta-boxes.php:978
 msgid "セリフレベルのフラグ条件"
-msgstr ""
+msgstr "セリフレベルのフラグ条件"
 
 #: includes/revisions.php:385
 msgid "セリフ背景"
-msgstr ""
+msgstr "セリフ背景"
 
 #: includes/revisions.php:386
 msgid "セリフ話者"
-msgstr ""
+msgstr "セリフ話者"
 
 #: includes/post-types.php:351
 msgid "タイトル"
-msgstr ""
+msgstr "タイトル"
 
 #: admin/meta-boxes.php:40
 msgid "タイトルが入力されていません。"
-msgstr ""
+msgstr "タイトルが入力されていません。"
 
 #: admin/game-settings.php:438 admin/game-settings.php:673
 msgid "タイトル画面画像"
-msgstr ""
+msgstr "タイトル画面画像"
 
 #: admin/game-settings.php:782
 msgid "タイトル画面画像は、ゲームの開始時に表示されるメイン画像です。"
-msgstr ""
+msgstr "タイトル画面画像は、ゲームの開始時に表示されるメイン画像です。"
 
 #: admin/game-settings.php:447 admin/game-settings.php:682
 msgid "タイトル画面画像プレビュー"
-msgstr ""
+msgstr "タイトル画面画像プレビュー"
 
 #: admin/meta-boxes.php:915
 msgid ""
@@ -559,87 +560,87 @@ msgstr ""
 
 #: admin/meta-boxes.php:866
 msgid "テキスト"
-msgstr ""
+msgstr "テキスト"
 
 #: admin/meta-boxes.php:343
 msgid "デフォルトは「設定しない」"
-msgstr ""
+msgstr "デフォルトは「設定しない」"
 
 #: includes/revisions.php:264 includes/revisions.php:269
 msgid "データなし"
-msgstr ""
+msgstr "データなし"
 
 #: admin/meta-boxes.php:322
 msgid "ナレーター"
-msgstr ""
+msgstr "ナレーター"
 
 #: js/blocks.js:59
 msgid "ノベル"
-msgstr ""
+msgstr "ノベル"
 
 #: includes/post-types.php:23 includes/post-types.php:24
 #: includes/post-types.php:51
 msgid "ノベルゲーム"
-msgstr ""
+msgstr "ノベルゲーム"
 
 #: includes/post-types.php:21
 msgctxt "Post Type General Name"
 msgid "ノベルゲーム"
-msgstr ""
+msgstr "ノベルゲーム"
 
 #: includes/post-types.php:22
 msgctxt "Post Type Singular Name"
 msgid "ノベルゲーム"
-msgstr ""
+msgstr "ノベルゲーム"
 
 #: includes/post-types.php:37
 msgid "ノベルゲームが見つかりません"
-msgstr ""
+msgstr "ノベルゲームが見つかりません"
 
 #: includes/post-types.php:43
 msgid "ノベルゲームに挿入"
-msgstr ""
+msgstr "ノベルゲームに挿入"
 
 #: includes/post-types.php:52
 msgid "ノベルゲームのシーンを管理"
-msgstr ""
+msgstr "ノベルゲームのシーンを管理"
 
 #: js/blocks.js:55
 msgid "ノベルゲームの一覧または個別ゲームを表示します"
-msgstr ""
+msgstr "ノベルゲームの一覧または個別ゲームを表示します"
 
 #: includes/post-types.php:33
 msgid "ノベルゲームを更新"
-msgstr ""
+msgstr "ノベルゲームを更新"
 
 #: includes/post-types.php:36
 msgid "ノベルゲームを検索"
-msgstr ""
+msgstr "ノベルゲームを検索"
 
 #: includes/post-types.php:32
 msgid "ノベルゲームを編集"
-msgstr ""
+msgstr "ノベルゲームを編集"
 
 #: includes/post-types.php:34 includes/post-types.php:35
 msgid "ノベルゲームを表示"
-msgstr ""
+msgstr "ノベルゲームを表示"
 
 #: includes/post-types.php:25 includes/post-types.php:45
 #: templates/archive-novel_game.php:26
 msgid "ノベルゲーム一覧"
-msgstr ""
+msgstr "ノベルゲーム一覧"
 
 #: includes/post-types.php:47
 msgid "ノベルゲーム一覧をフィルター"
-msgstr ""
+msgstr "ノベルゲーム一覧をフィルター"
 
 #: includes/post-types.php:46
 msgid "ノベルゲーム一覧ナビゲーション"
-msgstr ""
+msgstr "ノベルゲーム一覧ナビゲーション"
 
 #: includes/post-types.php:26
 msgid "ノベルゲーム属性"
-msgstr ""
+msgstr "ノベルゲーム属性"
 
 #: admin/meta-boxes.php:353
 msgid ""
@@ -648,27 +649,27 @@ msgstr ""
 
 #: admin/meta-boxes.php:331
 msgid "フラグ"
-msgstr ""
+msgstr "フラグ"
 
 #: admin/game-settings.php:375
 msgid "フラグが正常に削除されました。"
-msgstr ""
+msgstr "フラグが正常に削除されました。"
 
 #: admin/game-settings.php:372
 msgid "フラグが正常に追加されました。"
-msgstr ""
+msgstr "フラグが正常に追加されました。"
 
 #: admin/meta-boxes.php:340
 msgid "フラグなし"
-msgstr ""
+msgstr "フラグなし"
 
 #: admin/game-settings.php:355
 msgid "フラグの削除に失敗しました。"
-msgstr ""
+msgstr "フラグの削除に失敗しました。"
 
 #: admin/game-settings.php:556
 msgid "フラグの用途を説明する任意のテキストです。"
-msgstr ""
+msgstr "フラグの用途を説明する任意のテキストです。"
 
 #: admin/game-settings.php:352
 msgid ""
@@ -677,96 +678,96 @@ msgstr ""
 
 #: admin/game-settings.php:565
 msgid "フラグを追加"
-msgstr ""
+msgstr "フラグを追加"
 
 #: admin/meta-boxes.php:325
 msgid "フラグ制御:"
-msgstr ""
+msgstr "フラグ制御:"
 
 #: admin/game-settings.php:494 admin/game-settings.php:533
 msgid "フラグ名"
-msgstr ""
+msgstr "フラグ名"
 
 #: admin/game-settings.php:349
 msgid "フラグ名とゲームタイトルを入力してください。"
-msgstr ""
+msgstr "フラグ名とゲームタイトルを入力してください。"
 
 #: admin/meta-boxes.php:868
 msgid "フラグ条件"
-msgstr ""
+msgstr "フラグ条件"
 
 #: admin/meta-boxes.php:895
 msgid "フラグ条件："
-msgstr ""
+msgstr "フラグ条件："
 
 #: admin/game-settings.php:481
 msgid "フラグ管理"
-msgstr ""
+msgstr "フラグ管理"
 
 #: admin/meta-boxes.php:869 admin/meta-boxes.php:932
 msgid "フラグ設定"
-msgstr ""
+msgstr "フラグ設定"
 
 #: admin/meta-boxes.php:341
 msgid "フラグ設定変更:"
-msgstr ""
+msgstr "フラグ設定変更:"
 
 #: admin/meta-boxes.php:896
 msgid "フラグ設定："
-msgstr ""
+msgstr "フラグ設定："
 
 #: admin/game-settings.php:745
 msgid "ブロックエディタでの使用（推奨）"
-msgstr ""
+msgstr "ブロックエディタでの使用（推奨）"
 
 #: templates/archive-novel_game.php:27
 msgid "プレイしたいゲームを選択してください"
-msgstr ""
+msgstr "プレイしたいゲームを選択してください"
 
 #: admin/meta-boxes.php:894
 msgid "プレイヤーが選択できる選択肢を設定します。"
-msgstr ""
+msgstr "プレイヤーが選択できる選択肢を設定します。"
 
 #: novel-game-plugin.php:1056 novel-game-plugin.php:1324
 msgid "プレイ開始"
-msgstr ""
+msgstr "プレイ開始"
 
 #: admin/new-game.php:185 admin/game-settings.php:778
 msgid "ヘルプ"
-msgstr ""
+msgstr "ヘルプ"
 
 #: admin/meta-boxes.php:703 admin/game-settings.php:453
 #: admin/game-settings.php:688
 msgid "メディアから選択"
-msgstr ""
+msgstr "メディアから選択"
 
 #: admin/meta-boxes.php:338
 msgid "メディアライブラリが利用できません。"
-msgstr ""
+msgstr "メディアライブラリが利用できません。"
 
 #: js/blocks.js:213
 msgid "並び順"
-msgstr ""
+msgstr "並び順"
 
 #: admin/game-settings.php:767
 msgid "並び順（title等、デフォルト: title）"
-msgstr ""
+msgstr "並び順（title等、デフォルト: title）"
 
 #: admin/meta-boxes.php:320 admin/meta-boxes.php:755 novel-game-plugin.php:723
 msgid "中央キャラクター"
-msgstr ""
+msgstr "中央キャラクター"
 
 #: includes/revisions.php:381
 msgid "中央キャラクター名"
-msgstr ""
+msgstr "中央キャラクター名"
 
 #: includes/revisions.php:378
 msgid "中央キャラクター画像"
-msgstr ""
+msgstr "中央キャラクター画像"
 
 #: admin/meta-boxes.php:771
 msgid "中央キャラクター画像プレビュー"
-msgstr ""
+msgstr "中央キャラクター画像プレビュー"
 
 #: admin/game-settings.php:741
 msgid ""
@@ -776,11 +777,11 @@ msgstr ""
 
 #: admin/meta-boxes.php:312
 msgid "作成に失敗しました。"
-msgstr ""
+msgstr "作成に失敗しました。"
 
 #: admin/meta-boxes.php:315
 msgid "作成中です..."
-msgstr ""
+msgstr "作成中です..."
 
 #: admin/new-game.php:187
 msgid ""
@@ -790,57 +791,57 @@ msgstr ""
 
 #: includes/post-types.php:354
 msgid "作成日"
-msgstr ""
+msgstr "作成日"
 
 #: admin/game-settings.php:540
 msgid "例: visited_library"
-msgstr ""
+msgstr "例: visited_library"
 
 #: admin/game-settings.php:555
 msgid "例: 図書館を訪れた"
-msgstr ""
+msgstr "例: 図書館を訪れた"
 
 #: js/blocks.js:138
 msgid "個別ゲーム"
-msgstr ""
+msgstr "個別ゲーム"
 
 #: includes/blocks.php:156
 msgid "全ゲーム一覧"
-msgstr ""
+msgstr "全ゲーム一覧"
 
 #: js/blocks.js:156
 msgid "全ゲーム一覧が表示されます"
-msgstr ""
+msgstr "全ゲーム一覧が表示されます"
 
 #: admin/game-settings.php:734
 msgid "全ゲーム一覧を表示（推奨）"
-msgstr ""
+msgstr "全ゲーム一覧を表示（推奨）"
 
 #: admin/meta-boxes.php:308 admin/meta-boxes.php:748 admin/meta-boxes.php:783
 #: admin/meta-boxes.php:818 admin/game-settings.php:513
 #: admin/game-settings.php:621 includes/revisions.php:319
 msgid "削除"
-msgstr ""
+msgstr "削除"
 
 #: admin/meta-boxes.php:344
 msgid "削除対象:"
-msgstr ""
+msgstr "削除対象:"
 
 #: admin/meta-boxes.php:321 admin/meta-boxes.php:790 novel-game-plugin.php:727
 msgid "右キャラクター"
-msgstr ""
+msgstr "右キャラクター"
 
 #: includes/revisions.php:382
 msgid "右キャラクター名"
-msgstr ""
+msgstr "右キャラクター名"
 
 #: includes/revisions.php:379
 msgid "右キャラクター画像"
-msgstr ""
+msgstr "右キャラクター画像"
 
 #: admin/meta-boxes.php:806
 msgid "右キャラクター画像プレビュー"
-msgstr ""
+msgstr "右キャラクター画像プレビュー"
 
 #: admin/meta-boxes.php:979
 msgid ""
@@ -856,178 +857,178 @@ msgstr ""
 
 #: includes/revisions.php:325
 msgid "同一"
-msgstr ""
+msgstr "同一"
 
 #: admin/game-settings.php:730
 msgid "固定ページや投稿にゲーム一覧を表示する際に使用するショートコードです。"
-msgstr ""
+msgstr "固定ページや投稿にゲーム一覧を表示する際に使用するショートコードです。"
 
 #: includes/revisions.php:322
 msgid "変更"
-msgstr ""
+msgstr "変更"
 
 #: admin/meta-boxes.php:319 admin/meta-boxes.php:720 novel-game-plugin.php:719
 msgid "左キャラクター"
-msgstr ""
+msgstr "左キャラクター"
 
 #: includes/revisions.php:380
 msgid "左キャラクター名"
-msgstr ""
+msgstr "左キャラクター名"
 
 #: includes/revisions.php:377
 msgid "左キャラクター画像"
-msgstr ""
+msgstr "左キャラクター画像"
 
 #: admin/meta-boxes.php:736
 msgid "左キャラクター画像プレビュー"
-msgstr ""
+msgstr "左キャラクター画像プレビュー"
 
 #: admin/meta-boxes.php:348
 msgid "投稿が保存されていません。保存してから新しいコマンドを作成しますか？"
-msgstr ""
+msgstr "投稿が保存されていません。保存してから新しいコマンドを作成しますか？"
 
 #: admin/meta-boxes.php:73
 msgid "投稿の作成に失敗しました。"
-msgstr ""
+msgstr "投稿の作成に失敗しました。"
 
 #: admin/meta-boxes.php:870 admin/game-settings.php:496
 #: includes/post-types.php:360
 msgid "操作"
-msgstr ""
+msgstr "操作"
 
 #: admin/new-game.php:165
 msgid "新しいゲームのタイトルを入力してください"
-msgstr ""
+msgstr "新しいゲームのタイトルを入力してください"
 
 #: templates/archive-novel_game.php:164
 msgid "新しいゲームを作成"
-msgstr ""
+msgstr "新しいゲームを作成"
 
 #: admin/game-settings.php:637
 msgid "新しいゲームを追加"
-msgstr ""
+msgstr "新しいゲームを追加"
 
 #: admin/meta-boxes.php:349
 #, php-format
 msgid "新しいシーン「%s」が作成されました。編集リンクから編集できます。"
-msgstr ""
+msgstr "新しいシーン「%s」が作成されました。編集リンクから編集できます。"
 
 #: admin/meta-boxes.php:313
 msgid "新しいシーンのタイトルを入力してください"
-msgstr ""
+msgstr "新しいシーンのタイトルを入力してください"
 
 #: includes/post-types.php:343
 msgid "新しいシーンを追加"
-msgstr ""
+msgstr "新しいシーンを追加"
 
 #: includes/post-types.php:31
 msgid "新しいノベルゲーム"
-msgstr ""
+msgstr "新しいノベルゲーム"
 
 #: includes/post-types.php:29
 msgid "新しいノベルゲームを追加"
-msgstr ""
+msgstr "新しいノベルゲームを追加"
 
 #: admin/game-settings.php:525
 msgid "新しいフラグを追加"
-msgstr ""
+msgstr "新しいフラグを追加"
 
 #: includes/post-types.php:308
 msgid "新規ゲームを作成"
-msgstr ""
+msgstr "新規ゲームを作成"
 
 #: admin/new-game.php:22 admin/new-game.php:23
 msgid "新規ゲーム作成"
-msgstr ""
+msgstr "新規ゲーム作成"
 
 #: includes/post-types.php:30
 msgid "新規追加"
-msgstr ""
+msgstr "新規追加"
 
 #: js/blocks.js:149
 msgid "昇順"
-msgstr ""
+msgstr "昇順"
 
 #: admin/game-settings.php:771
 msgid "昇順/降順（ASC/DESC、デフォルト: ASC）"
-msgstr ""
+msgstr "昇順/降順（ASC/DESC、デフォルト: ASC）"
 
 #: js/blocks.js:145
 msgid "更新日"
-msgstr ""
+msgstr "更新日"
 
 #: admin/meta-boxes.php:336
 msgid "最低1つのセリフは必要です。"
-msgstr ""
+msgstr "最低1つのセリフは必要です。"
 
 #: novel-game-plugin.php:706 novel-game-plugin.php:1081
 #: novel-game-plugin.php:1225 templates/archive-novel_game.php:190
 msgid "最初から開始"
-msgstr ""
+msgstr "最初から開始"
 
 #: admin/meta-boxes.php:716
 msgid "最大3体のキャラクターを左・中央・右の位置に配置できます。"
-msgstr ""
+msgstr "最大3体のキャラクターを左・中央・右の位置に配置できます。"
 
 #: admin/game-settings.php:622
 msgid "本当にこのゲームを削除しますか？"
-msgstr ""
+msgstr "本当にこのゲームを削除しますか？"
 
 #: admin/meta-boxes.php:337
 msgid "本当にこのセリフを削除しますか？"
-msgstr ""
+msgstr "本当にこのセリフを削除しますか？"
 
 #: admin/game-settings.php:514
 msgid "本当にこのフラグを削除しますか？"
-msgstr ""
+msgstr "本当にこのフラグを削除しますか？"
 
 #: admin/meta-boxes.php:311
 msgid "本当に削除しますか？"
-msgstr ""
+msgstr "本当に削除しますか？"
 
 #: admin/game-settings.php:1012
 msgid "本当に画像を削除しますか？"
-msgstr ""
+msgstr "本当に画像を削除しますか？"
 
 #: admin/meta-boxes.php:332
 msgid "条件:"
-msgstr ""
+msgstr "条件:"
 
 #: admin/meta-boxes.php:329
 msgid "条件で内容変更"
-msgstr ""
+msgstr "条件で内容変更"
 
 #: admin/meta-boxes.php:328
 msgid "条件で非表示"
-msgstr ""
+msgstr "条件で非表示"
 
 #: admin/meta-boxes.php:22
 msgid "権限がありません。"
-msgstr ""
+msgstr "権限がありません。"
 
 #: admin/meta-boxes.php:314
 msgid "次のコマンドのタイトルを入力してください"
-msgstr ""
+msgstr "次のコマンドのタイトルを入力してください"
 
 #: admin/meta-boxes.php:886
 msgid "次のコマンドを新規作成"
-msgstr ""
+msgstr "次のコマンドを新規作成"
 
 #: admin/meta-boxes.php:867
 msgid "次のシーン"
-msgstr ""
+msgstr "次のシーン"
 
 #: admin/meta-boxes.php:345
 msgid "注意: これは最後の選択肢です。削除すると選択肢が無くなります。"
-msgstr ""
+msgstr "注意: これは最後の選択肢です。削除すると選択肢が無くなります。"
 
 #: admin/game-settings.php:346
 msgid "無効なゲームIDです。"
-msgstr ""
+msgstr "無効なゲームIDです。"
 
 #: admin/game-settings.php:487
 msgid "現在のフラグ一覧"
-msgstr ""
+msgstr "現在のフラグ一覧"
 
 #: admin/meta-boxes.php:347
 msgid ""
@@ -1037,125 +1038,125 @@ msgstr ""
 
 #: admin/game-settings.php:459 admin/game-settings.php:694
 msgid "画像を削除"
-msgstr ""
+msgstr "画像を削除"
 
 #: admin/meta-boxes.php:309 admin/meta-boxes.php:742 admin/meta-boxes.php:777
 #: admin/meta-boxes.php:812 admin/game-settings.php:1010
 msgid "画像を選択"
-msgstr ""
+msgstr "画像を選択"
 
 #: novel-game-plugin.php:709 novel-game-plugin.php:1084
 #: novel-game-plugin.php:1228 templates/archive-novel_game.php:193
 msgid "続きから始める"
-msgstr ""
+msgstr "続きから始める"
 
 #: admin/meta-boxes.php:350 admin/game-settings.php:614
 #: includes/post-types.php:376 includes/post-types.php:395
 msgid "編集"
-msgstr ""
+msgstr "編集"
 
 #: admin/meta-boxes.php:688 includes/revisions.php:375
 msgid "背景画像"
-msgstr ""
+msgstr "背景画像"
 
 #: admin/meta-boxes.php:323
 msgid "背景画像:"
-msgstr ""
+msgstr "背景画像:"
 
 #: admin/meta-boxes.php:324
 msgid "背景画像を選択"
-msgstr ""
+msgstr "背景画像を選択"
 
 #: admin/meta-boxes.php:697
 msgid "背景画像プレビュー"
-msgstr ""
+msgstr "背景画像プレビュー"
 
 #: admin/game-settings.php:542
 msgid "英数字とアンダースコアのみ使用可能、数字で始めることはできません"
-msgstr ""
+msgstr "英数字とアンダースコアのみ使用可能、数字で始めることはできません"
 
 #: admin/game-settings.php:543
 msgid "英数字とアンダースコアのみ使用可能です。数字で始めることはできません。"
-msgstr ""
+msgstr "英数字とアンダースコアのみ使用可能です。数字で始めることはできません。"
 
 #: includes/post-types.php:324 includes/post-types.php:382
 #: includes/post-types.php:398 includes/post-types.php:421
 msgid "表示"
-msgstr ""
+msgstr "表示"
 
 #: admin/meta-boxes.php:895
 msgid "表示に必要なフラグ条件（最大3つ、AND/OR指定可能）"
-msgstr ""
+msgstr "表示に必要なフラグ条件（最大3つ、AND/OR指定可能）"
 
 #: js/blocks.js:172
 msgid "表示タイプ"
-msgstr ""
+msgstr "表示タイプ"
 
 #: js/blocks.js:204
 msgid "表示列数"
-msgstr ""
+msgstr "表示列数"
 
 #: admin/game-settings.php:763
 msgid "表示列数（1-6、デフォルト: 3）"
-msgstr ""
+msgstr "表示列数（1-6、デフォルト: 3）"
 
 #: admin/meta-boxes.php:326
 msgid "表示制御:"
-msgstr ""
+msgstr "表示制御:"
 
 #: includes/post-types.php:27
 msgid "親ノベルゲーム:"
-msgstr ""
+msgstr "親ノベルゲーム:"
 
 #: admin/meta-boxes.php:342
 msgid "設定しない"
-msgstr ""
+msgstr "設定しない"
 
 #: admin/meta-boxes.php:317
 msgid "話者:"
-msgstr ""
+msgstr "話者:"
 
 #: admin/game-settings.php:495 admin/game-settings.php:548
 msgid "説明"
-msgstr ""
+msgstr "説明"
 
 #: includes/revisions.php:316
 msgid "追加"
-msgstr ""
+msgstr "追加"
 
 #: admin/meta-boxes.php:327
 msgid "通常表示"
-msgstr ""
+msgstr "通常表示"
 
 #: novel-game-plugin.php:685
 msgid "進捗をクリア"
-msgstr ""
+msgstr "進捗をクリア"
 
 #: admin/meta-boxes.php:858 includes/revisions.php:388
 msgid "選択肢"
-msgstr ""
+msgstr "選択肢"
 
 #: admin/meta-boxes.php:346
 msgid "選択肢が全て削除されました。"
-msgstr ""
+msgstr "選択肢が全て削除されました。"
 
 #: admin/meta-boxes.php:881
 msgid "選択肢を追加"
-msgstr ""
+msgstr "選択肢を追加"
 
 #: includes/revisions.php:409
 #, php-format
 msgid "配列（%d要素）"
-msgstr ""
+msgstr "配列（%d要素）"
 
 #: templates/archive-novel_game.php:149
 #, php-format
 msgid "開始: %s"
-msgstr ""
+msgstr "開始: %s"
 
 #: js/blocks.js:150
 msgid "降順"
-msgstr ""
+msgstr "降順"
 
 #: admin/game-settings.php:476 admin/game-settings.php:711
 msgid ""
@@ -1165,8 +1166,8 @@ msgstr ""
 
 #: admin/meta-boxes.php:865
 msgid "順序"
-msgstr ""
+msgstr "順序"
 
 #: includes/revisions.php:310 includes/revisions.php:311
 msgid "（無し）"
-msgstr ""
+msgstr "（無し）"
