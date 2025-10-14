@@ -165,17 +165,19 @@ git checkout -b feature/new-feature
 #### 翻訳可能文字列の追加
 新しい翻訳可能文字列を追加する際は、必ず `novel-game-plugin` を textdomain として指定してください：
 
+**重要: WordPress.org 標準準拠のため、ソースコードの文字列は英語で記述してください。**
+
 ```php
-// PHP での例
-__( '翻訳する文字列', 'novel-game-plugin' )
-_e( '翻訳する文字列', 'novel-game-plugin' )
-esc_html__( '翻訳する文字列', 'novel-game-plugin' )
-esc_attr__( '翻訳する文字列', 'novel-game-plugin' )
+// PHP での例（英語で記述）
+__( 'Translatable string', 'novel-game-plugin' )
+_e( 'Translatable string', 'novel-game-plugin' )
+esc_html__( 'Translatable string', 'novel-game-plugin' )
+esc_attr__( 'Translatable string', 'novel-game-plugin' )
 ```
 
 ```javascript
-// JavaScript (wp.i18n) での例
-__( '翻訳する文字列', 'novel-game-plugin' )
+// JavaScript (wp.i18n) での例（英語で記述）
+__( 'Translatable string', 'novel-game-plugin' )
 ```
 
 #### .pot ファイルの更新
