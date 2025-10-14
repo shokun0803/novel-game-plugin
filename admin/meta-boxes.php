@@ -901,7 +901,7 @@ function noveltool_meta_box_callback( $post ) {
 
         <tr>
             <th scope="row">
-                <label for="novel_is_ending"><?php esc_html_e( 'エンディング設定', 'novel-game-plugin' ); ?></label>
+                <label for="novel_is_ending"><?php esc_html_e( 'Ending Settings', 'novel-game-plugin' ); ?></label>
             </th>
             <td>
                 <label for="novel_is_ending">
@@ -910,26 +910,26 @@ function noveltool_meta_box_callback( $post ) {
                            name="is_ending"
                            value="1"
                            <?php checked( $is_ending ); ?> />
-                    <?php esc_html_e( 'このシーンをエンディング（ゲームの終了）として設定する', 'novel-game-plugin' ); ?>
+                    <?php esc_html_e( 'Set this scene as an ending (end of game)', 'novel-game-plugin' ); ?>
                 </label>
-                <p class="description"><?php esc_html_e( 'チェックを入れると、このシーンでゲームが終了します。選択肢が設定されていてもエンディングが優先されます。', 'novel-game-plugin' ); ?></p>
+                <p class="description"><?php esc_html_e( 'When checked, the game will end at this scene. The ending takes priority even if choices are set.', 'novel-game-plugin' ); ?></p>
                 
                 <div id="ending_text_setting" style="margin-top: 15px; <?php echo $is_ending ? '' : 'display: none;'; ?>">
-                    <label for="novel_ending_text"><?php esc_html_e( 'エンディング画面テキスト', 'novel-game-plugin' ); ?></label><br>
+                    <label for="novel_ending_text"><?php esc_html_e( 'Ending Screen Text', 'novel-game-plugin' ); ?></label><br>
                     <input type="text" 
                            id="novel_ending_text" 
                            name="ending_text" 
                            value="<?php echo esc_attr( $ending_text ); ?>" 
                            class="regular-text"
-                           placeholder="<?php esc_attr_e( 'エンディング画面に表示するテキスト（デフォルト: おわり）', 'novel-game-plugin' ); ?>" />
-                    <p class="description"><?php esc_html_e( 'エンディング画面に表示するテキストを設定します。空欄の場合は「おわり」が表示されます。', 'novel-game-plugin' ); ?></p>
+                           placeholder="<?php esc_attr_e( 'Text to display on ending screen (Default: END)', 'novel-game-plugin' ); ?>" />
+                    <p class="description"><?php esc_html_e( 'Set the text to display on the ending screen. If blank, "END" will be displayed.', 'novel-game-plugin' ); ?></p>
                 </div>
             </td>
         </tr>
 
         <tr>
             <th scope="row">
-                <label><?php esc_html_e( 'フラグ設定', 'novel-game-plugin' ); ?></label>
+                <label><?php esc_html_e( 'Flag Settings', 'novel-game-plugin' ); ?></label>
             </th>
             <td>
                 <?php
@@ -947,8 +947,8 @@ function noveltool_meta_box_callback( $post ) {
                 ?>
                 
                 <div class="noveltool-flags-container">
-                    <h4><?php esc_html_e( 'シーン到達時に設定するフラグ', 'novel-game-plugin' ); ?></h4>
-                    <p class="description"><?php esc_html_e( 'このシーンに到達した時に自動的に設定されるフラグを選択してください。', 'novel-game-plugin' ); ?></p>
+                    <h4><?php esc_html_e( 'Flags to Set on Scene Arrival', 'novel-game-plugin' ); ?></h4>
+                    <p class="description"><?php esc_html_e( 'Select flags that will be automatically set when this scene is reached.', 'novel-game-plugin' ); ?></p>
                     
                     <?php if ( ! empty( $current_flag_master ) ) : ?>
                         <div class="noveltool-scene-flags">
@@ -967,19 +967,19 @@ function noveltool_meta_box_callback( $post ) {
                         </div>
                     <?php else : ?>
                         <div class="no-flags-message">
-                            <p><?php esc_html_e( 'このゲームにはまだフラグが設定されていません。', 'novel-game-plugin' ); ?>
+                            <p><?php esc_html_e( 'No flags have been set for this game yet.', 'novel-game-plugin' ); ?>
                                <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" target="_blank">
-                                   <?php esc_html_e( 'ゲーム基本情報でフラグを管理', 'novel-game-plugin' ); ?>
+                                   <?php esc_html_e( 'Manage Flags in Game Settings', 'novel-game-plugin' ); ?>
                                </a>
                             </p>
                         </div>
                     <?php endif; ?>
                     
-                    <h4 style="margin-top: 20px;"><?php esc_html_e( 'セリフレベルのフラグ条件', 'novel-game-plugin' ); ?></h4>
-                    <p class="description"><?php esc_html_e( '各セリフに個別のフラグ条件を設定する場合は、セリフ編集時に設定してください。フラグ条件を満たさない場合、そのセリフは表示されません。', 'novel-game-plugin' ); ?></p>
+                    <h4 style="margin-top: 20px;"><?php esc_html_e( 'Dialogue-Level Flag Conditions', 'novel-game-plugin' ); ?></h4>
+                    <p class="description"><?php esc_html_e( 'To set individual flag conditions for each dialogue, configure them when editing dialogues. Dialogues will not be displayed if flag conditions are not met.', 'novel-game-plugin' ); ?></p>
                     
                     <div id="noveltool-dialogue-flags-info">
-                        <p><em><?php esc_html_e( 'セリフのフラグ条件は、上記の「セリフ」セクションで各セリフを編集する際に設定できます。', 'novel-game-plugin' ); ?></em></p>
+                        <p><em><?php esc_html_e( 'Dialogue flag conditions can be set when editing each dialogue in the "Dialogue" section above.', 'novel-game-plugin' ); ?></em></p>
                     </div>
                 </div>
                 

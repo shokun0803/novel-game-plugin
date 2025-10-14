@@ -19,8 +19,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 function noveltool_add_game_settings_menu() {
     add_submenu_page(
         'edit.php?post_type=novel_game',
-        __( 'ゲーム基本情報', 'novel-game-plugin' ),
-        __( 'ゲーム基本情報', 'novel-game-plugin' ),
+        __( 'Game Settings', 'novel-game-plugin' ),
+        __( 'Game Settings', 'novel-game-plugin' ),
         'edit_posts',
         'novel-game-settings',
         'noveltool_game_settings_page'
@@ -41,7 +41,7 @@ function noveltool_handle_game_settings_form() {
 
     // 権限チェック
     if ( ! current_user_can( 'edit_posts' ) ) {
-        wp_die( __( 'このページにアクセスする権限がありません。', 'novel-game-plugin' ) );
+        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
     // ゲーム追加の処理
@@ -304,7 +304,7 @@ function noveltool_update_scenes_game_title( $old_title, $new_title = null ) {
 function noveltool_game_settings_page() {
     // 権限チェック
     if ( ! current_user_can( 'edit_posts' ) ) {
-        wp_die( __( 'このページにアクセスする権限がありません。', 'novel-game-plugin' ) );
+        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
     // 編集モードの確認
@@ -328,31 +328,31 @@ function noveltool_game_settings_page() {
     if ( isset( $_GET['error'] ) ) {
         switch ( sanitize_text_field( wp_unslash( $_GET['error'] ) ) ) {
             case 'security':
-                $error_message = __( 'セキュリティチェックに失敗しました。', 'novel-game-plugin' );
+                $error_message = __( 'Security check failed.', 'novel-game-plugin' );
                 break;
             case 'empty_title':
-                $error_message = __( 'ゲームタイトルを入力してください。', 'novel-game-plugin' );
+                $error_message = __( 'Please enter a game title.', 'novel-game-plugin' );
                 break;
             case 'duplicate_title':
-                $error_message = __( 'そのタイトルのゲームは既に存在します。', 'novel-game-plugin' );
+                $error_message = __( 'A game with that title already exists.', 'novel-game-plugin' );
                 break;
             case 'save_failed':
-                $error_message = __( 'ゲームの保存に失敗しました。', 'novel-game-plugin' );
+                $error_message = __( 'Failed to save game.', 'novel-game-plugin' );
                 break;
             case 'delete_failed':
-                $error_message = __( 'ゲームの削除に失敗しました。', 'novel-game-plugin' );
+                $error_message = __( 'Failed to delete game.', 'novel-game-plugin' );
                 break;
             case 'invalid_id':
-                $error_message = __( '無効なゲームIDです。', 'novel-game-plugin' );
+                $error_message = __( 'Invalid game ID.', 'novel-game-plugin' );
                 break;
             case 'empty_flag_data':
-                $error_message = __( 'フラグ名とゲームタイトルを入力してください。', 'novel-game-plugin' );
+                $error_message = __( 'Please enter a flag name and game title.', 'novel-game-plugin' );
                 break;
             case 'flag_add_failed':
-                $error_message = __( 'フラグの追加に失敗しました。同名のフラグが既に存在する可能性があります。', 'novel-game-plugin' );
+                $error_message = __( 'Failed to add flag. A flag with the same name may already exist.', 'novel-game-plugin' );
                 break;
             case 'flag_delete_failed':
-                $error_message = __( 'フラグの削除に失敗しました。', 'novel-game-plugin' );
+                $error_message = __( 'Failed to delete flag.', 'novel-game-plugin' );
                 break;
         }
     }
@@ -360,19 +360,19 @@ function noveltool_game_settings_page() {
     if ( isset( $_GET['success'] ) ) {
         switch ( sanitize_text_field( wp_unslash( $_GET['success'] ) ) ) {
             case 'added':
-                $success_message = __( 'ゲームが正常に追加されました。', 'novel-game-plugin' );
+                $success_message = __( 'Game added successfully.', 'novel-game-plugin' );
                 break;
             case 'updated':
-                $success_message = __( 'ゲームが正常に更新されました。', 'novel-game-plugin' );
+                $success_message = __( 'Game updated successfully.', 'novel-game-plugin' );
                 break;
             case 'deleted':
-                $success_message = __( 'ゲームが正常に削除されました。', 'novel-game-plugin' );
+                $success_message = __( 'Game deleted successfully.', 'novel-game-plugin' );
                 break;
             case 'flag_added':
-                $success_message = __( 'フラグが正常に追加されました。', 'novel-game-plugin' );
+                $success_message = __( 'Flag added successfully.', 'novel-game-plugin' );
                 break;
             case 'flag_deleted':
-                $success_message = __( 'フラグが正常に削除されました。', 'novel-game-plugin' );
+                $success_message = __( 'Flag deleted successfully.', 'novel-game-plugin' );
                 break;
         }
     }
@@ -397,7 +397,7 @@ function noveltool_game_settings_page() {
             <?php if ( $edit_mode && $editing_game ) : ?>
                 <!-- ゲーム編集フォーム -->
                 <div class="noveltool-game-edit-form">
-                    <h2><?php esc_html_e( 'ゲームを編集', 'novel-game-plugin' ); ?></h2>
+                    <h2><?php esc_html_e( 'Edit Game', 'novel-game-plugin' ); ?></h2>
                     <form method="post" action="">
                         <?php wp_nonce_field( 'manage_games' ); ?>
                         <input type="hidden" name="game_id" value="<?php echo esc_attr( $editing_game['id'] ); ?>" />
@@ -406,7 +406,7 @@ function noveltool_game_settings_page() {
                         <table class="form-table">
                             <tr>
                                 <th scope="row">
-                                    <label for="game_title"><?php esc_html_e( 'ゲームタイトル', 'novel-game-plugin' ); ?></label>
+                                    <label for="game_title"><?php esc_html_e( 'Game Title', 'novel-game-plugin' ); ?></label>
                                 </th>
                                 <td>
                                     <input type="text" 
@@ -415,13 +415,13 @@ function noveltool_game_settings_page() {
                                            value="<?php echo esc_attr( $editing_game['title'] ); ?>" 
                                            class="regular-text"
                                            required
-                                           placeholder="<?php esc_attr_e( 'ゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" />
+                                           placeholder="<?php esc_attr_e( 'Please enter a game title', 'novel-game-plugin' ); ?>" />
                                 </td>
                             </tr>
 
                             <tr>
                                 <th scope="row">
-                                    <label for="game_description"><?php esc_html_e( 'ゲーム概要', 'novel-game-plugin' ); ?></label>
+                                    <label for="game_description"><?php esc_html_e( 'Game Overview', 'novel-game-plugin' ); ?></label>
                                 </th>
                                 <td>
                                     <textarea id="game_description" 
@@ -429,13 +429,13 @@ function noveltool_game_settings_page() {
                                               rows="5" 
                                               cols="50" 
                                               class="large-text"
-                                              placeholder="<?php esc_attr_e( 'ゲームの概要・説明を入力してください', 'novel-game-plugin' ); ?>"><?php echo esc_textarea( $editing_game['description'] ); ?></textarea>
+                                              placeholder="<?php esc_attr_e( 'Please enter a game overview/description', 'novel-game-plugin' ); ?>"><?php echo esc_textarea( $editing_game['description'] ); ?></textarea>
                                 </td>
                             </tr>
 
                             <tr>
                                 <th scope="row">
-                                    <label for="game_title_image"><?php esc_html_e( 'タイトル画面画像', 'novel-game-plugin' ); ?></label>
+                                    <label for="game_title_image"><?php esc_html_e( 'Title Screen Image', 'novel-game-plugin' ); ?></label>
                                 </th>
                                 <td>
                                     <input type="hidden"
@@ -444,19 +444,19 @@ function noveltool_game_settings_page() {
                                            value="<?php echo esc_attr( $editing_game['title_image'] ); ?>" />
                                     <img id="game_title_image_preview"
                                          src="<?php echo esc_url( $editing_game['title_image'] ); ?>"
-                                         alt="<?php esc_attr_e( 'タイトル画面画像プレビュー', 'novel-game-plugin' ); ?>"
+                                         alt="<?php esc_attr_e( 'Title Screen Image Preview', 'novel-game-plugin' ); ?>"
                                          style="max-width: 400px; height: auto; display: <?php echo $editing_game['title_image'] ? 'block' : 'none'; ?>;" />
                                     <p>
                                         <button type="button"
                                                 class="button"
                                                 id="game_title_image_button">
-                                            <?php esc_html_e( 'メディアから選択', 'novel-game-plugin' ); ?>
+                                            <?php esc_html_e( 'Select from Media', 'novel-game-plugin' ); ?>
                                         </button>
                                         <button type="button"
                                                 class="button"
                                                 id="game_title_image_remove"
                                                 style="display: <?php echo $editing_game['title_image'] ? 'inline-block' : 'none'; ?>;">
-                                            <?php esc_html_e( '画像を削除', 'novel-game-plugin' ); ?>
+                                            <?php esc_html_e( 'Delete Image', 'novel-game-plugin' ); ?>
                                         </button>
                                     </p>
                                 </td>
@@ -464,7 +464,7 @@ function noveltool_game_settings_page() {
 
                             <tr>
                                 <th scope="row">
-                                    <label for="game_over_text"><?php esc_html_e( 'Game Over 画面テキスト', 'novel-game-plugin' ); ?></label>
+                                    <label for="game_over_text"><?php esc_html_e( 'Game Over Screen Text', 'novel-game-plugin' ); ?></label>
                                 </th>
                                 <td>
                                     <input type="text" 
@@ -472,28 +472,28 @@ function noveltool_game_settings_page() {
                                            name="game_over_text" 
                                            value="<?php echo esc_attr( isset( $editing_game['game_over_text'] ) ? $editing_game['game_over_text'] : 'Game Over' ); ?>" 
                                            class="regular-text"
-                                           placeholder="<?php esc_attr_e( 'Game Over 画面に表示するテキスト', 'novel-game-plugin' ); ?>" />
-                                    <p class="description"><?php esc_html_e( '非エンディングで選択肢や次のシーンがない場合に表示されるテキストです。デフォルトは「Game Over」です。', 'novel-game-plugin' ); ?></p>
+                                           placeholder="<?php esc_attr_e( 'Text to display on Game Over screen', 'novel-game-plugin' ); ?>" />
+                                    <p class="description"><?php esc_html_e( 'Text displayed when there are no choices or next scenes in a non-ending. Default is "Game Over".', 'novel-game-plugin' ); ?></p>
                                 </td>
                             </tr>
                         </table>
 
-                        <h3><?php esc_html_e( 'フラグ管理', 'novel-game-plugin' ); ?></h3>
+                        <h3><?php esc_html_e( 'Flag Management', 'novel-game-plugin' ); ?></h3>
                         <?php
                         $current_flags = noveltool_get_game_flag_master( $editing_game['title'] );
                         ?>
                         
                         <div class="noveltool-flags-section">
-                            <h4><?php esc_html_e( '現在のフラグ一覧', 'novel-game-plugin' ); ?></h4>
+                            <h4><?php esc_html_e( 'Current Flags List', 'novel-game-plugin' ); ?></h4>
                             
                             <?php if ( ! empty( $current_flags ) ) : ?>
                                 <table class="widefat striped">
                                     <thead>
                                         <tr>
                                             <th><?php esc_html_e( 'ID', 'novel-game-plugin' ); ?></th>
-                                            <th><?php esc_html_e( 'フラグ名', 'novel-game-plugin' ); ?></th>
-                                            <th><?php esc_html_e( '説明', 'novel-game-plugin' ); ?></th>
-                                            <th><?php esc_html_e( '操作', 'novel-game-plugin' ); ?></th>
+                                            <th><?php esc_html_e( 'Flag Name', 'novel-game-plugin' ); ?></th>
+                                            <th><?php esc_html_e( 'Description', 'novel-game-plugin' ); ?></th>
+                                            <th><?php esc_html_e( 'Actions', 'novel-game-plugin' ); ?></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -510,8 +510,8 @@ function noveltool_game_settings_page() {
                                                         <input type="submit" 
                                                                name="delete_flag" 
                                                                class="button button-small" 
-                                                               value="<?php esc_attr_e( '削除', 'novel-game-plugin' ); ?>"
-                                                               onclick="return confirm('<?php esc_attr_e( '本当にこのフラグを削除しますか？', 'novel-game-plugin' ); ?>');" />
+                                                               value="<?php esc_attr_e( 'Delete', 'novel-game-plugin' ); ?>"
+                                                               onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to delete this flag?', 'novel-game-plugin' ); ?>');" />
                                                     </form>
                                                 </td>
                                             </tr>
@@ -519,10 +519,10 @@ function noveltool_game_settings_page() {
                                     </tbody>
                                 </table>
                             <?php else : ?>
-                                <p><?php esc_html_e( 'このゲームにはまだフラグが設定されていません。', 'novel-game-plugin' ); ?></p>
+                                <p><?php esc_html_e( 'No flags have been set for this game yet.', 'novel-game-plugin' ); ?></p>
                             <?php endif; ?>
                             
-                            <h4><?php esc_html_e( '新しいフラグを追加', 'novel-game-plugin' ); ?></h4>
+                            <h4><?php esc_html_e( 'Add New Flag', 'novel-game-plugin' ); ?></h4>
                             <form method="post" action="" class="noveltool-add-flag-form">
                                 <?php wp_nonce_field( 'manage_flags' ); ?>
                                 <input type="hidden" name="game_title" value="<?php echo esc_attr( $editing_game['title'] ); ?>" />
@@ -530,30 +530,30 @@ function noveltool_game_settings_page() {
                                 <table class="form-table">
                                     <tr>
                                         <th scope="row">
-                                            <label for="flag_name"><?php esc_html_e( 'フラグ名', 'novel-game-plugin' ); ?></label>
+                                            <label for="flag_name"><?php esc_html_e( 'Flag Name', 'novel-game-plugin' ); ?></label>
                                         </th>
                                         <td>
                                             <input type="text" 
                                                    id="flag_name" 
                                                    name="flag_name" 
                                                    class="regular-text" 
-                                                   placeholder="<?php esc_attr_e( '例: visited_library', 'novel-game-plugin' ); ?>" 
+                                                   placeholder="<?php esc_attr_e( 'Example: visited_library', 'novel-game-plugin' ); ?>" 
                                                    pattern="[a-zA-Z_][a-zA-Z0-9_]*"
-                                                   title="<?php esc_attr_e( '英数字とアンダースコアのみ使用可能、数字で始めることはできません', 'novel-game-plugin' ); ?>" />
-                                            <p class="description"><?php esc_html_e( '英数字とアンダースコアのみ使用可能です。数字で始めることはできません。', 'novel-game-plugin' ); ?></p>
+                                                   title="<?php esc_attr_e( 'Only alphanumeric characters and underscores are allowed, cannot start with a number', 'novel-game-plugin' ); ?>" />
+                                            <p class="description"><?php esc_html_e( 'Only alphanumeric characters and underscores are allowed. Cannot start with a number.', 'novel-game-plugin' ); ?></p>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th scope="row">
-                                            <label for="flag_description"><?php esc_html_e( '説明', 'novel-game-plugin' ); ?></label>
+                                            <label for="flag_description"><?php esc_html_e( 'Description', 'novel-game-plugin' ); ?></label>
                                         </th>
                                         <td>
                                             <input type="text" 
                                                    id="flag_description" 
                                                    name="flag_description" 
                                                    class="regular-text" 
-                                                   placeholder="<?php esc_attr_e( '例: 図書館を訪れた', 'novel-game-plugin' ); ?>" />
-                                            <p class="description"><?php esc_html_e( 'フラグの用途を説明する任意のテキストです。', 'novel-game-plugin' ); ?></p>
+                                                   placeholder="<?php esc_attr_e( 'Example: Visited the library', 'novel-game-plugin' ); ?>" />
+                                            <p class="description"><?php esc_html_e( 'Optional text describing the purpose of the flag.', 'novel-game-plugin' ); ?></p>
                                         </td>
                                     </tr>
                                 </table>
@@ -562,28 +562,28 @@ function noveltool_game_settings_page() {
                                     <input type="submit" 
                                            name="add_flag" 
                                            class="button button-secondary" 
-                                           value="<?php esc_attr_e( 'フラグを追加', 'novel-game-plugin' ); ?>" />
+                                           value="<?php esc_attr_e( 'Add Flag', 'novel-game-plugin' ); ?>" />
                                 </p>
                             </form>
                         </div>
 
-                        <h3><?php esc_html_e( 'ゲーム基本情報', 'novel-game-plugin' ); ?></h3>
+                        <h3><?php esc_html_e( 'Game Settings', 'novel-game-plugin' ); ?></h3>
                         <table class="form-table">
 
                         <p class="submit">
                             <input type="submit" 
                                    name="update_game" 
                                    class="button button-primary" 
-                                   value="<?php esc_attr_e( 'ゲームを更新', 'novel-game-plugin' ); ?>" />
+                                   value="<?php esc_attr_e( 'Update Game', 'novel-game-plugin' ); ?>" />
                             <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" 
-                               class="button button-secondary"><?php esc_html_e( 'キャンセル', 'novel-game-plugin' ); ?></a>
+                               class="button button-secondary"><?php esc_html_e( 'Cancel', 'novel-game-plugin' ); ?></a>
                         </p>
                     </form>
                 </div>
             <?php else : ?>
                 <!-- ゲーム一覧とフォーム -->
                 <div class="noveltool-games-list">
-                    <h2><?php esc_html_e( 'ゲーム一覧', 'novel-game-plugin' ); ?></h2>
+                    <h2><?php esc_html_e( 'Game List', 'novel-game-plugin' ); ?></h2>
                     
                     <?php if ( ! empty( $all_games ) ) : ?>
                         <div class="noveltool-games-grid">
@@ -611,15 +611,15 @@ function noveltool_game_settings_page() {
                                     
                                     <div class="game-actions">
                                         <a href="<?php echo esc_url( add_query_arg( 'edit', $game['id'] ) ); ?>" 
-                                           class="button button-primary"><?php esc_html_e( '編集', 'novel-game-plugin' ); ?></a>
+                                           class="button button-primary"><?php esc_html_e( 'Edit', 'novel-game-plugin' ); ?></a>
                                         <form method="post" action="" style="display: inline;">
                                             <?php wp_nonce_field( 'manage_games' ); ?>
                                             <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
                                             <input type="submit" 
                                                    name="delete_game" 
                                                    class="button button-secondary" 
-                                                   value="<?php esc_attr_e( '削除', 'novel-game-plugin' ); ?>"
-                                                   onclick="return confirm('<?php esc_attr_e( '本当にこのゲームを削除しますか？', 'novel-game-plugin' ); ?>');" />
+                                                   value="<?php esc_attr_e( 'Delete', 'novel-game-plugin' ); ?>"
+                                                   onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to delete this game?', 'novel-game-plugin' ); ?>');" />
                                         </form>
                                     </div>
                                 </div>
@@ -627,21 +627,21 @@ function noveltool_game_settings_page() {
                         </div>
                     <?php else : ?>
                         <div class="no-games-message">
-                            <p><?php esc_html_e( 'まだゲームが作成されていません。', 'novel-game-plugin' ); ?></p>
+                            <p><?php esc_html_e( 'No games have been created yet.', 'novel-game-plugin' ); ?></p>
                         </div>
                     <?php endif; ?>
                 </div>
 
                 <!-- 新規ゲーム作成フォーム -->
                 <div class="noveltool-add-game-form">
-                    <h2><?php esc_html_e( '新しいゲームを追加', 'novel-game-plugin' ); ?></h2>
+                    <h2><?php esc_html_e( 'Add New Game', 'novel-game-plugin' ); ?></h2>
                     <form method="post" action="">
                         <?php wp_nonce_field( 'manage_games' ); ?>
                         
                         <table class="form-table">
                             <tr>
                                 <th scope="row">
-                                    <label for="game_title"><?php esc_html_e( 'ゲームタイトル', 'novel-game-plugin' ); ?></label>
+                                    <label for="game_title"><?php esc_html_e( 'Game Title', 'novel-game-plugin' ); ?></label>
                                 </th>
                                 <td>
                                     <input type="text" 
@@ -650,13 +650,13 @@ function noveltool_game_settings_page() {
                                            value="" 
                                            class="regular-text"
                                            required
-                                           placeholder="<?php esc_attr_e( 'ゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>" />
+                                           placeholder="<?php esc_attr_e( 'Please enter a game title', 'novel-game-plugin' ); ?>" />
                                 </td>
                             </tr>
 
                             <tr>
                                 <th scope="row">
-                                    <label for="game_description"><?php esc_html_e( 'ゲーム概要', 'novel-game-plugin' ); ?></label>
+                                    <label for="game_description"><?php esc_html_e( 'Game Overview', 'novel-game-plugin' ); ?></label>
                                 </th>
                                 <td>
                                     <textarea id="game_description" 
@@ -664,13 +664,13 @@ function noveltool_game_settings_page() {
                                               rows="5" 
                                               cols="50" 
                                               class="large-text"
-                                              placeholder="<?php esc_attr_e( 'ゲームの概要・説明を入力してください', 'novel-game-plugin' ); ?>"></textarea>
+                                              placeholder="<?php esc_attr_e( 'Please enter a game overview/description', 'novel-game-plugin' ); ?>"></textarea>
                                 </td>
                             </tr>
 
                             <tr>
                                 <th scope="row">
-                                    <label for="game_title_image"><?php esc_html_e( 'タイトル画面画像', 'novel-game-plugin' ); ?></label>
+                                    <label for="game_title_image"><?php esc_html_e( 'Title Screen Image', 'novel-game-plugin' ); ?></label>
                                 </th>
                                 <td>
                                     <input type="hidden"
@@ -679,19 +679,19 @@ function noveltool_game_settings_page() {
                                            value="" />
                                     <img id="game_title_image_preview"
                                          src=""
-                                         alt="<?php esc_attr_e( 'タイトル画面画像プレビュー', 'novel-game-plugin' ); ?>"
+                                         alt="<?php esc_attr_e( 'Title Screen Image Preview', 'novel-game-plugin' ); ?>"
                                          style="max-width: 400px; height: auto; display: none;" />
                                     <p>
                                         <button type="button"
                                                 class="button"
                                                 id="game_title_image_button">
-                                            <?php esc_html_e( 'メディアから選択', 'novel-game-plugin' ); ?>
+                                            <?php esc_html_e( 'Select from Media', 'novel-game-plugin' ); ?>
                                         </button>
                                         <button type="button"
                                                 class="button"
                                                 id="game_title_image_remove"
                                                 style="display: none;">
-                                            <?php esc_html_e( '画像を削除', 'novel-game-plugin' ); ?>
+                                            <?php esc_html_e( 'Delete Image', 'novel-game-plugin' ); ?>
                                         </button>
                                     </p>
                                 </td>
@@ -699,7 +699,7 @@ function noveltool_game_settings_page() {
 
                             <tr>
                                 <th scope="row">
-                                    <label for="game_over_text"><?php esc_html_e( 'Game Over 画面テキスト', 'novel-game-plugin' ); ?></label>
+                                    <label for="game_over_text"><?php esc_html_e( 'Game Over Screen Text', 'novel-game-plugin' ); ?></label>
                                 </th>
                                 <td>
                                     <input type="text" 
@@ -707,8 +707,8 @@ function noveltool_game_settings_page() {
                                            name="game_over_text" 
                                            value="Game Over" 
                                            class="regular-text"
-                                           placeholder="<?php esc_attr_e( 'Game Over 画面に表示するテキスト', 'novel-game-plugin' ); ?>" />
-                                    <p class="description"><?php esc_html_e( '非エンディングで選択肢や次のシーンがない場合に表示されるテキストです。デフォルトは「Game Over」です。', 'novel-game-plugin' ); ?></p>
+                                           placeholder="<?php esc_attr_e( 'Text to display on Game Over screen', 'novel-game-plugin' ); ?>" />
+                                    <p class="description"><?php esc_html_e( 'Text displayed when there are no choices or next scenes in a non-ending. Default is "Game Over".', 'novel-game-plugin' ); ?></p>
                                 </td>
                             </tr>
                         </table>
@@ -717,7 +717,7 @@ function noveltool_game_settings_page() {
                             <input type="submit" 
                                    name="add_game" 
                                    class="button button-primary" 
-                                   value="<?php esc_attr_e( 'ゲームを追加', 'novel-game-plugin' ); ?>" />
+                                   value="<?php esc_attr_e( 'Add Game', 'novel-game-plugin' ); ?>" />
                         </p>
                     </form>
                 </div>
@@ -726,60 +726,60 @@ function noveltool_game_settings_page() {
 
         <!-- ショートコードセクション -->
         <div class="noveltool-shortcode-section">
-            <h3><?php esc_html_e( 'ショートコード', 'novel-game-plugin' ); ?></h3>
-            <p><?php esc_html_e( '固定ページや投稿にゲーム一覧を表示する際に使用するショートコードです。', 'novel-game-plugin' ); ?></p>
+            <h3><?php esc_html_e( 'Shortcode', 'novel-game-plugin' ); ?></h3>
+            <p><?php esc_html_e( 'Shortcode used to display a game list on pages or posts.', 'novel-game-plugin' ); ?></p>
             
             <div class="noveltool-shortcode-examples">
                 <div class="shortcode-item">
-                    <h4><?php esc_html_e( '全ゲーム一覧を表示（推奨）', 'novel-game-plugin' ); ?></h4>
+                    <h4><?php esc_html_e( 'Display All Games List (Recommended)', 'novel-game-plugin' ); ?></h4>
                     <div class="shortcode-box">
                         <code id="shortcode-game-list">[novel_game_list]</code>
                         <button type="button" class="button button-small copy-shortcode" data-shortcode="[novel_game_list]">
-                            <?php esc_html_e( 'コピー', 'novel-game-plugin' ); ?>
+                            <?php esc_html_e( 'Copy', 'novel-game-plugin' ); ?>
                         </button>
                     </div>
-                    <p class="shortcode-description"><?php esc_html_e( '作成された全てのゲームを美しいカード形式で一覧表示します。最も使いやすく推奨のショートコードです。', 'novel-game-plugin' ); ?></p>
+                    <p class="shortcode-description"><?php esc_html_e( 'Displays all created games in a beautiful card format. This is the most user-friendly and recommended shortcode.', 'novel-game-plugin' ); ?></p>
                 </div>
 
                 <div class="shortcode-item">
-                    <h4><?php esc_html_e( 'ブロックエディタでの使用（推奨）', 'novel-game-plugin' ); ?></h4>
-                    <p class="shortcode-description"><?php esc_html_e( 'Gutenbergブロックエディタでは「ノベルゲーム一覧」ブロックを使用してください。直感的な操作でゲーム一覧や個別ゲームを簡単に挿入できます。', 'novel-game-plugin' ); ?></p>
+                    <h4><?php esc_html_e( 'Use in Block Editor (Recommended)', 'novel-game-plugin' ); ?></h4>
+                    <p class="shortcode-description"><?php esc_html_e( 'In the Gutenberg block editor, use the "Novel Game List" block. You can easily insert game lists or individual games with intuitive operations.', 'novel-game-plugin' ); ?></p>
                 </div>
             </div>
 
             <div class="shortcode-options">
-                <h4><?php esc_html_e( 'ゲーム一覧ショートコード（[novel_game_list]）のオプション', 'novel-game-plugin' ); ?></h4>
+                <h4><?php esc_html_e( 'Options for Game List Shortcode ([novel_game_list])', 'novel-game-plugin' ); ?></h4>
                 <table class="form-table">
                     <tr>
                         <th scope="row"><?php esc_html_e( 'show_count', 'novel-game-plugin' ); ?></th>
-                        <td><?php esc_html_e( 'シーン数の表示（true/false、デフォルト: true）', 'novel-game-plugin' ); ?></td>
+                        <td><?php esc_html_e( 'Show scene count (true/false, default: true)', 'novel-game-plugin' ); ?></td>
                     </tr>
                     <tr>
                         <th scope="row"><?php esc_html_e( 'show_description', 'novel-game-plugin' ); ?></th>
-                        <td><?php esc_html_e( 'ゲーム説明の表示（true/false、デフォルト: false）', 'novel-game-plugin' ); ?></td>
+                        <td><?php esc_html_e( 'Show game description (true/false, default: false)', 'novel-game-plugin' ); ?></td>
                     </tr>
                     <tr>
                         <th scope="row"><?php esc_html_e( 'columns', 'novel-game-plugin' ); ?></th>
-                        <td><?php esc_html_e( '表示列数（1-6、デフォルト: 3）', 'novel-game-plugin' ); ?></td>
+                        <td><?php esc_html_e( 'Number of columns (1-6, default: 3)', 'novel-game-plugin' ); ?></td>
                     </tr>
                     <tr>
                         <th scope="row"><?php esc_html_e( 'orderby', 'novel-game-plugin' ); ?></th>
-                        <td><?php esc_html_e( '並び順（title等、デフォルト: title）', 'novel-game-plugin' ); ?></td>
+                        <td><?php esc_html_e( 'Sort order (title, etc., default: title)', 'novel-game-plugin' ); ?></td>
                     </tr>
                     <tr>
                         <th scope="row"><?php esc_html_e( 'order', 'novel-game-plugin' ); ?></th>
-                        <td><?php esc_html_e( '昇順/降順（ASC/DESC、デフォルト: ASC）', 'novel-game-plugin' ); ?></td>
+                        <td><?php esc_html_e( 'Ascending/Descending (ASC/DESC, default: ASC)', 'novel-game-plugin' ); ?></td>
                     </tr>
                 </table>
             </div>
         </div>
 
         <div class="noveltool-help-section">
-            <h3><?php esc_html_e( 'ヘルプ', 'novel-game-plugin' ); ?></h3>
-            <p><?php esc_html_e( 'ここでは、複数のノベルゲームの基本情報を管理できます。', 'novel-game-plugin' ); ?></p>
-            <p><?php esc_html_e( 'ゲームタイトルは、シーン作成時に選択できます。', 'novel-game-plugin' ); ?></p>
-            <p><?php esc_html_e( 'ゲーム概要は、ゲームの紹介やあらすじを記載してください。', 'novel-game-plugin' ); ?></p>
-            <p><?php esc_html_e( 'タイトル画面画像は、ゲームの開始時に表示されるメイン画像です。', 'novel-game-plugin' ); ?></p>
+            <h3><?php esc_html_e( 'Help', 'novel-game-plugin' ); ?></h3>
+            <p><?php esc_html_e( 'Here you can manage basic information for multiple novel games.', 'novel-game-plugin' ); ?></p>
+            <p><?php esc_html_e( 'The game title can be selected when creating a scene.', 'novel-game-plugin' ); ?></p>
+            <p><?php esc_html_e( 'Please enter a game introduction or synopsis in the game overview.', 'novel-game-plugin' ); ?></p>
+            <p><?php esc_html_e( 'The title screen image is the main image displayed when the game starts.', 'novel-game-plugin' ); ?></p>
         </div>
     </div>
     
@@ -1007,10 +1007,10 @@ function noveltool_game_settings_admin_scripts( $hook ) {
 
     // JavaScript用の翻訳文字列
     $js_strings = array(
-        'selectImage'   => __( '画像を選択', 'novel-game-plugin' ),
-        'useThisImage'  => __( 'この画像を使う', 'novel-game-plugin' ),
-        'confirmRemove' => __( '本当に画像を削除しますか？', 'novel-game-plugin' ),
-        'titleRequired' => __( 'ゲームタイトルを入力してください。', 'novel-game-plugin' ),
+        'selectImage'   => __( 'Select Image', 'novel-game-plugin' ),
+        'useThisImage'  => __( 'Use This Image', 'novel-game-plugin' ),
+        'confirmRemove' => __( 'Are you sure you want to delete this image?', 'novel-game-plugin' ),
+        'titleRequired' => __( 'Please enter a game title.', 'novel-game-plugin' ),
     );
 
     wp_localize_script(
