@@ -664,7 +664,7 @@ jQuery( function( $ ) {
 				
 				// 編集ボタンにクリックイベントを追加（投稿保存確認）
 				$editButton.on( 'click', function( e ) {
-					if ( ! noveltool_is_post_saved() ) {
+					if ( ! isPostSaved() ) {
 						var confirmMessage = novelGameMeta.strings.unsavedChanges;
 						if ( ! confirm( confirmMessage ) ) {
 							e.preventDefault();
@@ -1055,7 +1055,7 @@ jQuery( function( $ ) {
 					
 					// 編集ボタンにクリックイベントを追加（投稿保存確認）
 					$editButton.on( 'click', function( e ) {
-						if ( ! noveltool_is_post_saved() ) {
+						if ( ! isPostSaved() ) {
 							var confirmMessage = novelGameMeta.strings.unsavedChanges;
 							if ( ! confirm( confirmMessage ) ) {
 								e.preventDefault();
@@ -1106,7 +1106,7 @@ jQuery( function( $ ) {
 		// 次のコマンドを新規作成（自動遷移）
 		$( '#novel-create-next-command' ).on( 'click', function() {
 			// 投稿が保存されているかチェック
-			if ( ! noveltool_is_post_saved() ) {
+			if ( ! isPostSaved() ) {
 				if ( confirm( novelGameMeta.strings.postNotSaved ) ) {
 					// 投稿を保存
 					$( '#publish' ).click();
@@ -1178,7 +1178,7 @@ jQuery( function( $ ) {
 						
 						// 編集ボタンにクリックイベントを追加（投稿保存確認）
 						$editLink.on( 'click', function( e ) {
-							if ( ! noveltool_is_post_saved() ) {
+							if ( ! isPostSaved() ) {
 								var confirmMessage = novelGameMeta.strings.unsavedChanges;
 								if ( ! confirm( confirmMessage ) ) {
 									e.preventDefault();
@@ -1208,7 +1208,7 @@ jQuery( function( $ ) {
 	/**
 	 * 投稿が保存されているかチェック
 	 */
-	function noveltool_is_post_saved() {
+	function isPostSaved() {
 		// 新規投稿の場合
 		if ( ! novelGameMeta.current_post_id || novelGameMeta.current_post_id === 0 ) {
 			return false;

@@ -143,6 +143,21 @@ git checkout -b feature/new-feature
 - PHPDocコメントの記述必須
 - セキュリティ対策の実装必須
 
+詳細な命名規約については、[命名規約ガイドライン](docs/NAMING_CONVENTIONS.md) を参照してください。
+
+### コードレビュー
+
+プルリクエストのレビュー時には、[コードレビューチェックリスト](docs/CODE_REVIEW_CHECKLIST.md) を活用してください。
+
+### 開発者向けログメッセージとデバッグ機能
+
+開発者向けログメッセージとユーザー向け翻訳文字列の適切な使い分けについては、[開発者向けログメッセージガイドライン](docs/DEVELOPER_LOGGING_GUIDELINES.md) を参照してください。
+
+**重要なポイント:**
+- ユーザー向けメッセージは必ず翻訳関数（`__()`, `_e()` など）を使用
+- 開発者向けデバッグログは `debugLog()` または `console.log()` を使用（翻訳不要）
+- フロントエンドでは `debugLog()` 関数を使用することで、本番環境でのログ出力を制御可能
+
 ### 翻訳ファイルの更新手順
 
 このプラグインは国際化（i18n）に対応しており、textdomain `novel-game-plugin` を使用しています。
@@ -150,17 +165,19 @@ git checkout -b feature/new-feature
 #### 翻訳可能文字列の追加
 新しい翻訳可能文字列を追加する際は、必ず `novel-game-plugin` を textdomain として指定してください：
 
+**重要: WordPress.org 標準準拠のため、ソースコードの文字列は英語で記述してください。**
+
 ```php
-// PHP での例
-__( '翻訳する文字列', 'novel-game-plugin' )
-_e( '翻訳する文字列', 'novel-game-plugin' )
-esc_html__( '翻訳する文字列', 'novel-game-plugin' )
-esc_attr__( '翻訳する文字列', 'novel-game-plugin' )
+// PHP での例（英語で記述）
+__( 'Translatable string', 'novel-game-plugin' )
+_e( 'Translatable string', 'novel-game-plugin' )
+esc_html__( 'Translatable string', 'novel-game-plugin' )
+esc_attr__( 'Translatable string', 'novel-game-plugin' )
 ```
 
 ```javascript
-// JavaScript (wp.i18n) での例
-__( '翻訳する文字列', 'novel-game-plugin' )
+// JavaScript (wp.i18n) での例（英語で記述）
+__( 'Translatable string', 'novel-game-plugin' )
 ```
 
 #### .pot ファイルの更新
@@ -205,8 +222,15 @@ msgcat --use-first --sort-output \
 msgmerge --update languages/novel-game-plugin-ja.po languages/novel-game-plugin.pot
 
 # .mo ファイルのコンパイル
+# WordPress環境の互換性のため、ja.mo と ja_JP.mo の両方を生成します
+msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja.mo
 msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja_JP.mo
 ```
+
+**注意**: 日本語翻訳ファイルについて
+- WordPress環境によっては `ja.mo` または `ja_JP.mo` のいずれかのみが読み込まれる場合があります
+- 互換性を確保するため、両方のファイルを生成・同梱することを推奨します
+- これにより、異なるWordPress環境での翻訳表示が確実になります
 
 #### 新しい言語の追加
 ```bash

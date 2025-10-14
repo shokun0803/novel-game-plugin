@@ -192,7 +192,7 @@ add_action( 'save_post_novel_game', 'noveltool_save_unified_custom_meta', 20 );
  */
 function noveltool_add_revision_fields( $fields ) {
     // 既存フィールド配列に統合フィールドラベルを追加
-    $fields['_noveltool_unified_meta'] = __( 'カスタムフィールドデータ', 'novel-game-plugin' );
+    $fields['_noveltool_unified_meta'] = __( 'Custom Field Data', 'novel-game-plugin' );
     return $fields;
 }
 // 正しいコア内部フック（WordPressコアは _wp_post_revision_fields を利用）
@@ -261,12 +261,12 @@ function noveltool_revision_field_display( $value, $field, $compare_from, $conte
     
     // 現在側(value) と 比較元(compare_from) の両方の JSON を扱い差分を判定
     if ( empty( $value ) ) {
-        return __( 'データなし', 'novel-game-plugin' );
+        return __( 'No Data', 'novel-game-plugin' );
     }
 
     $current  = json_decode( $value, true ); // 表示対象（to もしくは from コンテキスト依存）
     if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $current ) ) {
-        return __( 'データなし', 'novel-game-plugin' );
+        return __( 'No Data', 'novel-game-plugin' );
     }
 
     // 比較元リビジョン（$compare_from）があればそちらから同フィールド値を取得
@@ -307,22 +307,22 @@ function noveltool_revision_field_display( $value, $field, $compare_from, $conte
         }
 
         // 表示用値
-        $formatted_now  = $exists_now  ? noveltool_format_field_value( $now_val )  : __( '（無し）', 'novel-game-plugin' );
-        $formatted_prev = $exists_prev ? noveltool_format_field_value( $prev_val ) : __( '（無し）', 'novel-game-plugin' );
+        $formatted_now  = $exists_now  ? noveltool_format_field_value( $now_val )  : __( '(None)', 'novel-game-plugin' );
+        $formatted_prev = $exists_prev ? noveltool_format_field_value( $prev_val ) : __( '(None)', 'novel-game-plugin' );
 
         // バッジ文言
         switch ( $change_type ) {
             case 'added':
-                $badge = '<span class="noveltool-rev-badge added">' . esc_html__( '追加', 'novel-game-plugin' ) . '</span>';
+                $badge = '<span class="noveltool-rev-badge added">' . esc_html__( 'Add', 'novel-game-plugin' ) . '</span>';
                 break;
             case 'removed':
-                $badge = '<span class="noveltool-rev-badge removed">' . esc_html__( '削除', 'novel-game-plugin' ) . '</span>';
+                $badge = '<span class="noveltool-rev-badge removed">' . esc_html__( 'Delete', 'novel-game-plugin' ) . '</span>';
                 break;
             case 'changed':
-                $badge = '<span class="noveltool-rev-badge changed">' . esc_html__( '変更', 'novel-game-plugin' ) . '</span>';
+                $badge = '<span class="noveltool-rev-badge changed">' . esc_html__( 'Change', 'novel-game-plugin' ) . '</span>';
                 break;
             default:
-                $badge = '<span class="noveltool-rev-badge unchanged">' . esc_html__( '同一', 'novel-game-plugin' ) . '</span>';
+                $badge = '<span class="noveltool-rev-badge unchanged">' . esc_html__( 'Same', 'novel-game-plugin' ) . '</span>';
         }
 
         $output .= '<div class="noveltool-revision-field noveltool-revision-' . esc_attr( $change_type ) . '">';
@@ -372,24 +372,24 @@ function noveltool_revision_values_differ( $a, $b ) {
  */
 function noveltool_get_field_label( $key ) {
     $labels = array(
-        '_background_image'         => __( '背景画像', 'novel-game-plugin' ),
-        '_character_image'          => __( 'キャラクター画像（旧）', 'novel-game-plugin' ),
-        '_character_left'           => __( '左キャラクター画像', 'novel-game-plugin' ),
-        '_character_center'         => __( '中央キャラクター画像', 'novel-game-plugin' ),
-        '_character_right'          => __( '右キャラクター画像', 'novel-game-plugin' ),
-        '_character_left_name'      => __( '左キャラクター名', 'novel-game-plugin' ),
-        '_character_center_name'    => __( '中央キャラクター名', 'novel-game-plugin' ),
-        '_character_right_name'     => __( '右キャラクター名', 'novel-game-plugin' ),
-        '_dialogue_text'            => __( 'セリフテキスト（旧）', 'novel-game-plugin' ),
-        '_dialogue_texts'           => __( 'セリフテキスト', 'novel-game-plugin' ),
-        '_dialogue_backgrounds'     => __( 'セリフ背景', 'novel-game-plugin' ),
-        '_dialogue_speakers'        => __( 'セリフ話者', 'novel-game-plugin' ),
-        '_dialogue_flag_conditions' => __( 'セリフフラグ条件', 'novel-game-plugin' ),
-        '_choices'                  => __( '選択肢', 'novel-game-plugin' ),
-        '_game_title'               => __( 'ゲームタイトル', 'novel-game-plugin' ),
-        '_is_ending'                => __( 'エンディング', 'novel-game-plugin' ),
-        '_ending_text'              => __( 'エンディングテキスト', 'novel-game-plugin' ),
-        '_scene_arrival_flags'      => __( 'シーン到達時フラグ', 'novel-game-plugin' ),
+        '_background_image'         => __( 'Background Image', 'novel-game-plugin' ),
+        '_character_image'          => __( 'Character Image (Old)', 'novel-game-plugin' ),
+        '_character_left'           => __( 'Left Character Image', 'novel-game-plugin' ),
+        '_character_center'         => __( 'Center Character Image', 'novel-game-plugin' ),
+        '_character_right'          => __( 'Right Character Image', 'novel-game-plugin' ),
+        '_character_left_name'      => __( 'Left Character Name', 'novel-game-plugin' ),
+        '_character_center_name'    => __( 'Center Character Name', 'novel-game-plugin' ),
+        '_character_right_name'     => __( 'Right Character Name', 'novel-game-plugin' ),
+        '_dialogue_text'            => __( 'Dialogue Text (Old)', 'novel-game-plugin' ),
+        '_dialogue_texts'           => __( 'Dialogue Texts', 'novel-game-plugin' ),
+        '_dialogue_backgrounds'     => __( 'Dialogue Backgrounds', 'novel-game-plugin' ),
+        '_dialogue_speakers'        => __( 'Dialogue Speakers', 'novel-game-plugin' ),
+        '_dialogue_flag_conditions' => __( 'Dialogue Flag Conditions', 'novel-game-plugin' ),
+        '_choices'                  => __( 'Choices', 'novel-game-plugin' ),
+        '_game_title'               => __( 'Game Title', 'novel-game-plugin' ),
+        '_is_ending'                => __( 'Ending', 'novel-game-plugin' ),
+        '_ending_text'              => __( 'Ending Text', 'novel-game-plugin' ),
+        '_scene_arrival_flags'      => __( 'Scene Arrival Flags', 'novel-game-plugin' ),
     );
     
     return isset( $labels[ $key ] ) ? $labels[ $key ] : $key;
@@ -406,12 +406,12 @@ function noveltool_format_field_value( $value ) {
     // 配列の場合
     if ( is_array( $value ) ) {
         $count = count( $value );
-        return sprintf( __( '配列（%d要素）', 'novel-game-plugin' ), $count );
+        return sprintf( __( 'Array (%d items)', 'novel-game-plugin' ), $count );
     }
     
     // 真偽値の場合
     if ( is_bool( $value ) ) {
-        return $value ? __( 'はい', 'novel-game-plugin' ) : __( 'いいえ', 'novel-game-plugin' );
+        return $value ? __( 'Yes', 'novel-game-plugin' ) : __( 'No', 'novel-game-plugin' );
     }
     
     // 文字列の場合（長い場合は省略）

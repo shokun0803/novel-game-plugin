@@ -18,38 +18,38 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function noveltool_register_post_type() {
     $labels = array(
-        'name'                  => _x( 'ノベルゲーム', 'Post Type General Name', 'novel-game-plugin' ),
-        'singular_name'         => _x( 'ノベルゲーム', 'Post Type Singular Name', 'novel-game-plugin' ),
-        'menu_name'             => __( 'ノベルゲーム', 'novel-game-plugin' ),
-        'name_admin_bar'        => __( 'ノベルゲーム', 'novel-game-plugin' ),
-        'archives'              => __( 'ノベルゲーム一覧', 'novel-game-plugin' ),
-        'attributes'            => __( 'ノベルゲーム属性', 'novel-game-plugin' ),
-        'parent_item_colon'     => __( '親ノベルゲーム:', 'novel-game-plugin' ),
-        'all_items'             => __( 'すべてのノベルゲーム', 'novel-game-plugin' ),
-        'add_new_item'          => __( '新しいノベルゲームを追加', 'novel-game-plugin' ),
-        'add_new'               => __( '新規追加', 'novel-game-plugin' ),
-        'new_item'              => __( '新しいノベルゲーム', 'novel-game-plugin' ),
-        'edit_item'             => __( 'ノベルゲームを編集', 'novel-game-plugin' ),
-        'update_item'           => __( 'ノベルゲームを更新', 'novel-game-plugin' ),
-        'view_item'             => __( 'ノベルゲームを表示', 'novel-game-plugin' ),
-        'view_items'            => __( 'ノベルゲームを表示', 'novel-game-plugin' ),
-        'search_items'          => __( 'ノベルゲームを検索', 'novel-game-plugin' ),
-        'not_found'             => __( 'ノベルゲームが見つかりません', 'novel-game-plugin' ),
-        'not_found_in_trash'    => __( 'ゴミ箱にノベルゲームが見つかりません', 'novel-game-plugin' ),
-        'featured_image'        => __( 'アイキャッチ画像', 'novel-game-plugin' ),
-        'set_featured_image'    => __( 'アイキャッチ画像を設定', 'novel-game-plugin' ),
-        'remove_featured_image' => __( 'アイキャッチ画像を削除', 'novel-game-plugin' ),
-        'use_featured_image'    => __( 'アイキャッチ画像として使用', 'novel-game-plugin' ),
-        'insert_into_item'      => __( 'ノベルゲームに挿入', 'novel-game-plugin' ),
-        'uploaded_to_this_item' => __( 'このノベルゲームにアップロード', 'novel-game-plugin' ),
-        'items_list'            => __( 'ノベルゲーム一覧', 'novel-game-plugin' ),
-        'items_list_navigation' => __( 'ノベルゲーム一覧ナビゲーション', 'novel-game-plugin' ),
-        'filter_items_list'     => __( 'ノベルゲーム一覧をフィルター', 'novel-game-plugin' ),
+        'name'                  => _x( 'Novel Game', 'Post Type General Name', 'novel-game-plugin' ),
+        'singular_name'         => _x( 'Novel Game', 'Post Type Singular Name', 'novel-game-plugin' ),
+        'menu_name'             => __( 'Novel Game', 'novel-game-plugin' ),
+        'name_admin_bar'        => __( 'Novel Game', 'novel-game-plugin' ),
+        'archives'              => __( 'Novel Game List', 'novel-game-plugin' ),
+        'attributes'            => __( 'Novel Game Attributes', 'novel-game-plugin' ),
+        'parent_item_colon'     => __( 'Parent Novel Game:', 'novel-game-plugin' ),
+        'all_items'             => __( 'All Novel Games', 'novel-game-plugin' ),
+        'add_new_item'          => __( 'Add New Novel Game', 'novel-game-plugin' ),
+        'add_new'               => __( 'Add New', 'novel-game-plugin' ),
+        'new_item'              => __( 'New Novel Game', 'novel-game-plugin' ),
+        'edit_item'             => __( 'Edit Novel Game', 'novel-game-plugin' ),
+        'update_item'           => __( 'Update Novel Game', 'novel-game-plugin' ),
+        'view_item'             => __( 'View Novel Game', 'novel-game-plugin' ),
+        'view_items'            => __( 'View Novel Game', 'novel-game-plugin' ),
+        'search_items'          => __( 'Search Novel Games', 'novel-game-plugin' ),
+        'not_found'             => __( 'No novel games found', 'novel-game-plugin' ),
+        'not_found_in_trash'    => __( 'No novel games found in Trash', 'novel-game-plugin' ),
+        'featured_image'        => __( 'Featured Image', 'novel-game-plugin' ),
+        'set_featured_image'    => __( 'Set Featured Image', 'novel-game-plugin' ),
+        'remove_featured_image' => __( 'Remove Featured Image', 'novel-game-plugin' ),
+        'use_featured_image'    => __( 'Use as Featured Image', 'novel-game-plugin' ),
+        'insert_into_item'      => __( 'Insert into Novel Game', 'novel-game-plugin' ),
+        'uploaded_to_this_item' => __( 'Uploaded to this Novel Game', 'novel-game-plugin' ),
+        'items_list'            => __( 'Novel Game List', 'novel-game-plugin' ),
+        'items_list_navigation' => __( 'Novel Game List Navigation', 'novel-game-plugin' ),
+        'filter_items_list'     => __( 'Filter Novel Game List', 'novel-game-plugin' ),
     );
 
     $args = array(
-        'label'                 => __( 'ノベルゲーム', 'novel-game-plugin' ),
-        'description'           => __( 'ノベルゲームのシーンを管理', 'novel-game-plugin' ),
+        'label'                 => __( 'Novel Game', 'novel-game-plugin' ),
+        'description'           => __( 'Manage Novel Game Scenes', 'novel-game-plugin' ),
         'labels'                => $labels,
         'supports'              => array( 'title', 'revisions', 'custom-fields' ),
         'taxonomies'            => array(),
@@ -85,7 +85,7 @@ add_action( 'init', 'noveltool_register_post_type' );
  * @since 1.0.0
  */
 function noveltool_add_custom_columns( $columns ) {
-    $columns['game_title'] = __( 'ゲームタイトル', 'novel-game-plugin' );
+    $columns['game_title'] = __( 'Game Title', 'novel-game-plugin' );
     // 必要に応じて他のカラムも追加
     return $columns;
 }
@@ -231,7 +231,7 @@ function noveltool_add_admin_filters() {
             $current_filter = isset( $_GET['game_title_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['game_title_filter'] ) ) : '';
             
             echo '<select name="game_title_filter">';
-            echo '<option value="">' . esc_html__( 'すべてのゲーム', 'novel-game-plugin' ) . '</option>';
+            echo '<option value="">' . esc_html__( 'All Games', 'novel-game-plugin' ) . '</option>';
             
             foreach ( $game_titles as $game_title ) {
                 $selected = selected( $current_filter, $game_title, false );
@@ -271,8 +271,8 @@ add_action( 'pre_get_posts', 'noveltool_admin_filter_posts' );
 function noveltool_add_game_list_menu() {
     add_submenu_page(
         'edit.php?post_type=novel_game',
-        __( 'ゲーム一覧', 'novel-game-plugin' ),
-        __( 'ゲーム一覧', 'novel-game-plugin' ),
+        __( 'Game List', 'novel-game-plugin' ),
+        __( 'Game List', 'novel-game-plugin' ),
         'edit_posts',
         'novel-game-list',
         'noveltool_game_list_page'
@@ -288,7 +288,7 @@ add_action( 'admin_menu', 'noveltool_add_game_list_menu' );
 function noveltool_game_list_page() {
     // 権限チェック
     if ( ! current_user_can( 'edit_posts' ) ) {
-        wp_die( __( 'このページにアクセスする権限がありません。', 'novel-game-plugin' ) );
+        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
     
     // ゲームタイトルの取得
@@ -304,30 +304,30 @@ function noveltool_game_list_page() {
         <div class="noveltool-game-list-container">
             <?php if ( empty( $game_titles ) ) : ?>
                 <div class="notice notice-info">
-                    <p><?php esc_html_e( 'まだゲームが作成されていません。', 'novel-game-plugin' ); ?></p>
-                    <p><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-new' ) ); ?>" class="button button-primary"><?php esc_html_e( '新規ゲームを作成', 'novel-game-plugin' ); ?></a></p>
+                    <p><?php esc_html_e( 'No games have been created yet.', 'novel-game-plugin' ); ?></p>
+                    <p><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-new' ) ); ?>" class="button button-primary"><?php esc_html_e( 'Create New Game', 'novel-game-plugin' ); ?></a></p>
                 </div>
             <?php else : ?>
                 <div class="noveltool-game-selector">
                     <form method="get" action="">
                         <input type="hidden" name="post_type" value="novel_game" />
                         <input type="hidden" name="page" value="novel-game-list" />
-                        <label for="game_title_select"><?php esc_html_e( 'ゲームを選択:', 'novel-game-plugin' ); ?></label>
+                        <label for="game_title_select"><?php esc_html_e( 'Select Game:', 'novel-game-plugin' ); ?></label>
                         <select name="game_title" id="game_title_select">
-                            <option value=""><?php esc_html_e( '-- ゲームを選択 --', 'novel-game-plugin' ); ?></option>
+                            <option value=""><?php esc_html_e( '-- Select Game --', 'novel-game-plugin' ); ?></option>
                             <?php foreach ( $game_titles as $game_title ) : ?>
                                 <option value="<?php echo esc_attr( $game_title ); ?>" <?php selected( $selected_game, $game_title ); ?>>
                                     <?php echo esc_html( $game_title ); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <input type="submit" class="button" value="<?php esc_attr_e( '表示', 'novel-game-plugin' ); ?>" />
+                        <input type="submit" class="button" value="<?php esc_attr_e( 'Display', 'novel-game-plugin' ); ?>" />
                     </form>
                 </div>
                 
                 <?php if ( ! empty( $selected_game ) ) : ?>
                     <div class="noveltool-game-posts">
-                        <h2><?php printf( esc_html__( 'ゲーム: %s', 'novel-game-plugin' ), esc_html( $selected_game ) ); ?></h2>
+                        <h2><?php printf( esc_html__( 'Game: %s', 'novel-game-plugin' ), esc_html( $selected_game ) ); ?></h2>
                         
                         <?php
                         $posts = noveltool_get_posts_by_game_title( $selected_game );
@@ -335,12 +335,12 @@ function noveltool_game_list_page() {
                         if ( empty( $posts ) ) :
                             ?>
                             <div class="notice notice-warning">
-                                <p><?php esc_html_e( 'このゲームにはまだ投稿がありません。', 'novel-game-plugin' ); ?></p>
+                                <p><?php esc_html_e( 'There are no posts for this game yet.', 'novel-game-plugin' ); ?></p>
                             </div>
                         <?php else : ?>
                             <div class="noveltool-posts-actions">
                                 <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game' ) ); ?>" class="button button-primary">
-                                    <?php esc_html_e( '新しいシーンを追加', 'novel-game-plugin' ); ?>
+                                    <?php esc_html_e( 'Add New Scene', 'novel-game-plugin' ); ?>
                                 </a>
                             </div>
                             
@@ -348,16 +348,16 @@ function noveltool_game_list_page() {
                                 <thead>
                                     <tr>
                                         <th scope="col" class="manage-column column-title">
-                                            <?php esc_html_e( 'タイトル', 'novel-game-plugin' ); ?>
+                                            <?php esc_html_e( 'Title', 'novel-game-plugin' ); ?>
                                         </th>
                                         <th scope="col" class="manage-column column-date">
-                                            <?php esc_html_e( '作成日', 'novel-game-plugin' ); ?>
+                                            <?php esc_html_e( 'Created Date', 'novel-game-plugin' ); ?>
                                         </th>
                                         <th scope="col" class="manage-column column-status">
-                                            <?php esc_html_e( 'ステータス', 'novel-game-plugin' ); ?>
+                                            <?php esc_html_e( 'Status', 'novel-game-plugin' ); ?>
                                         </th>
                                         <th scope="col" class="manage-column column-actions">
-                                            <?php esc_html_e( '操作', 'novel-game-plugin' ); ?>
+                                            <?php esc_html_e( 'Actions', 'novel-game-plugin' ); ?>
                                         </th>
                                     </tr>
                                 </thead>
@@ -373,13 +373,13 @@ function noveltool_game_list_page() {
                                                 <div class="row-actions">
                                                     <span class="edit">
                                                         <a href="<?php echo esc_url( get_edit_post_link( $post->ID ) ); ?>">
-                                                            <?php esc_html_e( '編集', 'novel-game-plugin' ); ?>
+                                                            <?php esc_html_e( 'Edit', 'novel-game-plugin' ); ?>
                                                         </a>
                                                     </span>
                                                     |
                                                     <span class="view">
                                                         <a href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>" target="_blank">
-                                                            <?php esc_html_e( '表示', 'novel-game-plugin' ); ?>
+                                                            <?php esc_html_e( 'Display', 'novel-game-plugin' ); ?>
                                                         </a>
                                                     </span>
                                                 </div>
@@ -392,10 +392,10 @@ function noveltool_game_list_page() {
                                             </td>
                                             <td class="actions column-actions">
                                                 <a href="<?php echo esc_url( get_edit_post_link( $post->ID ) ); ?>" class="button button-small">
-                                                    <?php esc_html_e( '編集', 'novel-game-plugin' ); ?>
+                                                    <?php esc_html_e( 'Edit', 'novel-game-plugin' ); ?>
                                                 </a>
                                                 <a href="<?php echo esc_url( get_permalink( $post->ID ) ); ?>" class="button button-small" target="_blank">
-                                                    <?php esc_html_e( '表示', 'novel-game-plugin' ); ?>
+                                                    <?php esc_html_e( 'Display', 'novel-game-plugin' ); ?>
                                                 </a>
                                             </td>
                                         </tr>
@@ -407,7 +407,7 @@ function noveltool_game_list_page() {
                 <?php endif; ?>
                 
                 <div class="noveltool-game-overview">
-                    <h3><?php esc_html_e( 'ゲーム概要', 'novel-game-plugin' ); ?></h3>
+                    <h3><?php esc_html_e( 'Game Overview', 'novel-game-plugin' ); ?></h3>
                     <div class="noveltool-games-summary">
                         <?php foreach ( $game_titles as $game_title ) : ?>
                             <?php
@@ -416,9 +416,9 @@ function noveltool_game_list_page() {
                             ?>
                             <div class="noveltool-game-summary-item">
                                 <strong><?php echo esc_html( $game_title ); ?></strong>
-                                <span class="post-count"><?php printf( esc_html__( '%d 投稿', 'novel-game-plugin' ), $post_count ); ?></span>
+                                <span class="post-count"><?php printf( esc_html__( '%d Posts', 'novel-game-plugin' ), $post_count ); ?></span>
                                 <a href="<?php echo esc_url( add_query_arg( array( 'game_title' => $game_title ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-list' ) ) ); ?>" class="button button-small">
-                                    <?php esc_html_e( '表示', 'novel-game-plugin' ); ?>
+                                    <?php esc_html_e( 'Display', 'novel-game-plugin' ); ?>
                                 </a>
                             </div>
                         <?php endforeach; ?>

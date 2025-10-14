@@ -23,8 +23,8 @@
 
 <div id="novel-game-archive" class="novel-game-archive-container">
     <header class="archive-header">
-        <h1 class="archive-title"><?php _e('ノベルゲーム一覧', 'novel-game-plugin'); ?></h1>
-        <p class="archive-description"><?php _e('プレイしたいゲームを選択してください', 'novel-game-plugin'); ?></p>
+        <h1 class="archive-title"><?php _e('Novel Game List', 'novel-game-plugin'); ?></h1>
+        <p class="archive-description"><?php _e('Please select a game to play', 'novel-game-plugin'); ?></p>
     </header>
 
     <div class="novel-games-grid">
@@ -145,11 +145,11 @@
                                 <?php if ( $game_description ) : ?>
                                     <p class="game-description"><?php echo wp_trim_words($game_description, 20, '...'); ?></p>
                                 <?php endif; ?>
-                                <p class="scene-count"><?php printf(__('%d シーン', 'novel-game-plugin'), $scene_count); ?></p>
-                                <p class="first-scene-info"><?php printf(__('開始: %s', 'novel-game-plugin'), esc_html($game->first_scene_title)); ?></p>
+                                <p class="scene-count"><?php printf(__('%d Scenes', 'novel-game-plugin'), $scene_count); ?></p>
+                                <p class="first-scene-info"><?php printf(__('Start: %s', 'novel-game-plugin'), esc_html($game->first_scene_title)); ?></p>
                             </div>
                             <div class="play-button">
-                                <span><?php _e('ゲーム開始', 'novel-game-plugin'); ?></span>
+                                <span><?php _e('Start Game', 'novel-game-plugin'); ?></span>
                             </div>
                         </div>
                     </div>
@@ -159,9 +159,9 @@
         else :
             ?>
             <div class="no-games-message">
-                <p><?php _e('まだゲームが作成されていません。', 'novel-game-plugin'); ?></p>
+                <p><?php _e('No games have been created yet.', 'novel-game-plugin'); ?></p>
                 <?php if (current_user_can('edit_posts')) : ?>
-                    <p><a href="<?php echo admin_url('post-new.php?post_type=novel_game'); ?>" class="button"><?php _e('新しいゲームを作成', 'novel-game-plugin'); ?></a></p>
+                    <p><a href="<?php echo admin_url('post-new.php?post_type=novel_game'); ?>" class="button"><?php _e('Create New Game', 'novel-game-plugin'); ?></a></p>
                 <?php endif; ?>
             </div>
             <?php
@@ -175,7 +175,7 @@
     <!-- モーダルコンテンツ -->
     <div id="novel-game-modal-content" class="novel-game-modal-content">
         <!-- ゲーム閉じるボタン -->
-        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>">
+        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'Close Game', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'Close Game', 'novel-game-plugin' ); ?>">
             <span class="close-icon">×</span>
         </button>
         
@@ -187,10 +187,10 @@
                 <p id="novel-title-description" class="novel-title-description"></p>
                 <div class="novel-title-buttons">
                     <button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">
-                        <?php echo esc_html__( '最初から開始', 'novel-game-plugin' ); ?>
+                        <?php echo esc_html__( 'Start from Beginning', 'novel-game-plugin' ); ?>
                     </button>
                     <button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">
-                        <?php echo esc_html__( '続きから始める', 'novel-game-plugin' ); ?>
+                        <?php echo esc_html__( 'Continue from Save', 'novel-game-plugin' ); ?>
                     </button>
                 </div>
             </div>
