@@ -143,6 +143,12 @@ git checkout -b feature/new-feature
 - PHPDocコメントの記述必須
 - セキュリティ対策の実装必須
 
+詳細な命名規約については、[命名規約ガイドライン](docs/NAMING_CONVENTIONS.md) を参照してください。
+
+### コードレビュー
+
+プルリクエストのレビュー時には、[コードレビューチェックリスト](docs/CODE_REVIEW_CHECKLIST.md) を活用してください。
+
 ### 開発者向けログメッセージとデバッグ機能
 
 開発者向けログメッセージとユーザー向け翻訳文字列の適切な使い分けについては、[開発者向けログメッセージガイドライン](docs/DEVELOPER_LOGGING_GUIDELINES.md) を参照してください。
