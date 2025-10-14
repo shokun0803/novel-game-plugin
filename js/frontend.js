@@ -2694,7 +2694,7 @@
 			$choicesContainer.empty();
 			
 			// ショートコード使用の検出（関数の最初で実行）
-			var isShortcodeUsed = noveltool_is_shortcode_context();
+			var isShortcodeUsed = isShortcodeContext();
 			
 			// ナビゲーションボタンの変数を関数スコープで宣言
 			var $closeButton, $titleReturnButton;
@@ -2790,7 +2790,7 @@
 			$choicesContainer.empty();
 			
 			// ショートコード使用の検出
-			var isShortcodeUsed = noveltool_is_shortcode_context();
+			var isShortcodeUsed = isShortcodeContext();
 			
 			// ナビゲーションボタンの変数を関数スコープで宣言
 			var $closeButton, $titleReturnButton;
@@ -2895,7 +2895,7 @@
 		/**
 		 * ショートコードコンテキストかどうかを判定
 		 */
-		function noveltool_is_shortcode_context() {
+		function isShortcodeContext() {
 			// URLパラメーターでショートコードかどうかを判定
 			var urlParams = new URLSearchParams( window.location.search );
 			if ( urlParams.get( 'shortcode' ) === '1' ) {
