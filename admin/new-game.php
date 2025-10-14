@@ -19,8 +19,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 function noveltool_add_new_game_menu() {
     add_submenu_page(
         'edit.php?post_type=novel_game',
-        __( '新規ゲーム作成', 'novel-game-plugin' ),
-        __( '新規ゲーム作成', 'novel-game-plugin' ),
+        __( 'Create New Game', 'novel-game-plugin' ),
+        __( 'Create New Game', 'novel-game-plugin' ),
         'edit_posts',
         'novel-game-new',
         'noveltool_new_game_page'
@@ -44,7 +44,7 @@ function noveltool_handle_new_game_form() {
     if ( isset( $_POST['create_game'] ) ) {
         // 権限チェック
         if ( ! current_user_can( 'edit_posts' ) ) {
-            wp_die( __( 'このページにアクセスする権限がありません。', 'novel-game-plugin' ) );
+            wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
         }
 
         // nonceチェック
@@ -107,7 +107,7 @@ add_action( 'admin_init', 'noveltool_handle_new_game_form' );
 function noveltool_new_game_page() {
     // 権限チェック
     if ( ! current_user_can( 'edit_posts' ) ) {
-        wp_die( __( 'このページにアクセスする権限がありません。', 'novel-game-plugin' ) );
+        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
     // URLパラメーターからエラーメッセージを取得
@@ -115,16 +115,16 @@ function noveltool_new_game_page() {
     if ( isset( $_GET['error'] ) ) {
         switch ( sanitize_text_field( wp_unslash( $_GET['error'] ) ) ) {
             case 'security':
-                $error_message = __( 'セキュリティチェックに失敗しました。', 'novel-game-plugin' );
+                $error_message = __( 'Security check failed.', 'novel-game-plugin' );
                 break;
             case 'empty_title':
-                $error_message = __( 'ゲームタイトルを入力してください。', 'novel-game-plugin' );
+                $error_message = __( 'Please enter a game title.', 'novel-game-plugin' );
                 break;
             case 'title_exists':
-                $error_message = __( 'このゲームタイトルは既に使用されています。', 'novel-game-plugin' );
+                $error_message = __( 'This game title is already in use.', 'novel-game-plugin' );
                 break;
             case 'create_failed':
-                $error_message = __( 'ゲームの作成に失敗しました。', 'novel-game-plugin' );
+                $error_message = __( 'Failed to create game.', 'novel-game-plugin' );
                 break;
         }
     }
@@ -154,7 +154,7 @@ function noveltool_new_game_page() {
                 <table class="form-table">
                     <tr>
                         <th scope="row">
-                            <label for="game_title"><?php esc_html_e( 'ゲームタイトル', 'novel-game-plugin' ); ?></label>
+                            <label for="game_title"><?php esc_html_e( 'Game Title', 'novel-game-plugin' ); ?></label>
                         </th>
                         <td>
                             <input type="text" 
@@ -162,10 +162,10 @@ function noveltool_new_game_page() {
                                    name="game_title" 
                                    value="<?php echo isset( $_GET['title'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_GET['title'] ) ) ) : ''; ?>" 
                                    class="regular-text"
-                                   placeholder="<?php esc_attr_e( '新しいゲームのタイトルを入力してください', 'novel-game-plugin' ); ?>"
+                                   placeholder="<?php esc_attr_e( 'Please enter a title for the new game', 'novel-game-plugin' ); ?>"
                                    required />
                             <p class="description">
-                                <?php esc_html_e( 'このタイトルは全体のゲームタイトルとして使用されます。', 'novel-game-plugin' ); ?>
+                                <?php esc_html_e( 'This title will be used as the overall game title.', 'novel-game-plugin' ); ?>
                             </p>
                         </td>
                     </tr>
@@ -176,15 +176,15 @@ function noveltool_new_game_page() {
                            name="create_game" 
                            id="submit" 
                            class="button button-primary" 
-                           value="<?php esc_attr_e( 'ゲームを作成', 'novel-game-plugin' ); ?>" />
+                           value="<?php esc_attr_e( 'Create Game', 'novel-game-plugin' ); ?>" />
                 </p>
             </form>
         </div>
 
         <div class="noveltool-help-section">
-            <h3><?php esc_html_e( 'ヘルプ', 'novel-game-plugin' ); ?></h3>
-            <p><?php esc_html_e( 'ゲームタイトルを入力して「ゲームを作成」ボタンをクリックすると、新しいゲームの最初のシーンが作成されます。', 'novel-game-plugin' ); ?></p>
-            <p><?php esc_html_e( '作成後は自動的にシーン編集画面に移動し、背景画像、キャラクター、セリフ、選択肢などを設定できます。', 'novel-game-plugin' ); ?></p>
+            <h3><?php esc_html_e( 'Help', 'novel-game-plugin' ); ?></h3>
+            <p><?php esc_html_e( 'Enter a game title and click the "Create Game" button to create the first scene of a new game.', 'novel-game-plugin' ); ?></p>
+            <p><?php esc_html_e( 'After creation, you will automatically be taken to the scene editing screen where you can set background images, characters, dialogue, choices, and more.', 'novel-game-plugin' ); ?></p>
         </div>
     </div>
     <?php
@@ -218,7 +218,7 @@ function noveltool_game_title_exists( $game_title ) {
  */
 function noveltool_create_new_game( $game_title ) {
     // 最初のシーンのタイトルを生成
-    $scene_title = sprintf( __( '%s - 開始シーン', 'novel-game-plugin' ), $game_title );
+    $scene_title = sprintf( __( '%s - Start Scene', 'novel-game-plugin' ), $game_title );
 
     // 新規投稿の作成
     $post_data = array(
@@ -238,7 +238,7 @@ function noveltool_create_new_game( $game_title ) {
         update_option( 'noveltool_game_title', $game_title );
         
         // デフォルトのセリフを設定
-        $default_dialogue = sprintf( __( 'ようこそ「%s」へ！', 'novel-game-plugin' ), $game_title );
+        $default_dialogue = sprintf( __( 'Welcome to "%s"!', 'novel-game-plugin' ), $game_title );
         update_post_meta( $new_id, '_dialogue_text', $default_dialogue );
     }
 

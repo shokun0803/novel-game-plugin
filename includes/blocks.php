@@ -153,7 +153,7 @@ function noveltool_get_games_for_block( $request ) {
     // 全ゲーム一覧オプション
     $games[] = array(
         'value' => '',
-        'label' => __( '全ゲーム一覧', 'novel-game-plugin' )
+        'label' => __( 'All Games List', 'novel-game-plugin' )
     );
     
     // 個別ゲームタイトル一覧を取得

@@ -5,7 +5,7 @@
  * Description: WordPressでノベルゲームを作成できるプラグイン。
  * Version: 1.1.2
  * Author: shokun0803
- * Author URI: https://github.com/shokun0803
+ * Author URI: https://profiles.wordpress.org/shokun0803/
  * Text Domain: novel-game-plugin
  * Domain Path: /languages
  * License: GPLv2 or later
@@ -679,10 +679,10 @@ function noveltool_filter_novel_game_content( $content ) {
     <!-- ゲーム開始ボタン -->
     <div id="novel-game-start-container" class="novel-game-start-container">
         <button id="novel-game-start-btn" class="novel-game-start-btn">
-            <?php echo esc_html__( 'ゲームを開始', 'novel-game-plugin' ); ?>
+            <?php echo esc_html__( 'Start Game', 'novel-game-plugin' ); ?>
         </button>
         <button id="novel-game-clear-progress-btn" class="novel-game-clear-progress-btn" style="display: none;">
-            <?php echo esc_html__( '進捗をクリア', 'novel-game-plugin' ); ?>
+            <?php echo esc_html__( 'Clear Progress', 'novel-game-plugin' ); ?>
         </button>
     </div>
 
@@ -691,7 +691,7 @@ function noveltool_filter_novel_game_content( $content ) {
         <!-- モーダルコンテンツ -->
         <div id="novel-game-modal-content" class="novel-game-modal-content">
             <!-- ゲーム閉じるボタン -->
-            <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ); ?>">
+            <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="<?php echo esc_attr__( 'Close Game', 'novel-game-plugin' ); ?>" title="<?php echo esc_attr__( 'Close Game', 'novel-game-plugin' ); ?>">
                 <span class="close-icon">×</span>
             </button>
             
@@ -703,10 +703,10 @@ function noveltool_filter_novel_game_content( $content ) {
                     <p id="novel-title-description" class="novel-title-description"></p>
                     <div class="novel-title-buttons">
                         <button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">
-                            <?php echo esc_html__( '最初から開始', 'novel-game-plugin' ); ?>
+                            <?php echo esc_html__( 'Start from Beginning', 'novel-game-plugin' ); ?>
                         </button>
                         <button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">
-                            <?php echo esc_html__( '続きから始める', 'novel-game-plugin' ); ?>
+                            <?php echo esc_html__( 'Continue from Save', 'novel-game-plugin' ); ?>
                         </button>
                     </div>
                 </div>
@@ -716,20 +716,20 @@ function noveltool_filter_novel_game_content( $content ) {
             <div id="novel-game-container" class="novel-game-container" style="background-image: url('<?php echo esc_url( $background ); ?>');">
                 <!-- 3体キャラクター表示 -->
                 <?php if ( $character_left ) : ?>
-                    <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" alt="<?php echo esc_attr__( '左キャラクター', 'novel-game-plugin' ); ?>" />
+                    <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" alt="<?php echo esc_attr__( 'Left Character', 'novel-game-plugin' ); ?>" />
                 <?php endif; ?>
                 
                 <?php if ( $character_center ) : ?>
-                    <img id="novel-character-center" class="novel-character novel-character-center" src="<?php echo esc_url( $character_center ); ?>" alt="<?php echo esc_attr__( '中央キャラクター', 'novel-game-plugin' ); ?>" />
+                    <img id="novel-character-center" class="novel-character novel-character-center" src="<?php echo esc_url( $character_center ); ?>" alt="<?php echo esc_attr__( 'Center Character', 'novel-game-plugin' ); ?>" />
                 <?php endif; ?>
                 
                 <?php if ( $character_right ) : ?>
-                    <img id="novel-character-right" class="novel-character novel-character-right" src="<?php echo esc_url( $character_right ); ?>" alt="<?php echo esc_attr__( '右キャラクター', 'novel-game-plugin' ); ?>" />
+                    <img id="novel-character-right" class="novel-character novel-character-right" src="<?php echo esc_url( $character_right ); ?>" alt="<?php echo esc_attr__( 'Right Character', 'novel-game-plugin' ); ?>" />
                 <?php endif; ?>
                 
                 <!-- 後方互換性のための旧キャラクター表示 -->
                 <?php if ( $character && ! $character_center ) : ?>
-                    <img id="novel-character" class="novel-character novel-character-center" src="<?php echo esc_url( $character ); ?>" alt="<?php echo esc_attr__( 'キャラクター', 'novel-game-plugin' ); ?>" />
+                    <img id="novel-character" class="novel-character novel-character-center" src="<?php echo esc_url( $character ); ?>" alt="<?php echo esc_attr__( 'Characters', 'novel-game-plugin' ); ?>" />
                 <?php endif; ?>
 
                 <div id="novel-speaker-name" class="novel-speaker-name"></div>
@@ -955,7 +955,7 @@ function noveltool_game_list_shortcode( $atts ) {
     
     if ( empty( $game_titles ) ) {
         return '<div class="noveltool-no-games">' . 
-               '<p>' . esc_html__( 'まだゲームが作成されていません。', 'novel-game-plugin' ) . '</p>' .
+               '<p>' . esc_html__( 'No games have been created yet.', 'novel-game-plugin' ) . '</p>' .
                '</div>';
     }
     
@@ -1031,7 +1031,7 @@ function noveltool_game_list_shortcode( $atts ) {
         }
         
         if ( $show_count ) {
-            echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
+            echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d Scenes', 'novel-game-plugin' ), $post_count ) . '</p>';
         }
         
         // ゲーム専用のタイトル画像を取得
@@ -1053,7 +1053,7 @@ function noveltool_game_list_shortcode( $atts ) {
              'data-game-description="' . esc_attr( $game_description ) . '" ' .
              'data-game-image="' . esc_attr( $game_title_image ) . '" ' .
              'data-game-subtitle="">';
-        echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
+        echo esc_html__( 'Start Playing', 'novel-game-plugin' );
         echo '</button>';
         echo '</div>';
         
@@ -1067,7 +1067,7 @@ function noveltool_game_list_shortcode( $atts ) {
     // モーダルオーバーレイを追加（ゲーム表示用・タイトル画面統合版）
     echo '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">';
     echo '    <div id="novel-game-modal-content" class="novel-game-modal-content">';
-    echo '        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '" title="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '">';
+    echo '        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="' . esc_attr__( 'Close Game', 'novel-game-plugin' ) . '" title="' . esc_attr__( 'Close Game', 'novel-game-plugin' ) . '">';
     echo '            <span class="close-icon">×</span>';
     echo '        </button>';
     echo '        <!-- タイトル画面 -->';
@@ -1078,10 +1078,10 @@ function noveltool_game_list_shortcode( $atts ) {
     echo '                <p id="novel-title-description" class="novel-title-description"></p>';
     echo '                <div class="novel-title-buttons">';
     echo '                    <button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">';
-    echo                          esc_html__( '最初から開始', 'novel-game-plugin' );
+    echo                          esc_html__( 'Start from Beginning', 'novel-game-plugin' );
     echo '                    </button>';
     echo '                    <button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">';
-    echo                          esc_html__( '続きから始める', 'novel-game-plugin' );
+    echo                          esc_html__( 'Continue from Save', 'novel-game-plugin' );
     echo '                    </button>';
     echo '                </div>';
     echo '            </div>';
@@ -1147,7 +1147,7 @@ function noveltool_game_posts_shortcode( $atts ) {
     ) );
     
     if ( empty( $posts ) ) {
-        return '<p>' . esc_html__( 'このゲームには投稿がありません。', 'novel-game-plugin' ) . '</p>';
+        return '<p>' . esc_html__( 'There are no posts for this game.', 'novel-game-plugin' ) . '</p>';
     }
     
     // 個別ゲーム紹介画面の表示
@@ -1202,7 +1202,7 @@ function noveltool_game_posts_shortcode( $atts ) {
     echo 'data-game-description="' . esc_attr( $game_description ) . '" ';
     echo 'data-game-image="' . esc_attr( $game_title_image ) . '" ';
     echo 'data-game-subtitle="">';
-    echo esc_html__( 'ゲームを開始', 'novel-game-plugin' );
+    echo esc_html__( 'Start Game', 'novel-game-plugin' );
     echo '</button>';
     echo '</div>';
     
@@ -1211,7 +1211,7 @@ function noveltool_game_posts_shortcode( $atts ) {
     // モーダルオーバーレイを追加（個別ゲーム表示用）
     echo '<div id="novel-game-modal-overlay" class="novel-game-modal-overlay" style="display: none;">';
     echo '    <div id="novel-game-modal-content" class="novel-game-modal-content">';
-    echo '        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '" title="' . esc_attr__( 'ゲームを閉じる', 'novel-game-plugin' ) . '">';
+    echo '        <button id="novel-game-close-btn" class="novel-game-close-btn" aria-label="' . esc_attr__( 'Close Game', 'novel-game-plugin' ) . '" title="' . esc_attr__( 'Close Game', 'novel-game-plugin' ) . '">';
     echo '            <span class="close-icon">×</span>';
     echo '        </button>';
     echo '        <!-- タイトル画面 -->';
@@ -1222,10 +1222,10 @@ function noveltool_game_posts_shortcode( $atts ) {
     echo '                <p id="novel-title-description" class="novel-title-description"></p>';
     echo '                <div class="novel-title-buttons">';
     echo '                    <button id="novel-title-start-new" class="novel-title-btn novel-title-start-btn">';
-    echo                          esc_html__( '最初から開始', 'novel-game-plugin' );
+    echo                          esc_html__( 'Start from Beginning', 'novel-game-plugin' );
     echo '                    </button>';
     echo '                    <button id="novel-title-continue" class="novel-title-btn novel-title-continue-btn" style="display: none;">';
-    echo                          esc_html__( '続きから始める', 'novel-game-plugin' );
+    echo                          esc_html__( 'Continue from Save', 'novel-game-plugin' );
     echo '                    </button>';
     echo '                </div>';
     echo '            </div>';
@@ -1253,13 +1253,13 @@ function noveltool_all_games_shortcode_output( $atts ) {
     $game_titles = noveltool_get_all_game_titles();
     
     if ( empty( $game_titles ) ) {
-        return '<p>' . esc_html__( 'まだゲームが作成されていません。', 'novel-game-plugin' ) . '</p>';
+        return '<p>' . esc_html__( 'No games have been created yet.', 'novel-game-plugin' ) . '</p>';
     }
     
     ob_start();
     
     echo '<div class="noveltool-all-games-list noveltool-shortcode-container">';
-    echo '<h3>' . esc_html__( 'ゲーム一覧', 'novel-game-plugin' ) . '</h3>';
+    echo '<h3>' . esc_html__( 'Game List', 'novel-game-plugin' ) . '</h3>';
     echo '<div class="noveltool-games-grid">';
     
     foreach ( $game_titles as $game_title ) {
@@ -1319,9 +1319,9 @@ function noveltool_all_games_shortcode_output( $atts ) {
         if ( $game_description ) {
             echo '<p class="noveltool-game-description">' . esc_html( wp_trim_words( $game_description, 15, '...' ) ) . '</p>';
         }
-        echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d シーン', 'novel-game-plugin' ), $post_count ) . '</p>';
+        echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d Scenes', 'novel-game-plugin' ), $post_count ) . '</p>';
         echo '<a href="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $first_post->ID ) ) ) . '" class="noveltool-game-link button">';
-        echo esc_html__( 'プレイ開始', 'novel-game-plugin' );
+        echo esc_html__( 'Start Playing', 'novel-game-plugin' );
         echo '</a>';
         echo '</div>';
         

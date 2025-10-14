@@ -165,17 +165,19 @@ git checkout -b feature/new-feature
 #### 翻訳可能文字列の追加
 新しい翻訳可能文字列を追加する際は、必ず `novel-game-plugin` を textdomain として指定してください：
 
+**重要: WordPress.org 標準準拠のため、ソースコードの文字列は英語で記述してください。**
+
 ```php
-// PHP での例
-__( '翻訳する文字列', 'novel-game-plugin' )
-_e( '翻訳する文字列', 'novel-game-plugin' )
-esc_html__( '翻訳する文字列', 'novel-game-plugin' )
-esc_attr__( '翻訳する文字列', 'novel-game-plugin' )
+// PHP での例（英語で記述）
+__( 'Translatable string', 'novel-game-plugin' )
+_e( 'Translatable string', 'novel-game-plugin' )
+esc_html__( 'Translatable string', 'novel-game-plugin' )
+esc_attr__( 'Translatable string', 'novel-game-plugin' )
 ```
 
 ```javascript
-// JavaScript (wp.i18n) での例
-__( '翻訳する文字列', 'novel-game-plugin' )
+// JavaScript (wp.i18n) での例（英語で記述）
+__( 'Translatable string', 'novel-game-plugin' )
 ```
 
 #### .pot ファイルの更新
@@ -220,8 +222,15 @@ msgcat --use-first --sort-output \
 msgmerge --update languages/novel-game-plugin-ja.po languages/novel-game-plugin.pot
 
 # .mo ファイルのコンパイル
+# WordPress環境の互換性のため、ja.mo と ja_JP.mo の両方を生成します
+msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja.mo
 msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja_JP.mo
 ```
+
+**注意**: 日本語翻訳ファイルについて
+- WordPress環境によっては `ja.mo` または `ja_JP.mo` のいずれかのみが読み込まれる場合があります
+- 互換性を確保するため、両方のファイルを生成・同梱することを推奨します
+- これにより、異なるWordPress環境での翻訳表示が確実になります
 
 #### 新しい言語の追加
 ```bash
