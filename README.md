@@ -222,8 +222,15 @@ msgcat --use-first --sort-output \
 msgmerge --update languages/novel-game-plugin-ja.po languages/novel-game-plugin.pot
 
 # .mo ファイルのコンパイル
+# WordPress環境の互換性のため、ja.mo と ja_JP.mo の両方を生成します
+msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja.mo
 msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja_JP.mo
 ```
+
+**注意**: 日本語翻訳ファイルについて
+- WordPress環境によっては `ja.mo` または `ja_JP.mo` のいずれかのみが読み込まれる場合があります
+- 互換性を確保するため、両方のファイルを生成・同梱することを推奨します
+- これにより、異なるWordPress環境での翻訳表示が確実になります
 
 #### 新しい言語の追加
 ```bash
