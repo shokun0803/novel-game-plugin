@@ -51,13 +51,13 @@
      * ノベルゲーム一覧ブロック
      */
     blocks.registerBlockType( 'noveltool/game-list', {
-        title: __( 'ノベルゲーム一覧', 'novel-game-plugin' ),
-        description: __( 'ノベルゲームの一覧または個別ゲームを表示します', 'novel-game-plugin' ),
+        title: __( 'Novel Game List', 'novel-game-plugin' ),
+        description: __( 'Display a list of novel games or an individual game', 'novel-game-plugin' ),
         icon: 'games',
         category: 'embed',
         keywords: [
-            __( 'ノベル', 'novel-game-plugin' ),
-            __( 'ゲーム', 'novel-game-plugin' ),
+            __( 'Novel', 'novel-game-plugin' ),
+            __( 'Game', 'novel-game-plugin' ),
             __( 'novel', 'novel-game-plugin' ),
             __( 'game', 'novel-game-plugin' )
         ],
@@ -134,42 +134,42 @@
 
             // ゲーム選択オプション
             var gameTypeOptions = [
-                { label: __( '全ゲーム一覧', 'novel-game-plugin' ), value: 'all' },
-                { label: __( '個別ゲーム', 'novel-game-plugin' ), value: 'single' }
+                { label: __( 'All Games List', 'novel-game-plugin' ), value: 'all' },
+                { label: __( 'Individual Game', 'novel-game-plugin' ), value: 'single' }
             ];
 
             // 並び順オプション
             var orderByOptions = [
-                { label: __( 'タイトル', 'novel-game-plugin' ), value: 'title' },
-                { label: __( '作成日', 'novel-game-plugin' ), value: 'date' },
-                { label: __( '更新日', 'novel-game-plugin' ), value: 'modified' }
+                { label: __( 'Title', 'novel-game-plugin' ), value: 'title' },
+                { label: __( 'Date Created', 'novel-game-plugin' ), value: 'date' },
+                { label: __( 'Date Modified', 'novel-game-plugin' ), value: 'modified' }
             ];
 
             var orderOptions = [
-                { label: __( '昇順', 'novel-game-plugin' ), value: 'ASC' },
-                { label: __( '降順', 'novel-game-plugin' ), value: 'DESC' }
+                { label: __( 'Ascending', 'novel-game-plugin' ), value: 'ASC' },
+                { label: __( 'Descending', 'novel-game-plugin' ), value: 'DESC' }
             ];
 
             // プレビュー用の説明文
             var previewText = '';
             if ( attributes.gameType === 'all' ) {
-                previewText = __( '全ゲーム一覧が表示されます', 'novel-game-plugin' );
+                previewText = __( 'All games list will be displayed', 'novel-game-plugin' );
             } else if ( attributes.gameTitle ) {
-                previewText = __( 'ゲーム「{title}」が表示されます', 'novel-game-plugin' ).replace( '{title}', attributes.gameTitle );
+                previewText = __( 'Game "{title}" will be displayed', 'novel-game-plugin' ).replace( '{title}', attributes.gameTitle );
             } else {
-                previewText = __( 'ゲームを選択してください', 'novel-game-plugin' );
+                previewText = __( 'Please select a game', 'novel-game-plugin' );
             }
 
             return [
                 // サイドバーの設定パネル
                 el( InspectorControls, {},
                     el( PanelBody, {
-                        title: __( 'ゲーム設定', 'novel-game-plugin' ),
+                        title: __( 'Game Settings', 'novel-game-plugin' ),
                         initialOpen: true
                     },
                         // ゲームタイプ選択
                         el( SelectControl, {
-                            label: __( '表示タイプ', 'novel-game-plugin' ),
+                            label: __( 'Display Type', 'novel-game-plugin' ),
                             value: attributes.gameType,
                             options: gameTypeOptions,
                             onChange: onGameTypeChange
@@ -177,7 +177,7 @@
 
                         // 個別ゲーム選択（個別ゲームタイプの場合のみ表示）
                         attributes.gameType === 'single' && ! gamesList.isLoading && el( SelectControl, {
-                            label: __( 'ゲーム選択', 'novel-game-plugin' ),
+                            label: __( 'Game Selection', 'novel-game-plugin' ),
                             value: attributes.gameTitle,
                             options: gamesList.games,
                             onChange: onGameTitleChange
@@ -187,21 +187,21 @@
                         attributes.gameType === 'all' && [
                             el( ToggleControl, {
                                 key: 'showCount',
-                                label: __( 'シーン数を表示', 'novel-game-plugin' ),
+                                label: __( 'Show Scene Count', 'novel-game-plugin' ),
                                 checked: attributes.showCount,
                                 onChange: onShowCountChange
                             } ),
 
                             el( ToggleControl, {
                                 key: 'showDescription',
-                                label: __( 'ゲーム説明を表示', 'novel-game-plugin' ),
+                                label: __( 'Show Game Description', 'novel-game-plugin' ),
                                 checked: attributes.showDescription,
                                 onChange: onShowDescriptionChange
                             } ),
 
                             el( RangeControl, {
                                 key: 'columns',
-                                label: __( '表示列数', 'novel-game-plugin' ),
+                                label: __( 'Number of Columns', 'novel-game-plugin' ),
                                 value: attributes.columns,
                                 onChange: onColumnsChange,
                                 min: 1,
@@ -210,7 +210,7 @@
 
                             el( SelectControl, {
                                 key: 'orderby',
-                                label: __( '並び順', 'novel-game-plugin' ),
+                                label: __( 'Sort Order', 'novel-game-plugin' ),
                                 value: attributes.orderby,
                                 options: orderByOptions,
                                 onChange: onOrderByChange
@@ -218,7 +218,7 @@
 
                             el( SelectControl, {
                                 key: 'order',
-                                label: __( '順序', 'novel-game-plugin' ),
+                                label: __( 'Order', 'novel-game-plugin' ),
                                 value: attributes.order,
                                 options: orderOptions,
                                 onChange: onOrderChange
@@ -232,14 +232,14 @@
                     gamesList.isLoading ? 
                         el( Placeholder, {
                             icon: 'games',
-                            label: __( 'ノベルゲーム一覧', 'novel-game-plugin' ),
-                            instructions: __( 'ゲームデータを読み込み中...', 'novel-game-plugin' )
+                            label: __( 'Novel Game List', 'novel-game-plugin' ),
+                            instructions: __( 'Loading game data...', 'novel-game-plugin' )
                         },
                             el( Spinner )
                         ) :
                         el( Placeholder, {
                             icon: 'games',
-                            label: __( 'ノベルゲーム一覧', 'novel-game-plugin' ),
+                            label: __( 'Novel Game List', 'novel-game-plugin' ),
                             instructions: previewText
                         } )
                 )
