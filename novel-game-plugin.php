@@ -5,7 +5,7 @@
  * Description: WordPressでノベルゲームを作成できるプラグイン。
  * Version: 1.1.2
  * Author: shokun0803
- * Author URI: https://github.com/shokun0803
+ * Author URI: https://profiles.wordpress.org/shokun0803/
  * Text Domain: novel-game-plugin
  * Domain Path: /languages
  * License: GPLv2 or later
