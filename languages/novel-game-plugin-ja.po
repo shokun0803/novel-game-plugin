@@ -16,8 +16,6 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Python Script\n"
 
-msgid ""
-
 #: admin/meta-boxes.php:895
 #: admin/meta-boxes.php:895
 msgid " Flag conditions required for display (up to 3, AND/OR supported)"
@@ -112,6 +110,16 @@ msgstr "操作"
 #: includes/revisions.php:316
 msgid "Add"
 msgstr "追加"
+
+#: admin/meta-boxes.php:335
+#: admin/meta-boxes.php:335
+msgid "Alternative Text (when condition is not met):"
+msgstr "代替テキスト（条件未成立時）:"
+
+#: admin/meta-boxes.php:336
+#: admin/meta-boxes.php:336
+msgid "Enter the dialogue to display when the flag condition is not met"
+msgstr "フラグ条件を満たさない場合に表示するセリフを入力してください"
 
 #: admin/meta-boxes.php:881
 #: admin/meta-boxes.php:881

@@ -563,11 +563,13 @@ function noveltool_filter_novel_game_content( $content ) {
             $dialogue_item['flagConditions'] = isset( $flag_condition['conditions'] ) ? $flag_condition['conditions'] : array();
             $dialogue_item['flagConditionLogic'] = isset( $flag_condition['logic'] ) ? $flag_condition['logic'] : 'AND';
             $dialogue_item['displayMode'] = isset( $flag_condition['displayMode'] ) ? $flag_condition['displayMode'] : 'normal';
+            $dialogue_item['alternativeText'] = isset( $flag_condition['alternativeText'] ) ? $flag_condition['alternativeText'] : '';
         } else {
             // デフォルト値
             $dialogue_item['flagConditions'] = array();
             $dialogue_item['flagConditionLogic'] = 'AND';
             $dialogue_item['displayMode'] = 'normal';
+            $dialogue_item['alternativeText'] = '';
         }
         
         $dialogue_data[] = $dialogue_item;
