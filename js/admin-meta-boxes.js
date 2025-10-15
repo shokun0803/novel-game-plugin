@@ -366,8 +366,9 @@ jQuery( function( $ ) {
 			// 代替テキスト入力欄（alternativeモードの場合のみ表示）
 			if ( dialogue.displayMode === 'alternative' ) {
 				var $alternativeTextContainer = $( '<div class="alternative-text-container" style="margin-top: 10px;">' );
-				var $alternativeTextLabel = $( '<label>' + novelGameMeta.strings.alternativeTextLabel + '</label>' );
-				var $alternativeTextArea = $( '<textarea class="dialogue-alternative-text large-text" rows="2" placeholder="' + novelGameMeta.strings.alternativeTextPlaceholder + '"></textarea>' );
+				var alternativeTextId = 'dialogue-alternative-text-' + index;
+				var $alternativeTextLabel = $( '<label for="' + alternativeTextId + '">' + novelGameMeta.strings.alternativeTextLabel + '</label>' );
+				var $alternativeTextArea = $( '<textarea id="' + alternativeTextId + '" class="dialogue-alternative-text large-text" rows="2" placeholder="' + novelGameMeta.strings.alternativeTextPlaceholder + '"></textarea>' );
 				$alternativeTextArea.val( dialogue.alternativeText || '' );
 				
 				$alternativeTextArea.on( 'input change blur', function() {

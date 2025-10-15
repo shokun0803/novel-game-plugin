@@ -1192,9 +1192,11 @@ function noveltool_save_meta_box_data( $post_id ) {
                             $sanitized_item['displayMode'] = sanitize_text_field( $flag_condition['displayMode'] );
                         }
                         
-                        // alternativeTextの処理
-                        if ( isset( $flag_condition['alternativeText'] ) ) {
-                            $sanitized_item['alternativeText'] = sanitize_textarea_field( $flag_condition['alternativeText'] );
+                        // alternativeTextの処理（displayMode が 'alternative' の場合のみ保存）
+                        if ( isset( $flag_condition['displayMode'] ) && $flag_condition['displayMode'] === 'alternative' ) {
+                            if ( isset( $flag_condition['alternativeText'] ) ) {
+                                $sanitized_item['alternativeText'] = sanitize_textarea_field( $flag_condition['alternativeText'] );
+                            }
                         }
                         
                         $sanitized_flag_conditions[] = $sanitized_item;
@@ -1230,9 +1232,11 @@ function noveltool_save_meta_box_data( $post_id ) {
                         $sanitized_item['displayMode'] = sanitize_text_field( $flag_condition['displayMode'] );
                     }
                     
-                    // alternativeTextの処理
-                    if ( isset( $flag_condition['alternativeText'] ) ) {
-                        $sanitized_item['alternativeText'] = sanitize_textarea_field( $flag_condition['alternativeText'] );
+                    // alternativeTextの処理（displayMode が 'alternative' の場合のみ保存）
+                    if ( isset( $flag_condition['displayMode'] ) && $flag_condition['displayMode'] === 'alternative' ) {
+                        if ( isset( $flag_condition['alternativeText'] ) ) {
+                            $sanitized_item['alternativeText'] = sanitize_textarea_field( $flag_condition['alternativeText'] );
+                        }
                     }
                     
                     $sanitized_flag_conditions[] = $sanitized_item;
