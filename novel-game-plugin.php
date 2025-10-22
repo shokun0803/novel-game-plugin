@@ -124,47 +124,6 @@ function noveltool_get_all_game_settings() {
 }
 
 /**
- * 互換モード設定を取得する関数
- *
- * @return bool 互換モードが有効かどうか
- * @since 1.2.0
- */
-function noveltool_get_legacy_condition_mode() {
-    // デフォルトは false (新挙動) だが、既存インストールの場合は true にする
-    // 初回取得時のみ、既存のゲームデータがあれば互換モード有効にする
-    $option_value = get_option( 'noveltool_legacy_condition_mode', null );
-    
-    if ( $option_value === null ) {
-        // 初回取得: 既存のゲームまたはシーンがあるか確認
-        $games = get_option( 'noveltool_games', array() );
-        $scenes_query = new WP_Query( array(
-            'post_type'      => 'novel_game',
-            'posts_per_page' => 1,
-            'post_status'    => 'any',
-            'fields'         => 'ids',
-        ) );
-        
-        // 既存データがある場合は互換モード有効、なければ無効
-        $default_value = ( ! empty( $games ) || $scenes_query->found_posts > 0 );
-        update_option( 'noveltool_legacy_condition_mode', $default_value );
-        return $default_value;
-    }
-    
-    return (bool) $option_value;
-}
-
-/**
- * 互換モード設定を保存する関数
- *
- * @param bool $enabled 互換モードを有効にするか
- * @return bool 保存に成功したか
- * @since 1.2.0
- */
-function noveltool_set_legacy_condition_mode( $enabled ) {
-    return update_option( 'noveltool_legacy_condition_mode', (bool) $enabled );
-}
-
-/**
  * 複数ゲーム設定を取得する関数
  *
  * @return array 複数ゲーム設定の配列
@@ -860,13 +819,6 @@ function noveltool_filter_novel_game_content( $content ) {
                         $flag_master_data = noveltool_get_game_flag_master( $game_title );
                     }
                     echo wp_json_encode( $flag_master_data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); 
-                    ?>
-                </script>
-                
-                <script id="novel-legacy-condition-mode" type="application/json">
-                    <?php 
-                    // 互換モード設定をフロントエンドに渡す
-                    echo wp_json_encode( noveltool_get_legacy_condition_mode(), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); 
                     ?>
                 </script>
             </div>
