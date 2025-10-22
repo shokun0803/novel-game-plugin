@@ -51,25 +51,6 @@
 			} ) );
 		}
 
-		/**
-		 * 旧形式のキー生成（unescape使用）
-		 * 互換性のために旧キーを生成する際に使用
-		 *
-		 * @param {string} str エンコードする文字列
-		 * @return {string} Base64エンコードされた文字列（旧形式）
-		 * @since 1.4.0
-		 * @deprecated この関数は互換性のためのみ使用されます
-		 */
-		function encodeBase64UnicodeLegacy( str ) {
-			try {
-				// 旧形式: unescape を使用（互換性のため）
-				return btoa( unescape( encodeURIComponent( str ) ) );
-			} catch ( error ) {
-				// エラー時は新形式にフォールバック
-				return encodeBase64Unicode( str );
-			}
-		}
-
 		// モーダル関連の変数
 		var $modalOverlay = $( '#novel-game-modal-overlay' );
 		var $startButton = $( '#novel-game-start-btn' );
@@ -374,35 +355,6 @@
 				var storageKey = generateStorageKey( gameTitle );
 				var savedData = localStorage.getItem( storageKey );
 				
-				// 互換: 旧キー（unescape使用）からの移行対応
-				if ( ! savedData ) {
-					try {
-						// 旧形式のエンコードでキーを生成して検索
-						var hostname = window.location.hostname || 'localhost';
-						var pathname = window.location.pathname || '/';
-						var pathDir = pathname.substring( 0, pathname.lastIndexOf( '/' ) + 1 );
-						var siteId = hostname + pathDir;
-						
-						var encodedTitleLegacy = encodeBase64UnicodeLegacy( gameTitle ).replace( /[^a-zA-Z0-9]/g, '' );
-						var encodedSiteIdLegacy = encodeBase64UnicodeLegacy( siteId ).replace( /[^a-zA-Z0-9]/g, '' );
-						var legacyKey = 'noveltool_progress_' + encodedSiteIdLegacy + '_' + encodedTitleLegacy;
-						
-						if ( legacyKey !== storageKey ) {
-							var legacyData = localStorage.getItem( legacyKey );
-							if ( legacyData ) {
-								// 新キーへ移行
-								localStorage.setItem( storageKey, legacyData );
-								savedData = legacyData;
-								// 旧データを削除
-								try { localStorage.removeItem( legacyKey ); } catch (e) {}
-								debugLog( '旧進捗キーから新キーへ移行完了:', legacyKey, '->', storageKey );
-							}
-						}
-					} catch (e) {
-						console.warn( '旧進捗キーからの移行に失敗:', e );
-					}
-				}
-				
 				if ( savedData ) {
 					var progressData = JSON.parse( savedData );
 					
@@ -696,47 +648,6 @@
 				
 				var storageKey = generateFlagStorageKey( gameTitle );
 				var flagsStr = localStorage.getItem( storageKey );
-				
-				// 互換: 旧キー（パスを含むキー、または unescape 使用キー）からの移行対応
-				if ( ! flagsStr ) {
-					try {
-						// 旧キーは location.pathname のディレクトリに依存していたため、
-						// 現在のlocalStorage内から該当ゲームタイトルのキーを走査して検出・移行する。
-						// また、unescape() を使用した旧エンコード形式のキーも検出して移行する。
-						
-						// 新形式のエンコードされたタイトル
-						var encodedTitleNew = encodeBase64Unicode( gameTitle ).replace( /[^a-zA-Z0-9]/g, '' );
-						// 旧形式（unescape使用）のエンコードされたタイトル
-						var encodedTitleLegacy = encodeBase64UnicodeLegacy( gameTitle ).replace( /[^a-zA-Z0-9]/g, '' );
-						
-						// 両方のサフィックスで検索
-						var suffixes = [ '_' + encodedTitleNew, '_' + encodedTitleLegacy ];
-						
-						for ( var s = 0; s < suffixes.length; s++ ) {
-							var suffix = suffixes[ s ];
-							for ( var i = 0; i < localStorage.length; i++ ) {
-								var key = localStorage.key( i );
-								if ( key && key.indexOf( 'novel_flags_' ) === 0 && key.endsWith( suffix ) && key !== storageKey ) {
-									var legacyStr = localStorage.getItem( key );
-									if ( legacyStr ) {
-										// 新キーへ移行
-										localStorage.setItem( storageKey, legacyStr );
-										flagsStr = legacyStr;
-										// 旧データは残しても害はないが、混乱防止のため削除
-										try { localStorage.removeItem( key ); } catch (e) {}
-										debugLog( '旧フラグキーから新キーへ移行完了:', key, '->', storageKey );
-										break;
-									}
-								}
-							}
-							if ( flagsStr ) {
-								break; // 見つかったら外側のループも抜ける
-							}
-						}
-					} catch (e) {
-						console.warn( '旧フラグキーからの移行に失敗:', e );
-					}
-				}
 				var flags = {};
 				
 				if ( flagsStr ) {
