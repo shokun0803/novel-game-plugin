@@ -113,8 +113,8 @@ msgstr "追加"
 
 #: admin/meta-boxes.php:335
 #: admin/meta-boxes.php:335
-msgid "Alternative Text (when condition is not met):"
-msgstr "代替テキスト（条件未成立時）:"
+msgid "Alternative Text (displayed when condition is met):"
+msgstr "代替テキスト（条件成立時に表示）:"
 
 #: admin/meta-boxes.php:336
 #: admin/meta-boxes.php:336
@@ -774,8 +774,8 @@ msgstr "ここでは、複数のノベルゲームの基本情報を管理でき
 
 #: admin/meta-boxes.php:328
 #: admin/meta-boxes.php:328
-msgid "Hidden by Condition"
-msgstr "条件で非表示"
+msgid "Hide When Condition Met"
+msgstr "条件成立時に非表示"
 
 #: admin/game-settings.php:493
 #: admin/game-settings.php:493
@@ -907,8 +907,8 @@ msgstr "ゴミ箱にノベルゲームはありません"
 
 #: admin/meta-boxes.php:327
 #: admin/meta-boxes.php:327
-msgid "Normal Display"
-msgstr "通常表示"
+msgid "Always Display"
+msgstr "常に表示"
 
 #: js/blocks.js:59
 msgid "Novel"
