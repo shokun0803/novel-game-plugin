@@ -235,6 +235,24 @@ function noveltool_handle_game_settings_form() {
         wp_safe_redirect( $redirect_url );
         exit;
     }
+    
+    // 互換モード設定の処理
+    if ( isset( $_POST['update_compatibility_settings'] ) ) {
+        // nonceチェック
+        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'compatibility_settings' ) ) {
+            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+        
+        // 互換モード設定の取得と保存
+        $legacy_mode = isset( $_POST['legacy_condition_mode'] ) && $_POST['legacy_condition_mode'] === '1';
+        noveltool_set_legacy_condition_mode( $legacy_mode );
+        
+        $redirect_url = add_query_arg( 'success', 'settings_updated', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
 }
 add_action( 'admin_init', 'noveltool_handle_game_settings_form' );
 
@@ -373,6 +391,9 @@ function noveltool_game_settings_page() {
                 break;
             case 'flag_deleted':
                 $success_message = __( 'Flag deleted successfully.', 'novel-game-plugin' );
+                break;
+            case 'settings_updated':
+                $success_message = __( 'Compatibility settings updated successfully.', 'novel-game-plugin' );
                 break;
         }
     }
@@ -772,6 +793,47 @@ function noveltool_game_settings_page() {
                     </tr>
                 </table>
             </div>
+        </div>
+
+        <div class="noveltool-compatibility-settings">
+            <h2><?php esc_html_e( 'Compatibility Settings', 'novel-game-plugin' ); ?></h2>
+            <form method="post" action="">
+                <?php wp_nonce_field( 'compatibility_settings' ); ?>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">
+                            <label for="legacy_condition_mode"><?php esc_html_e( 'Alternative Text Display Mode', 'novel-game-plugin' ); ?></label>
+                        </th>
+                        <td>
+                            <?php $legacy_mode = noveltool_get_legacy_condition_mode(); ?>
+                            <label>
+                                <input type="checkbox" 
+                                       id="legacy_condition_mode" 
+                                       name="legacy_condition_mode" 
+                                       value="1" 
+                                       <?php checked( $legacy_mode ); ?> />
+                                <?php esc_html_e( 'Use legacy behavior (show normal text when condition is met)', 'novel-game-plugin' ); ?>
+                            </label>
+                            <p class="description">
+                                <strong><?php esc_html_e( 'Current Behavior (Unchecked):', 'novel-game-plugin' ); ?></strong><br>
+                                <?php esc_html_e( '• When condition is met: Display alternative text', 'novel-game-plugin' ); ?><br>
+                                <?php esc_html_e( '• When condition is not met: Display normal text', 'novel-game-plugin' ); ?><br>
+                                <?php esc_html_e( '• If alternative text is empty: Display normal text as fallback', 'novel-game-plugin' ); ?><br><br>
+                                <strong><?php esc_html_e( 'Legacy Behavior (Checked):', 'novel-game-plugin' ); ?></strong><br>
+                                <?php esc_html_e( '• When condition is met: Display normal text', 'novel-game-plugin' ); ?><br>
+                                <?php esc_html_e( '• When condition is not met: Display alternative text', 'novel-game-plugin' ); ?><br><br>
+                                <em><?php esc_html_e( 'Note: This setting affects the "Show Alternative Text When Condition Met" mode for dialogue. Existing installations default to legacy behavior for compatibility. New installations use the current behavior.', 'novel-game-plugin' ); ?></em>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <p class="submit">
+                    <input type="submit" 
+                           name="update_compatibility_settings" 
+                           class="button button-primary" 
+                           value="<?php esc_attr_e( 'Save Compatibility Settings', 'novel-game-plugin' ); ?>" />
+                </p>
+            </form>
         </div>
 
         <div class="noveltool-help-section">

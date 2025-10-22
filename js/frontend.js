@@ -81,6 +81,9 @@
 		var allDialoguePages = [];
 		var isEnding = false;
 		
+		// 互換モード設定（後方互換性のため）
+		var legacyConditionMode = false;
+		
 		// エンディングとGame Overのテキスト
 		var endingText = 'おわり';
 		var gameOverText = 'Game Over';
@@ -227,6 +230,18 @@
 			
 			if ( gameOverTextRaw ) {
 				gameOverText = JSON.parse( gameOverTextRaw );
+			}
+			
+			// 互換モード設定を読み込み
+			var legacyModeRaw = $( '#novel-legacy-condition-mode' ).text();
+			if ( legacyModeRaw ) {
+				try {
+					legacyConditionMode = JSON.parse( legacyModeRaw );
+					debugLog( '互換モード設定:', legacyConditionMode );
+				} catch ( e ) {
+					debugLog( '互換モード設定の読み込みエラー:', e );
+					legacyConditionMode = false;
+				}
 			}
 			
 			// フラグマスタデータを読み込み、グローバル変数に設定
@@ -2221,13 +2236,23 @@
 					var condition = dialogue.flagConditionLogic || 'AND';
 					var flagsMatch = checkFlagConditions( requiredFlags, condition, currentGameTitle );
 					
-					// 条件成立時: 代替テキストを表示（空なら通常テキストをフォールバック）
-					// 条件不成立時: 通常テキストを表示
-					if ( flagsMatch ) {
-						// 代替テキストがある場合はそれを使用、なければ通常テキストをフォールバック
-						return dialogue.alternativeText || dialogue.text;
+					// 互換モードによって挙動を切り替え
+					if ( legacyConditionMode ) {
+						// 旧挙動: 条件成立時→通常テキスト、条件不成立時→代替テキスト
+						if ( flagsMatch ) {
+							return dialogue.text;
+						} else {
+							// 代替テキストがある場合はそれを使用、なければ空文字
+							return dialogue.alternativeText || '';
+						}
 					} else {
-						return dialogue.text;
+						// 新挙動: 条件成立時→代替テキスト（空なら通常テキスト）、条件不成立時→通常テキスト
+						if ( flagsMatch ) {
+							// 代替テキストがある場合はそれを使用、なければ通常テキストをフォールバック
+							return dialogue.alternativeText || dialogue.text;
+						} else {
+							return dialogue.text;
+						}
 					}
 				}
 			}
