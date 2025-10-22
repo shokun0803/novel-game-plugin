@@ -252,6 +252,13 @@ function noveltool_create_new_game( $game_title ) {
  * @since 1.1.0
  */
 function noveltool_new_game_admin_styles( $hook ) {
+    // get_current_screen() の null チェック
+    $current_screen = get_current_screen();
+    if ( ! $current_screen ) {
+        return;
+    }
+
+    // 対象ページでのみ実行
     if ( 'novel_game_page_novel-game-new' !== $hook ) {
         return;
     }
