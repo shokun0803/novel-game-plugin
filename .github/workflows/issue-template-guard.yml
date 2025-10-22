@@ -1,0 +1,52 @@
+name: Issue template guard
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required headings and references
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || "";
+            const problems = [];
+            // Required headings
+            const required = ["# タイトル", "## 概要", "## 要件", "## チェックリスト", "## 重要事項", "## 参考"];            
+            for (const h of required) {
+              if (!body.includes(h)) problems.push(`必須見出しが不足: ${h}`);
+            }
+            // Forbidden tokens (posting safety)
+            const forbidden = ["\n\n$"]; // minimal placeholder; avoid accidental $ after double newline
+            for (const f of forbidden) {
+              if (body.includes(f)) problems.push(`禁止トークンを検出: ${f}`);
+            }
+            // Fixed reference must exist
+            if (!body.includes(".github/copilot-instructions.md")) {
+              problems.push("参考に固定の運用規約リンクがありません: .github/copilot-instructions.md");
+            }
+            if (problems.length === 0) return;
+            const issue_number = context.payload.issue.number;
+            const msg = [
+              "Issue テンプレート準拠チェックに失敗しました。以下を修正してください:",
+              "",
+              ...problems.map(p => `- ${p}`),
+              "",
+              "SOP: .github/ISSUE_CREATION_SOP.md を参照してください。"
+            ].join("\n");
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number,
+              body: msg,
+            });
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number,
+              labels: ["needs-template-fix"]
+            });
