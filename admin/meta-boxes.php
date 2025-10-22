@@ -324,14 +324,16 @@ function noveltool_meta_box_callback( $post ) {
         'selectBackgroundImage'    => esc_html__( 'Select Background Image', 'novel-game-plugin' ),
         'flagControl'              => esc_html__( 'Flag Control:', 'novel-game-plugin' ),
         'displayControl'           => esc_html__( 'Display Control:', 'novel-game-plugin' ),
-        'normalDisplay'            => esc_html__( 'Normal Display', 'novel-game-plugin' ),
-        'hiddenByCondition'        => esc_html__( 'Hidden by Condition', 'novel-game-plugin' ),
-        'alternativeByCondition'   => esc_html__( 'Content Varies by Condition', 'novel-game-plugin' ),
+        'normalDisplay'            => esc_html__( 'Always Display', 'novel-game-plugin' ),
+        'hiddenByCondition'        => esc_html__( 'Hide When Condition Met', 'novel-game-plugin' ),
+        'alternativeByCondition'   => esc_html__( 'Show Alternative Text When Condition Met', 'novel-game-plugin' ),
         'selectFlag'               => esc_html__( '-- Select Flag --', 'novel-game-plugin' ),
         'flagLabel'                => esc_html__( 'Flag', 'novel-game-plugin' ),
         'condition'                => esc_html__( 'Condition:', 'novel-game-plugin' ),
         'conditionAnd'             => esc_html__( 'AND (All)', 'novel-game-plugin' ),
         'conditionOr'              => esc_html__( 'OR (Any)', 'novel-game-plugin' ),
+        'alternativeTextLabel'     => esc_html__( 'Alternative Text (displayed when condition is met):', 'novel-game-plugin' ),
+        'alternativeTextPlaceholder' => esc_attr__( 'Enter the dialogue to display when the flag condition is met', 'novel-game-plugin' ),
         'dialogue'                 => esc_html__( 'Dialogue', 'novel-game-plugin' ),
         'minDialogueRequired'      => esc_html__( 'At least one dialogue is required.', 'novel-game-plugin' ),
         'confirmDeleteDialogue'    => esc_html__( 'Are you sure you want to delete this dialogue?', 'novel-game-plugin' ),
@@ -1190,6 +1192,13 @@ function noveltool_save_meta_box_data( $post_id ) {
                             $sanitized_item['displayMode'] = sanitize_text_field( $flag_condition['displayMode'] );
                         }
                         
+                        // alternativeTextの処理（displayMode が 'alternative' の場合のみ保存）
+                        if ( isset( $flag_condition['displayMode'] ) && $flag_condition['displayMode'] === 'alternative' ) {
+                            if ( isset( $flag_condition['alternativeText'] ) ) {
+                                $sanitized_item['alternativeText'] = sanitize_textarea_field( $flag_condition['alternativeText'] );
+                            }
+                        }
+                        
                         $sanitized_flag_conditions[] = $sanitized_item;
                     }
                 }
@@ -1221,6 +1230,13 @@ function noveltool_save_meta_box_data( $post_id ) {
                     
                     if ( isset( $flag_condition['displayMode'] ) ) {
                         $sanitized_item['displayMode'] = sanitize_text_field( $flag_condition['displayMode'] );
+                    }
+                    
+                    // alternativeTextの処理（displayMode が 'alternative' の場合のみ保存）
+                    if ( isset( $flag_condition['displayMode'] ) && $flag_condition['displayMode'] === 'alternative' ) {
+                        if ( isset( $flag_condition['alternativeText'] ) ) {
+                            $sanitized_item['alternativeText'] = sanitize_textarea_field( $flag_condition['alternativeText'] );
+                        }
                     }
                     
                     $sanitized_flag_conditions[] = $sanitized_item;

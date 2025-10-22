@@ -16,8 +16,6 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Python Script\n"
 
-msgid ""
-
 #: admin/meta-boxes.php:895
 #: admin/meta-boxes.php:895
 msgid " Flag conditions required for display (up to 3, AND/OR supported)"
@@ -70,6 +68,10 @@ msgstr "-- ゲームを選択してください --"
 msgid "-- Select --"
 msgstr "-- 選択 --"
 
+#: admin/meta-boxes.php:329
+msgid "Show Alternative Text When Condition Met"
+msgstr "条件成立時に内容変更（代替テキスト表示）"
+
 #: admin/meta-boxes.php:330
 #: admin/meta-boxes.php:330
 msgid "-- Select Flag --"
@@ -112,6 +114,16 @@ msgstr "操作"
 #: includes/revisions.php:316
 msgid "Add"
 msgstr "追加"
+
+#: admin/meta-boxes.php:335
+#: admin/meta-boxes.php:335
+msgid "Alternative Text (displayed when condition is met):"
+msgstr "代替テキスト（条件成立時に表示）:"
+
+#: admin/meta-boxes.php:336
+#: admin/meta-boxes.php:336
+msgid "Enter the dialogue to display when the flag condition is not met"
+msgstr "フラグ条件を満たさない場合に表示するセリフを入力してください"
 
 #: admin/meta-boxes.php:881
 #: admin/meta-boxes.php:881
@@ -766,8 +778,8 @@ msgstr "ここでは、複数のノベルゲームの基本情報を管理でき
 
 #: admin/meta-boxes.php:328
 #: admin/meta-boxes.php:328
-msgid "Hidden by Condition"
-msgstr "条件で非表示"
+msgid "Hide When Condition Met"
+msgstr "条件成立時に非表示"
 
 #: admin/game-settings.php:493
 #: admin/game-settings.php:493
@@ -899,8 +911,8 @@ msgstr "ゴミ箱にノベルゲームはありません"
 
 #: admin/meta-boxes.php:327
 #: admin/meta-boxes.php:327
-msgid "Normal Display"
-msgstr "通常表示"
+msgid "Always Display"
+msgstr "常に表示"
 
 #: js/blocks.js:59
 msgid "Novel"

@@ -68,6 +68,10 @@ msgstr ""
 msgid "-- Select --"
 msgstr ""
 
+#: admin/meta-boxes.php:329
+msgid "Show Alternative Text When Condition Met"
+msgstr ""
+
 #: admin/meta-boxes.php:330
 #: admin/meta-boxes.php:330
 msgid "-- Select Flag --"
@@ -109,6 +113,16 @@ msgstr ""
 #: includes/revisions.php:316
 #: includes/revisions.php:316
 msgid "Add"
+msgstr ""
+
+#: admin/meta-boxes.php:335
+#: admin/meta-boxes.php:335
+msgid "Alternative Text (displayed when condition is met):"
+msgstr ""
+
+#: admin/meta-boxes.php:336
+#: admin/meta-boxes.php:336
+msgid "Enter the dialogue to display when the flag condition is not met"
 msgstr ""
 
 #: admin/meta-boxes.php:881
@@ -764,7 +778,7 @@ msgstr ""
 
 #: admin/meta-boxes.php:328
 #: admin/meta-boxes.php:328
-msgid "Hidden by Condition"
+msgid "Hide When Condition Met"
 msgstr ""
 
 #: admin/game-settings.php:493
@@ -897,7 +911,7 @@ msgstr ""
 
 #: admin/meta-boxes.php:327
 #: admin/meta-boxes.php:327
-msgid "Normal Display"
+msgid "Always Display"
 msgstr ""
 
 #: js/blocks.js:59

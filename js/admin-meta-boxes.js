@@ -26,12 +26,14 @@ jQuery( function( $ ) {
 			var text = $item.find( '.dialogue-text' ).val();
 			var speaker = $item.find( '.dialogue-speaker-select' ).val();
 			var background = $item.find( '.dialogue-background-input' ).val();
+			var alternativeText = $item.find( '.dialogue-alternative-text' ).val();
 			
 			// dialogueData が存在し、該当インデックスがある場合のみ更新
 			if ( dialogueData && dialogueData[index] ) {
 				dialogueData[index].text = text || '';
 				dialogueData[index].speaker = speaker || '';
 				dialogueData[index].background = background || '';
+				dialogueData[index].alternativeText = alternativeText || '';
 			}
 		} );
 		
@@ -61,7 +63,8 @@ jQuery( function( $ ) {
 				speaker: existingSpeakers[index] || '',
 				flagConditions: flagConditionData.conditions || [],
 				flagConditionLogic: flagConditionData.logic || 'AND',
-				displayMode: flagConditionData.displayMode || 'normal'
+				displayMode: flagConditionData.displayMode || 'normal',
+				alternativeText: flagConditionData.alternativeText || ''
 			} );
 		} );
 		
@@ -73,7 +76,8 @@ jQuery( function( $ ) {
 				speaker: '',
 				flagConditions: [],
 				flagConditionLogic: 'AND',
-				displayMode: 'normal'
+				displayMode: 'normal',
+				alternativeText: ''
 			} );
 		}
 		
@@ -224,7 +228,8 @@ jQuery( function( $ ) {
 			speaker: '',
 			flagConditions: [],
 			flagConditionLogic: 'AND',
-			displayMode: 'normal' // normal, hidden, alternative
+			displayMode: 'normal', // normal, hidden, alternative
+			alternativeText: ''
 		} );
 		renderDialogueList();
 		updateDialogueTextarea();
@@ -357,6 +362,23 @@ jQuery( function( $ ) {
 			$flagConditionsContainer.append( $logicContainer );
 			
 			$container.append( $flagConditionsContainer );
+			
+			// 代替テキスト入力欄（alternativeモードの場合のみ表示）
+			if ( dialogue.displayMode === 'alternative' ) {
+				var $alternativeTextContainer = $( '<div class="alternative-text-container" style="margin-top: 10px;">' );
+				var alternativeTextId = 'dialogue-alternative-text-' + index;
+				var $alternativeTextLabel = $( '<label for="' + alternativeTextId + '">' + novelGameMeta.strings.alternativeTextLabel + '</label>' );
+				var $alternativeTextArea = $( '<textarea id="' + alternativeTextId + '" class="dialogue-alternative-text large-text" rows="2" placeholder="' + novelGameMeta.strings.alternativeTextPlaceholder + '"></textarea>' );
+				$alternativeTextArea.val( dialogue.alternativeText || '' );
+				
+				$alternativeTextArea.on( 'input change blur', function() {
+					dialogueData[index].alternativeText = $( this ).val();
+					updateDialogueTextarea();
+				} );
+				
+				$alternativeTextContainer.append( $alternativeTextLabel, '<br>', $alternativeTextArea );
+				$container.append( $alternativeTextContainer );
+			}
 		}
 		
 		return $container;
@@ -427,7 +449,8 @@ jQuery( function( $ ) {
 			return {
 				conditions: dialogue.flagConditions || [],
 				logic: dialogue.flagConditionLogic || 'AND',
-				displayMode: dialogue.displayMode || 'normal'
+				displayMode: dialogue.displayMode || 'normal',
+				alternativeText: dialogue.alternativeText || ''
 			};
 		} );
 		
