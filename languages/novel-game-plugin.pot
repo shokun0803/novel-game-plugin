@@ -68,6 +68,10 @@ msgstr ""
 msgid "-- Select --"
 msgstr ""
 
+#: admin/meta-boxes.php:329
+msgid "Show Alternative Text When Condition Met"
+msgstr ""
+
 #: admin/meta-boxes.php:330
 #: admin/meta-boxes.php:330
 msgid "-- Select Flag --"

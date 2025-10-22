@@ -68,6 +68,10 @@ msgstr "-- ゲームを選択してください --"
 msgid "-- Select --"
 msgstr "-- 選択 --"
 
+#: admin/meta-boxes.php:329
+msgid "Show Alternative Text When Condition Met"
+msgstr "条件成立時に内容変更（代替テキスト表示）"
+
 #: admin/meta-boxes.php:330
 #: admin/meta-boxes.php:330
 msgid "-- Select Flag --"
