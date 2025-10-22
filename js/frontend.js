@@ -2221,12 +2221,13 @@
 					var condition = dialogue.flagConditionLogic || 'AND';
 					var flagsMatch = checkFlagConditions( requiredFlags, condition, currentGameTitle );
 					
-					// フラグ条件を満たす場合は通常テキスト、満たさない場合は代替テキスト
+					// 条件成立時: 代替テキストを表示（空なら通常テキストをフォールバック）
+					// 条件不成立時: 通常テキストを表示
 					if ( flagsMatch ) {
-						return dialogue.text;
+						// 代替テキストがある場合はそれを使用、なければ通常テキストをフォールバック
+						return dialogue.alternativeText || dialogue.text;
 					} else {
-						// 代替テキストがある場合はそれを使用、なければ空文字
-						return dialogue.alternativeText || '';
+						return dialogue.text;
 					}
 				}
 			}
