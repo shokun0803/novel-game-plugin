@@ -89,8 +89,19 @@ function noveltool_admin_enqueue_scripts( $hook ) {
         return;
     }
 
+    // get_current_screen() の null チェック
+    $current_screen = get_current_screen();
+    if ( ! $current_screen ) {
+        return;
+    }
+
+    // 投稿オブジェクトの存在チェック
+    if ( ! $post || ! isset( $post->ID ) || ! isset( $post->post_type ) ) {
+        return;
+    }
+
     // novel_game投稿タイプでのみ実行
-    if ( isset( $post->post_type ) && 'novel_game' !== $post->post_type ) {
+    if ( 'novel_game' !== $post->post_type ) {
         return;
     }
 

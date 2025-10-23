@@ -989,6 +989,13 @@ function noveltool_game_settings_page() {
  * @since 1.1.0
  */
 function noveltool_game_settings_admin_scripts( $hook ) {
+    // get_current_screen() の null チェック
+    $current_screen = get_current_screen();
+    if ( ! $current_screen ) {
+        return;
+    }
+
+    // 対象ページでのみ実行
     if ( 'novel_game_page_novel-game-settings' !== $hook ) {
         return;
     }
