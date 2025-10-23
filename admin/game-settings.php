@@ -12,19 +12,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * ゲーム設定ページをメニューに追加
+ * プラグイン設定ページをメニューに追加
+ *
+ * @since 1.1.0
+ */
+function noveltool_add_plugin_settings_menu() {
+    add_submenu_page(
+        'edit.php?post_type=novel_game',
+        __( 'Settings', 'novel-game-plugin' ),
+        '⚙️ ' . __( 'Settings', 'novel-game-plugin' ),
+        'manage_options',
+        'novel-game-plugin-settings',
+        'noveltool_plugin_settings_page',
+        3
+    );
+}
+add_action( 'admin_menu', 'noveltool_add_plugin_settings_menu' );
+
+/**
+ * ゲーム設定ページをメニューに追加（非表示、リダイレクト用に保持）
  *
  * @since 1.1.0
  */
 function noveltool_add_game_settings_menu() {
-    add_submenu_page(
-        'edit.php?post_type=novel_game',
-        __( 'Game Settings', 'novel-game-plugin' ),
-        __( 'Game Settings', 'novel-game-plugin' ),
-        'edit_posts',
-        'novel-game-settings',
-        'noveltool_game_settings_page'
-    );
+    // この関数は後方互換性のために保持されていますが、メニューには表示されません
+    // フォーム送信の処理のために必要
 }
 add_action( 'admin_menu', 'noveltool_add_game_settings_menu' );
 
