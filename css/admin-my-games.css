@@ -1,0 +1,119 @@
+    .noveltool-no-games {
+        text-align: center;
+        padding: 60px 20px;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+    
+    .noveltool-no-games p {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+    
+    .noveltool-games-list {
+        margin: 20px 0;
+    }
+    
+    .noveltool-games-list > .description {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+    
+    .noveltool-games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .noveltool-game-card {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .noveltool-game-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .game-thumbnail {
+        width: 100%;
+        height: 180px;
+        overflow: hidden;
+        background: #f0f0f0;
+    }
+    
+    .game-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .game-info {
+        padding: 20px;
+    }
+    
+    .game-info h3 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        color: #333;
+    }
+    
+    .game-description {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 15px;
+    }
+    
+    .game-meta {
+        display: flex;
+        gap: 15px;
+        font-size: 13px;
+        color: #999;
+        margin-bottom: 15px;
+    }
+    
+    .game-meta span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .game-meta .dashicons {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+    }
+    
+    .game-actions {
+        padding: 0 20px 20px;
+    }
+    
+    .game-actions .button {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+    
+    .noveltool-add-new-game-cta {
+        text-align: center;
+        padding: 40px 20px;
+        background: #f9f9f9;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+    }
+    
+    .noveltool-add-new-game-cta .button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
