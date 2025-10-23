@@ -195,6 +195,9 @@ function noveltool_add_revision_fields( $fields ) {
     $fields['_noveltool_unified_meta'] = __( 'Custom Field Data', 'novel-game-plugin' );
     return $fields;
 }
+// コアは内部的に _wp_post_revision_fields を利用します。
+// 互換のため wp_post_revision_fields にもフックしています（テーマ/プラグインがこちらを参照するケースへの配慮）。
+// 将来的にポリシーを厳密化する場合は _wp_post_revision_fields のみでも動作します。
 add_filter( '_wp_post_revision_fields', 'noveltool_add_revision_fields' );
 add_filter( 'wp_post_revision_fields', 'noveltool_add_revision_fields' );
 

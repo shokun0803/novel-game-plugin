@@ -263,8 +263,11 @@ function noveltool_get_current_game_title() {
 /**
  * 既存のシーンのゲームタイトルを更新
  *
+ * 両引数は必須。指定した旧タイトルに一致するシーンの「_game_title」メタのみを新しいタイトルへ更新します。
+ *
  * @param string $old_title 旧ゲームタイトル  
  * @param string $new_title 新ゲームタイトル
+ * @global wpdb  $wpdb      WordPress データベースアクセスオブジェクト
  * @since 1.1.0
  */
 function noveltool_update_scenes_game_title( $old_title, $new_title ) {
