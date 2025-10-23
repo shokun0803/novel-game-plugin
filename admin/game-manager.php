@@ -118,7 +118,7 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
             <div class="no-scenes-message">
                 <p><?php esc_html_e( 'No scenes have been created for this game yet.', 'novel-game-plugin' ); ?></p>
                 <p>
-                    <a href="<?php echo esc_url( add_query_arg( array( 'game_id' => $game['id'], 'tab' => 'new-scene' ) ) ); ?>" class="button button-primary">
+                    <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
                         <?php esc_html_e( 'Create First Scene', 'novel-game-plugin' ); ?>
                     </a>
                 </p>
@@ -126,7 +126,7 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
         <?php else : ?>
             <div class="scenes-header">
                 <p><?php printf( esc_html__( 'Total: %d scenes', 'novel-game-plugin' ), count( $scenes ) ); ?></p>
-                <a href="<?php echo esc_url( add_query_arg( array( 'game_id' => $game['id'], 'tab' => 'new-scene' ) ) ); ?>" class="button button-primary">
+                <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
                     <span class="dashicons dashicons-plus-alt"></span>
                     <?php esc_html_e( 'Create New Scene', 'novel-game-plugin' ); ?>
                 </a>
@@ -227,7 +227,7 @@ function noveltool_render_new_scene_tab( $game ) {
         </div>
         
         <div class="new-scene-actions">
-            <a href="<?php echo esc_url( add_query_arg( 'game_title', urlencode( $game['title'] ), admin_url( 'post-new.php?post_type=novel_game' ) ) ); ?>" class="button button-primary button-hero">
+            <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary button-hero">
                 <span class="dashicons dashicons-plus-alt"></span>
                 <?php esc_html_e( 'Create New Scene', 'novel-game-plugin' ); ?>
             </a>

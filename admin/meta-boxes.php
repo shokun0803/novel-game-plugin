@@ -172,6 +172,12 @@ function noveltool_meta_box_callback( $post ) {
     $dialogue    = get_post_meta( $post->ID, '_dialogue_text', true );
     $choices     = get_post_meta( $post->ID, '_choices', true );
     $game_title  = get_post_meta( $post->ID, '_game_title', true );
+    
+    // URLパラメータからゲームタイトルを取得（新規作成時）
+    if ( empty( $game_title ) && isset( $_GET['game_title'] ) ) {
+        $game_title = sanitize_text_field( wp_unslash( $_GET['game_title'] ) );
+    }
+    
     $dialogue_backgrounds = get_post_meta( $post->ID, '_dialogue_backgrounds', true );
     
     // 3体キャラクター対応の値を取得
