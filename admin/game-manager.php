@@ -23,8 +23,15 @@ function noveltool_game_manager_page( $game ) {
         wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
-    // タブの取得
-    $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'scenes';
+    // タブの取得と検証
+    $allowed_tabs = array( 'scenes', 'new-scene', 'settings' );
+    $active_tab = 'scenes';
+    if ( isset( $_GET['tab'] ) ) {
+        $tab = sanitize_text_field( wp_unslash( $_GET['tab'] ) );
+        if ( in_array( $tab, $allowed_tabs, true ) ) {
+            $active_tab = $tab;
+        }
+    }
 
     // シーン一覧の取得
     $scenes = noveltool_get_posts_by_game_title( $game['title'] );
@@ -75,32 +82,6 @@ function noveltool_game_manager_page( $game ) {
             ?>
         </div>
     </div>
-    
-    <style>
-    .game-manager-subtitle {
-        font-size: 0.6em;
-        color: #666;
-        font-weight: normal;
-    }
-    
-    .noveltool-game-manager-header {
-        margin: 15px 0;
-    }
-    
-    .noveltool-game-manager-header .button {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .noveltool-game-manager-content {
-        margin-top: 20px;
-    }
-    
-    .nav-tab-wrapper {
-        margin-bottom: 0;
-    }
-    </style>
     <?php
 }
 
@@ -174,42 +155,6 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
             </table>
         <?php endif; ?>
     </div>
-    
-    <style>
-    .noveltool-scenes-tab {
-        background: #fff;
-        padding: 20px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-    }
-    
-    .no-scenes-message {
-        text-align: center;
-        padding: 40px 20px;
-        color: #666;
-    }
-    
-    .scenes-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
-    }
-    
-    .scenes-header p {
-        margin: 0;
-        font-weight: 600;
-        color: #333;
-    }
-    
-    .scenes-header .button {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-    </style>
     <?php
 }
 
@@ -233,36 +178,6 @@ function noveltool_render_new_scene_tab( $game ) {
             </a>
         </div>
     </div>
-    
-    <style>
-    .noveltool-new-scene-tab {
-        background: #fff;
-        padding: 40px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        text-align: center;
-    }
-    
-    .new-scene-info {
-        margin-bottom: 30px;
-    }
-    
-    .new-scene-info p {
-        font-size: 15px;
-        color: #666;
-        line-height: 1.6;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    
-    .new-scene-actions .button-hero {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        font-size: 16px;
-    }
-    </style>
     <?php
 }
 
@@ -496,26 +411,26 @@ function noveltool_render_game_settings_tab( $game ) {
             </p>
         </form>
     </div>
-    
-    <style>
-    .noveltool-game-settings-tab {
-        background: #fff;
-        padding: 20px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-    }
-    
-    .noveltool-flags-section {
-        margin-top: 20px;
-        padding: 20px;
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-    
-    .noveltool-add-flag-form {
-        margin-top: 20px;
-    }
-    </style>
     <?php
 }
+
+/**
+ * ゲーム管理画面用のスタイルを読み込み
+ *
+ * @param string $hook 現在のページフック
+ * @since 1.2.0
+ */
+function noveltool_game_manager_admin_styles( $hook ) {
+    // 対象ページでのみ実行
+    if ( 'novel_game_page_novel-game-my-games' !== $hook ) {
+        return;
+    }
+
+    wp_enqueue_style(
+        'noveltool-game-manager-admin',
+        NOVEL_GAME_PLUGIN_URL . 'css/admin-game-manager.css',
+        array(),
+        NOVEL_GAME_PLUGIN_VERSION
+    );
+}
+add_action( 'admin_enqueue_scripts', 'noveltool_game_manager_admin_styles' );

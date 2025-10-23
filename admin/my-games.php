@@ -24,10 +24,12 @@ function noveltool_my_games_page() {
 
     // ゲーム選択の処理
     $selected_game_id = 0;
-    if ( isset( $_GET['game_id'] ) ) {
-        $selected_game_id = intval( $_GET['game_id'] );
-        // user_metaに保存
-        update_user_meta( get_current_user_id(), 'noveltool_selected_game_id', $selected_game_id );
+    if ( isset( $_GET['game_id'] ) && isset( $_GET['_wpnonce'] ) ) {
+        if ( wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'select_game' ) ) {
+            $selected_game_id = intval( $_GET['game_id'] );
+            // user_metaに保存
+            update_user_meta( get_current_user_id(), 'noveltool_selected_game_id', $selected_game_id );
+        }
     } elseif ( isset( $_GET['action'] ) && $_GET['action'] === 'select' ) {
         // ゲーム選択がクリアされた場合
         delete_user_meta( get_current_user_id(), 'noveltool_selected_game_id' );
@@ -115,7 +117,7 @@ function noveltool_my_games_page() {
                                 </div>
                             </div>
                             <div class="game-actions">
-                                <a href="<?php echo esc_url( add_query_arg( 'game_id', $game['id'], admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) ) ); ?>" class="button button-primary">
+                                <a href="<?php echo esc_url( add_query_arg( array( 'game_id' => $game['id'], '_wpnonce' => wp_create_nonce( 'select_game' ) ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) ) ); ?>" class="button button-primary">
                                     <?php esc_html_e( 'Manage', 'novel-game-plugin' ); ?>
                                 </a>
                             </div>
@@ -132,127 +134,26 @@ function noveltool_my_games_page() {
             </div>
         <?php endif; ?>
     </div>
-    
-    <style>
-    .noveltool-no-games {
-        text-align: center;
-        padding: 60px 20px;
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin: 20px 0;
-    }
-    
-    .noveltool-no-games p {
-        font-size: 16px;
-        color: #666;
-        margin-bottom: 20px;
-    }
-    
-    .noveltool-games-list {
-        margin: 20px 0;
-    }
-    
-    .noveltool-games-list > .description {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 20px;
-    }
-    
-    .noveltool-games-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-    
-    .noveltool-game-card {
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    .noveltool-game-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        transform: translateY(-2px);
-    }
-    
-    .game-thumbnail {
-        width: 100%;
-        height: 180px;
-        overflow: hidden;
-        background: #f0f0f0;
-    }
-    
-    .game-thumbnail img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .game-info {
-        padding: 20px;
-    }
-    
-    .game-info h3 {
-        margin: 0 0 10px 0;
-        font-size: 18px;
-        color: #333;
-    }
-    
-    .game-description {
-        color: #666;
-        font-size: 14px;
-        line-height: 1.5;
-        margin-bottom: 15px;
-    }
-    
-    .game-meta {
-        display: flex;
-        gap: 15px;
-        font-size: 13px;
-        color: #999;
-        margin-bottom: 15px;
-    }
-    
-    .game-meta span {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    
-    .game-meta .dashicons {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-    }
-    
-    .game-actions {
-        padding: 0 20px 20px;
-    }
-    
-    .game-actions .button {
-        width: 100%;
-        text-align: center;
-        justify-content: center;
-    }
-    
-    .noveltool-add-new-game-cta {
-        text-align: center;
-        padding: 40px 20px;
-        background: #f9f9f9;
-        border: 2px dashed #ddd;
-        border-radius: 8px;
-    }
-    
-    .noveltool-add-new-game-cta .button {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-    </style>
     <?php
 }
+
+/**
+ * マイゲームページ用のスタイルを読み込み
+ *
+ * @param string $hook 現在のページフック
+ * @since 1.2.0
+ */
+function noveltool_my_games_admin_styles( $hook ) {
+    // 対象ページでのみ実行
+    if ( 'novel_game_page_novel-game-my-games' !== $hook ) {
+        return;
+    }
+
+    wp_enqueue_style(
+        'noveltool-my-games-admin',
+        NOVEL_GAME_PLUGIN_URL . 'css/admin-my-games.css',
+        array(),
+        NOVEL_GAME_PLUGIN_VERSION
+    );
+}
+add_action( 'admin_enqueue_scripts', 'noveltool_my_games_admin_styles' );

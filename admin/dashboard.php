@@ -112,137 +112,26 @@ function noveltool_dashboard_page() {
             </div>
         </div>
     </div>
-    
-    <style>
-    .noveltool-dashboard-container {
-        max-width: 1200px;
-    }
-    
-    .noveltool-stats-section {
-        background: #fff;
-        padding: 20px;
-        margin: 20px 0;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-    }
-    
-    .noveltool-stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin-top: 15px;
-    }
-    
-    .noveltool-stat-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 8px;
-        text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .stat-icon {
-        font-size: 48px;
-        margin-bottom: 10px;
-    }
-    
-    .stat-number {
-        font-size: 48px;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-    
-    .stat-label {
-        font-size: 14px;
-        opacity: 0.9;
-    }
-    
-    .noveltool-quick-actions-section {
-        background: #fff;
-        padding: 20px;
-        margin: 20px 0;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-    }
-    
-    .noveltool-action-buttons {
-        display: flex;
-        gap: 15px;
-        margin-top: 15px;
-        flex-wrap: wrap;
-    }
-    
-    .noveltool-action-buttons .button-hero {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        font-size: 16px;
-    }
-    
-    .noveltool-guide-section {
-        background: #fff;
-        padding: 20px;
-        margin: 20px 0;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-    }
-    
-    .noveltool-guide-steps {
-        margin-top: 20px;
-    }
-    
-    .guide-step {
-        display: flex;
-        align-items: flex-start;
-        margin-bottom: 20px;
-        padding: 15px;
-        background: #f9f9f9;
-        border-radius: 8px;
-    }
-    
-    .step-number {
-        flex-shrink: 0;
-        width: 40px;
-        height: 40px;
-        background: #0073aa;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        font-weight: bold;
-        margin-right: 15px;
-    }
-    
-    .step-content h3 {
-        margin: 0 0 8px 0;
-        color: #333;
-    }
-    
-    .step-content p {
-        margin: 0;
-        color: #666;
-    }
-    
-    .noveltool-about-section {
-        background: #fff;
-        padding: 20px;
-        margin: 20px 0;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-    }
-    
-    .noveltool-about-section ul {
-        margin-left: 20px;
-    }
-    
-    .noveltool-about-section li {
-        margin-bottom: 8px;
-        color: #666;
-    }
-    </style>
     <?php
 }
+
+/**
+ * ダッシュボードページ用のスタイルを読み込み
+ *
+ * @param string $hook 現在のページフック
+ * @since 1.2.0
+ */
+function noveltool_dashboard_admin_styles( $hook ) {
+    // 対象ページでのみ実行
+    if ( 'novel_game_page_novel-game-dashboard' !== $hook ) {
+        return;
+    }
+
+    wp_enqueue_style(
+        'noveltool-dashboard-admin',
+        NOVEL_GAME_PLUGIN_URL . 'css/admin-dashboard.css',
+        array(),
+        NOVEL_GAME_PLUGIN_VERSION
+    );
+}
+add_action( 'admin_enqueue_scripts', 'noveltool_dashboard_admin_styles' );

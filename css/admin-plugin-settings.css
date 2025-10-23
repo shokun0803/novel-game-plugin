@@ -1,0 +1,114 @@
+    .noveltool-settings-container {
+        max-width: 1000px;
+    }
+    
+    .noveltool-shortcodes-section,
+    .noveltool-info-section {
+        background: #fff;
+        padding: 20px;
+        margin: 20px 0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    
+    .shortcode-list {
+        margin-top: 20px;
+    }
+    
+    .shortcode-item {
+        padding: 20px;
+        margin-bottom: 20px;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .shortcode-item h3 {
+        margin-top: 0;
+        color: #0073aa;
+    }
+    
+    .shortcode-item h4 {
+        margin: 20px 0 10px 0;
+        color: #333;
+        font-size: 14px;
+    }
+    
+    .shortcode-code {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin: 10px 0;
+    }
+    
+    .shortcode-code code {
+        flex: 1;
+        font-size: 14px;
+        color: #d63638;
+        font-family: Consolas, Monaco, monospace;
+        user-select: all;
+    }
+    
+    .shortcode-code .copy-shortcode {
+        flex-shrink: 0;
+    }
+    
+    .shortcode-item .description {
+        font-style: italic;
+        color: #666;
+        margin: 5px 0;
+    }
+    
+    .shortcode-item .form-table {
+        margin-top: 10px;
+        background: #fff;
+    }
+    
+    .shortcode-item .form-table th {
+        font-family: Consolas, Monaco, monospace;
+        font-size: 13px;
+        color: #0073aa;
+        font-weight: 600;
+        width: 180px;
+    }
+    
+    .shortcode-item .form-table td {
+        color: #666;
+    }
+    
+    .shortcode-examples {
+        margin: 10px 0 0 20px;
+        list-style: none;
+    }
+    
+    .shortcode-examples li {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+    }
+    
+    .shortcode-examples code {
+        background: #fff;
+        padding: 4px 8px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        font-family: Consolas, Monaco, monospace;
+        font-size: 13px;
+        color: #d63638;
+    }
+    
+    .shortcode-examples .description {
+        font-size: 13px;
+        color: #666;
+    }
+    
+    .copy-success {
+        background-color: #00a32a !important;
+        border-color: #00a32a !important;
+        color: white !important;
+    }

@@ -1,0 +1,107 @@
+    .game-manager-subtitle {
+        font-size: 0.6em;
+        color: #666;
+        font-weight: normal;
+    }
+    
+    .noveltool-game-manager-header {
+        margin: 15px 0;
+    }
+    
+    .noveltool-game-manager-header .button {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .noveltool-game-manager-content {
+        margin-top: 20px;
+    }
+    
+    .nav-tab-wrapper {
+        margin-bottom: 0;
+    }
+    </style>
+    <style>
+    .noveltool-scenes-tab {
+        background: #fff;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    
+    .no-scenes-message {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+    
+    .scenes-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .scenes-header p {
+        margin: 0;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .scenes-header .button {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    </style>
+    <style>
+    .noveltool-new-scene-tab {
+        background: #fff;
+        padding: 40px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .new-scene-info {
+        margin-bottom: 30px;
+    }
+    
+    .new-scene-info p {
+        font-size: 15px;
+        color: #666;
+        line-height: 1.6;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .new-scene-actions .button-hero {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        font-size: 16px;
+    }
+    </style>
+    <style>
+    .noveltool-game-settings-tab {
+        background: #fff;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    
+    .noveltool-flags-section {
+        margin-top: 20px;
+        padding: 20px;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .noveltool-add-flag-form {
+        margin-top: 20px;
+    }

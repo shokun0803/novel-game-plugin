@@ -128,145 +128,48 @@ function noveltool_plugin_settings_page() {
             </div>
         </div>
     </div>
-    
-    <style>
-    .noveltool-settings-container {
-        max-width: 1000px;
-    }
-    
-    .noveltool-shortcodes-section,
-    .noveltool-info-section {
-        background: #fff;
-        padding: 20px;
-        margin: 20px 0;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-    }
-    
-    .shortcode-list {
-        margin-top: 20px;
-    }
-    
-    .shortcode-item {
-        padding: 20px;
-        margin-bottom: 20px;
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-    
-    .shortcode-item h3 {
-        margin-top: 0;
-        color: #0073aa;
-    }
-    
-    .shortcode-item h4 {
-        margin: 20px 0 10px 0;
-        color: #333;
-        font-size: 14px;
-    }
-    
-    .shortcode-code {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px;
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        margin: 10px 0;
-    }
-    
-    .shortcode-code code {
-        flex: 1;
-        font-size: 14px;
-        color: #d63638;
-        font-family: Consolas, Monaco, monospace;
-        user-select: all;
-    }
-    
-    .shortcode-code .copy-shortcode {
-        flex-shrink: 0;
-    }
-    
-    .shortcode-item .description {
-        font-style: italic;
-        color: #666;
-        margin: 5px 0;
-    }
-    
-    .shortcode-item .form-table {
-        margin-top: 10px;
-        background: #fff;
-    }
-    
-    .shortcode-item .form-table th {
-        font-family: Consolas, Monaco, monospace;
-        font-size: 13px;
-        color: #0073aa;
-        font-weight: 600;
-        width: 180px;
-    }
-    
-    .shortcode-item .form-table td {
-        color: #666;
-    }
-    
-    .shortcode-examples {
-        margin: 10px 0 0 20px;
-        list-style: none;
-    }
-    
-    .shortcode-examples li {
-        margin-bottom: 10px;
-        display: flex;
-        align-items: baseline;
-        gap: 10px;
-    }
-    
-    .shortcode-examples code {
-        background: #fff;
-        padding: 4px 8px;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-        font-family: Consolas, Monaco, monospace;
-        font-size: 13px;
-        color: #d63638;
-    }
-    
-    .shortcode-examples .description {
-        font-size: 13px;
-        color: #666;
-    }
-    
-    .copy-success {
-        background-color: #00a32a !important;
-        border-color: #00a32a !important;
-        color: white !important;
-    }
-    </style>
-    
-    <script>
-    jQuery(document).ready(function($) {
-        $('.copy-shortcode').on('click', function() {
-            var shortcode = $(this).data('shortcode');
-            var button = $(this);
-            
-            // クリップボードにコピー
-            navigator.clipboard.writeText(shortcode).then(function() {
-                // ボタンのテキストを変更
-                var originalText = button.text();
-                button.addClass('copy-success');
-                button.text('<?php esc_attr_e( 'Copied!', 'novel-game-plugin' ); ?>');
-                
-                // 2秒後に元に戻す
-                setTimeout(function() {
-                    button.removeClass('copy-success');
-                    button.text(originalText);
-                }, 2000);
-            });
-        });
-    });
-    </script>
     <?php
 }
+
+/**
+ * プラグイン設定ページ用のスタイルとスクリプトを読み込み
+ *
+ * @param string $hook 現在のページフック
+ * @since 1.2.0
+ */
+function noveltool_plugin_settings_admin_scripts( $hook ) {
+    // 対象ページでのみ実行
+    if ( 'novel_game_page_novel-game-plugin-settings' !== $hook ) {
+        return;
+    }
+
+    wp_enqueue_style(
+        'noveltool-plugin-settings-admin',
+        NOVEL_GAME_PLUGIN_URL . 'css/admin-plugin-settings.css',
+        array(),
+        NOVEL_GAME_PLUGIN_VERSION
+    );
+
+    // インラインスクリプトを追加
+    wp_add_inline_script(
+        'jquery',
+        "jQuery(document).ready(function($) {
+            $('.copy-shortcode').on('click', function() {
+                var shortcode = $(this).data('shortcode');
+                var button = $(this);
+                
+                navigator.clipboard.writeText(shortcode).then(function() {
+                    var originalText = button.text();
+                    button.addClass('copy-success');
+                    button.text('" . esc_js( __( 'Copied!', 'novel-game-plugin' ) ) . "');
+                    
+                    setTimeout(function() {
+                        button.removeClass('copy-success');
+                        button.text(originalText);
+                    }, 2000);
+                });
+            });
+        });"
+    );
+}
+add_action( 'admin_enqueue_scripts', 'noveltool_plugin_settings_admin_scripts' );
