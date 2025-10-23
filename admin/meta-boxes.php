@@ -655,7 +655,7 @@ function noveltool_meta_box_callback( $post ) {
                     </select>
                     <p class="description">
                         <?php esc_html_e( 'Please select the game this scene belongs to.', 'novel-game-plugin' ); ?>
-                        <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) ); ?>" target="_blank">
+                        <a href="<?php echo esc_url( noveltool_get_my_games_url() ); ?>" target="_blank">
                             <?php esc_html_e( 'Manage Games', 'novel-game-plugin' ); ?>
                         </a>
                     </p>
@@ -668,7 +668,7 @@ function noveltool_meta_box_callback( $post ) {
                            placeholder="<?php esc_attr_e( 'Enter the title of the game this scene belongs to', 'novel-game-plugin' ); ?>" />
                     <p class="description">
                         <?php esc_html_e( 'Set the title for the entire game.', 'novel-game-plugin' ); ?>
-                        <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) ); ?>" target="_blank">
+                        <a href="<?php echo esc_url( noveltool_get_my_games_url() ); ?>" target="_blank">
                             <?php esc_html_e( 'Manage Games', 'novel-game-plugin' ); ?>
                         </a>
                     </p>

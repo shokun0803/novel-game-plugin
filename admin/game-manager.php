@@ -44,22 +44,22 @@ function noveltool_game_manager_page( $game ) {
         </h1>
         
         <div class="noveltool-game-manager-header">
-            <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games&action=select' ) ); ?>" class="button">
+            <a href="<?php echo esc_url( noveltool_get_my_games_url( array( 'action' => 'select' ) ) ); ?>" class="button">
                 <span class="dashicons dashicons-arrow-left-alt2"></span>
                 <?php esc_html_e( 'Back to My Games', 'novel-game-plugin' ); ?>
             </a>
         </div>
 
         <h2 class="nav-tab-wrapper">
-            <a href="<?php echo esc_url( add_query_arg( array( 'game_id' => $game['id'], 'tab' => 'scenes' ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) ) ); ?>" 
+            <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes' ) ); ?>" 
                class="nav-tab <?php echo $active_tab === 'scenes' ? 'nav-tab-active' : ''; ?>">
                 <?php esc_html_e( 'Scene List', 'novel-game-plugin' ); ?>
             </a>
-            <a href="<?php echo esc_url( add_query_arg( array( 'game_id' => $game['id'], 'tab' => 'new-scene' ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) ) ); ?>" 
+            <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'new-scene' ) ); ?>" 
                class="nav-tab <?php echo $active_tab === 'new-scene' ? 'nav-tab-active' : ''; ?>">
                 <?php esc_html_e( 'Create New Scene', 'novel-game-plugin' ); ?>
             </a>
-            <a href="<?php echo esc_url( add_query_arg( array( 'game_id' => $game['id'], 'tab' => 'settings' ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) ) ); ?>" 
+            <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'settings' ) ); ?>" 
                class="nav-tab <?php echo $active_tab === 'settings' ? 'nav-tab-active' : ''; ?>">
                 <?php esc_html_e( 'Game Settings', 'novel-game-plugin' ); ?>
             </a>

@@ -62,7 +62,7 @@ function noveltool_dashboard_page() {
                         <span class="dashicons dashicons-plus-alt"></span>
                         <?php esc_html_e( 'Create New Game', 'novel-game-plugin' ); ?>
                     </a>
-                    <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) ); ?>" class="button button-secondary button-hero">
+                    <a href="<?php echo esc_url( noveltool_get_my_games_url() ); ?>" class="button button-secondary button-hero">
                         <span class="dashicons dashicons-book"></span>
                         <?php esc_html_e( 'My Games', 'novel-game-plugin' ); ?>
                     </a>

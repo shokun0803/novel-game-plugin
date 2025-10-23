@@ -1650,4 +1650,41 @@ function noveltool_shortcode_styles() {
     <?php
 }
 add_action( 'wp_head', 'noveltool_shortcode_styles' );
+
+/**
+ * ゲーム管理画面のURLを生成
+ *
+ * @param int    $game_id ゲームID
+ * @param string $tab     タブ名（'scenes', 'new-scene', 'settings'）
+ * @param array  $args    追加のクエリパラメータ
+ * @return string ゲーム管理画面のURL
+ * @since 1.2.0
+ */
+function noveltool_get_game_manager_url( $game_id, $tab = 'scenes', $args = array() ) {
+    $default_args = array(
+        'game_id' => $game_id,
+        'tab'     => $tab,
+    );
+    
+    $query_args = wp_parse_args( $args, $default_args );
+    
+    return add_query_arg(
+        $query_args,
+        admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' )
+    );
+}
+
+/**
+ * マイゲームページのURLを生成
+ *
+ * @param array $args 追加のクエリパラメータ
+ * @return string マイゲームページのURL
+ * @since 1.2.0
+ */
+function noveltool_get_my_games_url( $args = array() ) {
+    return add_query_arg(
+        $args,
+        admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' )
+    );
+}
 ?>

@@ -117,7 +117,7 @@ function noveltool_my_games_page() {
                                 </div>
                             </div>
                             <div class="game-actions">
-                                <a href="<?php echo esc_url( add_query_arg( array( 'game_id' => $game['id'], '_wpnonce' => wp_create_nonce( 'select_game' ) ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) ) ); ?>" class="button button-primary">
+                                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( '_wpnonce' => wp_create_nonce( 'select_game' ) ) ) ); ?>" class="button button-primary">
                                     <?php esc_html_e( 'Manage', 'novel-game-plugin' ); ?>
                                 </a>
                             </div>

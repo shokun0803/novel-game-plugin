@@ -93,13 +93,7 @@ function noveltool_handle_new_game_form() {
         
         if ( $game_id ) {
             // 成功時はマイゲーム画面（ゲーム個別管理）にリダイレクト
-            $redirect_url = add_query_arg( 
-                array( 
-                    'game_id' => $game_id,
-                    'tab' => 'new-scene'
-                ), 
-                admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) 
-            );
+            $redirect_url = noveltool_get_game_manager_url( $game_id, 'new-scene' );
             wp_safe_redirect( $redirect_url );
             exit;
         } else {
