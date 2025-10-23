@@ -36,7 +36,7 @@
         $games_from_option = noveltool_get_all_games();
         
         if ( ! empty( $games_from_option ) ) {
-            // 新しい形式：オプションからゲーム一覧を取得
+            // オプションからゲーム一覧を取得
             $games = array();
             foreach ( $games_from_option as $game_data ) {
                 // 各ゲームの最初のシーンを取得（ゲームの開始点）
@@ -78,30 +78,6 @@
                         'scene_count' => $scene_count
                     );
                 }
-            }
-        } else {
-            // 後方互換性：メタデータからゲームタイトルを取得
-            $games_query = "
-                SELECT 
-                    pm.meta_value as game_title,
-                    MIN(p.ID) as first_scene_id,
-                    COUNT(p.ID) as scene_count,
-                    MIN(p.post_title) as first_scene_title
-                FROM {$wpdb->postmeta} pm
-                INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
-                WHERE pm.meta_key = '_game_title' 
-                AND pm.meta_value != ''
-                AND p.post_type = 'novel_game'
-                AND p.post_status = 'publish'
-                GROUP BY pm.meta_value
-                ORDER BY pm.meta_value ASC
-            ";
-            $games = $wpdb->get_results($games_query);
-            
-            // 後方互換性のために必要なプロパティを追加
-            foreach ( $games as &$game ) {
-                $game->game_description = '';
-                $game->game_title_image = '';
             }
         }
         

@@ -89,8 +89,19 @@ function noveltool_admin_enqueue_scripts( $hook ) {
         return;
     }
 
+    // get_current_screen() の null チェック
+    $current_screen = get_current_screen();
+    if ( ! $current_screen ) {
+        return;
+    }
+
+    // 投稿オブジェクトの存在チェック
+    if ( ! $post || ! isset( $post->ID ) || ! isset( $post->post_type ) ) {
+        return;
+    }
+
     // novel_game投稿タイプでのみ実行
-    if ( isset( $post->post_type ) && 'novel_game' !== $post->post_type ) {
+    if ( 'novel_game' !== $post->post_type ) {
         return;
     }
 
@@ -184,11 +195,6 @@ function noveltool_meta_box_callback( $post ) {
         $dialogue_flag_conditions = array();
     }
     
-    // 後方互換性：既存の単一キャラクター画像をセンター位置に移行
-    if ( $character && ! $character_center ) {
-        $character_center = $character;
-    }
-    
     // 対話背景データの処理
     if ( is_string( $dialogue_backgrounds ) ) {
         $dialogue_backgrounds = json_decode( $dialogue_backgrounds, true );
@@ -227,9 +233,8 @@ function noveltool_meta_box_callback( $post ) {
         $dialogue_texts_array = array();
     }
     
-    // JSONベースのデータが存在する場合はそれを優先
+    // JSONベースのデータが存在する場合に使用
     if ( ! empty( $dialogue_speakers_array ) || ! empty( $dialogue_backgrounds ) || ! empty( $dialogue_texts_array ) ) {
-        // 新しいJSONベースのシステムを使用
         if ( is_string( $dialogue_backgrounds ) ) {
             $dialogue_backgrounds_array = json_decode( $dialogue_backgrounds, true );
         } elseif ( is_array( $dialogue_backgrounds ) ) {
@@ -238,35 +243,15 @@ function noveltool_meta_box_callback( $post ) {
             $dialogue_backgrounds_array = array();
         }
         
-        // セリフテキストは新しいJSONデータを優先し、改行で分割しない
         $max_count = max(
             count( (array) $dialogue_speakers_array ),
             count( (array) $dialogue_backgrounds_array ),
             count( (array) $dialogue_texts_array )
         );
         if ( $max_count > 0 ) {
-            // 新しいJSONベースのテキストデータが存在する場合は、それを使用
-            if ( ! empty( $dialogue_texts_array ) ) {
-                for ( $i = 0; $i < $max_count; $i++ ) {
-                    $dialogue_lines[] = isset( $dialogue_texts_array[ $i ] ) ? $dialogue_texts_array[ $i ] : '';
-                }
-            } else {
-                // 古いテキストデータから改行で分割して取得（後方互換性のため）
-                $old_dialogue_lines = array();
-                if ( $dialogue ) {
-                    $old_dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
-                }
-                
-                // JSON データの数に合わせてセリフを構築
-                for ( $i = 0; $i < $max_count; $i++ ) {
-                    $dialogue_lines[] = isset( $old_dialogue_lines[ $i ] ) ? $old_dialogue_lines[ $i ] : '';
-                }
+            for ( $i = 0; $i < $max_count; $i++ ) {
+                $dialogue_lines[] = isset( $dialogue_texts_array[ $i ] ) ? $dialogue_texts_array[ $i ] : '';
             }
-        }
-    } else {
-        // 古いシステムの場合、改行で分割（後方互換性のため）
-        if ( $dialogue ) {
-            $dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
         }
     }
 
@@ -822,12 +807,6 @@ function noveltool_meta_box_callback( $post ) {
                         </p>
                     </div>
                 </div>
-                
-                <!-- 後方互換性のために古いフィールドを残す -->
-                <input type="hidden"
-                       id="novel_character_image"
-                       name="character_image"
-                       value="<?php echo esc_attr( $character ); ?>" />
             </td>
         </tr>
 
@@ -847,11 +826,6 @@ function noveltool_meta_box_callback( $post ) {
                     </p>
                 </div>
                 <p class="description"><?php esc_html_e( 'You can set a background image for each dialogue. If no background image is specified, the background from the previous scene will continue.', 'novel-game-plugin' ); ?></p>
-                
-                <!-- 後方互換性のために隠しフィールドを維持 -->
-                <textarea id="novel_dialogue_text"
-                          name="dialogue_text"
-                          style="display: none;"><?php echo esc_textarea( $dialogue ); ?></textarea>
             </td>
         </tr>
 
@@ -1287,18 +1261,11 @@ function noveltool_save_meta_box_data( $post_id ) {
                             $sanitized_choice['flagConditionLogic'] = sanitize_text_field( $choice_data['flagConditionLogic'] );
                         }
                         
-                        // 設定フラグデータのサニタイズ（新旧両形式対応）
+                        // 設定フラグデータのサニタイズ
                         if ( isset( $choice_data['setFlags'] ) && is_array( $choice_data['setFlags'] ) ) {
                             $sanitized_set_flags = array();
                             foreach ( $choice_data['setFlags'] as $flag_data ) {
-                                if ( is_string( $flag_data ) ) {
-                                    // 旧形式（文字列）: 空文字列を除外
-                                    $trimmed_flag = trim( sanitize_text_field( $flag_data ) );
-                                    if ( $trimmed_flag !== '' ) {
-                                        $sanitized_set_flags[] = $trimmed_flag;
-                                    }
-                                } elseif ( is_array( $flag_data ) && isset( $flag_data['name'] ) ) {
-                                    // 新形式（オブジェクト）: nameが空でない場合のみ保存
+                                if ( is_array( $flag_data ) && isset( $flag_data['name'] ) ) {
                                     $trimmed_name = trim( sanitize_text_field( $flag_data['name'] ) );
                                     if ( $trimmed_name !== '' ) {
                                         $sanitized_flag_obj = array(
