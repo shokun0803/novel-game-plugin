@@ -132,27 +132,6 @@ function noveltool_get_all_game_settings() {
 function noveltool_get_all_games() {
     $games = get_option( 'noveltool_games', array() );
     
-    // 後方互換性: 古い単一ゲーム設定が存在する場合は移行
-    if ( empty( $games ) ) {
-        $legacy_title = get_option( 'noveltool_game_title', '' );
-        $legacy_description = get_option( 'noveltool_game_description', '' );
-        $legacy_title_image = get_option( 'noveltool_game_title_image', '' );
-        
-        if ( $legacy_title ) {
-            $games = array(
-                array(
-                    'id'          => 1,
-                    'title'       => $legacy_title,
-                    'description' => $legacy_description,
-                    'title_image' => $legacy_title_image,
-                    'created_at'  => current_time( 'timestamp' ),
-                    'updated_at'  => current_time( 'timestamp' ),
-                )
-            );
-            update_option( 'noveltool_games', $games );
-        }
-    }
-    
     return $games;
 }
 
@@ -469,11 +448,6 @@ function noveltool_filter_novel_game_content( $content ) {
     // エンディング設定の取得
     $is_ending = get_post_meta( $post->ID, '_is_ending', true );
     $ending_text = get_post_meta( $post->ID, '_ending_text', true );
-    
-    // 後方互換性：既存の単一キャラクターをセンターに設定
-    if ( $character && ! $character_center ) {
-        $character_center = $character;
-    }
 
     // セリフの処理
     $dialogue_lines = array();
@@ -504,37 +478,17 @@ function noveltool_filter_novel_game_content( $content ) {
         $dialogue_texts_array = $dialogue_texts;
     }
     
-    // JSONベースのデータが存在する場合はそれを優先
+    // JSONベースのデータが存在する場合に使用
     if ( ! empty( $dialogue_speakers_array ) || ! empty( $dialogue_backgrounds_array ) || ! empty( $dialogue_texts_array ) ) {
-        // 新しいJSONベースのシステムを使用
         $max_count = max(
             count( (array) $dialogue_speakers_array ),
             count( (array) $dialogue_backgrounds_array ),
             count( (array) $dialogue_texts_array )
         );
         if ( $max_count > 0 ) {
-            // 新しいJSONベースのテキストデータが存在する場合は、それを使用
-            if ( ! empty( $dialogue_texts_array ) ) {
-                for ( $i = 0; $i < $max_count; $i++ ) {
-                    $dialogue_lines[] = isset( $dialogue_texts_array[ $i ] ) ? $dialogue_texts_array[ $i ] : '';
-                }
-            } else {
-                // 古いテキストデータから改行で分割して取得（後方互換性のため）
-                $old_dialogue_lines = array();
-                if ( $dialogue ) {
-                    $old_dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
-                }
-                
-                // JSON データの数に合わせてセリフを構築
-                for ( $i = 0; $i < $max_count; $i++ ) {
-                    $dialogue_lines[] = isset( $old_dialogue_lines[ $i ] ) ? $old_dialogue_lines[ $i ] : '';
-                }
+            for ( $i = 0; $i < $max_count; $i++ ) {
+                $dialogue_lines[] = isset( $dialogue_texts_array[ $i ] ) ? $dialogue_texts_array[ $i ] : '';
             }
-        }
-    } else {
-        // 古いシステムの場合、改行で分割（後方互換性のため）
-        if ( $dialogue ) {
-            $dialogue_lines = array_filter( array_map( 'trim', explode( "\n", $dialogue ) ) );
         }
     }
     
@@ -619,18 +573,11 @@ function noveltool_filter_novel_game_content( $content ) {
                             $choice_item['flagConditionLogic'] = sanitize_text_field( $choice_data['flagConditionLogic'] );
                         }
                         
-                        // 設定フラグがある場合はサニタイズして追加（新旧両形式対応）
+                        // 設定フラグがある場合はサニタイズして追加
                         if ( isset( $choice_data['setFlags'] ) && is_array( $choice_data['setFlags'] ) ) {
                             $sanitized_set_flags = array();
                             foreach ( $choice_data['setFlags'] as $flag_data ) {
-                                if ( is_string( $flag_data ) ) {
-                                    // 旧形式: "flagName"（常にON）
-                                    $name = trim( sanitize_text_field( $flag_data ) );
-                                    if ( $name !== '' ) {
-                                        $sanitized_set_flags[] = $name; // 旧形式は文字列のまま（フロントでtrue扱い）
-                                    }
-                                } elseif ( is_array( $flag_data ) && isset( $flag_data['name'] ) ) {
-                                    // 新形式: { name: string, state: bool }
+                                if ( is_array( $flag_data ) && isset( $flag_data['name'] ) ) {
                                     $name = trim( sanitize_text_field( $flag_data['name'] ) );
                                     if ( $name !== '' ) {
                                         $sanitized_set_flags[] = array(
@@ -728,11 +675,6 @@ function noveltool_filter_novel_game_content( $content ) {
                 <?php if ( $character_right ) : ?>
                     <img id="novel-character-right" class="novel-character novel-character-right" src="<?php echo esc_url( $character_right ); ?>" alt="<?php echo esc_attr__( 'Right Character', 'novel-game-plugin' ); ?>" />
                 <?php endif; ?>
-                
-                <!-- 後方互換性のための旧キャラクター表示 -->
-                <?php if ( $character && ! $character_center ) : ?>
-                    <img id="novel-character" class="novel-character novel-character-center" src="<?php echo esc_url( $character ); ?>" alt="<?php echo esc_attr__( 'Characters', 'novel-game-plugin' ); ?>" />
-                <?php endif; ?>
 
                 <div id="novel-speaker-name" class="novel-speaker-name"></div>
                 
@@ -760,7 +702,6 @@ function noveltool_filter_novel_game_content( $content ) {
                         'left' => $character_left,
                         'center' => $character_center,
                         'right' => $character_right,
-                        'legacy' => $character, // 後方互換性のため
                         'left_name' => $character_left_name,
                         'center_name' => $character_center_name,
                         'right_name' => $character_right_name,
@@ -1275,11 +1216,10 @@ function noveltool_all_games_shortcode_output( $atts ) {
         $background = get_post_meta( $first_post->ID, '_background_image', true );
         $post_count = count( noveltool_get_posts_by_game_title( $game_title ) );
         
-        // ゲーム概要・タイトル用画像を取得（改善版）
+        // ゲーム概要・タイトル用画像を取得
         $game_description = '';
         $game_title_image = '';
         
-        // 1. 新しいオプション形式から取得を試行
         $all_games = noveltool_get_all_games();
         if ( ! empty( $all_games ) ) {
             foreach ( $all_games as $game_data ) {
@@ -1288,15 +1228,6 @@ function noveltool_all_games_shortcode_output( $atts ) {
                     $game_title_image = isset( $game_data['title_image'] ) ? $game_data['title_image'] : '';
                     break;
                 }
-            }
-        }
-        
-        // 2. データが見つからない場合は後方互換性のため従来の単一ゲーム設定から取得
-        if ( empty( $game_description ) && empty( $game_title_image ) ) {
-            $legacy_title = get_option( 'noveltool_game_title', '' );
-            if ( $legacy_title === $game_title ) {
-                $game_description = get_option( 'noveltool_game_description', '' );
-                $game_title_image = get_option( 'noveltool_game_title_image', '' );
             }
         }
         

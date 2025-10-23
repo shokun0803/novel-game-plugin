@@ -267,33 +267,20 @@ function noveltool_get_current_game_title() {
  * @param string $new_title 新ゲームタイトル
  * @since 1.1.0
  */
-function noveltool_update_scenes_game_title( $old_title, $new_title = null ) {
+function noveltool_update_scenes_game_title( $old_title, $new_title ) {
     global $wpdb;
     
-    // 単一引数の場合は後方互換性のための処理
-    if ( $new_title === null ) {
-        $new_title = $old_title;
-        // novel_game投稿タイプのすべての投稿のゲームタイトルを更新
-        $wpdb->update(
-            $wpdb->postmeta,
-            array( 'meta_value' => $new_title ),
-            array( 'meta_key' => '_game_title' ),
-            array( '%s' ),
-            array( '%s' )
-        );
-    } else {
-        // 特定のゲームタイトルを持つシーンのみ更新
-        $wpdb->update(
-            $wpdb->postmeta,
-            array( 'meta_value' => $new_title ),
-            array( 
-                'meta_key' => '_game_title',
-                'meta_value' => $old_title
-            ),
-            array( '%s' ),
-            array( '%s', '%s' )
-        );
-    }
+    // 特定のゲームタイトルを持つシーンのみ更新
+    $wpdb->update(
+        $wpdb->postmeta,
+        array( 'meta_value' => $new_title ),
+        array( 
+            'meta_key' => '_game_title',
+            'meta_value' => $old_title
+        ),
+        array( '%s' ),
+        array( '%s', '%s' )
+    );
 }
 
 /**
