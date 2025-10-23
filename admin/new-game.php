@@ -249,8 +249,9 @@ function noveltool_new_game_page() {
 
         <div class="noveltool-help-section">
             <h3><?php esc_html_e( 'Help', 'novel-game-plugin' ); ?></h3>
-            <p><?php esc_html_e( 'Enter a game title and click the "Create Game" button to create the first scene of a new game.', 'novel-game-plugin' ); ?></p>
-            <p><?php esc_html_e( 'After creation, you will automatically be taken to the scene editing screen where you can set background images, characters, dialogue, choices, and more.', 'novel-game-plugin' ); ?></p>
+            <p><?php esc_html_e( 'Enter a game title and click the "Create Game" button to create a new game.', 'novel-game-plugin' ); ?></p>
+            <p><?php esc_html_e( 'After creation, you will be taken to the game management screen where you can create scenes, manage settings, and configure your game.', 'novel-game-plugin' ); ?></p>
+            <p><?php esc_html_e( 'You can optionally add a game overview and title screen image for a better presentation.', 'novel-game-plugin' ); ?></p>
         </div>
     </div>
     <?php
