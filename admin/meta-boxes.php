@@ -172,6 +172,12 @@ function noveltool_meta_box_callback( $post ) {
     $dialogue    = get_post_meta( $post->ID, '_dialogue_text', true );
     $choices     = get_post_meta( $post->ID, '_choices', true );
     $game_title  = get_post_meta( $post->ID, '_game_title', true );
+    
+    // URLパラメータからゲームタイトルを取得（新規作成時）
+    if ( empty( $game_title ) && isset( $_GET['game_title'] ) ) {
+        $game_title = sanitize_text_field( wp_unslash( $_GET['game_title'] ) );
+    }
+    
     $dialogue_backgrounds = get_post_meta( $post->ID, '_dialogue_backgrounds', true );
     
     // 3体キャラクター対応の値を取得
@@ -649,7 +655,7 @@ function noveltool_meta_box_callback( $post ) {
                     </select>
                     <p class="description">
                         <?php esc_html_e( 'Please select the game this scene belongs to.', 'novel-game-plugin' ); ?>
-                        <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" target="_blank">
+                        <a href="<?php echo esc_url( noveltool_get_my_games_url() ); ?>" target="_blank">
                             <?php esc_html_e( 'Manage Games', 'novel-game-plugin' ); ?>
                         </a>
                     </p>
@@ -662,7 +668,7 @@ function noveltool_meta_box_callback( $post ) {
                            placeholder="<?php esc_attr_e( 'Enter the title of the game this scene belongs to', 'novel-game-plugin' ); ?>" />
                     <p class="description">
                         <?php esc_html_e( 'Set the title for the entire game.', 'novel-game-plugin' ); ?>
-                        <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" target="_blank">
+                        <a href="<?php echo esc_url( noveltool_get_my_games_url() ); ?>" target="_blank">
                             <?php esc_html_e( 'Manage Games', 'novel-game-plugin' ); ?>
                         </a>
                     </p>
