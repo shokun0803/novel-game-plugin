@@ -2226,7 +2226,23 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 .novel-game-container.has-ad-banner .novel-choices,
 .novel-game-container.has-ad-banner .novel-character {
     /* 広告分を考慮して位置を調整 */
-    transform: translateY(0);
+    margin-top: 100px;
+}
+
+@media (max-width: 768px) and (min-width: 481px) {
+    .novel-game-container.has-ad-banner .novel-dialogue-box,
+    .novel-game-container.has-ad-banner .novel-choices,
+    .novel-game-container.has-ad-banner .novel-character {
+        margin-top: 90px;
+    }
+}
+
+@media (max-width: 480px) {
+    .novel-game-container.has-ad-banner .novel-dialogue-box,
+    .novel-game-container.has-ad-banner .novel-choices,
+    .novel-game-container.has-ad-banner .novel-character {
+        margin-top: 80px;
+    }
 }
 
 /* 広告内容のラッパー */

@@ -218,6 +218,8 @@
 				};
 				script.onerror = function() {
 					console.error( 'Google AdSense スクリプトの読み込みに失敗しました' );
+					adScriptLoaded = false;
+					adConfig.enabled = false;
 				};
 				document.head.appendChild( script );
 				adScriptLoaded = true;
@@ -252,6 +254,12 @@
 				loadAdScript();
 			}
 			
+			// 既に初期化済みの広告が存在する場合はスキップ
+			if ( $adBanner.find( '.adsbygoogle[data-adsbygoogle-status]' ).length > 0 ) {
+				debugLog( '広告は既に初期化されています' );
+				return;
+			}
+			
 			// 広告コンテンツを生成
 			var adContent = '';
 			
@@ -268,9 +276,16 @@
 			} else if ( adConfig.provider === 'adsterra' && adConfig.providerId ) {
 				// Adsterra バナー
 				adContent = '<div class="novel-ad-content novel-ad-adsterra">' +
-					'<!-- Adsterra banner placeholder -->' +
-					'<div id="adsterra-banner-' + adConfig.providerId + '"></div>' +
+					'<div id="adsterra-banner-container">' +
+					'<!-- Adsterra 広告タグをここに挿入 -->' +
+					'<!-- 実装には Adsterra のダッシュボードから取得した広告コードが必要です -->' +
+					'<div data-ad-provider="adsterra" data-ad-id="' + adConfig.providerId + '">' +
+					'広告を読み込み中...' +
+					'</div>' +
+					'</div>' +
 					'</div>';
+				
+				debugLog( 'Adsterra 広告コンテナを作成しました。実際の広告表示には Adsterra の広告コードが必要です。' );
 			}
 			
 			if ( adContent ) {
