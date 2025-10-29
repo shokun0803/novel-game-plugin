@@ -410,6 +410,61 @@ function noveltool_remove_game_flag( $game_title, $flag_name ) {
     return noveltool_save_game_flag_master( $game_title, $new_flag_master );
 }
 
+/**
+ * ゲームの広告プロバイダー設定を取得
+ *
+ * @param string $game_title ゲームタイトル
+ * @return string 広告プロバイダー (none, adsense, adsterra)
+ * @since 1.2.0
+ */
+function noveltool_get_game_ad_provider( $game_title ) {
+    if ( ! $game_title ) {
+        return 'none';
+    }
+    
+    $game = noveltool_get_game_by_title( $game_title );
+    if ( ! $game ) {
+        return 'none';
+    }
+    
+    $ad_provider = isset( $game['ad_provider'] ) ? $game['ad_provider'] : 'none';
+    $allowed_providers = array( 'none', 'adsense', 'adsterra' );
+    
+    if ( ! in_array( $ad_provider, $allowed_providers, true ) ) {
+        return 'none';
+    }
+    
+    return $ad_provider;
+}
+
+/**
+ * ゲームで広告を表示すべきかチェック
+ *
+ * @param string $game_title ゲームタイトル
+ * @return bool 広告を表示する場合 true
+ * @since 1.2.0
+ */
+function noveltool_should_display_ads( $game_title ) {
+    $ad_provider = noveltool_get_game_ad_provider( $game_title );
+    
+    if ( 'none' === $ad_provider ) {
+        return false;
+    }
+    
+    // プロバイダーIDが設定されているか確認
+    if ( 'adsense' === $ad_provider ) {
+        $adsense_id = noveltool_get_google_adsense_id();
+        return ! empty( $adsense_id );
+    }
+    
+    if ( 'adsterra' === $ad_provider ) {
+        $adsterra_id = noveltool_get_adsterra_id();
+        return ! empty( $adsterra_id );
+    }
+    
+    return false;
+}
+
 
 /**
  * カスタム投稿タイプ「novel_game」のコンテンツをノベルゲームビューに置き換える
@@ -668,6 +723,11 @@ function noveltool_filter_novel_game_content( $content ) {
             
             <!-- ゲームコンテナ -->
             <div id="novel-game-container" class="novel-game-container" style="background-image: url('<?php echo esc_url( $background ); ?>');">
+                <!-- 広告バナー（プレイ開始後に表示） -->
+                <div id="novel-ad-banner" class="novel-ad-banner" style="display: none;">
+                    <!-- 広告内容はJavaScriptで動的に挿入 -->
+                </div>
+                
                 <!-- 3体キャラクター表示 -->
                 <?php if ( $character_left ) : ?>
                     <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" alt="<?php echo esc_attr__( 'Left Character', 'novel-game-plugin' ); ?>" />
@@ -765,6 +825,38 @@ function noveltool_filter_novel_game_content( $content ) {
                         $flag_master_data = noveltool_get_game_flag_master( $game_title );
                     }
                     echo wp_json_encode( $flag_master_data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); 
+                    ?>
+                </script>
+                
+                <script id="novel-ad-config" type="application/json">
+                    <?php
+                    // 広告設定データをフロントエンドに渡す
+                    $ad_config = array(
+                        'provider' => 'none',
+                        'providerId' => '',
+                        'enabled' => false,
+                    );
+                    
+                    if ( $game_title ) {
+                        $ad_provider = noveltool_get_game_ad_provider( $game_title );
+                        $ad_config['provider'] = $ad_provider;
+                        
+                        if ( 'adsense' === $ad_provider ) {
+                            $adsense_id = noveltool_get_google_adsense_id();
+                            if ( ! empty( $adsense_id ) ) {
+                                $ad_config['providerId'] = $adsense_id;
+                                $ad_config['enabled'] = true;
+                            }
+                        } elseif ( 'adsterra' === $ad_provider ) {
+                            $adsterra_id = noveltool_get_adsterra_id();
+                            if ( ! empty( $adsterra_id ) ) {
+                                $ad_config['providerId'] = $adsterra_id;
+                                $ad_config['enabled'] = true;
+                            }
+                        }
+                    }
+                    
+                    echo wp_json_encode( $ad_config, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT );
                     ?>
                 </script>
             </div>
