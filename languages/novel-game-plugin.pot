@@ -1,920 +1,1463 @@
-# Translation file for Novel Game Plugin
-# Copyright (C) 2025
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the Novel Game Plugin package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Novel Game Plugin 1.2.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-23 07:41:58+0000\n"
+"Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin\n"
+"POT-Creation-Date: 2025-10-29 05:39+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: admin/game-manager.php:23 admin/dashboard.php:22 admin/ad-management.php:40
+#: admin/new-game.php:48 admin/new-game.php:122 admin/my-games.php:22
+#: admin/plugin-settings.php:22 admin/game-settings.php:56
+#: admin/game-settings.php:343
 msgid "You do not have permission to access this page."
 msgstr ""
 
+#: admin/game-manager.php:43
 msgid "- Game Management"
 msgstr ""
 
+#: admin/game-manager.php:49
 msgid "Back to My Games"
 msgstr ""
 
+#: admin/game-manager.php:56
 msgid "Scene List"
 msgstr ""
 
+#: admin/game-manager.php:60 admin/game-manager.php:112
+#: admin/game-manager.php:177
 msgid "Create New Scene"
 msgstr ""
 
+#: admin/game-manager.php:64 admin/game-settings.php:606
 msgid "Game Settings"
 msgstr ""
 
+#: admin/game-manager.php:100
 msgid "No scenes have been created for this game yet."
 msgstr ""
 
+#: admin/game-manager.php:103
 msgid "Create First Scene"
 msgstr ""
 
+#: admin/game-manager.php:109
+#, php-format
 msgid "Total: %d scenes"
 msgstr ""
 
+#: admin/game-manager.php:119
 msgid "Scene Title"
 msgstr ""
 
+#: admin/game-manager.php:120
 msgid "Status"
 msgstr ""
 
+#: admin/game-manager.php:121
 msgid "Date"
 msgstr ""
 
+#: admin/game-manager.php:122 admin/game-manager.php:336
+#: admin/meta-boxes.php:852 admin/game-settings.php:532
 msgid "Actions"
 msgstr ""
 
+#: admin/game-manager.php:146 admin/meta-boxes.php:343
+#: admin/game-settings.php:650
 msgid "Edit"
 msgstr ""
 
+#: admin/game-manager.php:149
 msgid "Preview"
 msgstr ""
 
-msgid "Create a new scene for this game. After creation, you will be taken to the scene editing screen where you can add backgrounds, characters, dialogue, and choices."
+#: admin/game-manager.php:171
+msgid ""
+"Create a new scene for this game. After creation, you will be taken to the "
+"scene editing screen where you can add backgrounds, characters, dialogue, "
+"and choices."
 msgstr ""
 
+#: admin/game-manager.php:203 admin/meta-boxes.php:27 admin/new-game.php:130
+#: admin/game-settings.php:367
 msgid "Security check failed."
 msgstr ""
 
+#: admin/game-manager.php:206 admin/new-game.php:133
+#: admin/game-settings.php:370 admin/game-settings.php:1056
 msgid "Please enter a game title."
 msgstr ""
 
+#: admin/game-manager.php:209 admin/game-settings.php:373
 msgid "A game with that title already exists."
 msgstr ""
 
+#: admin/game-manager.php:212 admin/game-settings.php:376
 msgid "Failed to save game."
 msgstr ""
 
+#: admin/game-manager.php:220 admin/game-settings.php:402
 msgid "Game updated successfully."
 msgstr ""
 
+#: admin/game-manager.php:223 admin/game-settings.php:408
 msgid "Flag added successfully."
 msgstr ""
 
+#: admin/game-manager.php:226 admin/game-settings.php:411
 msgid "Flag deleted successfully."
 msgstr ""
 
+#: admin/game-manager.php:253 admin/meta-boxes.php:641 admin/new-game.php:169
+#: admin/game-settings.php:445 admin/game-settings.php:680
+#: includes/post-types.php:88 includes/revisions.php:390
 msgid "Game Title"
 msgstr ""
 
+#: admin/game-manager.php:267 admin/new-game.php:187
+#: admin/game-settings.php:460 admin/game-settings.php:695
 msgid "Game Overview"
 msgstr ""
 
+#: admin/game-manager.php:279 admin/new-game.php:203
+#: admin/game-settings.php:474 admin/game-settings.php:709
 msgid "Title Screen Image"
 msgstr ""
 
+#: admin/game-manager.php:288 admin/new-game.php:212
+#: admin/game-settings.php:483 admin/game-settings.php:718
 msgid "Title Screen Image Preview"
 msgstr ""
 
+#: admin/game-manager.php:294 admin/meta-boxes.php:696 admin/new-game.php:218
+#: admin/game-settings.php:489 admin/game-settings.php:724
 msgid "Select from Media"
 msgstr ""
 
+#: admin/game-manager.php:300 admin/new-game.php:224
+#: admin/game-settings.php:495 admin/game-settings.php:730
 msgid "Delete Image"
 msgstr ""
 
+#: admin/game-manager.php:308 admin/game-settings.php:503
+#: admin/game-settings.php:738
 msgid "Game Over Screen Text"
 msgstr ""
 
-msgid "Text displayed when there are no choices or next scenes in a non-ending. Default is \"Game Over\"."
+#: admin/game-manager.php:316 admin/game-settings.php:512
+#: admin/game-settings.php:747
+msgid ""
+"Text displayed when there are no choices or next scenes in a non-ending. "
+"Default is \"Game Over\"."
 msgstr ""
 
+#: admin/game-manager.php:321 admin/game-settings.php:517
 msgid "Flag Management"
 msgstr ""
 
+#: admin/game-manager.php:327 admin/game-settings.php:523
 msgid "Current Flags List"
 msgstr ""
 
+#: admin/game-manager.php:333 admin/game-settings.php:529
 msgid "ID"
 msgstr ""
 
+#: admin/game-manager.php:334 admin/game-manager.php:373
+#: admin/game-settings.php:530 admin/game-settings.php:569
 msgid "Flag Name"
 msgstr ""
 
+#: admin/game-manager.php:335 admin/game-manager.php:386
+#: admin/game-settings.php:531 admin/game-settings.php:584
 msgid "Description"
 msgstr ""
 
+#: admin/game-manager.php:353 admin/game-settings.php:549
+#: admin/game-settings.php:657 includes/revisions.php:320
 msgid "Delete"
 msgstr ""
 
+#: admin/game-manager.php:354 admin/game-settings.php:550
 msgid "Are you sure you want to delete this flag?"
 msgstr ""
 
+#: admin/game-manager.php:362 admin/meta-boxes.php:952
+#: admin/game-settings.php:558
 msgid "No flags have been set for this game yet."
 msgstr ""
 
+#: admin/game-manager.php:365 admin/game-settings.php:561
 msgid "Add New Flag"
 msgstr ""
 
-msgid "Only alphanumeric characters and underscores are allowed. Cannot start with a number."
+#: admin/game-manager.php:381 admin/game-settings.php:579
+msgid ""
+"Only alphanumeric characters and underscores are allowed. Cannot start with "
+"a number."
 msgstr ""
 
+#: admin/game-manager.php:401 admin/game-settings.php:601
 msgid "Add Flag"
 msgstr ""
 
+#: admin/game-manager.php:410 admin/game-settings.php:613
 msgid "Update Game"
 msgstr ""
 
+#: admin/dashboard.php:37
 msgid "Novel Game Plugin Dashboard"
 msgstr ""
 
+#: admin/dashboard.php:42
 msgid "Statistics"
 msgstr ""
 
+#: admin/dashboard.php:47
 msgid "Total Games"
 msgstr ""
 
+#: admin/dashboard.php:52
 msgid "Total Scenes"
 msgstr ""
 
+#: admin/dashboard.php:59
 msgid "Quick Actions"
 msgstr ""
 
+#: admin/dashboard.php:63 admin/new-game.php:22 admin/new-game.php:23
+#: admin/my-games.php:73 admin/my-games.php:131
+#: templates/archive-novel_game.php:140
 msgid "Create New Game"
 msgstr ""
 
+#: admin/dashboard.php:67 admin/my-games.php:66 includes/post-types.php:316
+#: includes/post-types.php:317
 msgid "My Games"
 msgstr ""
 
+#: admin/dashboard.php:74
 msgid "Getting Started Guide"
 msgstr ""
 
+#: admin/dashboard.php:79
 msgid "Create a New Game"
 msgstr ""
 
-msgid "Click \"Create New Game\" to set up your game title, description, and title image."
+#: admin/dashboard.php:80
+msgid ""
+"Click \"Create New Game\" to set up your game title, description, and title "
+"image."
 msgstr ""
 
+#: admin/dashboard.php:86
 msgid "Create Scenes"
 msgstr ""
 
-msgid "Add scenes to your game with backgrounds, characters, dialogue, and choices."
+#: admin/dashboard.php:87
+msgid ""
+"Add scenes to your game with backgrounds, characters, dialogue, and choices."
 msgstr ""
 
+#: admin/dashboard.php:93
 msgid "Publish Your Game"
 msgstr ""
 
+#: admin/dashboard.php:94
 msgid "Use shortcodes to display your game on any page or post on your site."
 msgstr ""
 
+#: admin/dashboard.php:102
 msgid "About Novel Game Plugin"
 msgstr ""
 
-msgid "Novel Game Plugin allows you to create visual novel or sound novel style games directly in WordPress. You can create multiple games, manage scenes with branching storylines, and use flags for conditional content."
+#: admin/dashboard.php:103
+msgid ""
+"Novel Game Plugin allows you to create visual novel or sound novel style "
+"games directly in WordPress. You can create multiple games, manage scenes "
+"with branching storylines, and use flags for conditional content."
 msgstr ""
 
+#: admin/dashboard.php:104
 msgid "Key Features:"
 msgstr ""
 
+#: admin/dashboard.php:106
 msgid "Multiple game management"
 msgstr ""
 
+#: admin/dashboard.php:107
 msgid "Scene-based storytelling with backgrounds and characters"
 msgstr ""
 
+#: admin/dashboard.php:108
 msgid "Branching dialogue and choices"
 msgstr ""
 
+#: admin/dashboard.php:109
 msgid "Flag system for conditional content"
 msgstr ""
 
+#: admin/dashboard.php:110
 msgid "Shortcodes for easy integration"
 msgstr ""
 
+#: admin/meta-boxes.php:22
 msgid "You do not have permission."
 msgstr ""
 
+#: admin/meta-boxes.php:40
 msgid "Title is not entered."
 msgstr ""
 
+#: admin/meta-boxes.php:73
 msgid "Failed to create post."
 msgstr ""
 
+#: admin/meta-boxes.php:150
 msgid "Scene Data"
 msgstr ""
 
+#: admin/meta-boxes.php:297
 msgid "-- Select --"
 msgstr ""
 
+#: admin/meta-boxes.php:298
 msgid "+ Create New..."
 msgstr ""
 
+#: admin/meta-boxes.php:299 admin/meta-boxes.php:741 admin/meta-boxes.php:776
+#: admin/meta-boxes.php:811
 msgid "Remove"
 msgstr ""
 
+#: admin/meta-boxes.php:300 admin/meta-boxes.php:735 admin/meta-boxes.php:770
+#: admin/meta-boxes.php:805 admin/game-settings.php:1053
 msgid "Select Image"
 msgstr ""
 
+#: admin/meta-boxes.php:301 admin/game-settings.php:1054
 msgid "Use This Image"
 msgstr ""
 
+#: admin/meta-boxes.php:302
 msgid "Are you sure you want to delete?"
 msgstr ""
 
+#: admin/meta-boxes.php:303
 msgid "Creation failed."
 msgstr ""
 
+#: admin/meta-boxes.php:304
 msgid "Please enter a title for the new scene"
 msgstr ""
 
+#: admin/meta-boxes.php:305
 msgid "Please enter a title for the next command"
 msgstr ""
 
+#: admin/meta-boxes.php:306
 msgid "Creating..."
 msgstr ""
 
+#: admin/meta-boxes.php:307
 msgid "Please enter dialogue"
 msgstr ""
 
+#: admin/meta-boxes.php:308
 msgid "Speaker:"
 msgstr ""
 
+#: admin/meta-boxes.php:309
 msgid "-- Select Speaker --"
 msgstr ""
 
+#: admin/meta-boxes.php:310 admin/meta-boxes.php:713 novel-game-plugin.php:673
 msgid "Left Character"
 msgstr ""
 
+#: admin/meta-boxes.php:311 admin/meta-boxes.php:748 novel-game-plugin.php:677
 msgid "Center Character"
 msgstr ""
 
+#: admin/meta-boxes.php:312 admin/meta-boxes.php:783 novel-game-plugin.php:681
 msgid "Right Character"
 msgstr ""
 
+#: admin/meta-boxes.php:313
 msgid "Narrator"
 msgstr ""
 
+#: admin/meta-boxes.php:314
 msgid "Background Image:"
 msgstr ""
 
+#: admin/meta-boxes.php:315
 msgid "Select Background Image"
 msgstr ""
 
+#: admin/meta-boxes.php:316
 msgid "Flag Control:"
 msgstr ""
 
+#: admin/meta-boxes.php:317
 msgid "Display Control:"
 msgstr ""
 
+#: admin/meta-boxes.php:318
 msgid "Always Display"
 msgstr ""
 
+#: admin/meta-boxes.php:319
 msgid "Hide When Condition Met"
 msgstr ""
 
+#: admin/meta-boxes.php:320
 msgid "Show Alternative Text When Condition Met"
 msgstr ""
 
+#: admin/meta-boxes.php:321
 msgid "-- Select Flag --"
 msgstr ""
 
+#: admin/meta-boxes.php:322
 msgid "Flag"
 msgstr ""
 
+#: admin/meta-boxes.php:323
 msgid "Condition:"
 msgstr ""
 
+#: admin/meta-boxes.php:324
 msgid "AND (All)"
 msgstr ""
 
+#: admin/meta-boxes.php:325
 msgid "OR (Any)"
 msgstr ""
 
+#: admin/meta-boxes.php:326
 msgid "Alternative Text (displayed when condition is met):"
 msgstr ""
 
+#: admin/meta-boxes.php:327
 msgid "Enter the dialogue to display when the flag condition is met"
 msgstr ""
 
+#: admin/meta-boxes.php:328 admin/meta-boxes.php:821
 msgid "Dialogue"
 msgstr ""
 
+#: admin/meta-boxes.php:329
 msgid "At least one dialogue is required."
 msgstr ""
 
+#: admin/meta-boxes.php:330
 msgid "Are you sure you want to delete this dialogue?"
 msgstr ""
 
+#: admin/meta-boxes.php:331
 msgid "Media library is not available."
 msgstr ""
 
+#: admin/meta-boxes.php:332
 msgid "Select Character Image"
 msgstr ""
 
+#: admin/meta-boxes.php:333
 msgid "No Flags"
 msgstr ""
 
+#: admin/meta-boxes.php:334
 msgid "Flag Setting Change:"
 msgstr ""
 
+#: admin/meta-boxes.php:335
 msgid "Do Not Set"
 msgstr ""
 
+#: admin/meta-boxes.php:336
 msgid "Default is \"Do Not Set\""
 msgstr ""
 
+#: admin/meta-boxes.php:337
 msgid "Delete Target:"
 msgstr ""
 
+#: admin/meta-boxes.php:338
 msgid "Warning: This is the last choice. Deleting it will remove all choices."
 msgstr ""
 
+#: admin/meta-boxes.php:339
 msgid "All choices have been deleted."
 msgstr ""
 
-msgid "There are unsaved changes in the current post.\\n\\nDo you want to open the edit screen without saving?\\n\\nSelect \"Cancel\" to save the current post first."
+#: admin/meta-boxes.php:340
+msgid ""
+"There are unsaved changes in the current post.\\n\\nDo you want to open the "
+"edit screen without saving?\\n\\nSelect \"Cancel\" to save the current post "
+"first."
 msgstr ""
 
-msgid "The post has not been saved. Do you want to save it before creating a new command?"
+#: admin/meta-boxes.php:341
+msgid ""
+"The post has not been saved. Do you want to save it before creating a new "
+"command?"
 msgstr ""
 
-msgid "A new scene \"%s\" has been created. You can edit it from the edit link."
+#: admin/meta-boxes.php:342
+#, php-format
+msgid ""
+"A new scene \"%s\" has been created. You can edit it from the edit link."
 msgstr ""
 
-msgid "Unsupported file format. Only jpg, jpeg, png, gif, and webp files can be uploaded."
+#: admin/meta-boxes.php:344
+msgid ""
+"Unsupported file format. Only jpg, jpeg, png, gif, and webp files can be "
+"uploaded."
 msgstr ""
 
+#: admin/meta-boxes.php:345
 msgid "Unsupported file format. Only image files can be uploaded."
 msgstr ""
 
+#: admin/meta-boxes.php:346
 msgid "File size is too large. Please upload a file smaller than 5MB."
 msgstr ""
 
+#: admin/meta-boxes.php:649
 msgid "-- Please Select a Game --"
 msgstr ""
 
+#: admin/meta-boxes.php:657
 msgid "Please select the game this scene belongs to."
 msgstr ""
 
+#: admin/meta-boxes.php:659 admin/meta-boxes.php:672
 msgid "Manage Games"
 msgstr ""
 
+#: admin/meta-boxes.php:668
 msgid "Enter the title of the game this scene belongs to"
 msgstr ""
 
+#: admin/meta-boxes.php:670
 msgid "Set the title for the entire game."
 msgstr ""
 
+#: admin/meta-boxes.php:681 includes/revisions.php:376
 msgid "Background Image"
 msgstr ""
 
+#: admin/meta-boxes.php:690
 msgid "Background Image Preview"
 msgstr ""
 
+#: admin/meta-boxes.php:699
 msgid "Set the background image for this scene."
 msgstr ""
 
+#: admin/meta-boxes.php:705
 msgid "Character Images"
 msgstr ""
 
+#: admin/meta-boxes.php:709
 msgid "You can place up to 3 characters in left, center, and right positions."
 msgstr ""
 
+#: admin/meta-boxes.php:719 admin/meta-boxes.php:754 admin/meta-boxes.php:789
 msgid "Character Name"
 msgstr ""
 
+#: admin/meta-boxes.php:724 admin/meta-boxes.php:759 admin/meta-boxes.php:794
 msgid "Enter Character Name"
 msgstr ""
 
+#: admin/meta-boxes.php:729
 msgid "Left Character Image Preview"
 msgstr ""
 
+#: admin/meta-boxes.php:764
 msgid "Center Character Image Preview"
 msgstr ""
 
+#: admin/meta-boxes.php:799
 msgid "Right Character Image Preview"
 msgstr ""
 
+#: admin/meta-boxes.php:830
 msgid "+ Add Dialogue"
 msgstr ""
 
-msgid "You can set a background image for each dialogue. If no background image is specified, the background from the previous scene will continue."
+#: admin/meta-boxes.php:834
+msgid ""
+"You can set a background image for each dialogue. If no background image is "
+"specified, the background from the previous scene will continue."
 msgstr ""
 
+#: admin/meta-boxes.php:840 includes/revisions.php:389
 msgid "Choices"
 msgstr ""
 
+#: admin/meta-boxes.php:847
 msgid "Order"
 msgstr ""
 
+#: admin/meta-boxes.php:848
 msgid "Text"
 msgstr ""
 
+#: admin/meta-boxes.php:849
 msgid "Next Scene"
 msgstr ""
 
+#: admin/meta-boxes.php:850
 msgid "Flag Conditions"
 msgstr ""
 
+#: admin/meta-boxes.php:851 admin/meta-boxes.php:914
 msgid "Flag Settings"
 msgstr ""
 
+#: admin/meta-boxes.php:863
 msgid "Add Choice"
 msgstr ""
 
+#: admin/meta-boxes.php:868
 msgid "Create New Next Command"
 msgstr ""
 
+#: admin/meta-boxes.php:876
 msgid "Set choices that players can select."
 msgstr ""
 
+#: admin/meta-boxes.php:877
 msgid "Flag Conditions:"
 msgstr ""
 
+#: admin/meta-boxes.php:877
 msgid " Flag conditions required for display (up to 3, AND/OR supported)"
 msgstr ""
 
+#: admin/meta-boxes.php:878
 msgid "Flag Settings:"
 msgstr ""
 
+#: admin/meta-boxes.php:878
 msgid " The flag to set when this choice is selected"
 msgstr ""
 
+#: admin/meta-boxes.php:886
 msgid "Ending Settings"
 msgstr ""
 
+#: admin/meta-boxes.php:895
 msgid "Set this scene as an ending (end of game)"
 msgstr ""
 
-msgid "When checked, the game will end at this scene. The ending takes priority even if choices are set."
+#: admin/meta-boxes.php:897
+msgid ""
+"When checked, the game will end at this scene. The ending takes priority "
+"even if choices are set."
 msgstr ""
 
+#: admin/meta-boxes.php:900
 msgid "Ending Screen Text"
 msgstr ""
 
+#: admin/meta-boxes.php:906
 msgid "Text to display on ending screen (Default: END)"
 msgstr ""
 
-msgid "Set the text to display on the ending screen. If blank, \"END\" will be displayed."
+#: admin/meta-boxes.php:907
+msgid ""
+"Set the text to display on the ending screen. If blank, \"END\" will be "
+"displayed."
 msgstr ""
 
+#: admin/meta-boxes.php:932
 msgid "Flags to Set on Scene Arrival"
 msgstr ""
 
+#: admin/meta-boxes.php:933
 msgid "Select flags that will be automatically set when this scene is reached."
 msgstr ""
 
+#: admin/meta-boxes.php:954
 msgid "Manage Flags in Game Settings"
 msgstr ""
 
+#: admin/meta-boxes.php:960
 msgid "Dialogue-Level Flag Conditions"
 msgstr ""
 
-msgid "To set individual flag conditions for each dialogue, configure them when editing dialogues. Dialogues will not be displayed if flag conditions are not met."
+#: admin/meta-boxes.php:961
+msgid ""
+"To set individual flag conditions for each dialogue, configure them when "
+"editing dialogues. Dialogues will not be displayed if flag conditions are "
+"not met."
 msgstr ""
 
-msgid "Dialogue flag conditions can be set when editing each dialogue in the \"Dialogue\" section above."
+#: admin/meta-boxes.php:964
+msgid ""
+"Dialogue flag conditions can be set when editing each dialogue in the "
+"\"Dialogue\" section above."
 msgstr ""
 
+#: admin/ad-management.php:22 admin/ad-management.php:23
+#: admin/ad-management.php:71
+msgid "Ad Management"
+msgstr ""
+
+#: admin/ad-management.php:61
+msgid "Ad settings have been saved successfully."
+msgstr ""
+
+#: admin/ad-management.php:76
+msgid "Important Notice"
+msgstr ""
+
+#: admin/ad-management.php:78
+msgid "Please read carefully before using the advertising feature:"
+msgstr ""
+
+#: admin/ad-management.php:80
+msgid "The advertising IDs and settings you enter are your own responsibility."
+msgstr ""
+
+#: admin/ad-management.php:81
+msgid ""
+"This plugin does not verify the validity or compliance of the advertising "
+"IDs you provide."
+msgstr ""
+
+#: admin/ad-management.php:82
+msgid "You must comply with the terms of service of each advertising provider."
+msgstr ""
+
+#: admin/ad-management.php:83
+msgid ""
+"The plugin developer is not responsible for any issues arising from the use "
+"of advertising features."
+msgstr ""
+
+#: admin/ad-management.php:84
+msgid ""
+"Make sure you have properly registered with the advertising provider and "
+"have an approved account before entering your IDs."
+msgstr ""
+
+#: admin/ad-management.php:97
+msgid "Google AdSense"
+msgstr ""
+
+#: admin/ad-management.php:104
+msgid "AdSense Publisher ID"
+msgstr ""
+
+#: admin/ad-management.php:117
+msgid "Enter your Google AdSense Publisher ID (e.g., ca-pub-1234567890123456)"
+msgstr ""
+
+#: admin/ad-management.php:123 admin/ad-management.php:168
+msgid "Official Website"
+msgstr ""
+
+#: admin/ad-management.php:128
+msgid "Visit Google AdSense"
+msgstr ""
+
+#: admin/ad-management.php:131
+msgid ""
+"Register for a Google AdSense account and get your Publisher ID from the "
+"official website."
+msgstr ""
+
+#: admin/ad-management.php:142
+msgid "Adsterra"
+msgstr ""
+
+#: admin/ad-management.php:149
+msgid "Adsterra Publisher ID"
+msgstr ""
+
+#: admin/ad-management.php:162
+msgid "Enter your Adsterra Publisher ID"
+msgstr ""
+
+#: admin/ad-management.php:173
+msgid "Visit Adsterra"
+msgstr ""
+
+#: admin/ad-management.php:176
+msgid ""
+"Register for an Adsterra account and get your Publisher ID from the official "
+"website."
+msgstr ""
+
+#: admin/ad-management.php:185
+msgid "Save Ad Settings"
+msgstr ""
+
+#: admin/ad-management.php:191
+msgid "Additional Information"
+msgstr ""
+
+#: admin/ad-management.php:193
+msgid ""
+"This section allows you to manage advertising provider IDs for displaying "
+"ads in your novel games."
+msgstr ""
+
+#: admin/ad-management.php:194
+msgid "Currently supported advertising providers:"
+msgstr ""
+
+#: admin/ad-management.php:196
+msgid ""
+"One of the most popular advertising networks with a wide range of "
+"advertisers."
+msgstr ""
+
+#: admin/ad-management.php:197
+msgid ""
+"An alternative advertising network with various ad formats and payment "
+"options."
+msgstr ""
+
+#: admin/ad-management.php:200
+msgid "Note:"
+msgstr ""
+
+#: admin/ad-management.php:201
+msgid ""
+"Ad display functionality is currently under development. The IDs saved here "
+"will be used when the feature is fully implemented."
+msgstr ""
+
+#: admin/new-game.php:136
 msgid "This game title is already in use."
 msgstr ""
 
+#: admin/new-game.php:139
 msgid "Failed to create game."
 msgstr ""
 
+#: admin/new-game.php:177
 msgid "Please enter a title for the new game"
 msgstr ""
 
+#: admin/new-game.php:180
 msgid "This title will be used as the overall game title."
 msgstr ""
 
+#: admin/new-game.php:194 admin/game-settings.php:468
+#: admin/game-settings.php:703
 msgid "Please enter a game overview/description"
 msgstr ""
 
+#: admin/new-game.php:196
 msgid "Optional description of your game."
 msgstr ""
 
+#: admin/new-game.php:228
 msgid "Optional title screen image for your game."
 msgstr ""
 
+#: admin/new-game.php:239
 msgid "Create Game"
 msgstr ""
 
+#: admin/new-game.php:245 admin/game-settings.php:814
 msgid "Help"
 msgstr ""
 
-msgid "Enter a game title and click the \"Create Game\" button to create a new game."
+#: admin/new-game.php:246
+msgid ""
+"Enter a game title and click the \"Create Game\" button to create a new game."
 msgstr ""
 
-msgid "After creation, you will be taken to the game management screen where you can create scenes, manage settings, and configure your game."
+#: admin/new-game.php:247
+msgid ""
+"After creation, you will be taken to the game management screen where you "
+"can create scenes, manage settings, and configure your game."
 msgstr ""
 
-msgid "You can optionally add a game overview and title screen image for a better presentation."
+#: admin/new-game.php:248
+msgid ""
+"You can optionally add a game overview and title screen image for a better "
+"presentation."
 msgstr ""
 
+#: admin/new-game.php:282
+#, php-format
 msgid "%s - Start Scene"
 msgstr ""
 
+#: admin/new-game.php:302
+#, php-format
 msgid "Welcome to \"%s\"!"
 msgstr ""
 
+#: admin/my-games.php:70 admin/game-settings.php:666 novel-game-plugin.php:906
+#: novel-game-plugin.php:1204 templates/archive-novel_game.php:138
 msgid "No games have been created yet."
 msgstr ""
 
+#: admin/my-games.php:79
 msgid "Select a game to manage its scenes and settings."
 msgstr ""
 
+#: admin/my-games.php:109 novel-game-plugin.php:982 novel-game-plugin.php:1260
+#: templates/archive-novel_game.php:124
+#, php-format
 msgid "%d Scenes"
 msgstr ""
 
+#: admin/my-games.php:121
 msgid "Manage"
 msgstr ""
 
+#: admin/plugin-settings.php:27
 msgid "Plugin Settings"
 msgstr ""
 
+#: admin/plugin-settings.php:32
 msgid "Available Shortcodes"
 msgstr ""
 
+#: admin/plugin-settings.php:33
 msgid "Use these shortcodes to display your games on pages or posts."
 msgstr ""
 
+#: admin/plugin-settings.php:37
 msgid "Display All Games List"
 msgstr ""
 
+#: admin/plugin-settings.php:41 admin/plugin-settings.php:88
+#: admin/game-settings.php:774
 msgid "Copy"
 msgstr ""
 
-msgid "Displays all games in a beautiful card format. This is the most recommended shortcode for game lists."
+#: admin/plugin-settings.php:44
+msgid ""
+"Displays all games in a beautiful card format. This is the most recommended "
+"shortcode for game lists."
 msgstr ""
 
+#: admin/plugin-settings.php:46 admin/plugin-settings.php:93
 msgid "Available Options:"
 msgstr ""
 
+#: admin/plugin-settings.php:49 admin/game-settings.php:790
 msgid "show_count"
 msgstr ""
 
+#: admin/plugin-settings.php:50 admin/game-settings.php:791
 msgid "Show scene count (true/false, default: true)"
 msgstr ""
 
+#: admin/plugin-settings.php:53 admin/game-settings.php:794
 msgid "show_description"
 msgstr ""
 
+#: admin/plugin-settings.php:54 admin/game-settings.php:795
 msgid "Show game description (true/false, default: false)"
 msgstr ""
 
+#: admin/plugin-settings.php:57 admin/game-settings.php:798
 msgid "columns"
 msgstr ""
 
+#: admin/plugin-settings.php:58 admin/game-settings.php:799
 msgid "Number of columns (1-6, default: 3)"
 msgstr ""
 
+#: admin/plugin-settings.php:61 admin/game-settings.php:802
 msgid "orderby"
 msgstr ""
 
+#: admin/plugin-settings.php:62 admin/game-settings.php:803
 msgid "Sort order (title, etc., default: title)"
 msgstr ""
 
+#: admin/plugin-settings.php:65 admin/game-settings.php:806
 msgid "order"
 msgstr ""
 
+#: admin/plugin-settings.php:66 admin/game-settings.php:807
 msgid "Ascending/Descending (ASC/DESC, default: ASC)"
 msgstr ""
 
+#: admin/plugin-settings.php:70
 msgid "Usage Examples:"
 msgstr ""
 
+#: admin/plugin-settings.php:74
 msgid "- Display in 2 columns"
 msgstr ""
 
+#: admin/plugin-settings.php:78
 msgid "- Show descriptions in 4 columns"
 msgstr ""
 
+#: admin/plugin-settings.php:84
 msgid "Display Specific Game"
 msgstr ""
 
-msgid "Displays a specific game with a hero image and play button. Replace \"Game Name\" with your actual game title."
+#: admin/plugin-settings.php:91
+msgid ""
+"Displays a specific game with a hero image and play button. Replace \"Game "
+"Name\" with your actual game title."
 msgstr ""
 
+#: admin/plugin-settings.php:96
 msgid "game_title"
 msgstr ""
 
+#: admin/plugin-settings.php:97
 msgid "Game title to display (required)"
 msgstr ""
 
+#: admin/plugin-settings.php:100
 msgid "game_id"
 msgstr ""
 
+#: admin/plugin-settings.php:101
 msgid "Game ID to display (alternative to game_title)"
 msgstr ""
 
+#: admin/plugin-settings.php:107
 msgid "Block Editor"
 msgstr ""
 
-msgid "In the Gutenberg block editor, search for \"Novel Game List\" block. You can easily insert game lists or individual games with intuitive operations."
+#: admin/plugin-settings.php:109
+msgid ""
+"In the Gutenberg block editor, search for \"Novel Game List\" block. You can "
+"easily insert game lists or individual games with intuitive operations."
 msgstr ""
 
+#: admin/plugin-settings.php:117
 msgid "Plugin Information"
 msgstr ""
 
+#: admin/plugin-settings.php:120
 msgid "Version"
 msgstr ""
 
+#: admin/plugin-settings.php:124
 msgid "Text Domain"
 msgstr ""
 
+#: admin/plugin-settings.php:164
 msgid "Copied!"
 msgstr ""
 
+#: admin/game-settings.php:22 admin/game-settings.php:23
 msgid "Settings"
 msgstr ""
 
+#: admin/game-settings.php:379
 msgid "Failed to delete game."
 msgstr ""
 
+#: admin/game-settings.php:382
 msgid "Invalid game ID."
 msgstr ""
 
+#: admin/game-settings.php:385
 msgid "Please enter a flag name and game title."
 msgstr ""
 
+#: admin/game-settings.php:388
 msgid "Failed to add flag. A flag with the same name may already exist."
 msgstr ""
 
+#: admin/game-settings.php:391
 msgid "Failed to delete flag."
 msgstr ""
 
+#: admin/game-settings.php:399
 msgid "Game added successfully."
 msgstr ""
 
+#: admin/game-settings.php:405
 msgid "Game deleted successfully."
 msgstr ""
 
+#: admin/game-settings.php:436
 msgid "Edit Game"
 msgstr ""
 
+#: admin/game-settings.php:454 admin/game-settings.php:689
 msgid "Please enter a game title"
 msgstr ""
 
+#: admin/game-settings.php:511 admin/game-settings.php:746
 msgid "Text to display on Game Over screen"
 msgstr ""
 
+#: admin/game-settings.php:576
 msgid "Example: visited_library"
 msgstr ""
 
-msgid "Only alphanumeric characters and underscores are allowed, cannot start with a number"
+#: admin/game-settings.php:578
+msgid ""
+"Only alphanumeric characters and underscores are allowed, cannot start with "
+"a number"
 msgstr ""
 
+#: admin/game-settings.php:591
 msgid "Example: Visited the library"
 msgstr ""
 
+#: admin/game-settings.php:592
 msgid "Optional text describing the purpose of the flag."
 msgstr ""
 
+#: admin/game-settings.php:615
 msgid "Cancel"
 msgstr ""
 
+#: admin/game-settings.php:622 novel-game-plugin.php:1210
 msgid "Game List"
 msgstr ""
 
+#: admin/game-settings.php:658
 msgid "Are you sure you want to delete this game?"
 msgstr ""
 
+#: admin/game-settings.php:673
 msgid "Add New Game"
 msgstr ""
 
+#: admin/game-settings.php:756
 msgid "Add Game"
 msgstr ""
 
+#: admin/game-settings.php:765
 msgid "Shortcode"
 msgstr ""
 
+#: admin/game-settings.php:766
 msgid "Shortcode used to display a game list on pages or posts."
 msgstr ""
 
+#: admin/game-settings.php:770
 msgid "Display All Games List (Recommended)"
 msgstr ""
 
-msgid "Displays all created games in a beautiful card format. This is the most user-friendly and recommended shortcode."
+#: admin/game-settings.php:777
+msgid ""
+"Displays all created games in a beautiful card format. This is the most user-"
+"friendly and recommended shortcode."
 msgstr ""
 
+#: admin/game-settings.php:781
 msgid "Use in Block Editor (Recommended)"
 msgstr ""
 
-msgid "In the Gutenberg block editor, use the \"Novel Game List\" block. You can easily insert game lists or individual games with intuitive operations."
+#: admin/game-settings.php:782
+msgid ""
+"In the Gutenberg block editor, use the \"Novel Game List\" block. You can "
+"easily insert game lists or individual games with intuitive operations."
 msgstr ""
 
+#: admin/game-settings.php:787
 msgid "Options for Game List Shortcode ([novel_game_list])"
 msgstr ""
 
+#: admin/game-settings.php:815
 msgid "Here you can manage basic information for multiple novel games."
 msgstr ""
 
+#: admin/game-settings.php:816
 msgid "The game title can be selected when creating a scene."
 msgstr ""
 
+#: admin/game-settings.php:817
 msgid "Please enter a game introduction or synopsis in the game overview."
 msgstr ""
 
-msgid "The title screen image is the main image displayed when the game starts."
+#: admin/game-settings.php:818
+msgid ""
+"The title screen image is the main image displayed when the game starts."
 msgstr ""
 
+#: admin/game-settings.php:1055
 msgid "Are you sure you want to delete this image?"
 msgstr ""
 
+#: novel-game-plugin.php:636 novel-game-plugin.php:1153
+#: templates/archive-novel_game.php:128
 msgid "Start Game"
 msgstr ""
 
+#: novel-game-plugin.php:639
 msgid "Clear Progress"
 msgstr ""
 
+#: novel-game-plugin.php:648 novel-game-plugin.php:1018
+#: novel-game-plugin.php:1162 templates/archive-novel_game.php:154
 msgid "Close Game"
 msgstr ""
 
+#: novel-game-plugin.php:660 novel-game-plugin.php:1029
+#: novel-game-plugin.php:1173 templates/archive-novel_game.php:166
 msgid "Start from Beginning"
 msgstr ""
 
+#: novel-game-plugin.php:663 novel-game-plugin.php:1032
+#: novel-game-plugin.php:1176 templates/archive-novel_game.php:169
 msgid "Continue from Save"
 msgstr ""
 
+#: novel-game-plugin.php:1004 novel-game-plugin.php:1262
 msgid "Start Playing"
 msgstr ""
 
+#: novel-game-plugin.php:1098
 msgid "There are no posts for this game."
 msgstr ""
 
+#: includes/post-types.php:21
+msgctxt "Post Type General Name"
 msgid "Novel Game"
 msgstr ""
 
+#: includes/post-types.php:22
+msgctxt "Post Type Singular Name"
+msgid "Novel Game"
+msgstr ""
+
+#: includes/post-types.php:23 includes/post-types.php:24
+msgid "Novel Game"
+msgstr ""
+
+#: includes/post-types.php:25 includes/post-types.php:45
+#: templates/archive-novel_game.php:26
 msgid "Novel Game List"
 msgstr ""
 
+#: includes/post-types.php:26
 msgid "Novel Game Attributes"
 msgstr ""
 
+#: includes/post-types.php:27
 msgid "Parent Novel Game:"
 msgstr ""
 
+#: includes/post-types.php:28
 msgid "All Novel Games"
 msgstr ""
 
+#: includes/post-types.php:29
 msgid "Add New Novel Game"
 msgstr ""
 
+#: includes/post-types.php:30
 msgid "Add New"
 msgstr ""
 
+#: includes/post-types.php:31
 msgid "New Novel Game"
 msgstr ""
 
+#: includes/post-types.php:32
 msgid "Edit Novel Game"
 msgstr ""
 
+#: includes/post-types.php:33
 msgid "Update Novel Game"
 msgstr ""
 
+#: includes/post-types.php:34 includes/post-types.php:35
 msgid "View Novel Game"
 msgstr ""
 
+#: includes/post-types.php:36
 msgid "Search Novel Games"
 msgstr ""
 
+#: includes/post-types.php:37
 msgid "No novel games found"
 msgstr ""
 
+#: includes/post-types.php:38
 msgid "No novel games found in Trash"
 msgstr ""
 
+#: includes/post-types.php:39
 msgid "Featured Image"
 msgstr ""
 
+#: includes/post-types.php:40
 msgid "Set Featured Image"
 msgstr ""
 
+#: includes/post-types.php:41
 msgid "Remove Featured Image"
 msgstr ""
 
+#: includes/post-types.php:42
 msgid "Use as Featured Image"
 msgstr ""
 
+#: includes/post-types.php:43
 msgid "Insert into Novel Game"
 msgstr ""
 
+#: includes/post-types.php:44
 msgid "Uploaded to this Novel Game"
 msgstr ""
 
+#: includes/post-types.php:46
 msgid "Novel Game List Navigation"
 msgstr ""
 
+#: includes/post-types.php:47
 msgid "Filter Novel Game List"
 msgstr ""
 
+#: includes/post-types.php:51
 msgid "Novel Game Management"
 msgstr ""
 
+#: includes/post-types.php:52
 msgid "Manage Novel Game Scenes"
 msgstr ""
 
+#: includes/post-types.php:234
 msgid "All Games"
 msgstr ""
 
+#: includes/post-types.php:298 includes/post-types.php:299
 msgid "Dashboard"
 msgstr ""
 
+#: includes/revisions.php:195
 msgid "Custom Field Data"
 msgstr ""
 
+#: includes/revisions.php:265 includes/revisions.php:270
 msgid "No Data"
 msgstr ""
 
+#: includes/revisions.php:311 includes/revisions.php:312
 msgid "(None)"
 msgstr ""
 
+#: includes/revisions.php:317
 msgid "Add"
 msgstr ""
 
+#: includes/revisions.php:323
 msgid "Change"
 msgstr ""
 
+#: includes/revisions.php:326
 msgid "Same"
 msgstr ""
 
+#: includes/revisions.php:377
 msgid "Character Image (Old)"
 msgstr ""
 
+#: includes/revisions.php:378
 msgid "Left Character Image"
 msgstr ""
 
+#: includes/revisions.php:379
 msgid "Center Character Image"
 msgstr ""
 
+#: includes/revisions.php:380
 msgid "Right Character Image"
 msgstr ""
 
+#: includes/revisions.php:381
 msgid "Left Character Name"
 msgstr ""
 
+#: includes/revisions.php:382
 msgid "Center Character Name"
 msgstr ""
 
+#: includes/revisions.php:383
 msgid "Right Character Name"
 msgstr ""
 
+#: includes/revisions.php:384
 msgid "Dialogue Text (Old)"
 msgstr ""
 
+#: includes/revisions.php:385
 msgid "Dialogue Texts"
 msgstr ""
 
+#: includes/revisions.php:386
 msgid "Dialogue Backgrounds"
 msgstr ""
 
+#: includes/revisions.php:387
 msgid "Dialogue Speakers"
 msgstr ""
 
+#: includes/revisions.php:388
 msgid "Dialogue Flag Conditions"
 msgstr ""
 
+#: includes/revisions.php:391
 msgid "Ending"
 msgstr ""
 
+#: includes/revisions.php:392
 msgid "Ending Text"
 msgstr ""
 
+#: includes/revisions.php:393
 msgid "Scene Arrival Flags"
 msgstr ""
 
+#: includes/revisions.php:410
+#, php-format
 msgid "Array (%d items)"
 msgstr ""
 
+#: includes/revisions.php:415
 msgid "Yes"
 msgstr ""
 
+#: includes/revisions.php:415
 msgid "No"
 msgstr ""
 
+#: includes/blocks.php:156
 msgid "All Games List"
 msgstr ""
 
+#: templates/archive-novel_game.php:27
 msgid "Please select a game to play"
 msgstr ""
 
+#: templates/archive-novel_game.php:115
 msgid "No Image"
 msgstr ""
 
+#: templates/archive-novel_game.php:125
+#, php-format
 msgid "Start: %s"
 msgstr ""
-

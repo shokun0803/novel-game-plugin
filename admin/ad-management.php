@@ -40,19 +40,19 @@ function noveltool_ad_management_page() {
         wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
-    // 保存処理
-    if ( isset( $_POST['noveltool_ad_management_nonce'] ) && 
-         wp_verify_nonce( $_POST['noveltool_ad_management_nonce'], 'noveltool_ad_management_save' ) ) {
+    // 保存処理（POST メソッド＆nonce 検証）
+    if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+        check_admin_referer( 'noveltool_ad_management_save', 'noveltool_ad_management_nonce' );
         
         // Google AdSense ID
         $google_adsense_id = isset( $_POST['noveltool_google_adsense_id'] ) 
-            ? sanitize_text_field( $_POST['noveltool_google_adsense_id'] ) 
+            ? sanitize_text_field( wp_unslash( $_POST['noveltool_google_adsense_id'] ) ) 
             : '';
         update_option( 'noveltool_google_adsense_id', $google_adsense_id );
         
         // Adsterra ID
         $adsterra_id = isset( $_POST['noveltool_adsterra_id'] ) 
-            ? sanitize_text_field( $_POST['noveltool_adsterra_id'] ) 
+            ? sanitize_text_field( wp_unslash( $_POST['noveltool_adsterra_id'] ) ) 
             : '';
         update_option( 'noveltool_adsterra_id', $adsterra_id );
         
@@ -123,7 +123,7 @@ function noveltool_ad_management_page() {
                                 <?php esc_html_e( 'Official Website', 'novel-game-plugin' ); ?>
                             </th>
                             <td>
-                                <a href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+                                <a href="<?php echo esc_url( 'https://www.google.com/adsense/' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary">
                                     <span class="dashicons dashicons-external"></span>
                                     <?php esc_html_e( 'Visit Google AdSense', 'novel-game-plugin' ); ?>
                                 </a>
@@ -168,7 +168,7 @@ function noveltool_ad_management_page() {
                                 <?php esc_html_e( 'Official Website', 'novel-game-plugin' ); ?>
                             </th>
                             <td>
-                                <a href="https://adsterra.com/" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+                                <a href="<?php echo esc_url( 'https://adsterra.com/' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary">
                                     <span class="dashicons dashicons-external"></span>
                                     <?php esc_html_e( 'Visit Adsterra', 'novel-game-plugin' ); ?>
                                 </a>

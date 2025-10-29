@@ -34,6 +34,12 @@ All notable changes to Novel Game Plugin will be documented in this file.
   - 使用可能なオプションの詳細説明
   - プラグイン情報の表示
 
+- **📢 広告管理** - 新規追加
+  - Google AdSense Publisher ID管理
+  - Adsterra Publisher ID管理
+  - 広告プロバイダー公式サイトへのリンク
+  - ユーザー責任に関する注意書き表示
+
 - **新規ゲーム作成の改善**
   - ゲーム説明フィールドの追加
   - タイトル画像フィールドの追加
@@ -80,6 +86,8 @@ All notable changes to Novel Game Plugin will be documented in this file.
   - `admin/my-games.php` - マイゲームページ
   - `admin/game-manager.php` - ゲーム個別管理ページ
   - `admin/plugin-settings.php` - プラグイン設定ページ
+  - `admin/ad-management.php` - 広告管理ページ
+  - `css/admin-ad-management.css` - 広告管理画面スタイル
 
 - 既存ファイル更新:
   - `includes/post-types.php` - メニューカスタマイズ関数追加
