@@ -105,7 +105,6 @@ msgstr "広告管理"
 
 #: admin/game-settings.php:626 admin/game-settings.php:631
 #: admin/game-settings.php:821 admin/game-settings.php:826
-#, fuzzy
 msgid "Ad Settings"
 msgstr "広告設定"
 
@@ -1155,7 +1154,8 @@ msgid ""
 "be shown if the provider ID is configured in <a href=\"%s\">Ad Management</"
 "a>."
 msgstr ""
-"ゲームプレイ中にバナー広告を表示する広告プロバイダーを選択してください。広告は、<a href=\"%s\">広告管理</a>でプロバイダーIDが設定されている場合にのみ表示されます。"
+"ゲームプレイ中にバナー広告を表示する広告プロバイダーを選択してください。"
+"広告は、<a href=\"%s\">広告管理</a>でプロバイダーIDが設定されている場合にのみ表示されます。"
 
 #: admin/meta-boxes.php:933
 msgid "Select flags that will be automatically set when this scene is reached."
