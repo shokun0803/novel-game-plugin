@@ -3,7 +3,7 @@
  * Plugin Name: Novel Game Plugin
  * Plugin URI: https://github.com/shokun0803/novel-game-plugin
  * Description: WordPressでノベルゲームを作成できるプラグイン。
- * Version: 1.1.2
+ * Version: 1.2.0
  * Author: shokun0803
  * Author URI: https://profiles.wordpress.org/shokun0803/
  * Text Domain: novel-game-plugin
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // プラグインの基本定数を定義
 if ( ! defined( 'NOVEL_GAME_PLUGIN_VERSION' ) ) {
     // キャッシュ更新のためバージョンを更新
-    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.1.2' );
+    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.2.0' );
 }
 if ( ! defined( 'NOVEL_GAME_PLUGIN_URL' ) ) {
     define( 'NOVEL_GAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -49,6 +49,7 @@ require_once NOVEL_GAME_PLUGIN_PATH . 'admin/game-manager.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/new-game.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/game-settings.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/plugin-settings.php';
+require_once NOVEL_GAME_PLUGIN_PATH . 'admin/ad-management.php';
 
 /**
  * プラグインの初期化
