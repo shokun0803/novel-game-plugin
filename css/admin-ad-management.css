@@ -1,0 +1,187 @@
+/**
+ * 広告管理ページのスタイル
+ *
+ * @package NovelGamePlugin
+ * @since 1.2.0
+ */
+
+.noveltool-ad-management-container {
+    max-width: 1200px;
+    margin: 20px 0;
+}
+
+/* 注意事項セクション */
+.noveltool-warning-section {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.noveltool-warning-section h2 {
+    margin-top: 0;
+    color: #856404;
+    font-size: 1.3em;
+}
+
+.noveltool-warning-content {
+    color: #856404;
+}
+
+.noveltool-warning-content p {
+    margin: 10px 0;
+}
+
+.noveltool-warning-content ul {
+    margin: 15px 0;
+    padding-left: 25px;
+}
+
+.noveltool-warning-content li {
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
+/* 広告プロバイダーセクション */
+.noveltool-ad-provider-section {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.noveltool-ad-provider-section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+    font-size: 1.4em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.provider-icon {
+    font-size: 1.2em;
+}
+
+.noveltool-ad-provider-section .form-table {
+    margin-top: 0;
+}
+
+.noveltool-ad-provider-section .form-table th {
+    padding-top: 20px;
+    padding-bottom: 10px;
+    width: 200px;
+}
+
+.noveltool-ad-provider-section .form-table td {
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+.noveltool-ad-provider-section input[type="text"] {
+    width: 100%;
+    max-width: 500px;
+}
+
+.noveltool-ad-provider-section .description {
+    margin-top: 8px;
+    color: #666;
+    font-size: 0.95em;
+}
+
+.noveltool-ad-provider-section .button-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.noveltool-ad-provider-section .button-secondary .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* 保存ボタンセクション */
+.noveltool-ad-submit-section {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.noveltool-ad-submit-section .button-primary {
+    padding: 10px 30px;
+    font-size: 16px;
+    height: auto;
+}
+
+/* 追加情報セクション */
+.noveltool-ad-info-section {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 25px;
+    margin-top: 30px;
+}
+
+.noveltool-ad-info-section h2 {
+    margin-top: 0;
+    color: #333;
+    font-size: 1.3em;
+}
+
+.noveltool-info-content {
+    color: #555;
+    line-height: 1.6;
+}
+
+.noveltool-info-content p {
+    margin: 10px 0;
+}
+
+.noveltool-info-content ul {
+    margin: 15px 0;
+    padding-left: 25px;
+}
+
+.noveltool-info-content li {
+    margin: 8px 0;
+}
+
+.noveltool-note {
+    background: #fff;
+    border-left: 4px solid #2271b1;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 4px;
+}
+
+/* レスポンシブ対応 */
+@media screen and (max-width: 782px) {
+    .noveltool-ad-provider-section .form-table th,
+    .noveltool-ad-provider-section .form-table td {
+        display: block;
+        width: 100%;
+        padding: 10px 0;
+    }
+    
+    .noveltool-ad-provider-section .form-table th {
+        padding-bottom: 5px;
+    }
+    
+    .noveltool-ad-provider-section input[type="text"] {
+        max-width: 100%;
+    }
+}
+
+/* 成功メッセージのスタイル調整 */
+.wrap .notice {
+    margin: 20px 0;
+}
