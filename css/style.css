@@ -2197,3 +2197,107 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         font-size: 1.1em;
     }
 }
+
+/* =============================================================================
+   広告バナースタイル
+   ============================================================================= */
+
+/* 広告バナーコンテナ */
+.novel-ad-banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* 広告バナーが表示されている場合のゲームコンテンツ調整 */
+.novel-game-container.has-ad-banner .novel-dialogue-box,
+.novel-game-container.has-ad-banner .novel-choices,
+.novel-game-container.has-ad-banner .novel-character {
+    /* 広告分を考慮して位置を調整 */
+    transform: translateY(0);
+}
+
+/* 広告内容のラッパー */
+.novel-ad-content {
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Google AdSenseスタイル */
+.novel-ad-adsense {
+    min-width: 320px;
+    max-width: 100%;
+}
+
+/* Adsterraスタイル */
+.novel-ad-adsterra {
+    min-width: 320px;
+    max-width: 100%;
+}
+
+/* レスポンシブ対応 - デスクトップ */
+@media (min-width: 769px) {
+    .novel-ad-banner {
+        min-height: 100px;
+        padding: 15px;
+    }
+    
+    .novel-ad-adsense,
+    .novel-ad-adsterra {
+        max-width: 728px;
+    }
+}
+
+/* レスポンシブ対応 - タブレット */
+@media (max-width: 768px) and (min-width: 481px) {
+    .novel-ad-banner {
+        min-height: 90px;
+        padding: 12px;
+    }
+    
+    .novel-ad-adsense,
+    .novel-ad-adsterra {
+        max-width: 468px;
+    }
+}
+
+/* レスポンシブ対応 - モバイル */
+@media (max-width: 480px) {
+    .novel-ad-banner {
+        min-height: 80px;
+        padding: 8px;
+    }
+    
+    .novel-ad-adsense,
+    .novel-ad-adsterra {
+        max-width: 320px;
+    }
+}
+
+/* 広告読み込み中の表示 */
+.novel-ad-loading {
+    color: #999;
+    font-size: 12px;
+    text-align: center;
+    padding: 10px;
+}
+
+/* 広告エラー時の非表示 */
+.novel-ad-banner.ad-error {
+    display: none;
+}

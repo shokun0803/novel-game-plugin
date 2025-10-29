@@ -112,6 +112,15 @@
 		// デバッグフラグ（本番環境でのログ出力制御）
 		var novelGameDebug = typeof window.novelGameDebug !== 'undefined' ? window.novelGameDebug : false;
 		
+		// 広告関連の変数
+		var adConfig = {
+			provider: 'none',
+			providerId: '',
+			enabled: false
+		};
+		var adScriptLoaded = false;
+		var adBannerVisible = false;
+		
 		/**
 		 * デバッグログ出力（本番環境では無効化）
 		 *
@@ -169,6 +178,136 @@
 			console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。' );
 		};
 		
+		/**
+		 * 広告設定を読み込む
+		 *
+		 * @since 1.2.0
+		 */
+		function loadAdConfig() {
+			try {
+				var adConfigJson = $( '#novel-ad-config' ).text();
+				if ( adConfigJson ) {
+					adConfig = JSON.parse( adConfigJson );
+					debugLog( '広告設定を読み込みました:', adConfig );
+				}
+			} catch ( e ) {
+				console.error( '広告設定の読み込みに失敗しました:', e );
+			}
+		}
+		
+		/**
+		 * 広告スクリプトを読み込む（一度のみ）
+		 *
+		 * @since 1.2.0
+		 */
+		function loadAdScript() {
+			if ( ! adConfig.enabled || adScriptLoaded ) {
+				return;
+			}
+			
+			debugLog( '広告スクリプトを読み込みます:', adConfig.provider );
+			
+			if ( adConfig.provider === 'adsense' && adConfig.providerId ) {
+				// Google AdSense スクリプトの読み込み
+				var script = document.createElement( 'script' );
+				script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + adConfig.providerId;
+				script.async = true;
+				script.crossOrigin = 'anonymous';
+				script.onload = function() {
+					debugLog( 'Google AdSense スクリプトの読み込みが完了しました' );
+				};
+				script.onerror = function() {
+					console.error( 'Google AdSense スクリプトの読み込みに失敗しました' );
+				};
+				document.head.appendChild( script );
+				adScriptLoaded = true;
+			} else if ( adConfig.provider === 'adsterra' && adConfig.providerId ) {
+				// Adsterra スクリプトの読み込み
+				// Note: Adsterra uses different script formats depending on the ad type
+				// This is a placeholder - actual implementation depends on the specific ad format
+				debugLog( 'Adsterra 広告の準備完了' );
+				adScriptLoaded = true;
+			}
+		}
+		
+		/**
+		 * 広告バナーを表示する
+		 *
+		 * @since 1.2.0
+		 */
+		function showAdBanner() {
+			if ( ! adConfig.enabled || adBannerVisible ) {
+				return;
+			}
+			
+			var $adBanner = $( '#novel-ad-banner' );
+			if ( $adBanner.length === 0 ) {
+				return;
+			}
+			
+			debugLog( '広告バナーを表示します:', adConfig.provider );
+			
+			// 広告スクリプトが未読み込みの場合は読み込む
+			if ( ! adScriptLoaded ) {
+				loadAdScript();
+			}
+			
+			// 広告コンテンツを生成
+			var adContent = '';
+			
+			if ( adConfig.provider === 'adsense' && adConfig.providerId ) {
+				// Google AdSense バナー（レスポンシブ対応）
+				adContent = '<div class="novel-ad-content novel-ad-adsense">' +
+					'<ins class="adsbygoogle" ' +
+					'style="display:block" ' +
+					'data-ad-client="' + adConfig.providerId + '" ' +
+					'data-ad-slot="" ' +
+					'data-ad-format="auto" ' +
+					'data-full-width-responsive="true"></ins>' +
+					'</div>';
+			} else if ( adConfig.provider === 'adsterra' && adConfig.providerId ) {
+				// Adsterra バナー
+				adContent = '<div class="novel-ad-content novel-ad-adsterra">' +
+					'<!-- Adsterra banner placeholder -->' +
+					'<div id="adsterra-banner-' + adConfig.providerId + '"></div>' +
+					'</div>';
+			}
+			
+			if ( adContent ) {
+				$adBanner.html( adContent );
+				$adBanner.fadeIn( 300 );
+				$gameContainer.addClass( 'has-ad-banner' );
+				adBannerVisible = true;
+				
+				// AdSense の場合は広告を初期化
+				if ( adConfig.provider === 'adsense' && typeof window.adsbygoogle !== 'undefined' ) {
+					try {
+						( window.adsbygoogle = window.adsbygoogle || [] ).push( {} );
+						debugLog( 'Google AdSense 広告を初期化しました' );
+					} catch ( e ) {
+						console.error( 'Google AdSense 広告の初期化に失敗しました:', e );
+					}
+				}
+				
+				debugLog( '広告バナーの表示が完了しました' );
+			}
+		}
+		
+		/**
+		 * 広告バナーを非表示にする
+		 *
+		 * @since 1.2.0
+		 */
+		function hideAdBanner() {
+			var $adBanner = $( '#novel-ad-banner' );
+			if ( $adBanner.length > 0 ) {
+				$adBanner.hide();
+				$gameContainer.removeClass( 'has-ad-banner' );
+				adBannerVisible = false;
+				debugLog( '広告バナーを非表示にしました' );
+			}
+		}
+		
 		// 表示設定
 		var displaySettings = {
 			maxCharsPerLine: 20,
@@ -203,6 +342,9 @@
 			var endingDataRaw = $( '#novel-ending-data' ).text();
 			var endingTextRaw = $( '#novel-ending-text' ).text();
 			var gameOverTextRaw = $( '#novel-game-over-text' ).text();
+			
+			// 広告設定の読み込み
+			loadAdConfig();
 
 			if ( dialogueDataRaw ) {
 				dialogueData = JSON.parse( dialogueDataRaw );
@@ -1742,6 +1884,9 @@
 			
 			isModalOpen = false;
 			
+			// 広告バナーを非表示にする
+			hideAdBanner();
+			
 			// ボディとHTMLのスクロールを復元
 			$( 'html, body' ).removeClass( 'modal-open' ).css( 'overflow', '' );
 			
@@ -3134,6 +3279,9 @@
 
 			// リサイズイベントの設定
 			$( window ).on( 'resize.game orientationchange.game', handleResize );
+			
+			// 広告バナーを表示（タイトル画面を抜けてゲーム開始時）
+			showAdBanner();
 
 			// 初期調整
 			adjustForResponsive();

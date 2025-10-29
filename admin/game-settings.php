@@ -70,6 +70,13 @@ function noveltool_handle_game_settings_form() {
         $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
         $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
         $game_over_text = isset( $_POST['game_over_text'] ) ? sanitize_text_field( wp_unslash( $_POST['game_over_text'] ) ) : 'Game Over';
+        
+        // 広告設定の取得とバリデーション
+        $ad_provider = isset( $_POST['ad_provider'] ) ? sanitize_text_field( wp_unslash( $_POST['ad_provider'] ) ) : 'none';
+        $allowed_providers = array( 'none', 'adsense', 'adsterra' );
+        if ( ! in_array( $ad_provider, $allowed_providers, true ) ) {
+            $ad_provider = 'none';
+        }
 
         if ( empty( $game_title ) ) {
             $redirect_url = add_query_arg( 'error', 'empty_title', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
@@ -90,6 +97,7 @@ function noveltool_handle_game_settings_form() {
             'description'   => $game_description,
             'title_image'   => $game_title_image,
             'game_over_text' => $game_over_text,
+            'ad_provider'   => $ad_provider,
         );
 
         $game_id = noveltool_save_game( $game_data );
@@ -119,6 +127,13 @@ function noveltool_handle_game_settings_form() {
         $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
         $game_over_text = isset( $_POST['game_over_text'] ) ? sanitize_text_field( wp_unslash( $_POST['game_over_text'] ) ) : 'Game Over';
         $old_title = isset( $_POST['old_title'] ) ? sanitize_text_field( wp_unslash( $_POST['old_title'] ) ) : '';
+        
+        // 広告設定の取得とバリデーション
+        $ad_provider = isset( $_POST['ad_provider'] ) ? sanitize_text_field( wp_unslash( $_POST['ad_provider'] ) ) : 'none';
+        $allowed_providers = array( 'none', 'adsense', 'adsterra' );
+        if ( ! in_array( $ad_provider, $allowed_providers, true ) ) {
+            $ad_provider = 'none';
+        }
 
         if ( empty( $game_title ) ) {
             $redirect_url = add_query_arg( array( 'error' => 'empty_title', 'edit' => $game_id ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
@@ -141,6 +156,7 @@ function noveltool_handle_game_settings_form() {
             'description'   => $game_description,
             'title_image'   => $game_title_image,
             'game_over_text' => $game_over_text,
+            'ad_provider'   => $ad_provider,
         );
 
         $result = noveltool_save_game( $game_data );
@@ -605,6 +621,58 @@ function noveltool_game_settings_page() {
 
                         <h3><?php esc_html_e( 'Game Settings', 'novel-game-plugin' ); ?></h3>
                         <table class="form-table">
+                            <tr>
+                                <th scope="row">
+                                    <label><?php esc_html_e( 'Ad Settings', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <fieldset>
+                                        <legend class="screen-reader-text">
+                                            <span><?php esc_html_e( 'Ad Settings', 'novel-game-plugin' ); ?></span>
+                                        </legend>
+                                        
+                                        <label>
+                                            <input type="radio" 
+                                                   name="ad_provider" 
+                                                   value="none" 
+                                                   <?php checked( isset( $editing_game['ad_provider'] ) ? $editing_game['ad_provider'] : 'none', 'none' ); ?> />
+                                            <?php esc_html_e( 'None (No Ads)', 'novel-game-plugin' ); ?>
+                                        </label><br />
+                                        
+                                        <label>
+                                            <input type="radio" 
+                                                   name="ad_provider" 
+                                                   value="adsense" 
+                                                   <?php checked( isset( $editing_game['ad_provider'] ) ? $editing_game['ad_provider'] : 'none', 'adsense' ); ?> />
+                                            <?php esc_html_e( 'Google AdSense', 'novel-game-plugin' ); ?>
+                                        </label><br />
+                                        
+                                        <label>
+                                            <input type="radio" 
+                                                   name="ad_provider" 
+                                                   value="adsterra" 
+                                                   <?php checked( isset( $editing_game['ad_provider'] ) ? $editing_game['ad_provider'] : 'none', 'adsterra' ); ?> />
+                                            <?php esc_html_e( 'Adsterra', 'novel-game-plugin' ); ?>
+                                        </label>
+                                        
+                                        <p class="description">
+                                            <?php 
+                                            echo wp_kses_post(
+                                                sprintf(
+                                                    /* translators: %s: Link to ad management page */
+                                                    __( 'Select an ad provider to display banner ads during gameplay. Ads will only be shown if the provider ID is configured in <a href="%s">Ad Management</a>.', 'novel-game-plugin' ),
+                                                    esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-ad-management' ) )
+                                                )
+                                            );
+                                            ?>
+                                        </p>
+                                        <p class="description">
+                                            <?php esc_html_e( 'Note: Ads are not displayed on the title screen, only during gameplay at the top of the screen.', 'novel-game-plugin' ); ?>
+                                        </p>
+                                    </fieldset>
+                                </td>
+                            </tr>
+                        </table>
 
                         <p class="submit">
                             <input type="submit" 
@@ -745,6 +813,56 @@ function noveltool_game_settings_page() {
                                            class="regular-text"
                                            placeholder="<?php esc_attr_e( 'Text to display on Game Over screen', 'novel-game-plugin' ); ?>" />
                                     <p class="description"><?php esc_html_e( 'Text displayed when there are no choices or next scenes in a non-ending. Default is "Game Over".', 'novel-game-plugin' ); ?></p>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <th scope="row">
+                                    <label><?php esc_html_e( 'Ad Settings', 'novel-game-plugin' ); ?></label>
+                                </th>
+                                <td>
+                                    <fieldset>
+                                        <legend class="screen-reader-text">
+                                            <span><?php esc_html_e( 'Ad Settings', 'novel-game-plugin' ); ?></span>
+                                        </legend>
+                                        
+                                        <label>
+                                            <input type="radio" 
+                                                   name="ad_provider" 
+                                                   value="none" 
+                                                   checked />
+                                            <?php esc_html_e( 'None (No Ads)', 'novel-game-plugin' ); ?>
+                                        </label><br />
+                                        
+                                        <label>
+                                            <input type="radio" 
+                                                   name="ad_provider" 
+                                                   value="adsense" />
+                                            <?php esc_html_e( 'Google AdSense', 'novel-game-plugin' ); ?>
+                                        </label><br />
+                                        
+                                        <label>
+                                            <input type="radio" 
+                                                   name="ad_provider" 
+                                                   value="adsterra" />
+                                            <?php esc_html_e( 'Adsterra', 'novel-game-plugin' ); ?>
+                                        </label>
+                                        
+                                        <p class="description">
+                                            <?php 
+                                            echo wp_kses_post(
+                                                sprintf(
+                                                    /* translators: %s: Link to ad management page */
+                                                    __( 'Select an ad provider to display banner ads during gameplay. Ads will only be shown if the provider ID is configured in <a href="%s">Ad Management</a>.', 'novel-game-plugin' ),
+                                                    esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-ad-management' ) )
+                                                )
+                                            );
+                                            ?>
+                                        </p>
+                                        <p class="description">
+                                            <?php esc_html_e( 'Note: Ads are not displayed on the title screen, only during gameplay at the top of the screen.', 'novel-game-plugin' ); ?>
+                                        </p>
+                                    </fieldset>
                                 </td>
                             </tr>
                         </table>
