@@ -242,8 +242,9 @@ function noveltool_render_game_settings_tab( $game ) {
             </div>
         <?php endif; ?>
         
-        <form method="post" action="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>">
+        <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
             <?php wp_nonce_field( 'manage_games' ); ?>
+            <input type="hidden" name="action" value="noveltool_update_game" />
             <input type="hidden" name="game_id" value="<?php echo esc_attr( $editing_game['id'] ); ?>" />
             <input type="hidden" name="old_title" value="<?php echo esc_attr( $editing_game['title'] ); ?>" />
             
@@ -343,8 +344,9 @@ function noveltool_render_game_settings_tab( $game ) {
                                     <td><code><?php echo esc_html( $flag['name'] ); ?></code></td>
                                     <td><?php echo esc_html( $flag['description'] ); ?></td>
                                     <td>
-                                        <form method="post" action="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" style="display: inline;">
+                                        <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;">
                                             <?php wp_nonce_field( 'manage_flags' ); ?>
+                                            <input type="hidden" name="action" value="noveltool_delete_flag" />
                                             <input type="hidden" name="game_title" value="<?php echo esc_attr( $editing_game['title'] ); ?>" />
                                             <input type="hidden" name="flag_name" value="<?php echo esc_attr( $flag['name'] ); ?>" />
                                             <input type="submit" 
@@ -363,8 +365,9 @@ function noveltool_render_game_settings_tab( $game ) {
                 <?php endif; ?>
                 
                 <h4><?php esc_html_e( 'Add New Flag', 'novel-game-plugin' ); ?></h4>
-                <form method="post" action="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" class="noveltool-add-flag-form">
+                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="noveltool-add-flag-form">
                     <?php wp_nonce_field( 'manage_flags' ); ?>
+                    <input type="hidden" name="action" value="noveltool_add_flag" />
                     <input type="hidden" name="game_title" value="<?php echo esc_attr( $editing_game['title'] ); ?>" />
                     
                     <table class="form-table">
