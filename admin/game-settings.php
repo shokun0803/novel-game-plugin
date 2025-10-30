@@ -52,17 +52,20 @@ function noveltool_add_game_settings_menu() {
 add_action( 'admin_menu', 'noveltool_add_game_settings_menu' );
 
 /**
- * ゲーム設定フォームの処理
+ * ゲーム設定フォームの処理（レガシー／後方互換用）
  *
+ * @deprecated 1.2.0 admin-postハンドラーへ移行済み。novel-game-settingsへの直POST用フォールバック。
  * @since 1.1.0
  */
 function noveltool_handle_game_settings_form() {
-    // POSTリクエストでない場合のみ、ページチェックを実施
-    // POSTリクエストの場合は、nonce検証と権限チェックでセキュリティを確保
-    if ( empty( $_POST ) ) {
-        if ( ! isset( $_GET['page'] ) || $_GET['page'] !== 'novel-game-settings' ) {
-            return;
-        }
+    // admin-postエンドポイントへのリクエストは処理しない
+    if ( isset( $_POST['action'] ) && strpos( sanitize_text_field( wp_unslash( $_POST['action'] ) ), 'noveltool_' ) === 0 ) {
+        return;
+    }
+
+    // novel-game-settingsページでない場合は処理しない
+    if ( ! isset( $_GET['page'] ) || $_GET['page'] !== 'novel-game-settings' ) {
+        return;
     }
 
     // 権限チェック
