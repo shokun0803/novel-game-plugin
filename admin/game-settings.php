@@ -35,8 +35,16 @@ add_action( 'admin_menu', 'noveltool_add_plugin_settings_menu' );
  * @since 1.1.0
  */
 function noveltool_add_game_settings_menu() {
-    // この関数は後方互換性のために保持されていますが、メニューには表示されません
-    // フォーム送信の処理のために必要
+    // 非表示サブメニューとして登録（parent_slug を null にすることでメニューに表示されない）
+    // URL直アクセス用の回帰対策として保持
+    add_submenu_page(
+        null,
+        __( 'Game Settings', 'novel-game-plugin' ),
+        '',
+        'edit_posts',
+        'novel-game-settings',
+        'noveltool_game_settings_page'
+    );
 }
 add_action( 'admin_menu', 'noveltool_add_game_settings_menu' );
 
@@ -124,7 +132,7 @@ function noveltool_handle_game_settings_form() {
         $old_title = isset( $_POST['old_title'] ) ? sanitize_text_field( wp_unslash( $_POST['old_title'] ) ) : '';
 
         if ( empty( $game_title ) ) {
-            $redirect_url = add_query_arg( array( 'error' => 'empty_title', 'edit' => $game_id ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            $redirect_url = noveltool_get_game_manager_url( $game_id, 'settings', array( 'error' => 'empty_title' ) );
             wp_safe_redirect( $redirect_url );
             exit;
         }
@@ -132,7 +140,7 @@ function noveltool_handle_game_settings_form() {
         // 同じタイトルのゲームが既に存在するかチェック（自分以外）
         $existing_game = noveltool_get_game_by_title( $game_title );
         if ( $existing_game && $existing_game['id'] != $game_id ) {
-            $redirect_url = add_query_arg( array( 'error' => 'duplicate_title', 'edit' => $game_id ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            $redirect_url = noveltool_get_game_manager_url( $game_id, 'settings', array( 'error' => 'duplicate_title' ) );
             wp_safe_redirect( $redirect_url );
             exit;
         }
@@ -175,7 +183,7 @@ function noveltool_handle_game_settings_form() {
     if ( isset( $_POST['delete_game'] ) ) {
         // nonceチェック
         if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_games' ) ) {
-            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
             wp_safe_redirect( $redirect_url );
             exit;
         }
@@ -186,12 +194,12 @@ function noveltool_handle_game_settings_form() {
             $result = noveltool_delete_game( $game_id );
 
             if ( $result ) {
-                $redirect_url = add_query_arg( 'success', 'deleted', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+                $redirect_url = add_query_arg( 'success', 'deleted', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
             } else {
-                $redirect_url = add_query_arg( 'error', 'delete_failed', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+                $redirect_url = add_query_arg( 'error', 'delete_failed', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
             }
         } else {
-            $redirect_url = add_query_arg( 'error', 'invalid_id', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            $redirect_url = add_query_arg( 'error', 'invalid_id', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
         }
 
         wp_safe_redirect( $redirect_url );
@@ -212,7 +220,13 @@ function noveltool_handle_game_settings_form() {
         $flag_description = isset( $_POST['flag_description'] ) ? sanitize_text_field( wp_unslash( $_POST['flag_description'] ) ) : '';
 
         if ( empty( $game_title ) || empty( $flag_name ) ) {
-            $redirect_url = add_query_arg( array( 'error' => 'empty_flag_data', 'game' => $game_title ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            $game_data = noveltool_get_game_by_title( $game_title );
+            $game_id = $game_data ? $game_data['id'] : 0;
+            if ( $game_id ) {
+                $redirect_url = noveltool_get_game_manager_url( $game_id, 'settings', array( 'error' => 'empty_flag_data' ) );
+            } else {
+                $redirect_url = admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+            }
             wp_safe_redirect( $redirect_url );
             exit;
         }
@@ -255,7 +269,13 @@ function noveltool_handle_game_settings_form() {
         $flag_name = isset( $_POST['flag_name'] ) ? sanitize_text_field( wp_unslash( $_POST['flag_name'] ) ) : '';
 
         if ( empty( $game_title ) || empty( $flag_name ) ) {
-            $redirect_url = add_query_arg( array( 'error' => 'empty_flag_data', 'game' => $game_title ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
+            $game_data = noveltool_get_game_by_title( $game_title );
+            $game_id = $game_data ? $game_data['id'] : 0;
+            if ( $game_id ) {
+                $redirect_url = noveltool_get_game_manager_url( $game_id, 'settings', array( 'error' => 'empty_flag_data' ) );
+            } else {
+                $redirect_url = admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+            }
             wp_safe_redirect( $redirect_url );
             exit;
         }
