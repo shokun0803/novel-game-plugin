@@ -46,9 +46,12 @@ add_action( 'admin_menu', 'noveltool_add_game_settings_menu' );
  * @since 1.1.0
  */
 function noveltool_handle_game_settings_form() {
-    // ゲーム設定ページでのフォーム送信のみ処理
-    if ( ! isset( $_GET['page'] ) || $_GET['page'] !== 'novel-game-settings' ) {
-        return;
+    // POSTリクエストでない場合のみ、ページチェックを実施
+    // POSTリクエストの場合は、nonce検証と権限チェックでセキュリティを確保
+    if ( empty( $_POST ) ) {
+        if ( ! isset( $_GET['page'] ) || $_GET['page'] !== 'novel-game-settings' ) {
+            return;
+        }
     }
 
     // 権限チェック
