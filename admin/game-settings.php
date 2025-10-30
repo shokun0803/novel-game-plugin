@@ -35,16 +35,19 @@ add_action( 'admin_menu', 'noveltool_add_plugin_settings_menu' );
  * @since 1.1.0
  */
 function noveltool_add_game_settings_menu() {
-    // 非表示サブメニューとして登録（parent_slug を null にすることでメニューに表示されない）
+    // 正規の親スラッグで登録し、直後に非表示化する
     // URL直アクセス用の回帰対策として保持
     add_submenu_page(
-        null,
+        'edit.php?post_type=novel_game',
         __( 'Game Settings', 'novel-game-plugin' ),
-        '',
+        __( 'Game Settings', 'novel-game-plugin' ),
         'edit_posts',
         'novel-game-settings',
         'noveltool_game_settings_page'
     );
+
+    // メニューから非表示（URL直アクセスは可）
+    remove_submenu_page( 'edit.php?post_type=novel_game', 'novel-game-settings' );
 }
 add_action( 'admin_menu', 'noveltool_add_game_settings_menu' );
 
