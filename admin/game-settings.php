@@ -30,259 +30,292 @@ function noveltool_add_plugin_settings_menu() {
 add_action( 'admin_menu', 'noveltool_add_plugin_settings_menu' );
 
 /**
- * ゲーム設定ページをメニューに追加（非表示、リダイレクト用に保持）
+ * admin-post ハンドラー: ゲーム追加
  *
- * @since 1.1.0
+ * @since 1.2.0
  */
-function noveltool_add_game_settings_menu() {
-    // この関数は後方互換性のために保持されていますが、メニューには表示されません
-    // フォーム送信の処理のために必要
-}
-add_action( 'admin_menu', 'noveltool_add_game_settings_menu' );
-
-/**
- * ゲーム設定フォームの処理
- *
- * @since 1.1.0
- */
-function noveltool_handle_game_settings_form() {
-    // ゲーム設定ページでのフォーム送信のみ処理
-    if ( ! isset( $_GET['page'] ) || $_GET['page'] !== 'novel-game-settings' ) {
-        return;
-    }
-
+function noveltool_admin_post_add_game() {
     // 権限チェック
     if ( ! current_user_can( 'edit_posts' ) ) {
         wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
-    // ゲーム追加の処理
-    if ( isset( $_POST['add_game'] ) ) {
-        // nonceチェック
-        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_games' ) ) {
-            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            wp_safe_redirect( $redirect_url );
-            exit;
-        }
-
-        // ゲーム情報の取得とバリデーション
-        $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
-        $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
-        $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
-        $game_over_text = isset( $_POST['game_over_text'] ) ? sanitize_text_field( wp_unslash( $_POST['game_over_text'] ) ) : 'Game Over';
-
-        if ( empty( $game_title ) ) {
-            $redirect_url = add_query_arg( 'error', 'empty_title', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            wp_safe_redirect( $redirect_url );
-            exit;
-        }
-
-        // 同じタイトルのゲームが既に存在するかチェック
-        if ( noveltool_get_game_by_title( $game_title ) ) {
-            $redirect_url = add_query_arg( 'error', 'duplicate_title', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            wp_safe_redirect( $redirect_url );
-            exit;
-        }
-
-        // ゲームを保存
-        $game_data = array(
-            'title'         => $game_title,
-            'description'   => $game_description,
-            'title_image'   => $game_title_image,
-            'game_over_text' => $game_over_text,
-        );
-
-        $game_id = noveltool_save_game( $game_data );
-
-        if ( $game_id ) {
-            $redirect_url = add_query_arg( 'success', 'added', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-        } else {
-            $redirect_url = add_query_arg( 'error', 'save_failed', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-        }
-
+    // nonceチェック
+    if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_games' ) ) {
+        $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
         wp_safe_redirect( $redirect_url );
         exit;
     }
 
-    // ゲーム更新の処理
-    if ( isset( $_POST['update_game'] ) ) {
-        // nonceチェック
-        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_games' ) ) {
-            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            wp_safe_redirect( $redirect_url );
-            exit;
-        }
+    // ゲーム情報の取得とバリデーション
+    $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
+    $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
+    $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
+    $game_over_text = isset( $_POST['game_over_text'] ) ? sanitize_text_field( wp_unslash( $_POST['game_over_text'] ) ) : 'Game Over';
 
-        $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
-        $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
-        $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
-        $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
-        $game_over_text = isset( $_POST['game_over_text'] ) ? sanitize_text_field( wp_unslash( $_POST['game_over_text'] ) ) : 'Game Over';
-        $old_title = isset( $_POST['old_title'] ) ? sanitize_text_field( wp_unslash( $_POST['old_title'] ) ) : '';
-
-        if ( empty( $game_title ) ) {
-            $redirect_url = add_query_arg( array( 'error' => 'empty_title', 'edit' => $game_id ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            wp_safe_redirect( $redirect_url );
-            exit;
-        }
-
-        // 同じタイトルのゲームが既に存在するかチェック（自分以外）
-        $existing_game = noveltool_get_game_by_title( $game_title );
-        if ( $existing_game && $existing_game['id'] != $game_id ) {
-            $redirect_url = add_query_arg( array( 'error' => 'duplicate_title', 'edit' => $game_id ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            wp_safe_redirect( $redirect_url );
-            exit;
-        }
-
-        // ゲームを更新
-        $game_data = array(
-            'id'            => $game_id,
-            'title'         => $game_title,
-            'description'   => $game_description,
-            'title_image'   => $game_title_image,
-            'game_over_text' => $game_over_text,
-        );
-
-        $result = noveltool_save_game( $game_data );
-
-        if ( $result ) {
-            // タイトルが変更された場合は、既存のシーンのゲームタイトルも更新
-            if ( $old_title && $old_title !== $game_title ) {
-                noveltool_update_scenes_game_title( $old_title, $game_title );
-            }
-            
-            $redirect_url = noveltool_get_game_manager_url( 
-                $game_id, 
-                'settings', 
-                array( 'success' => 'updated' ) 
-            );
-        } else {
-            $redirect_url = noveltool_get_game_manager_url( 
-                $game_id, 
-                'settings', 
-                array( 'error' => 'save_failed' ) 
-            );
-        }
-
+    if ( empty( $game_title ) ) {
+        $redirect_url = add_query_arg( 'error', 'empty_title', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
         wp_safe_redirect( $redirect_url );
         exit;
     }
 
-    // ゲーム削除の処理
-    if ( isset( $_POST['delete_game'] ) ) {
-        // nonceチェック
-        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_games' ) ) {
-            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            wp_safe_redirect( $redirect_url );
-            exit;
-        }
-
-        $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
-
-        if ( $game_id ) {
-            $result = noveltool_delete_game( $game_id );
-
-            if ( $result ) {
-                $redirect_url = add_query_arg( 'success', 'deleted', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            } else {
-                $redirect_url = add_query_arg( 'error', 'delete_failed', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            }
-        } else {
-            $redirect_url = add_query_arg( 'error', 'invalid_id', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-        }
-
+    // 同じタイトルのゲームが既に存在するかチェック
+    if ( noveltool_get_game_by_title( $game_title ) ) {
+        $redirect_url = add_query_arg( 'error', 'duplicate_title', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
         wp_safe_redirect( $redirect_url );
         exit;
     }
 
-    // フラグ追加の処理
-    if ( isset( $_POST['add_flag'] ) ) {
-        // nonceチェック
-        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_flags' ) ) {
-            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            wp_safe_redirect( $redirect_url );
-            exit;
-        }
+    // ゲームを保存
+    $game_data = array(
+        'title'         => $game_title,
+        'description'   => $game_description,
+        'title_image'   => $game_title_image,
+        'game_over_text' => $game_over_text,
+    );
 
-        $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
-        $flag_name = isset( $_POST['flag_name'] ) ? sanitize_text_field( wp_unslash( $_POST['flag_name'] ) ) : '';
-        $flag_description = isset( $_POST['flag_description'] ) ? sanitize_text_field( wp_unslash( $_POST['flag_description'] ) ) : '';
+    $game_id = noveltool_save_game( $game_data );
 
-        if ( empty( $game_title ) || empty( $flag_name ) ) {
-            $redirect_url = add_query_arg( array( 'error' => 'empty_flag_data', 'game' => $game_title ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            wp_safe_redirect( $redirect_url );
-            exit;
-        }
-
-        $result = noveltool_add_game_flag( $game_title, $flag_name, $flag_description );
-
-        if ( $result ) {
-            // ゲームIDを取得
-            $game_data = noveltool_get_game_by_title( $game_title );
-            $game_id = $game_data ? $game_data['id'] : 0;
-            $redirect_url = noveltool_get_game_manager_url( 
-                $game_id, 
-                'settings', 
-                array( 'success' => 'flag_added' ) 
-            );
-        } else {
-            $game_data = noveltool_get_game_by_title( $game_title );
-            $game_id = $game_data ? $game_data['id'] : 0;
-            $redirect_url = noveltool_get_game_manager_url( 
-                $game_id, 
-                'settings', 
-                array( 'error' => 'flag_add_failed' ) 
-            );
-        }
-
-        wp_safe_redirect( $redirect_url );
-        exit;
+    if ( $game_id ) {
+        $redirect_url = noveltool_get_game_manager_url( $game_id, 'settings', array( 'success' => 'added' ) );
+    } else {
+        $redirect_url = add_query_arg( 'error', 'save_failed', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
     }
 
-    // フラグ削除の処理
-    if ( isset( $_POST['delete_flag'] ) ) {
-        // nonceチェック
-        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_flags' ) ) {
-            $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            wp_safe_redirect( $redirect_url );
-            exit;
-        }
-
-        $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
-        $flag_name = isset( $_POST['flag_name'] ) ? sanitize_text_field( wp_unslash( $_POST['flag_name'] ) ) : '';
-
-        if ( empty( $game_title ) || empty( $flag_name ) ) {
-            $redirect_url = add_query_arg( array( 'error' => 'empty_flag_data', 'game' => $game_title ), admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) );
-            wp_safe_redirect( $redirect_url );
-            exit;
-        }
-
-        $result = noveltool_remove_game_flag( $game_title, $flag_name );
-
-        if ( $result ) {
-            // ゲームIDを取得
-            $game_data = noveltool_get_game_by_title( $game_title );
-            $game_id = $game_data ? $game_data['id'] : 0;
-            $redirect_url = noveltool_get_game_manager_url( 
-                $game_id, 
-                'settings', 
-                array( 'success' => 'flag_deleted' ) 
-            );
-        } else {
-            $game_data = noveltool_get_game_by_title( $game_title );
-            $game_id = $game_data ? $game_data['id'] : 0;
-            $redirect_url = noveltool_get_game_manager_url( 
-                $game_id, 
-                'settings', 
-                array( 'error' => 'flag_delete_failed' ) 
-            );
-        }
-
-        wp_safe_redirect( $redirect_url );
-        exit;
-    }
+    wp_safe_redirect( $redirect_url );
+    exit;
 }
-add_action( 'admin_init', 'noveltool_handle_game_settings_form' );
+add_action( 'admin_post_noveltool_add_game', 'noveltool_admin_post_add_game' );
+
+/**
+ * admin-post ハンドラー: ゲーム更新
+ *
+ * @since 1.2.0
+ */
+function noveltool_admin_post_update_game() {
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+    }
+
+    // nonceチェック
+    if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_games' ) ) {
+        $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
+    $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
+    $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
+    $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
+    $game_over_text = isset( $_POST['game_over_text'] ) ? sanitize_text_field( wp_unslash( $_POST['game_over_text'] ) ) : 'Game Over';
+    $old_title = isset( $_POST['old_title'] ) ? sanitize_text_field( wp_unslash( $_POST['old_title'] ) ) : '';
+
+    if ( empty( $game_title ) ) {
+        $redirect_url = noveltool_get_game_manager_url( $game_id, 'settings', array( 'error' => 'empty_title' ) );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    // 同じタイトルのゲームが既に存在するかチェック（自分以外）
+    $existing_game = noveltool_get_game_by_title( $game_title );
+    if ( $existing_game && $existing_game['id'] != $game_id ) {
+        $redirect_url = noveltool_get_game_manager_url( $game_id, 'settings', array( 'error' => 'duplicate_title' ) );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    // ゲームを更新
+    $game_data = array(
+        'id'            => $game_id,
+        'title'         => $game_title,
+        'description'   => $game_description,
+        'title_image'   => $game_title_image,
+        'game_over_text' => $game_over_text,
+    );
+
+    $result = noveltool_save_game( $game_data );
+
+    if ( $result ) {
+        // タイトルが変更された場合は、既存のシーンのゲームタイトルも更新
+        if ( $old_title && $old_title !== $game_title ) {
+            noveltool_update_scenes_game_title( $old_title, $game_title );
+        }
+        
+        $redirect_url = noveltool_get_game_manager_url( 
+            $game_id, 
+            'settings', 
+            array( 'success' => 'updated' ) 
+        );
+    } else {
+        $redirect_url = noveltool_get_game_manager_url( 
+            $game_id, 
+            'settings', 
+            array( 'error' => 'save_failed' ) 
+        );
+    }
+
+    wp_safe_redirect( $redirect_url );
+    exit;
+}
+add_action( 'admin_post_noveltool_update_game', 'noveltool_admin_post_update_game' );
+
+/**
+ * admin-post ハンドラー: ゲーム削除
+ *
+ * @since 1.2.0
+ */
+function noveltool_admin_post_delete_game() {
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+    }
+
+    // nonceチェック
+    if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_games' ) ) {
+        $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
+
+    if ( $game_id ) {
+        $result = noveltool_delete_game( $game_id );
+
+        if ( $result ) {
+            $redirect_url = add_query_arg( 'success', 'deleted', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
+        } else {
+            $redirect_url = add_query_arg( 'error', 'delete_failed', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
+        }
+    } else {
+        $redirect_url = add_query_arg( 'error', 'invalid_id', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
+    }
+
+    wp_safe_redirect( $redirect_url );
+    exit;
+}
+add_action( 'admin_post_noveltool_delete_game', 'noveltool_admin_post_delete_game' );
+
+/**
+ * admin-post ハンドラー: フラグ追加
+ *
+ * @since 1.2.0
+ */
+function noveltool_admin_post_add_flag() {
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+    }
+
+    // nonceチェック
+    if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_flags' ) ) {
+        $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
+    $flag_name = isset( $_POST['flag_name'] ) ? sanitize_text_field( wp_unslash( $_POST['flag_name'] ) ) : '';
+    $flag_description = isset( $_POST['flag_description'] ) ? sanitize_text_field( wp_unslash( $_POST['flag_description'] ) ) : '';
+
+    if ( empty( $game_title ) || empty( $flag_name ) ) {
+        $game_data = noveltool_get_game_by_title( $game_title );
+        $game_id = $game_data ? $game_data['id'] : 0;
+        if ( $game_id ) {
+            $redirect_url = noveltool_get_game_manager_url( $game_id, 'settings', array( 'error' => 'empty_flag_data' ) );
+        } else {
+            $redirect_url = admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+        }
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    $result = noveltool_add_game_flag( $game_title, $flag_name, $flag_description );
+
+    if ( $result ) {
+        // ゲームIDを取得
+        $game_data = noveltool_get_game_by_title( $game_title );
+        $game_id = $game_data ? $game_data['id'] : 0;
+        $redirect_url = noveltool_get_game_manager_url( 
+            $game_id, 
+            'settings', 
+            array( 'success' => 'flag_added' ) 
+        );
+    } else {
+        $game_data = noveltool_get_game_by_title( $game_title );
+        $game_id = $game_data ? $game_data['id'] : 0;
+        $redirect_url = noveltool_get_game_manager_url( 
+            $game_id, 
+            'settings', 
+            array( 'error' => 'flag_add_failed' ) 
+        );
+    }
+
+    wp_safe_redirect( $redirect_url );
+    exit;
+}
+add_action( 'admin_post_noveltool_add_flag', 'noveltool_admin_post_add_flag' );
+
+/**
+ * admin-post ハンドラー: フラグ削除
+ *
+ * @since 1.2.0
+ */
+function noveltool_admin_post_delete_flag() {
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+    }
+
+    // nonceチェック
+    if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_flags' ) ) {
+        $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
+    $flag_name = isset( $_POST['flag_name'] ) ? sanitize_text_field( wp_unslash( $_POST['flag_name'] ) ) : '';
+
+    if ( empty( $game_title ) || empty( $flag_name ) ) {
+        $game_data = noveltool_get_game_by_title( $game_title );
+        $game_id = $game_data ? $game_data['id'] : 0;
+        if ( $game_id ) {
+            $redirect_url = noveltool_get_game_manager_url( $game_id, 'settings', array( 'error' => 'empty_flag_data' ) );
+        } else {
+            $redirect_url = admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+        }
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    $result = noveltool_remove_game_flag( $game_title, $flag_name );
+
+    if ( $result ) {
+        // ゲームIDを取得
+        $game_data = noveltool_get_game_by_title( $game_title );
+        $game_id = $game_data ? $game_data['id'] : 0;
+        $redirect_url = noveltool_get_game_manager_url( 
+            $game_id, 
+            'settings', 
+            array( 'success' => 'flag_deleted' ) 
+        );
+    } else {
+        $game_data = noveltool_get_game_by_title( $game_title );
+        $game_id = $game_data ? $game_data['id'] : 0;
+        $redirect_url = noveltool_get_game_manager_url( 
+            $game_id, 
+            'settings', 
+            array( 'error' => 'flag_delete_failed' ) 
+        );
+    }
+
+    wp_safe_redirect( $redirect_url );
+    exit;
+}
+add_action( 'admin_post_noveltool_delete_flag', 'noveltool_admin_post_delete_flag' );
 
 /**
  * 現在のゲームタイトルを取得（シーンから）
@@ -434,8 +467,9 @@ function noveltool_game_settings_page() {
                 <!-- ゲーム編集フォーム -->
                 <div class="noveltool-game-edit-form">
                     <h2><?php esc_html_e( 'Edit Game', 'novel-game-plugin' ); ?></h2>
-                    <form method="post" action="">
+                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                         <?php wp_nonce_field( 'manage_games' ); ?>
+                        <input type="hidden" name="action" value="noveltool_update_game" />
                         <input type="hidden" name="game_id" value="<?php echo esc_attr( $editing_game['id'] ); ?>" />
                         <input type="hidden" name="old_title" value="<?php echo esc_attr( $editing_game['title'] ); ?>" />
                         
@@ -539,8 +573,9 @@ function noveltool_game_settings_page() {
                                                 <td><code><?php echo esc_html( $flag['name'] ); ?></code></td>
                                                 <td><?php echo esc_html( $flag['description'] ); ?></td>
                                                 <td>
-                                                    <form method="post" action="" style="display: inline;">
+                                                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;">
                                                         <?php wp_nonce_field( 'manage_flags' ); ?>
+                                                        <input type="hidden" name="action" value="noveltool_delete_flag" />
                                                         <input type="hidden" name="game_title" value="<?php echo esc_attr( $editing_game['title'] ); ?>" />
                                                         <input type="hidden" name="flag_name" value="<?php echo esc_attr( $flag['name'] ); ?>" />
                                                         <input type="submit" 
@@ -559,8 +594,9 @@ function noveltool_game_settings_page() {
                             <?php endif; ?>
                             
                             <h4><?php esc_html_e( 'Add New Flag', 'novel-game-plugin' ); ?></h4>
-                            <form method="post" action="" class="noveltool-add-flag-form">
+                            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="noveltool-add-flag-form">
                                 <?php wp_nonce_field( 'manage_flags' ); ?>
+                                <input type="hidden" name="action" value="noveltool_add_flag" />
                                 <input type="hidden" name="game_title" value="<?php echo esc_attr( $editing_game['title'] ); ?>" />
                                 
                                 <table class="form-table">
@@ -648,8 +684,9 @@ function noveltool_game_settings_page() {
                                     <div class="game-actions">
                                         <a href="<?php echo esc_url( add_query_arg( 'edit', $game['id'] ) ); ?>" 
                                            class="button button-primary"><?php esc_html_e( 'Edit', 'novel-game-plugin' ); ?></a>
-                                        <form method="post" action="" style="display: inline;">
+                                        <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;">
                                             <?php wp_nonce_field( 'manage_games' ); ?>
+                                            <input type="hidden" name="action" value="noveltool_delete_game" />
                                             <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
                                             <input type="submit" 
                                                    name="delete_game" 
@@ -671,8 +708,9 @@ function noveltool_game_settings_page() {
                 <!-- 新規ゲーム作成フォーム -->
                 <div class="noveltool-add-game-form">
                     <h2><?php esc_html_e( 'Add New Game', 'novel-game-plugin' ); ?></h2>
-                    <form method="post" action="">
+                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                         <?php wp_nonce_field( 'manage_games' ); ?>
+                        <input type="hidden" name="action" value="noveltool_add_game" />
                         
                         <table class="form-table">
                             <tr>
