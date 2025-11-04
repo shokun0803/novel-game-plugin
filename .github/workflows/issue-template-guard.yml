@@ -17,10 +17,15 @@ jobs:
           script: |
             const body = context.payload.issue.body || "";
             const problems = [];
-            // Required headings
+            // Required top-level headings
             const required = ["# タイトル", "## 概要", "## 要件", "## チェックリスト", "## 重要事項", "## 参考"];            
             for (const h of required) {
               if (!body.includes(h)) problems.push(`必須見出しが不足: ${h}`);
+            }
+            // Required sub-headings under "## 要件"
+            const requiredSubHeadings = ["### 機能仕様", "### UI/文言", "### 互換性/移行", "### 実装影響範囲", "### テスト観点"];
+            for (const sh of requiredSubHeadings) {
+              if (!body.includes(sh)) problems.push(`要件セクションに必須サブ見出しが不足: ${sh}`);
             }
             // Forbidden tokens (posting safety)
             const forbidden = ["\n\n$"]; // minimal placeholder; avoid accidental $ after double newline
