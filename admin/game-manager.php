@@ -406,6 +406,56 @@ function noveltool_render_game_settings_tab( $game ) {
                 </form>
             </div>
 
+            <h3><?php esc_html_e( 'Ad Settings', 'novel-game-plugin' ); ?></h3>
+            <table class="form-table">
+                <tr>
+                    <th scope="row">
+                        <label><?php esc_html_e( 'Ad Provider', 'novel-game-plugin' ); ?></label>
+                    </th>
+                    <td>
+                        <?php
+                        // 現在の広告設定を取得
+                        $current_ad_provider = get_post_meta( $editing_game['id'], 'noveltool_ad_provider', true );
+                        if ( empty( $current_ad_provider ) ) {
+                            $current_ad_provider = 'none';
+                        }
+                        ?>
+                        <fieldset>
+                            <label>
+                                <input type="radio" 
+                                       name="ad_provider" 
+                                       value="none" 
+                                       <?php checked( $current_ad_provider, 'none' ); ?> />
+                                <?php esc_html_e( 'No Ads', 'novel-game-plugin' ); ?>
+                            </label><br />
+                            <label>
+                                <input type="radio" 
+                                       name="ad_provider" 
+                                       value="adsense" 
+                                       <?php checked( $current_ad_provider, 'adsense' ); ?> />
+                                <?php esc_html_e( 'Google AdSense', 'novel-game-plugin' ); ?>
+                            </label><br />
+                            <label>
+                                <input type="radio" 
+                                       name="ad_provider" 
+                                       value="adsterra" 
+                                       <?php checked( $current_ad_provider, 'adsterra' ); ?> />
+                                <?php esc_html_e( 'Adsterra', 'novel-game-plugin' ); ?>
+                            </label>
+                        </fieldset>
+                        <p class="description">
+                            <?php 
+                            printf(
+                                /* translators: %s: Link to ad management page */
+                                esc_html__( 'Note: To display ads, you must first configure the ad provider IDs in %s. If IDs are not set, ads will not be displayed.', 'novel-game-plugin' ),
+                                '<a href="' . esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-ad-management' ) ) . '">' . esc_html__( 'Ad Management', 'novel-game-plugin' ) . '</a>'
+                            );
+                            ?>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
             <p class="submit">
                 <input type="submit" 
                        name="update_game" 
