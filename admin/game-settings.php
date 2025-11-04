@@ -751,19 +751,6 @@ function noveltool_game_settings_page() {
                                        value="<?php esc_attr_e( 'Save Ad Settings', 'novel-game-plugin' ); ?>" />
                             </p>
                         </form>
-
-                        <h3><?php esc_html_e( 'Game Settings', 'novel-game-plugin' ); ?></h3>
-                        <table class="form-table">
-
-                        <p class="submit">
-                            <input type="submit" 
-                                   name="update_game" 
-                                   class="button button-primary" 
-                                   value="<?php esc_attr_e( 'Update Game', 'novel-game-plugin' ); ?>" />
-                            <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=novel_game&page=novel-game-settings' ) ); ?>" 
-                               class="button button-secondary"><?php esc_html_e( 'Cancel', 'novel-game-plugin' ); ?></a>
-                        </p>
-                    </form>
                 </div>
             <?php else : ?>
                 <!-- ゲーム一覧とフォーム -->
