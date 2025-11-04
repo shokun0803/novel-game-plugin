@@ -137,6 +137,18 @@ function noveltool_admin_post_update_game() {
 
     $result = noveltool_save_game( $game_data );
 
+    // 広告プロバイダーの取得とバリデーション
+    $ad_provider = isset( $_POST['ad_provider'] ) ? sanitize_text_field( wp_unslash( $_POST['ad_provider'] ) ) : '';
+    
+    // 許可リスト検証
+    $allowed_providers = array( 'none', 'adsense', 'adsterra' );
+    if ( ! in_array( $ad_provider, $allowed_providers, true ) ) {
+        $ad_provider = 'none';
+    }
+    
+    // post metaに保存
+    update_post_meta( $game_id, 'noveltool_ad_provider', $ad_provider );
+
     if ( $result ) {
         // タイトルが変更された場合は、既存のシーンのゲームタイトルも更新
         if ( $old_title && $old_title !== $game_title ) {
