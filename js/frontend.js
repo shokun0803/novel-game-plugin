@@ -117,6 +117,18 @@
 		var adInitialized = false;
 		var $adContainer = $( '#novel-ad-container' );
 		
+		// グローバル広告状態管理（冪等性確保のため）
+		if ( ! window.noveltoolAdState ) {
+			window.noveltoolAdState = {
+				scriptLoaded: {
+					adsense: false,
+					adsterra: false
+				},
+				initialized: false,
+				adUnitsCreated: 0
+			};
+		}
+		
 		/**
 		 * 広告設定を読み込む
 		 *
@@ -146,9 +158,17 @@
 			
 			debugLog( 'Google AdSense 広告を初期化します' );
 			
-			// 広告スクリプトが既に読み込まれているかチェック
+			// グローバルフラグで既に読み込み済みかチェック（冪等性確保）
+			if ( window.noveltoolAdState.scriptLoaded.adsense ) {
+				debugLog( 'AdSense スクリプトは既にグローバルフラグで読み込み済みです' );
+				displayAdSenseAd();
+				return;
+			}
+			
+			// 広告スクリプトが既に読み込まれているかDOMでチェック
 			if ( document.querySelector( 'script[src*="adsbygoogle.js"]' ) ) {
 				debugLog( 'AdSense スクリプトは既に読み込まれています' );
+				window.noveltoolAdState.scriptLoaded.adsense = true;
 				displayAdSenseAd();
 				return;
 			}
@@ -168,9 +188,13 @@
 			script.crossOrigin = 'anonymous';
 			script.onerror = function() {
 				console.warn( 'AdSense スクリプトの読み込みに失敗しました' );
+				// エラー時に状態をリセット（再実行時の強行描画を防止）
+				window.noveltoolAdState.scriptLoaded.adsense = false;
+				// adConfig.enabled や adInitialized はリセットしない（設定は保持）
 			};
 			script.onload = function() {
 				debugLog( 'AdSense スクリプトの読み込みが完了しました' );
+				window.noveltoolAdState.scriptLoaded.adsense = true;
 				displayAdSenseAd();
 			};
 			document.head.appendChild( script );
@@ -193,6 +217,13 @@
 		 */
 		function displayAdSenseAd() {
 			if ( ! isAdContainerAvailable() ) {
+				debugLog( 'AdSense 広告コンテナが使用できません（既に広告が存在します）' );
+				return;
+			}
+			
+			// DOM内に既に広告ユニットが存在するかチェック（冪等性確保）
+			if ( $adContainer.find( '.adsbygoogle' ).length > 0 ) {
+				debugLog( 'AdSense 広告ユニットは既に存在します' );
 				return;
 			}
 			
@@ -212,6 +243,9 @@
 				} );
 			
 			$adContainer.append( $adUnit );
+			
+			// 広告ユニット作成数をカウント
+			window.noveltoolAdState.adUnitsCreated++;
 			
 			// AdSense 広告を初期化
 			try {
@@ -236,8 +270,23 @@
 			
 			debugLog( 'Adsterra 広告を初期化します' );
 			
+			// グローバルフラグで既に読み込み済みかチェック（冪等性確保）
+			if ( window.noveltoolAdState.scriptLoaded.adsterra ) {
+				debugLog( 'Adsterra スクリプトは既にグローバルフラグで読み込み済みです' );
+				return;
+			}
+			
+			// 既にスクリプトが読み込まれているかDOMでチェック
+			var publisherId = sanitizePublisherId( adConfig.publisherId );
+			if ( document.querySelector( 'script[src*="' + publisherId + '/invoke.js"]' ) ) {
+				debugLog( 'Adsterra スクリプトは既に読み込まれています' );
+				window.noveltoolAdState.scriptLoaded.adsterra = true;
+				return;
+			}
+			
 			// Adsterra バナー広告を表示
 			displayAdsterraAd();
+			window.noveltoolAdState.scriptLoaded.adsterra = true;
 		}
 		
 		// 広告の設定定数
@@ -268,6 +317,13 @@
 		 */
 		function displayAdsterraAd() {
 			if ( ! isAdContainerAvailable() ) {
+				debugLog( 'Adsterra 広告コンテナが使用できません（既に広告が存在します）' );
+				return;
+			}
+			
+			// DOM内に既に広告スクリプトが存在するかチェック（冪等性確保）
+			if ( $adContainer.find( 'script[type="text/javascript"]' ).length > 0 ) {
+				debugLog( 'Adsterra 広告スクリプトは既に存在します' );
 				return;
 			}
 			
@@ -298,7 +354,19 @@
 					'src': '//www.topcreativeformat.com/' + sanitizedPublisherId + '/invoke.js'
 				} );
 			
+			// エラーハンドリングを追加
+			$adLoader[0].onerror = function() {
+				console.warn( 'Adsterra スクリプトの読み込みに失敗しました' );
+				// エラー時に状態をリセット（再実行時の強行描画を防止）
+				window.noveltoolAdState.scriptLoaded.adsterra = false;
+				// adConfig.enabled や adInitialized はリセットしない（設定は保持）
+			};
+			
 			$adContainer.append( $adScript ).append( $adLoader );
+			
+			// 広告ユニット作成数をカウント
+			window.noveltoolAdState.adUnitsCreated++;
+			
 			debugLog( 'Adsterra 広告を表示しました' );
 		}
 		
@@ -314,10 +382,18 @@
 				return;
 			}
 			
-			// 既に初期化済みの場合はコンテナを表示するだけ
+			// 既に初期化済みの場合はコンテナを表示するだけ（冪等性確保）
 			if ( adInitialized ) {
 				$adContainer.show();
-				debugLog( '広告コンテナを表示しました' );
+				debugLog( '広告コンテナを表示しました（既に初期化済み）' );
+				return;
+			}
+			
+			// グローバル状態でも初期化済みかチェック
+			if ( window.noveltoolAdState.initialized ) {
+				$adContainer.show();
+				adInitialized = true;
+				debugLog( '広告コンテナを表示しました（グローバル状態で初期化済み）' );
 				return;
 			}
 			
@@ -331,6 +407,7 @@
 			// コンテナを表示
 			$adContainer.show();
 			adInitialized = true;
+			window.noveltoolAdState.initialized = true;
 			debugLog( '広告を初期化して表示しました' );
 		}
 		
