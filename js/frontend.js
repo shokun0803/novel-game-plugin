@@ -279,8 +279,8 @@
 			// 既にスクリプトが読み込まれているかDOMでチェック
 			var publisherId = sanitizePublisherId( adConfig.publisherId );
 			if ( publisherId ) {
-				// 属性セレクタで安全にチェック（サニタイズ済みIDを使用）
-				var existingScript = document.querySelector( 'script[src*="' + publisherId.replace( /['"\\]/g, '' ) + '/invoke.js"]' );
+				// サニタイズ済みのPublisher IDを安全に使用
+				var existingScript = document.querySelector( 'script[src*="' + publisherId + '/invoke.js"]' );
 				if ( existingScript ) {
 					debugLog( 'Adsterra スクリプトは既に読み込まれています' );
 					window.noveltoolAdState.scriptLoaded.adsterra = true;
@@ -290,7 +290,6 @@
 			
 			// Adsterra バナー広告を表示
 			displayAdsterraAd();
-			window.noveltoolAdState.scriptLoaded.adsterra = true;
 		}
 		
 		// 広告の設定定数
@@ -328,8 +327,8 @@
 			// DOM内に既に広告スクリプトが存在するかチェック（冪等性確保）
 			// Adsterra固有のスクリプトを識別（atOptions または invoke.js を含むもの）
 			var existingAdsterraScripts = $adContainer.find( 'script' ).filter( function() {
-				var scriptContent = $( this ).text();
-				var scriptSrc = $( this ).attr( 'src' ) || '';
+				var scriptContent = this.textContent || this.innerText || '';
+				var scriptSrc = this.src || '';
 				return scriptContent.indexOf( 'atOptions' ) !== -1 || scriptSrc.indexOf( '/invoke.js' ) !== -1;
 			} );
 			
@@ -366,7 +365,7 @@
 				} );
 			
 			// エラーハンドリングを追加（要素の存在を確認）
-			if ( $adLoader.length > 0 && $adLoader[0] ) {
+			if ( $adLoader.length > 0 ) {
 				$adLoader[0].onerror = function() {
 					console.warn( 'Adsterra スクリプトの読み込みに失敗しました' );
 					// エラー時に状態をリセット（再実行時の強行描画を防止）
@@ -379,6 +378,9 @@
 			
 			// 広告ユニット作成数をカウント
 			window.noveltoolAdState.adUnitsCreated++;
+			
+			// 広告スクリプトの追加が成功したらフラグを設定
+			window.noveltoolAdState.scriptLoaded.adsterra = true;
 			
 			debugLog( 'Adsterra 広告を表示しました' );
 		}
