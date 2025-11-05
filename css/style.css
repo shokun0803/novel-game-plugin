@@ -432,11 +432,6 @@
     .novel-game-container.has-ad-banner .novel-speaker-name {
         top: 80px;
     }
-    
-    .novel-game-container.has-ad-banner #novel-choices,
-    .novel-game-container.has-ad-banner .novel-choices {
-        top: 80px;
-    }
 }
 
 /* タブレット（768px〜1023px）: 90px の余白 */
@@ -455,11 +450,6 @@
     .novel-game-container.has-ad-banner .novel-speaker-name {
         top: 90px;
     }
-    
-    .novel-game-container.has-ad-banner #novel-choices,
-    .novel-game-container.has-ad-banner .novel-choices {
-        top: 90px;
-    }
 }
 
 /* PC（1024px以上）: 100px の余白 */
@@ -476,11 +466,6 @@
     
     .novel-game-container.has-ad-banner #novel-speaker-name,
     .novel-game-container.has-ad-banner .novel-speaker-name {
-        top: 100px;
-    }
-    
-    .novel-game-container.has-ad-banner #novel-choices,
-    .novel-game-container.has-ad-banner .novel-choices {
         top: 100px;
     }
 }
