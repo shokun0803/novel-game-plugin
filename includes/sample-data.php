@@ -20,30 +20,64 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.2.0
  */
 function noveltool_get_sample_game_data() {
-    // プレースホルダー画像のURL（WordPress標準のグレー画像を使用）
+    // プレースホルダー画像のSVG定義（定数として管理）
+    $svg_bg_width = 800;
+    $svg_bg_height = 600;
+    $svg_bg_color = '#87CEEB';
+    $svg_char_width = 300;
+    $svg_char_height = 400;
+    
+    // プレースホルダー背景画像のURL
     $placeholder_bg = 'data:image/svg+xml;base64,' . base64_encode(
-        '<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
-            <rect width="800" height="600" fill="#87CEEB"/>
-            <text x="400" y="300" font-size="24" text-anchor="middle" fill="#FFFFFF">Sample Background</text>
-        </svg>'
+        sprintf(
+            '<svg width="%d" height="%d" xmlns="http://www.w3.org/2000/svg">
+                <rect width="%d" height="%d" fill="%s"/>
+                <text x="%d" y="%d" font-size="24" text-anchor="middle" fill="#FFFFFF">Sample Background</text>
+            </svg>',
+            $svg_bg_width,
+            $svg_bg_height,
+            $svg_bg_width,
+            $svg_bg_height,
+            $svg_bg_color,
+            $svg_bg_width / 2,
+            $svg_bg_height / 2
+        )
     );
     
+    // プレースホルダーキャラクター画像（左側 - Alice）
     $placeholder_char_left = 'data:image/svg+xml;base64,' . base64_encode(
-        '<svg width="300" height="400" xmlns="http://www.w3.org/2000/svg">
-            <rect width="300" height="400" fill="#FFB6C1"/>
-            <circle cx="150" cy="100" r="50" fill="#FFFFFF"/>
-            <rect x="75" y="160" width="150" height="200" fill="#FF69B4" rx="20"/>
-            <text x="150" y="380" font-size="14" text-anchor="middle" fill="#FFFFFF">Character A</text>
-        </svg>'
+        sprintf(
+            '<svg width="%d" height="%d" xmlns="http://www.w3.org/2000/svg">
+                <rect width="%d" height="%d" fill="#FFB6C1"/>
+                <circle cx="%d" cy="100" r="50" fill="#FFFFFF"/>
+                <rect x="75" y="160" width="150" height="200" fill="#FF69B4" rx="20"/>
+                <text x="%d" y="380" font-size="14" text-anchor="middle" fill="#FFFFFF">Character A</text>
+            </svg>',
+            $svg_char_width,
+            $svg_char_height,
+            $svg_char_width,
+            $svg_char_height,
+            $svg_char_width / 2,
+            $svg_char_width / 2
+        )
     );
     
+    // プレースホルダーキャラクター画像（中央 - Bob）
     $placeholder_char_center = 'data:image/svg+xml;base64,' . base64_encode(
-        '<svg width="300" height="400" xmlns="http://www.w3.org/2000/svg">
-            <rect width="300" height="400" fill="#87CEEB"/>
-            <circle cx="150" cy="100" r="50" fill="#FFFFFF"/>
-            <rect x="75" y="160" width="150" height="200" fill="#4169E1" rx="20"/>
-            <text x="150" y="380" font-size="14" text-anchor="middle" fill="#FFFFFF">Character B</text>
-        </svg>'
+        sprintf(
+            '<svg width="%d" height="%d" xmlns="http://www.w3.org/2000/svg">
+                <rect width="%d" height="%d" fill="#87CEEB"/>
+                <circle cx="%d" cy="100" r="50" fill="#FFFFFF"/>
+                <rect x="75" y="160" width="150" height="200" fill="#4169E1" rx="20"/>
+                <text x="%d" y="380" font-size="14" text-anchor="middle" fill="#FFFFFF">Character B</text>
+            </svg>',
+            $svg_char_width,
+            $svg_char_height,
+            $svg_char_width,
+            $svg_char_height,
+            $svg_char_width / 2,
+            $svg_char_width / 2
+        )
     );
     
     // サンプルゲームの基本情報
@@ -193,6 +227,7 @@ function noveltool_install_sample_game() {
     
     // シーンを作成し、IDを記録
     $scene_ids = array();
+    $creation_errors = array();
     
     foreach ( $scenes_data as $index => $scene_data ) {
         // 投稿を作成
@@ -206,6 +241,13 @@ function noveltool_install_sample_game() {
         $post_id = wp_insert_post( $post_data );
         
         if ( is_wp_error( $post_id ) ) {
+            // エラーをログに記録
+            $creation_errors[] = sprintf(
+                'Failed to create scene %d (%s): %s',
+                $index + 1,
+                $scene_data['title'],
+                $post_id->get_error_message()
+            );
             continue; // エラーの場合はスキップ
         }
         
@@ -234,6 +276,11 @@ function noveltool_install_sample_game() {
     
     // 選択肢のリンクを更新（2回目のループで実際のIDに置き換え）
     foreach ( $scenes_data as $index => $scene_data ) {
+        // シーンIDが存在しない場合はスキップ
+        if ( ! isset( $scene_ids[ 'scene_' . ( $index + 1 ) ] ) ) {
+            continue;
+        }
+        
         $post_id = $scene_ids[ 'scene_' . ( $index + 1 ) ];
         
         if ( ! empty( $scene_data['choices'] ) ) {
@@ -253,6 +300,32 @@ function noveltool_install_sample_game() {
                 update_post_meta( $post_id, '_choices', wp_json_encode( $choices, JSON_UNESCAPED_UNICODE ) );
             }
         }
+    }
+    
+    // エラーが発生していた場合はログに記録
+    if ( ! empty( $creation_errors ) ) {
+        // WordPressのデバッグログに記録（WP_DEBUGが有効な場合）
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+            error_log( 'Novel Game Plugin - Sample game installation errors:' );
+            foreach ( $creation_errors as $error ) {
+                error_log( '  - ' . $error );
+            }
+        }
+    }
+    
+    // すべてのシーンが正常に作成されたかチェック
+    $expected_scenes = count( $scenes_data );
+    $created_scenes = count( $scene_ids );
+    
+    if ( $created_scenes < $expected_scenes ) {
+        // 一部のシーンの作成に失敗した場合でもインストール済みとしてマーク
+        // （再試行を防ぐため）
+        update_option( 'noveltool_sample_game_installed', true );
+        
+        // 不完全なインストールであることを記録
+        update_option( 'noveltool_sample_game_install_incomplete', true );
+        
+        return false; // 不完全なインストール
     }
     
     // インストール済みフラグを設定
