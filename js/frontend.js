@@ -403,6 +403,7 @@
 			// 既に初期化済みの場合はコンテナを表示するだけ（冪等性確保）
 			if ( adInitialized ) {
 				$adContainer.show();
+				$gameContainer.addClass( 'has-ad-banner' );
 				debugLog( '広告コンテナを表示しました（既に初期化済み）' );
 				return;
 			}
@@ -410,6 +411,7 @@
 			// グローバル状態でも初期化済みかチェック
 			if ( window.noveltoolAdState.initialized ) {
 				$adContainer.show();
+				$gameContainer.addClass( 'has-ad-banner' );
 				adInitialized = true;
 				debugLog( '広告コンテナを表示しました（グローバル状態で初期化済み）' );
 				return;
@@ -424,6 +426,7 @@
 			
 			// コンテナを表示
 			$adContainer.show();
+			$gameContainer.addClass( 'has-ad-banner' );
 			adInitialized = true;
 			window.noveltoolAdState.initialized = true;
 			debugLog( '広告を初期化して表示しました' );
@@ -436,6 +439,7 @@
 		 */
 		function hideAdvertisement() {
 			$adContainer.hide();
+			$gameContainer.removeClass( 'has-ad-banner' );
 			debugLog( '広告を非表示にしました' );
 		}
 		
