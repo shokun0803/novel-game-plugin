@@ -170,12 +170,22 @@
 		}
 		
 		/**
+		 * 広告コンテナの検証
+		 *
+		 * @return {boolean} 広告コンテナが使用可能かどうか
+		 * @since 1.4.0
+		 */
+		function isAdContainerAvailable() {
+			return $adContainer.length > 0 && $adContainer.children().length === 0;
+		}
+		
+		/**
 		 * Google AdSense 広告を表示
 		 *
 		 * @since 1.4.0
 		 */
 		function displayAdSenseAd() {
-			if ( $adContainer.length === 0 || $adContainer.children().length > 0 ) {
+			if ( ! isAdContainerAvailable() ) {
 				return;
 			}
 			
@@ -189,7 +199,7 @@
 				} )
 				.attr( {
 					'data-ad-client': adConfig.publisherId,
-					'data-ad-slot': '自動',
+					'data-ad-slot': 'auto',
 					'data-ad-format': 'horizontal',
 					'data-full-width-responsive': 'false'
 				} );
@@ -223,13 +233,19 @@
 			displayAdsterraAd();
 		}
 		
+		// 広告の設定定数
+		var AD_DIMENSIONS = {
+			BANNER_HEIGHT: 60,
+			BANNER_WIDTH: 468
+		};
+		
 		/**
 		 * Adsterra 広告を表示
 		 *
 		 * @since 1.4.0
 		 */
 		function displayAdsterraAd() {
-			if ( $adContainer.length === 0 || $adContainer.children().length > 0 ) {
+			if ( ! isAdContainerAvailable() ) {
 				return;
 			}
 			
@@ -242,8 +258,8 @@
 				.text( 'atOptions = {' +
 					   '"key": "' + adConfig.publisherId + '",' +
 					   '"format": "iframe",' +
-					   '"height": 60,' +
-					   '"width": 468,' +
+					   '"height": ' + AD_DIMENSIONS.BANNER_HEIGHT + ',' +
+					   '"width": ' + AD_DIMENSIONS.BANNER_WIDTH + ',' +
 					   '"params": {}' +
 					   '};' );
 			

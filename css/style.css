@@ -396,10 +396,10 @@
     max-height: 100%;
 }
 
-/* タイトル画面では広告を非表示 */
-#novel-title-screen ~ #novel-game-container .novel-ad-container,
-.novel-title-screen.show ~ .novel-game-container .novel-ad-container {
-    display: none !important;
+/* タイトル画面では広告を非表示（高い特異性で確実に非表示） */
+.novel-game-modal-content #novel-title-screen.novel-title-screen ~ .novel-game-container #novel-ad-container.novel-ad-container,
+.novel-game-modal-content #novel-title-screen[style*="display: flex"] ~ .novel-game-container #novel-ad-container.novel-ad-container {
+    display: none;
 }
 
 /* モバイル対応 */
