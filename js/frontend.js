@@ -278,10 +278,14 @@
 			
 			// 既にスクリプトが読み込まれているかDOMでチェック
 			var publisherId = sanitizePublisherId( adConfig.publisherId );
-			if ( document.querySelector( 'script[src*="' + publisherId + '/invoke.js"]' ) ) {
-				debugLog( 'Adsterra スクリプトは既に読み込まれています' );
-				window.noveltoolAdState.scriptLoaded.adsterra = true;
-				return;
+			if ( publisherId ) {
+				// 属性セレクタで安全にチェック（サニタイズ済みIDを使用）
+				var existingScript = document.querySelector( 'script[src*="' + publisherId.replace( /['"\\]/g, '' ) + '/invoke.js"]' );
+				if ( existingScript ) {
+					debugLog( 'Adsterra スクリプトは既に読み込まれています' );
+					window.noveltoolAdState.scriptLoaded.adsterra = true;
+					return;
+				}
 			}
 			
 			// Adsterra バナー広告を表示
@@ -322,7 +326,14 @@
 			}
 			
 			// DOM内に既に広告スクリプトが存在するかチェック（冪等性確保）
-			if ( $adContainer.find( 'script[type="text/javascript"]' ).length > 0 ) {
+			// Adsterra固有のスクリプトを識別（atOptions または invoke.js を含むもの）
+			var existingAdsterraScripts = $adContainer.find( 'script' ).filter( function() {
+				var scriptContent = $( this ).text();
+				var scriptSrc = $( this ).attr( 'src' ) || '';
+				return scriptContent.indexOf( 'atOptions' ) !== -1 || scriptSrc.indexOf( '/invoke.js' ) !== -1;
+			} );
+			
+			if ( existingAdsterraScripts.length > 0 ) {
 				debugLog( 'Adsterra 広告スクリプトは既に存在します' );
 				return;
 			}
@@ -354,13 +365,15 @@
 					'src': '//www.topcreativeformat.com/' + sanitizedPublisherId + '/invoke.js'
 				} );
 			
-			// エラーハンドリングを追加
-			$adLoader[0].onerror = function() {
-				console.warn( 'Adsterra スクリプトの読み込みに失敗しました' );
-				// エラー時に状態をリセット（再実行時の強行描画を防止）
-				window.noveltoolAdState.scriptLoaded.adsterra = false;
-				// adConfig.enabled や adInitialized はリセットしない（設定は保持）
-			};
+			// エラーハンドリングを追加（要素の存在を確認）
+			if ( $adLoader.length > 0 && $adLoader[0] ) {
+				$adLoader[0].onerror = function() {
+					console.warn( 'Adsterra スクリプトの読み込みに失敗しました' );
+					// エラー時に状態をリセット（再実行時の強行描画を防止）
+					window.noveltoolAdState.scriptLoaded.adsterra = false;
+					// adConfig.enabled や adInitialized はリセットしない（設定は保持）
+				};
+			}
 			
 			$adContainer.append( $adScript ).append( $adLoader );
 			
