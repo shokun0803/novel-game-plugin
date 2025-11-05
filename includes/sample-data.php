@@ -32,7 +32,7 @@ function noveltool_get_sample_game_data() {
         sprintf(
             '<svg width="%d" height="%d" xmlns="http://www.w3.org/2000/svg">
                 <rect width="%d" height="%d" fill="%s"/>
-                <text x="%d" y="%d" font-size="24" text-anchor="middle" fill="#FFFFFF">Sample Background</text>
+                <text x="%d" y="%d" font-size="24" text-anchor="middle" fill="#FFFFFF">%s</text>
             </svg>',
             $svg_bg_width,
             $svg_bg_height,
@@ -40,7 +40,8 @@ function noveltool_get_sample_game_data() {
             $svg_bg_height,
             $svg_bg_color,
             $svg_bg_width / 2,
-            $svg_bg_height / 2
+            $svg_bg_height / 2,
+            esc_html( __( 'Sample Background', 'novel-game-plugin' ) )
         )
     );
     
@@ -51,14 +52,15 @@ function noveltool_get_sample_game_data() {
                 <rect width="%d" height="%d" fill="#FFB6C1"/>
                 <circle cx="%d" cy="100" r="50" fill="#FFFFFF"/>
                 <rect x="75" y="160" width="150" height="200" fill="#FF69B4" rx="20"/>
-                <text x="%d" y="380" font-size="14" text-anchor="middle" fill="#FFFFFF">Character A</text>
+                <text x="%d" y="380" font-size="14" text-anchor="middle" fill="#FFFFFF">%s</text>
             </svg>',
             $svg_char_width,
             $svg_char_height,
             $svg_char_width,
             $svg_char_height,
             $svg_char_width / 2,
-            $svg_char_width / 2
+            $svg_char_width / 2,
+            esc_html( __( 'Character A', 'novel-game-plugin' ) )
         )
     );
     
@@ -69,14 +71,15 @@ function noveltool_get_sample_game_data() {
                 <rect width="%d" height="%d" fill="#87CEEB"/>
                 <circle cx="%d" cy="100" r="50" fill="#FFFFFF"/>
                 <rect x="75" y="160" width="150" height="200" fill="#4169E1" rx="20"/>
-                <text x="%d" y="380" font-size="14" text-anchor="middle" fill="#FFFFFF">Character B</text>
+                <text x="%d" y="380" font-size="14" text-anchor="middle" fill="#FFFFFF">%s</text>
             </svg>',
             $svg_char_width,
             $svg_char_height,
             $svg_char_width,
             $svg_char_height,
             $svg_char_width / 2,
-            $svg_char_width / 2
+            $svg_char_width / 2,
+            esc_html( __( 'Character B', 'novel-game-plugin' ) )
         )
     );
     

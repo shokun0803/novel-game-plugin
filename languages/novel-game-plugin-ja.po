@@ -1589,3 +1589,115 @@ msgstr "開始: %s"
 
 #~ msgid "novel"
 #~ msgstr "novel"
+
+#: includes/sample-data.php:35
+msgid "Sample Background"
+msgstr "サンプル背景"
+
+#: includes/sample-data.php:54
+msgid "Character A"
+msgstr "キャラクターA"
+
+#: includes/sample-data.php:72
+msgid "Character B"
+msgstr "キャラクターB"
+
+#: includes/sample-data.php:85
+msgid "Sample Novel Game"
+msgstr "サンプルノベルゲーム"
+
+#: includes/sample-data.php:86
+msgid "This is a sample visual novel game to help you understand how to use this plugin. You can edit or delete this game at any time."
+msgstr "このプラグインの使い方を理解するためのサンプルビジュアルノベルゲームです。このゲームはいつでも編集または削除できます。"
+
+#: includes/sample-data.php:88
+msgid "Game Over"
+msgstr "ゲームオーバー"
+
+#: includes/sample-data.php:95
+msgid "Sample Novel Game - Opening"
+msgstr "サンプルノベルゲーム - オープニング"
+
+#: includes/sample-data.php:100
+msgid "Alice"
+msgstr "アリス"
+
+#: includes/sample-data.php:104
+msgid "Welcome to this sample novel game!"
+msgstr "サンプルノベルゲームへようこそ！"
+
+#: includes/sample-data.php:105
+msgid "I am Alice. Nice to meet you."
+msgstr "私はアリスです。はじめまして。"
+
+#: includes/sample-data.php:106
+msgid "This game will show you how to create branching stories."
+msgstr "このゲームは分岐ストーリーの作り方をお見せします。"
+
+#: includes/sample-data.php:107
+msgid "Now, let me ask you a question..."
+msgstr "それでは、質問させてください..."
+
+#: includes/sample-data.php:118
+msgid "I want to hear more about the story"
+msgstr "ストーリーについてもっと聞きたい"
+
+#: includes/sample-data.php:122
+msgid "I want to learn about choices"
+msgstr "選択肢について学びたい"
+
+#: includes/sample-data.php:132
+msgid "Sample Novel Game - About Story"
+msgstr "サンプルノベルゲーム - ストーリーについて"
+
+#: includes/sample-data.php:138
+msgid "Bob"
+msgstr "ボブ"
+
+#: includes/sample-data.php:141
+msgid "Great choice! Let me introduce my friend Bob."
+msgstr "良い選択です！友達のボブを紹介します。"
+
+#: includes/sample-data.php:142
+msgid "Hi there! Nice to meet you."
+msgstr "こんにちは！はじめまして。"
+
+#: includes/sample-data.php:143
+msgid "You can create rich stories with multiple characters."
+msgstr "複数のキャラクターで豊かなストーリーを作ることができます。"
+
+#: includes/sample-data.php:144
+msgid "Each character can have different positions and expressions."
+msgstr "各キャラクターは異なる位置や表情を持つことができます。"
+
+#: includes/sample-data.php:145
+msgid "This is the end of this branch. Thank you for playing!"
+msgstr "この分岐の終わりです。プレイありがとうございました！"
+
+#: includes/sample-data.php:157
+msgid "Story Path - End"
+msgstr "ストーリールート - 終了"
+
+#: includes/sample-data.php:162
+msgid "Sample Novel Game - About Choices"
+msgstr "サンプルノベルゲーム - 選択肢について"
+
+#: includes/sample-data.php:171
+msgid "Excellent! You are interested in branching stories."
+msgstr "素晴らしい！分岐ストーリーに興味があるんですね。"
+
+#: includes/sample-data.php:172
+msgid "In visual novels, choices are very important."
+msgstr "ビジュアルノベルでは、選択肢がとても重要です。"
+
+#: includes/sample-data.php:173
+msgid "Your decisions will affect the story outcome."
+msgstr "あなたの決定がストーリーの結末に影響します。"
+
+#: includes/sample-data.php:174
+msgid "You can create multiple endings based on player choices."
+msgstr "プレイヤーの選択に基づいて複数のエンディングを作成できます。"
+
+#: includes/sample-data.php:187
+msgid "Choice Path - End"
+msgstr "選択ルート - 終了"

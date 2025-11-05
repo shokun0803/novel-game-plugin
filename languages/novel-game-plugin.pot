@@ -1490,3 +1490,115 @@ msgstr ""
 #, php-format
 msgid "Start: %s"
 msgstr ""
+
+#: includes/sample-data.php:35
+msgid "Sample Background"
+msgstr ""
+
+#: includes/sample-data.php:54
+msgid "Character A"
+msgstr ""
+
+#: includes/sample-data.php:72
+msgid "Character B"
+msgstr ""
+
+#: includes/sample-data.php:85
+msgid "Sample Novel Game"
+msgstr ""
+
+#: includes/sample-data.php:86
+msgid "This is a sample visual novel game to help you understand how to use this plugin. You can edit or delete this game at any time."
+msgstr ""
+
+#: includes/sample-data.php:88
+msgid "Game Over"
+msgstr ""
+
+#: includes/sample-data.php:95
+msgid "Sample Novel Game - Opening"
+msgstr ""
+
+#: includes/sample-data.php:100
+msgid "Alice"
+msgstr ""
+
+#: includes/sample-data.php:104
+msgid "Welcome to this sample novel game!"
+msgstr ""
+
+#: includes/sample-data.php:105
+msgid "I am Alice. Nice to meet you."
+msgstr ""
+
+#: includes/sample-data.php:106
+msgid "This game will show you how to create branching stories."
+msgstr ""
+
+#: includes/sample-data.php:107
+msgid "Now, let me ask you a question..."
+msgstr ""
+
+#: includes/sample-data.php:118
+msgid "I want to hear more about the story"
+msgstr ""
+
+#: includes/sample-data.php:122
+msgid "I want to learn about choices"
+msgstr ""
+
+#: includes/sample-data.php:132
+msgid "Sample Novel Game - About Story"
+msgstr ""
+
+#: includes/sample-data.php:138
+msgid "Bob"
+msgstr ""
+
+#: includes/sample-data.php:141
+msgid "Great choice! Let me introduce my friend Bob."
+msgstr ""
+
+#: includes/sample-data.php:142
+msgid "Hi there! Nice to meet you."
+msgstr ""
+
+#: includes/sample-data.php:143
+msgid "You can create rich stories with multiple characters."
+msgstr ""
+
+#: includes/sample-data.php:144
+msgid "Each character can have different positions and expressions."
+msgstr ""
+
+#: includes/sample-data.php:145
+msgid "This is the end of this branch. Thank you for playing!"
+msgstr ""
+
+#: includes/sample-data.php:157
+msgid "Story Path - End"
+msgstr ""
+
+#: includes/sample-data.php:162
+msgid "Sample Novel Game - About Choices"
+msgstr ""
+
+#: includes/sample-data.php:171
+msgid "Excellent! You are interested in branching stories."
+msgstr ""
+
+#: includes/sample-data.php:172
+msgid "In visual novels, choices are very important."
+msgstr ""
+
+#: includes/sample-data.php:173
+msgid "Your decisions will affect the story outcome."
+msgstr ""
+
+#: includes/sample-data.php:174
+msgid "You can create multiple endings based on player choices."
+msgstr ""
+
+#: includes/sample-data.php:187
+msgid "Choice Path - End"
+msgstr ""
