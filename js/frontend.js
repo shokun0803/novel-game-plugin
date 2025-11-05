@@ -236,7 +236,7 @@
 					'height': '60px'
 				} )
 				.attr( {
-					'data-ad-client': adConfig.publisherId,
+					'data-ad-client': sanitizePublisherId( adConfig.publisherId ),
 					'data-ad-slot': 'auto',
 					'data-ad-format': 'horizontal',
 					'data-full-width-responsive': 'false'
@@ -364,7 +364,7 @@
 					'src': '//www.topcreativeformat.com/' + sanitizedPublisherId + '/invoke.js'
 				} );
 			
-			// エラーハンドリングを追加（要素の存在を確認）
+			// エラーハンドリングとロード完了ハンドリングを追加
 			if ( $adLoader.length > 0 ) {
 				$adLoader[0].onerror = function() {
 					console.warn( 'Adsterra スクリプトの読み込みに失敗しました' );
@@ -372,15 +372,18 @@
 					window.noveltoolAdState.scriptLoaded.adsterra = false;
 					// adConfig.enabled や adInitialized はリセットしない（設定は保持）
 				};
+				
+				$adLoader[0].onload = function() {
+					debugLog( 'Adsterra スクリプトの読み込みが完了しました' );
+					// スクリプト読み込み成功時にフラグを設定
+					window.noveltoolAdState.scriptLoaded.adsterra = true;
+				};
 			}
 			
 			$adContainer.append( $adScript ).append( $adLoader );
 			
 			// 広告ユニット作成数をカウント
 			window.noveltoolAdState.adUnitsCreated++;
-			
-			// 広告スクリプトの追加が成功したらフラグを設定
-			window.noveltoolAdState.scriptLoaded.adsterra = true;
 			
 			debugLog( 'Adsterra 広告を表示しました' );
 		}
