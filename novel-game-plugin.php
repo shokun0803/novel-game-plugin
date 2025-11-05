@@ -668,6 +668,11 @@ function noveltool_filter_novel_game_content( $content ) {
             
             <!-- ゲームコンテナ -->
             <div id="novel-game-container" class="novel-game-container" style="background-image: url('<?php echo esc_url( $background ); ?>');">
+                <!-- 広告コンテナ（プレイ開始後に表示） -->
+                <div id="novel-ad-container" class="novel-ad-container" style="display: none;">
+                    <!-- 広告がここに動的に挿入されます -->
+                </div>
+                
                 <!-- 3体キャラクター表示 -->
                 <?php if ( $character_left ) : ?>
                     <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" alt="<?php echo esc_attr__( 'Left Character', 'novel-game-plugin' ); ?>" />
@@ -765,6 +770,37 @@ function noveltool_filter_novel_game_content( $content ) {
                         $flag_master_data = noveltool_get_game_flag_master( $game_title );
                     }
                     echo wp_json_encode( $flag_master_data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); 
+                    ?>
+                </script>
+
+                <script id="novel-ad-config" type="application/json">
+                    <?php 
+                    // 広告設定データをフロントエンドに渡す
+                    $ad_config = array(
+                        'provider' => 'none',
+                        'publisherId' => '',
+                    );
+                    
+                    if ( $game_title ) {
+                        // ゲームデータから広告プロバイダーを取得
+                        $game_data = noveltool_get_game_by_title( $game_title );
+                        if ( $game_data && isset( $game_data['id'] ) ) {
+                            $ad_provider = get_post_meta( $game_data['id'], 'noveltool_ad_provider', true );
+                            if ( empty( $ad_provider ) ) {
+                                $ad_provider = 'none';
+                            }
+                            $ad_config['provider'] = $ad_provider;
+                            
+                            // プロバイダーに応じてグローバルIDを取得
+                            if ( $ad_provider === 'adsense' ) {
+                                $ad_config['publisherId'] = noveltool_get_google_adsense_id();
+                            } elseif ( $ad_provider === 'adsterra' ) {
+                                $ad_config['publisherId'] = noveltool_get_adsterra_id();
+                            }
+                        }
+                    }
+                    
+                    echo wp_json_encode( $ad_config, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); 
                     ?>
                 </script>
             </div>

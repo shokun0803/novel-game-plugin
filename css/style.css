@@ -369,6 +369,48 @@
 }
 
 /* =============================================================================
+   広告コンテナ スタイル
+   ============================================================================= */
+
+/* 広告コンテナ */
+.novel-ad-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 60px;
+    max-height: 100px;
+    background: rgba(240, 240, 240, 0.95);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* 広告コンテナの内容 */
+.novel-ad-container > div,
+.novel-ad-container > ins {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* タイトル画面では広告を非表示 */
+#novel-title-screen ~ #novel-game-container .novel-ad-container,
+.novel-title-screen.show ~ .novel-game-container .novel-ad-container {
+    display: none !important;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+    .novel-ad-container {
+        min-height: 50px;
+        max-height: 90px;
+    }
+}
+
+/* =============================================================================
    ベーススタイル
    ============================================================================= */
 
