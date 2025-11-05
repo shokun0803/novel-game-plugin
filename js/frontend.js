@@ -153,11 +153,18 @@
 				return;
 			}
 			
+			// Publisher IDをサニタイズ
+			var sanitizedPublisherId = sanitizePublisherId( adConfig.publisherId );
+			if ( ! sanitizedPublisherId ) {
+				console.error( 'AdSense Publisher ID が無効です' );
+				return;
+			}
+			
 			// AdSense スクリプトを非同期で読み込む
 			var script = document.createElement( 'script' );
 			script.async = true;
 			script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + 
-			            encodeURIComponent( adConfig.publisherId );
+			            encodeURIComponent( sanitizedPublisherId );
 			script.crossOrigin = 'anonymous';
 			script.onerror = function() {
 				console.warn( 'AdSense スクリプトの読み込みに失敗しました' );
@@ -240,12 +247,34 @@
 		};
 		
 		/**
+		 * Publisher IDをサニタイズして安全な値にする
+		 *
+		 * @param {string} publisherId Publisher ID
+		 * @return {string} サニタイズされたPublisher ID
+		 * @since 1.4.0
+		 */
+		function sanitizePublisherId( publisherId ) {
+			if ( ! publisherId || typeof publisherId !== 'string' ) {
+				return '';
+			}
+			// 英数字、ハイフン、アンダースコアのみを許可
+			return publisherId.replace( /[^a-zA-Z0-9\-_]/g, '' );
+		}
+		
+		/**
 		 * Adsterra 広告を表示
 		 *
 		 * @since 1.4.0
 		 */
 		function displayAdsterraAd() {
 			if ( ! isAdContainerAvailable() ) {
+				return;
+			}
+			
+			// Publisher IDをサニタイズ
+			var sanitizedPublisherId = sanitizePublisherId( adConfig.publisherId );
+			if ( ! sanitizedPublisherId ) {
+				console.error( 'Adsterra Publisher ID が無効です' );
 				return;
 			}
 			
@@ -256,7 +285,7 @@
 					'data-cfasync': 'false'
 				} )
 				.text( 'atOptions = {' +
-					   '"key": "' + adConfig.publisherId + '",' +
+					   '"key": "' + sanitizedPublisherId + '",' +
 					   '"format": "iframe",' +
 					   '"height": ' + AD_DIMENSIONS.BANNER_HEIGHT + ',' +
 					   '"width": ' + AD_DIMENSIONS.BANNER_WIDTH + ',' +
@@ -266,7 +295,7 @@
 			var $adLoader = $( '<script>' )
 				.attr( {
 					'type': 'text/javascript',
-					'src': '//www.topcreativeformat.com/' + adConfig.publisherId + '/invoke.js'
+					'src': '//www.topcreativeformat.com/' + sanitizedPublisherId + '/invoke.js'
 				} );
 			
 			$adContainer.append( $adScript ).append( $adLoader );
