@@ -112,6 +112,337 @@
 		// デバッグフラグ（本番環境でのログ出力制御）
 		var novelGameDebug = typeof window.novelGameDebug !== 'undefined' ? window.novelGameDebug : false;
 		
+		// 広告関連の変数
+		var adConfig = null;
+		var adInitialized = false;
+		var $adContainer = $( '#novel-ad-container' );
+		
+		// グローバル広告状態管理（冪等性確保のため）
+		if ( ! window.noveltoolAdState ) {
+			window.noveltoolAdState = {
+				scriptLoaded: {
+					adsense: false,
+					adsterra: false
+				},
+				initialized: false,
+				adUnitsCreated: 0
+			};
+		}
+		
+		/**
+		 * 広告設定を読み込む
+		 *
+		 * @since 1.4.0
+		 */
+		function loadAdConfig() {
+			try {
+				var adConfigData = $( '#novel-ad-config' ).text();
+				if ( adConfigData ) {
+					adConfig = JSON.parse( adConfigData );
+					debugLog( '広告設定を読み込みました:', adConfig );
+				}
+			} catch ( error ) {
+				console.error( '広告設定の解析に失敗しました:', error );
+			}
+		}
+		
+		/**
+		 * Google AdSense 広告を初期化
+		 *
+		 * @since 1.4.0
+		 */
+		function initializeAdSense() {
+			if ( ! adConfig || adConfig.provider !== 'adsense' || ! adConfig.publisherId ) {
+				return;
+			}
+			
+			debugLog( 'Google AdSense 広告を初期化します' );
+			
+			// グローバルフラグで既に読み込み済みかチェック（冪等性確保）
+			if ( window.noveltoolAdState.scriptLoaded.adsense ) {
+				debugLog( 'AdSense スクリプトは既にグローバルフラグで読み込み済みです' );
+				displayAdSenseAd();
+				return;
+			}
+			
+			// 広告スクリプトが既に読み込まれているかDOMでチェック
+			if ( document.querySelector( 'script[src*="adsbygoogle.js"]' ) ) {
+				debugLog( 'AdSense スクリプトは既に読み込まれています' );
+				window.noveltoolAdState.scriptLoaded.adsense = true;
+				displayAdSenseAd();
+				return;
+			}
+			
+			// Publisher IDをサニタイズ
+			var sanitizedPublisherId = sanitizePublisherId( adConfig.publisherId );
+			if ( ! sanitizedPublisherId ) {
+				console.error( 'AdSense Publisher ID が無効です' );
+				return;
+			}
+			
+			// AdSense スクリプトを非同期で読み込む
+			var script = document.createElement( 'script' );
+			script.async = true;
+			script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + 
+			            encodeURIComponent( sanitizedPublisherId );
+			script.crossOrigin = 'anonymous';
+			script.onerror = function() {
+				console.warn( 'AdSense スクリプトの読み込みに失敗しました' );
+				// エラー時に状態をリセット（再実行時の強行描画を防止）
+				window.noveltoolAdState.scriptLoaded.adsense = false;
+				// adConfig.enabled や adInitialized はリセットしない（設定は保持）
+			};
+			script.onload = function() {
+				debugLog( 'AdSense スクリプトの読み込みが完了しました' );
+				window.noveltoolAdState.scriptLoaded.adsense = true;
+				displayAdSenseAd();
+			};
+			document.head.appendChild( script );
+		}
+		
+		/**
+		 * 広告コンテナの検証
+		 *
+		 * @return {boolean} 広告コンテナが使用可能かどうか
+		 * @since 1.4.0
+		 */
+		function isAdContainerAvailable() {
+			return $adContainer.length > 0 && $adContainer.children().length === 0;
+		}
+		
+		/**
+		 * Google AdSense 広告を表示
+		 *
+		 * @since 1.4.0
+		 */
+		function displayAdSenseAd() {
+			if ( ! isAdContainerAvailable() ) {
+				debugLog( 'AdSense 広告コンテナが使用できません（既に広告が存在します）' );
+				return;
+			}
+			
+			// DOM内に既に広告ユニットが存在するかチェック（冪等性確保）
+			if ( $adContainer.find( '.adsbygoogle' ).length > 0 ) {
+				debugLog( 'AdSense 広告ユニットは既に存在します' );
+				return;
+			}
+			
+			// AdSense 広告ユニットを作成
+			var $adUnit = $( '<ins>' )
+				.addClass( 'adsbygoogle' )
+				.css( {
+					'display': 'block',
+					'width': '100%',
+					'height': '60px'
+				} )
+				.attr( {
+					'data-ad-client': sanitizePublisherId( adConfig.publisherId ),
+					'data-ad-slot': 'auto',
+					'data-ad-format': 'horizontal',
+					'data-full-width-responsive': 'false'
+				} );
+			
+			$adContainer.append( $adUnit );
+			
+			// 広告ユニット作成数をカウント
+			window.noveltoolAdState.adUnitsCreated++;
+			
+			// AdSense 広告を初期化
+			try {
+				if ( window.adsbygoogle ) {
+					( window.adsbygoogle = window.adsbygoogle || [] ).push( {} );
+					debugLog( 'AdSense 広告を初期化しました' );
+				}
+			} catch ( error ) {
+				console.error( 'AdSense 広告の初期化に失敗しました:', error );
+			}
+		}
+		
+		/**
+		 * Adsterra 広告を初期化
+		 *
+		 * @since 1.4.0
+		 */
+		function initializeAdsterra() {
+			if ( ! adConfig || adConfig.provider !== 'adsterra' || ! adConfig.publisherId ) {
+				return;
+			}
+			
+			debugLog( 'Adsterra 広告を初期化します' );
+			
+			// グローバルフラグで既に読み込み済みかチェック（冪等性確保）
+			if ( window.noveltoolAdState.scriptLoaded.adsterra ) {
+				debugLog( 'Adsterra スクリプトは既にグローバルフラグで読み込み済みです' );
+				return;
+			}
+			
+			// 既にスクリプトが読み込まれているかDOMでチェック
+			var publisherId = sanitizePublisherId( adConfig.publisherId );
+			if ( publisherId ) {
+				// サニタイズ済みのPublisher IDを安全に使用
+				var existingScript = document.querySelector( 'script[src*="' + publisherId + '/invoke.js"]' );
+				if ( existingScript ) {
+					debugLog( 'Adsterra スクリプトは既に読み込まれています' );
+					window.noveltoolAdState.scriptLoaded.adsterra = true;
+					return;
+				}
+			}
+			
+			// Adsterra バナー広告を表示
+			displayAdsterraAd();
+		}
+		
+		// 広告の設定定数
+		var AD_DIMENSIONS = {
+			BANNER_HEIGHT: 60,
+			BANNER_WIDTH: 468
+		};
+		
+		/**
+		 * Publisher IDをサニタイズして安全な値にする
+		 *
+		 * @param {string} publisherId Publisher ID
+		 * @return {string} サニタイズされたPublisher ID
+		 * @since 1.4.0
+		 */
+		function sanitizePublisherId( publisherId ) {
+			if ( ! publisherId || typeof publisherId !== 'string' ) {
+				return '';
+			}
+			// 英数字、ハイフン、アンダースコアのみを許可
+			return publisherId.replace( /[^a-zA-Z0-9\-_]/g, '' );
+		}
+		
+		/**
+		 * Adsterra 広告を表示
+		 *
+		 * @since 1.4.0
+		 */
+		function displayAdsterraAd() {
+			if ( ! isAdContainerAvailable() ) {
+				debugLog( 'Adsterra 広告コンテナが使用できません（既に広告が存在します）' );
+				return;
+			}
+			
+			// DOM内に既に広告スクリプトが存在するかチェック（冪等性確保）
+			// Adsterra固有のスクリプトを識別（atOptions または invoke.js を含むもの）
+			var existingAdsterraScripts = $adContainer.find( 'script' ).filter( function() {
+				var scriptContent = this.textContent || this.innerText || '';
+				var scriptSrc = this.src || '';
+				return scriptContent.indexOf( 'atOptions' ) !== -1 || scriptSrc.indexOf( '/invoke.js' ) !== -1;
+			} );
+			
+			if ( existingAdsterraScripts.length > 0 ) {
+				debugLog( 'Adsterra 広告スクリプトは既に存在します' );
+				return;
+			}
+			
+			// Publisher IDをサニタイズ
+			var sanitizedPublisherId = sanitizePublisherId( adConfig.publisherId );
+			if ( ! sanitizedPublisherId ) {
+				console.error( 'Adsterra Publisher ID が無効です' );
+				return;
+			}
+			
+			// Adsterra 広告スクリプトを作成
+			var $adScript = $( '<script>' )
+				.attr( {
+					'type': 'text/javascript',
+					'data-cfasync': 'false'
+				} )
+				.text( 'atOptions = {' +
+					   '"key": "' + sanitizedPublisherId + '",' +
+					   '"format": "iframe",' +
+					   '"height": ' + AD_DIMENSIONS.BANNER_HEIGHT + ',' +
+					   '"width": ' + AD_DIMENSIONS.BANNER_WIDTH + ',' +
+					   '"params": {}' +
+					   '};' );
+			
+			var $adLoader = $( '<script>' )
+				.attr( {
+					'type': 'text/javascript',
+					'src': '//www.topcreativeformat.com/' + sanitizedPublisherId + '/invoke.js'
+				} );
+			
+			// エラーハンドリングとロード完了ハンドリングを追加
+			if ( $adLoader.length > 0 ) {
+				$adLoader[0].onerror = function() {
+					console.warn( 'Adsterra スクリプトの読み込みに失敗しました' );
+					// エラー時に状態をリセット（再実行時の強行描画を防止）
+					window.noveltoolAdState.scriptLoaded.adsterra = false;
+					// adConfig.enabled や adInitialized はリセットしない（設定は保持）
+				};
+				
+				$adLoader[0].onload = function() {
+					debugLog( 'Adsterra スクリプトの読み込みが完了しました' );
+					// スクリプト読み込み成功時にフラグを設定
+					window.noveltoolAdState.scriptLoaded.adsterra = true;
+				};
+			}
+			
+			$adContainer.append( $adScript ).append( $adLoader );
+			
+			// 広告ユニット作成数をカウント
+			window.noveltoolAdState.adUnitsCreated++;
+			
+			debugLog( 'Adsterra 広告を表示しました' );
+		}
+		
+		/**
+		 * 広告を表示（プレイ開始時）
+		 *
+		 * @since 1.4.0
+		 */
+		function showAdvertisement() {
+			// 広告設定がない場合は何もしない
+			if ( ! adConfig || adConfig.provider === 'none' || ! adConfig.publisherId ) {
+				debugLog( '広告設定がありません。広告は表示しません。' );
+				return;
+			}
+			
+			// 既に初期化済みの場合はコンテナを表示するだけ（冪等性確保）
+			if ( adInitialized ) {
+				$adContainer.show();
+				$gameContainer.addClass( 'has-ad-banner' );
+				debugLog( '広告コンテナを表示しました（既に初期化済み）' );
+				return;
+			}
+			
+			// グローバル状態でも初期化済みかチェック
+			if ( window.noveltoolAdState.initialized ) {
+				$adContainer.show();
+				$gameContainer.addClass( 'has-ad-banner' );
+				adInitialized = true;
+				debugLog( '広告コンテナを表示しました（グローバル状態で初期化済み）' );
+				return;
+			}
+			
+			// 広告プロバイダーに応じて初期化
+			if ( adConfig.provider === 'adsense' ) {
+				initializeAdSense();
+			} else if ( adConfig.provider === 'adsterra' ) {
+				initializeAdsterra();
+			}
+			
+			// コンテナを表示
+			$adContainer.show();
+			$gameContainer.addClass( 'has-ad-banner' );
+			adInitialized = true;
+			window.noveltoolAdState.initialized = true;
+			debugLog( '広告を初期化して表示しました' );
+		}
+		
+		/**
+		 * 広告を非表示（タイトル画面表示時）
+		 *
+		 * @since 1.4.0
+		 */
+		function hideAdvertisement() {
+			$adContainer.hide();
+			$gameContainer.removeClass( 'has-ad-banner' );
+			debugLog( '広告を非表示にしました' );
+		}
+		
 		/**
 		 * デバッグログ出力（本番環境では無効化）
 		 *
@@ -264,6 +595,9 @@
 					}
 				}
 			}
+			
+			// 広告設定データを読み込み
+			loadAdConfig();
 		} catch ( error ) {
 			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
 			return;
@@ -936,6 +1270,9 @@
 			
 			// ゲームデータを一時保存（ボタン押下時に使用）
 			window.currentGameSelectionData = currentGameData;
+			
+			// タイトル画面では広告を非表示にする
+			hideAdvertisement();
 		}
 
 		/**
@@ -1263,6 +1600,19 @@
 							// シーン到達時のフラグ設定処理
 							if ( extractedGameTitle ) {
 								processSceneArrivalFlags( $response, extractedGameTitle );
+							}
+							
+							// 広告設定データを取得（ゲーム固有の設定がある場合）
+							var adConfigScript = $response.filter( 'script#novel-ad-config' );
+							if ( adConfigScript.length === 0 ) {
+								adConfigScript = $response.find( '#novel-ad-config' );
+							}
+							if ( adConfigScript.length > 0 ) {
+								var adConfigData = adConfigScript.text() || adConfigScript.html();
+								if ( adConfigData ) {
+									adConfig = JSON.parse( adConfigData );
+									debugLog( 'ゲーム固有の広告設定を読み込みました:', adConfig );
+								}
 							}
 							
 							resolve();
@@ -3116,6 +3466,7 @@
 			$speakerName = $( '#novel-speaker-name' );
 			$dialogueContinue = $( '#novel-dialogue-continue' );
 			$choicesContainer = $( '#novel-choices' );
+			$adContainer = $( '#novel-ad-container' );
 			
 			console.log( 'Dialogue elements found:', {
 				text: $dialogueText.length,
@@ -3186,6 +3537,9 @@
 				
 				// 初期位置を自動保存
 				autoSaveGameProgress();
+				
+				// ゲーム開始時に広告を表示
+				showAdvertisement();
 			} else {
 				// デバッグ用：セリフデータがない場合のメッセージ
 				console.log( 'No dialogue data found' );
@@ -3195,6 +3549,9 @@
 				console.log( 'Game container content length:', containerContent ? containerContent.length : 0 );
 				console.log( 'Game container content (first 200 chars):', containerContent ? containerContent.substring( 0, 200 ) : 'empty' );
 			}
+			
+			// ゲーム開始時に広告を表示（条件に関係なく）
+			showAdvertisement();
 		}
 
 		/**

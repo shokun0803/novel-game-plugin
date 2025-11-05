@@ -369,6 +369,75 @@
 }
 
 /* =============================================================================
+   広告コンテナ スタイル
+   ============================================================================= */
+
+/* 広告コンテナ */
+.novel-ad-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 60px;
+    max-height: 100px;
+    background: rgba(240, 240, 240, 0.95);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* 広告コンテナの内容 */
+.novel-ad-container > div,
+.novel-ad-container > ins {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* タイトル画面では広告を非表示（高い特異性で確実に非表示） */
+.novel-game-modal-content #novel-title-screen.novel-title-screen ~ .novel-game-container #novel-ad-container.novel-ad-container,
+.novel-game-modal-content #novel-title-screen[style*="display: flex"] ~ .novel-game-container #novel-ad-container.novel-ad-container {
+    display: none;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+    .novel-ad-container {
+        min-height: 50px;
+        max-height: 90px;
+    }
+}
+
+/* =============================================================================
+   広告表示時のUI位置調整（レスポンシブ対応）
+   ============================================================================= */
+
+/* 広告表示時のみ、ゲームコンテナ全体に余白を付与して広告と重ならないようにする */
+
+/* モバイル（767px以下）: 広告分の高さをゲームコンテナで吸収 */
+@media (max-width: 767px) {
+    .novel-game-container.has-ad-banner {
+        padding-top: 80px;
+    }
+}
+
+/* タブレット（768px〜1023px）: 広告分の高さをゲームコンテナで吸収 */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .novel-game-container.has-ad-banner {
+        padding-top: 90px;
+    }
+}
+
+/* PC（1024px以上）: 広告分の高さをゲームコンテナで吸収 */
+@media (min-width: 1024px) {
+    .novel-game-container.has-ad-banner {
+        padding-top: 100px;
+    }
+}
+
+/* =============================================================================
    ベーススタイル
    ============================================================================= */
 
