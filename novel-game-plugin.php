@@ -42,6 +42,7 @@ if ( ! defined( 'NOVEL_GAME_PLUGIN_TEXT_DOMAIN' ) ) {
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/post-types.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/blocks.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/revisions.php';
+require_once NOVEL_GAME_PLUGIN_PATH . 'includes/sample-data.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/meta-boxes.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/dashboard.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/my-games.php';
@@ -71,6 +72,7 @@ add_action( 'plugins_loaded', 'noveltool_init' );
  * 
  * カスタム投稿タイプのリライトルールを登録するため、
  * flush_rewrite_rules()を実行してパーマリンク構造を更新する
+ * また、サンプルゲームをインストールする
  *
  * @since 1.1.0
  */
@@ -80,6 +82,9 @@ function noveltool_activate_plugin() {
     
     // リライトルールを再生成
     flush_rewrite_rules();
+    
+    // サンプルゲームをインストール（既に存在する場合はスキップ）
+    noveltool_install_sample_game();
 }
 register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
 
