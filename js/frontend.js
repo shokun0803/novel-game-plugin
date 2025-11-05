@@ -1503,6 +1503,19 @@
 								processSceneArrivalFlags( $response, extractedGameTitle );
 							}
 							
+							// 広告設定データを取得（ゲーム固有の設定がある場合）
+							var adConfigScript = $response.filter( 'script#novel-ad-config' );
+							if ( adConfigScript.length === 0 ) {
+								adConfigScript = $response.find( '#novel-ad-config' );
+							}
+							if ( adConfigScript.length > 0 ) {
+								var adConfigData = adConfigScript.text() || adConfigScript.html();
+								if ( adConfigData ) {
+									adConfig = JSON.parse( adConfigData );
+									debugLog( 'ゲーム固有の広告設定を読み込みました:', adConfig );
+								}
+							}
+							
 							resolve();
 						} catch ( error ) {
 							console.error( 'ゲームデータの解析に失敗しました:', error );
@@ -3437,6 +3450,9 @@
 				console.log( 'Game container content length:', containerContent ? containerContent.length : 0 );
 				console.log( 'Game container content (first 200 chars):', containerContent ? containerContent.substring( 0, 200 ) : 'empty' );
 			}
+			
+			// ゲーム開始時に広告を表示（条件に関係なく）
+			showAdvertisement();
 		}
 
 		/**
