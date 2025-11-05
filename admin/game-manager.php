@@ -377,13 +377,13 @@ function noveltool_render_game_settings_tab( $game ) {
             </p>
         </form>
 
-        <h3><?php esc_html_e( 'Flag Management', 'novel-game-plugin' ); ?></h3>
-        <?php
-        $current_flags = noveltool_get_game_flag_master( $editing_game['title'] );
-        ?>
-        
-        <div class="noveltool-flags-section">
-            <h4><?php esc_html_e( 'Current Flags List', 'novel-game-plugin' ); ?></h4>
+            <h3><?php esc_html_e( 'Flag Management', 'novel-game-plugin' ); ?></h3>
+            <?php
+            $current_flags = noveltool_get_game_flag_master( $editing_game['title'] );
+            ?>
+            
+            <div class="noveltool-flags-section">
+                <h4><?php esc_html_e( 'Current Flags List', 'novel-game-plugin' ); ?></h4>
                 
                 <?php if ( ! empty( $current_flags ) ) : ?>
                     <table class="widefat striped">
@@ -463,7 +463,7 @@ function noveltool_render_game_settings_tab( $game ) {
                     </p>
                 </form>
             </div>
-        </div>
+    </div>
     <?php
 }
 
