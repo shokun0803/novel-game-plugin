@@ -211,6 +211,53 @@ function noveltool_admin_post_delete_game() {
 add_action( 'admin_post_noveltool_delete_game', 'noveltool_admin_post_delete_game' );
 
 /**
+ * admin-post ハンドラー: シーン削除
+ *
+ * @since 1.2.0
+ */
+function noveltool_admin_post_delete_scene() {
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+    }
+
+    // nonceチェック
+    if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_scenes' ) ) {
+        $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
+        $redirect_url = $game_id 
+            ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'error' => 'security' ) )
+            : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    $scene_id = isset( $_POST['scene_id'] ) ? intval( wp_unslash( $_POST['scene_id'] ) ) : 0;
+    $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
+
+    if ( $scene_id ) {
+        $result = wp_delete_post( $scene_id, true ); // 完全削除（ゴミ箱に入れない）
+
+        if ( $result ) {
+            $redirect_url = $game_id 
+                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'success' => 'scene_deleted' ) )
+                : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+        } else {
+            $redirect_url = $game_id 
+                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'error' => 'delete_failed' ) )
+                : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+        }
+    } else {
+        $redirect_url = $game_id 
+            ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'error' => 'invalid_id' ) )
+            : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+    }
+
+    wp_safe_redirect( $redirect_url );
+    exit;
+}
+add_action( 'admin_post_noveltool_delete_scene', 'noveltool_admin_post_delete_scene' );
+
+/**
  * admin-post ハンドラー: フラグ追加
  *
  * @since 1.2.0

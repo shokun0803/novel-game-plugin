@@ -93,8 +93,46 @@ function noveltool_game_manager_page( $game ) {
  * @since 1.2.0
  */
 function noveltool_render_scenes_tab( $game, $scenes ) {
+    // エラー・成功メッセージの取得
+    $error_message = '';
+    $success_message = '';
+    
+    if ( isset( $_GET['error'] ) ) {
+        switch ( sanitize_text_field( wp_unslash( $_GET['error'] ) ) ) {
+            case 'security':
+                $error_message = __( 'Security check failed.', 'novel-game-plugin' );
+                break;
+            case 'delete_failed':
+                $error_message = __( 'Failed to delete.', 'novel-game-plugin' );
+                break;
+            case 'invalid_id':
+                $error_message = __( 'Invalid ID.', 'novel-game-plugin' );
+                break;
+        }
+    }
+    
+    if ( isset( $_GET['success'] ) ) {
+        switch ( sanitize_text_field( wp_unslash( $_GET['success'] ) ) ) {
+            case 'scene_deleted':
+                $success_message = __( 'Scene has been deleted.', 'novel-game-plugin' );
+                break;
+        }
+    }
+    
     ?>
     <div class="noveltool-scenes-tab">
+        <?php if ( $error_message ) : ?>
+            <div class="notice notice-error is-dismissible">
+                <p><?php echo esc_html( $error_message ); ?></p>
+            </div>
+        <?php endif; ?>
+
+        <?php if ( $success_message ) : ?>
+            <div class="notice notice-success is-dismissible">
+                <p><?php echo esc_html( $success_message ); ?></p>
+            </div>
+        <?php endif; ?>
+        
         <?php if ( empty( $scenes ) ) : ?>
             <div class="no-scenes-message">
                 <p><?php esc_html_e( 'No scenes have been created for this game yet.', 'novel-game-plugin' ); ?></p>
@@ -148,6 +186,15 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                                 <a href="<?php echo esc_url( get_permalink( $scene->ID ) ); ?>" class="button button-small" target="_blank">
                                     <?php esc_html_e( 'Preview', 'novel-game-plugin' ); ?>
                                 </a>
+                                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;" class="noveltool-delete-scene-form">
+                                    <?php wp_nonce_field( 'manage_scenes' ); ?>
+                                    <input type="hidden" name="action" value="noveltool_delete_scene" />
+                                    <input type="hidden" name="scene_id" value="<?php echo esc_attr( $scene->ID ); ?>" />
+                                    <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
+                                    <button type="submit" class="button button-small noveltool-delete-button" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete this scene? This action cannot be undone.', 'novel-game-plugin' ) ); ?>');">
+                                        <?php esc_html_e( 'Delete', 'novel-game-plugin' ); ?>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     <?php endforeach; ?>
