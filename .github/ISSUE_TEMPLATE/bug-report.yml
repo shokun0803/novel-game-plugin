@@ -7,21 +7,15 @@ body:
       value: |
         以下のフォームに沿って、バグの詳細を日本語で記入してください。
         すべての PR は base: dev を必須とします。タイトル・概要の後追い変更は行わないでください。
-  - type: input
-    id: title
-    attributes:
-      label: バグタイトル
-      description: バグの概要（短く簡潔に）
-      placeholder: 例）○○機能で××が正常動作しない問題
-    validations:
-      required: true
   - type: textarea
-    id: description
+    id: title_and_description
     attributes:
-      label: 問題概要
-      description: 発生している問題の詳細を記述してください
+      label: バグタイトルと問題概要
+      description: 最初にバグタイトルを記載し、その後に問題の詳細を記述してください
       placeholder: |
-        どの機能のどの部分で問題が発生しているか、期待される動作と実際の動作の違いを具体的に説明してください。
+        バグタイトル: ○○機能で××が正常動作しない問題
+
+        問題概要: どの機能のどの部分で問題が発生しているか、期待される動作と実際の動作の違いを具体的に説明してください。
     validations:
       required: true
   - type: textarea
