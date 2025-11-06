@@ -56,6 +56,22 @@
         align-items: center;
         gap: 5px;
     }
+    
+    .noveltool-delete-scene-form {
+        display: inline;
+    }
+    
+    .noveltool-delete-button {
+        background: #dc3232;
+        color: #fff;
+        border-color: #dc3232;
+    }
+    
+    .noveltool-delete-button:hover {
+        background: #c22a2a;
+        border-color: #c22a2a;
+        color: #fff;
+    }
     </style>
     <style>
     .noveltool-new-scene-tab {

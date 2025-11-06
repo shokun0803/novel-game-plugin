@@ -240,6 +240,24 @@ function noveltool_save_game( $game_data ) {
 function noveltool_delete_game( $game_id ) {
     $games = noveltool_get_all_games();
     
+    // ゲームタイトルを取得
+    $game_title = '';
+    foreach ( $games as $game ) {
+        if ( $game['id'] == $game_id ) {
+            $game_title = $game['title'];
+            break;
+        }
+    }
+    
+    // 関連するすべてのシーンを削除
+    if ( $game_title ) {
+        $scenes = noveltool_get_posts_by_game_title( $game_title );
+        foreach ( $scenes as $scene ) {
+            wp_delete_post( $scene->ID, true ); // 完全削除（ゴミ箱に入れない）
+        }
+    }
+    
+    // ゲームデータを削除
     $filtered_games = array();
     foreach ( $games as $game ) {
         if ( $game['id'] != $game_id ) {
