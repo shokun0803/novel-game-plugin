@@ -103,6 +103,23 @@ function noveltool_my_games_page() {
             </div>
         <?php endif; ?>
         
+        <?php
+        // サンプルゲームが存在するかチェック
+        $sample_game_title = __( 'Sample Novel Game', 'novel-game-plugin' );
+        $sample_exists = noveltool_get_game_by_title( $sample_game_title ) !== null;
+        
+        if ( ! $sample_exists ) :
+        ?>
+            <div class="notice notice-info">
+                <p><?php esc_html_e( 'Sample game is not installed. You can install a sample game to see how the plugin works.', 'novel-game-plugin' ); ?></p>
+                <p>
+                    <button id="noveltool-install-sample-game" class="button button-primary">
+                        <?php esc_html_e( 'Install Sample Game', 'novel-game-plugin' ); ?>
+                    </button>
+                </p>
+            </div>
+        <?php endif; ?>
+        
         <?php if ( empty( $all_games ) ) : ?>
             <div class="noveltool-no-games">
                 <p><?php esc_html_e( 'No games have been created yet.', 'novel-game-plugin' ); ?></p>
@@ -203,3 +220,50 @@ function noveltool_my_games_admin_styles( $hook ) {
     );
 }
 add_action( 'admin_enqueue_scripts', 'noveltool_my_games_admin_styles' );
+
+/**
+ * マイゲームページ用のスクリプトを読み込み
+ *
+ * @param string $hook 現在のページフック
+ * @since 1.2.0
+ */
+function noveltool_my_games_admin_scripts( $hook ) {
+    // 対象ページでのみ実行
+    if ( 'novel_game_page_novel-game-my-games' !== $hook ) {
+        return;
+    }
+
+    // インラインスクリプトでAJAX処理を追加
+    $inline_script = "
+    jQuery(document).ready(function($) {
+        $('#noveltool-install-sample-game').on('click', function(e) {
+            e.preventDefault();
+            
+            if (!confirm('" . esc_js( __( 'Install sample game?', 'novel-game-plugin' ) ) . "')) {
+                return;
+            }
+            
+            var button = $(this);
+            button.prop('disabled', true).text('" . esc_js( __( 'Installing...', 'novel-game-plugin' ) ) . "');
+            
+            $.post(ajaxurl, {
+                action: 'noveltool_install_sample_game',
+                nonce: '" . wp_create_nonce( 'noveltool_install_sample_game' ) . "'
+            }, function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.data.message || '" . esc_js( __( 'Installation failed.', 'novel-game-plugin' ) ) . "');
+                    button.prop('disabled', false).text('" . esc_js( __( 'Install Sample Game', 'novel-game-plugin' ) ) . "');
+                }
+            }).fail(function() {
+                alert('" . esc_js( __( 'Installation failed.', 'novel-game-plugin' ) ) . "');
+                button.prop('disabled', false).text('" . esc_js( __( 'Install Sample Game', 'novel-game-plugin' ) ) . "');
+            });
+        });
+    });
+    ";
+    
+    wp_add_inline_script( 'jquery', $inline_script );
+}
+add_action( 'admin_enqueue_scripts', 'noveltool_my_games_admin_scripts' );

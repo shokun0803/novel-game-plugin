@@ -89,6 +89,7 @@ function noveltool_get_sample_game_data() {
         'description'    => __( 'This is a sample visual novel game to help you understand how to use this plugin. You can edit or delete this game at any time.', 'novel-game-plugin' ),
         'title_image'    => '',
         'game_over_text' => __( 'Game Over', 'novel-game-plugin' ),
+        'is_sample'      => true, // サンプルゲームであることを示すフラグ
     );
     
     // サンプルゲームのシーンデータ
@@ -200,20 +201,19 @@ function noveltool_get_sample_game_data() {
 /**
  * サンプルゲームをインストール
  *
- * プラグイン有効化時に実行され、サンプルゲームとシーンを作成
+ * プラグイン有効化時または手動でサンプルゲームとシーンを作成
+ * タイトルベースで既存チェックを行い、存在しない場合のみインストール
  *
  * @return bool 成功した場合true、失敗または既に存在する場合false
  * @since 1.2.0
  */
 function noveltool_install_sample_game() {
-    // サンプルゲームが既に存在するかチェック
+    // サンプルゲームが既に存在するかチェック（タイトルベース）
     $sample_game_title = __( 'Sample Novel Game', 'novel-game-plugin' );
+    $existing_game = noveltool_get_game_by_title( $sample_game_title );
     
-    // 既存のサンプルゲームをチェック（オプションで管理）
-    $sample_installed = get_option( 'noveltool_sample_game_installed', false );
-    
-    if ( $sample_installed ) {
-        return false; // 既にインストール済み
+    if ( $existing_game ) {
+        return false; // 既に存在する
     }
     
     // サンプルデータを取得
@@ -321,18 +321,9 @@ function noveltool_install_sample_game() {
     $created_scenes = count( $scene_ids );
     
     if ( $created_scenes < $expected_scenes ) {
-        // 一部のシーンの作成に失敗した場合でもインストール済みとしてマーク
-        // （再試行を防ぐため）
-        update_option( 'noveltool_sample_game_installed', true );
-        
-        // 不完全なインストールであることを記録
-        update_option( 'noveltool_sample_game_install_incomplete', true );
-        
+        // 一部のシーンの作成に失敗した場合
         return false; // 不完全なインストール
     }
-    
-    // インストール済みフラグを設定
-    update_option( 'noveltool_sample_game_installed', true );
     
     return true;
 }

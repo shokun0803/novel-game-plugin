@@ -83,10 +83,37 @@ function noveltool_activate_plugin() {
     // リライトルールを再生成
     flush_rewrite_rules();
     
-    // サンプルゲームをインストール（既に存在する場合はスキップ）
+    // サンプルゲームをインストール（存在しない場合のみ）
     noveltool_install_sample_game();
 }
 register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
+
+/**
+ * サンプルゲームインストール用のAJAXハンドラー
+ *
+ * @since 1.2.0
+ */
+function noveltool_install_sample_game_ajax() {
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'novel-game-plugin' ) ) );
+    }
+    
+    // ノンスチェック
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'noveltool_install_sample_game' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Security check failed', 'novel-game-plugin' ) ) );
+    }
+    
+    // サンプルゲームをインストール
+    $result = noveltool_install_sample_game();
+    
+    if ( $result ) {
+        wp_send_json_success( array( 'message' => __( 'Sample game installed successfully', 'novel-game-plugin' ) ) );
+    } else {
+        wp_send_json_error( array( 'message' => __( 'Failed to install sample game. It may already exist.', 'novel-game-plugin' ) ) );
+    }
+}
+add_action( 'wp_ajax_noveltool_install_sample_game', 'noveltool_install_sample_game_ajax' );
 
 /**
  * プラグイン無効化時の処理
