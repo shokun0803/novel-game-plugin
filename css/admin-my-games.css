@@ -98,23 +98,26 @@
         padding: 0 20px 20px;
         display: flex;
         gap: 8px;
+        justify-content: space-between;
+        align-items: flex-end;
     }
     
     .game-actions .button {
-        flex: 1;
-        text-align: center;
-        justify-content: center;
+        flex: none;
     }
     
     .game-actions .noveltool-delete-game-form {
-        flex: 1;
+        flex: none;
     }
     
     .game-actions .noveltool-delete-button {
-        width: 100%;
+        width: auto;
+        padding: 4px 8px;
+        font-size: 12px;
         background: #dc3232;
         color: #fff;
         border-color: #dc3232;
+        align-self: flex-end;
     }
     
     .game-actions .noveltool-delete-button:hover {
