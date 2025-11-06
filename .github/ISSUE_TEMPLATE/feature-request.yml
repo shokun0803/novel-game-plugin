@@ -7,21 +7,15 @@ body:
       value: |
         以下のフォームに沿って、必要事項をすべて日本語で記入してください。
         すべての PR は base: dev を必須とします。タイトル・概要の後追い変更は行わないでください。
-  - type: input
-    id: title
-    attributes:
-      label: タイトル
-      description: 機能名（短く簡潔に）
-      placeholder: 例）○○機能の追加
-    validations:
-      required: true
   - type: textarea
-    id: overview
+    id: title_and_overview
     attributes:
-      label: 概要
-      description: 目的、背景、達成したいことを具体的に記載してください
+      label: タイトルと概要
+      description: 最初にタイトルを記載し、その後に概要を具体的に記載してください
       placeholder: |
-        例）この機能は○○の改善を目的とし、△△の課題を解決します。管理画面/フロント側のどちらに影響するか、想定するユーザー動線、表示/保存の要件などを記述してください。
+        タイトル: ○○機能の追加
+
+        概要: この機能は○○の改善を目的とし、△△の課題を解決します。管理画面/フロント側のどちらに影響するか、想定するユーザー動線、表示/保存の要件などを記述してください。
     validations:
       required: true
   - type: textarea
