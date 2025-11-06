@@ -97,8 +97,9 @@
     .game-actions {
         padding: 0 20px 20px;
         display: flex;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 8px;
-        align-items: flex-end;
     }
     
     .game-actions .button {
@@ -108,7 +109,7 @@
     }
     
     .game-actions .noveltool-delete-game-form {
-        flex: none;
+        align-self: flex-end;
     }
     
     .game-actions .noveltool-delete-button {
@@ -118,7 +119,6 @@
         background: #dc3232;
         color: #fff;
         border-color: #dc3232;
-        align-self: flex-end;
     }
     
     .game-actions .noveltool-delete-button:hover {
