@@ -93,7 +93,8 @@ msgstr ""
 "選択肢を追加できる編集画面に移動します。"
 
 #: admin/game-manager.php:203 admin/meta-boxes.php:27 admin/new-game.php:130
-#: admin/game-settings.php:367
+#: admin/game-settings.php:367 admin/my-games.php:77 admin/game-manager.php:106
+#: admin/game-settings.php:230
 msgid "Security check failed."
 msgstr "セキュリティチェックに失敗しました。"
 
@@ -191,6 +192,7 @@ msgstr "説明"
 
 #: admin/game-manager.php:353 admin/game-settings.php:549
 #: admin/game-settings.php:657 includes/revisions.php:320
+#: admin/my-games.php:129 admin/game-manager.php:155
 msgid "Delete"
 msgstr "削除"
 
@@ -1113,6 +1115,30 @@ msgstr "設定"
 #: admin/game-settings.php:379
 msgid "Failed to delete game."
 msgstr "ゲームの削除に失敗しました。"
+
+#: admin/my-games.php:80 admin/game-manager.php:109 admin/game-settings.php:256
+msgid "Failed to delete."
+msgstr "削除に失敗しました。"
+
+#: admin/my-games.php:83 admin/game-manager.php:112
+msgid "Invalid ID."
+msgstr "無効なIDです。"
+
+#: admin/my-games.php:89
+msgid "Game has been deleted."
+msgstr "ゲームが削除されました。"
+
+#: admin/game-manager.php:118
+msgid "Scene has been deleted."
+msgstr "シーンが削除されました。"
+
+#: admin/my-games.php:128
+msgid "Are you sure you want to delete this game? This action cannot be undone."
+msgstr "本当にこのゲームを削除しますか？この操作は取り消せません。"
+
+#: admin/game-manager.php:154
+msgid "Are you sure you want to delete this scene? This action cannot be undone."
+msgstr "本当にこのシーンを削除しますか？この操作は取り消せません。"
 
 #: admin/game-settings.php:382
 msgid "Invalid game ID."

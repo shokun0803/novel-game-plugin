@@ -1084,6 +1084,38 @@ msgstr ""
 msgid "Failed to delete game."
 msgstr ""
 
+#: admin/my-games.php:77 admin/game-manager.php:106 admin/game-settings.php:230
+msgid "Security check failed."
+msgstr ""
+
+#: admin/my-games.php:80 admin/game-manager.php:109 admin/game-settings.php:256
+msgid "Failed to delete."
+msgstr ""
+
+#: admin/my-games.php:83 admin/game-manager.php:112
+msgid "Invalid ID."
+msgstr ""
+
+#: admin/my-games.php:89
+msgid "Game has been deleted."
+msgstr ""
+
+#: admin/game-manager.php:118
+msgid "Scene has been deleted."
+msgstr ""
+
+#: admin/my-games.php:128
+msgid "Are you sure you want to delete this game? This action cannot be undone."
+msgstr ""
+
+#: admin/game-manager.php:154
+msgid "Are you sure you want to delete this scene? This action cannot be undone."
+msgstr ""
+
+#: admin/my-games.php:129 admin/game-manager.php:155
+msgid "Delete"
+msgstr ""
+
 #: admin/game-settings.php:465
 msgid "Please enter a flag name and game title."
 msgstr ""
