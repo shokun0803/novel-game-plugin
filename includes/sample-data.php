@@ -90,6 +90,7 @@ function noveltool_get_sample_game_data() {
         'title_image'    => '',
         'game_over_text' => __( 'Game Over', 'novel-game-plugin' ),
         'is_sample'      => true, // サンプルゲームであることを示すフラグ
+        'machine_name'   => 'sample_game_v1', // 機械識別子（多言語環境での重複防止）
     );
     
     // サンプルゲームのシーンデータ
@@ -202,24 +203,39 @@ function noveltool_get_sample_game_data() {
  * サンプルゲームをインストール
  *
  * プラグイン有効化時または手動でサンプルゲームとシーンを作成
- * タイトルベースで既存チェックを行い、存在しない場合のみインストール
+ * 機械識別子（machine_name）で既存チェックを行い、存在しない場合のみインストール
  *
  * @return bool 成功した場合true、失敗または既に存在する場合false
  * @since 1.2.0
  */
 function noveltool_install_sample_game() {
-    // サンプルゲームが既に存在するかチェック（タイトルベース）
-    $sample_game_title = __( 'Sample Novel Game', 'novel-game-plugin' );
-    $existing_game = noveltool_get_game_by_title( $sample_game_title );
-    
-    if ( $existing_game ) {
-        return false; // 既に存在する
-    }
-    
     // サンプルデータを取得
     $sample_data = noveltool_get_sample_game_data();
     $game_data = $sample_data['game'];
     $scenes_data = $sample_data['scenes'];
+    
+    // サンプルゲームが既に存在するかチェック
+    // 1. 機械識別子（machine_name）で検索（優先）
+    $existing_game = null;
+    if ( isset( $game_data['machine_name'] ) ) {
+        $existing_game = noveltool_get_game_by_machine_name( $game_data['machine_name'] );
+    }
+    
+    // 2. machine_name が見つからない場合、タイトルベースでチェック（後方互換）
+    if ( ! $existing_game ) {
+        $sample_game_title = __( 'Sample Novel Game', 'novel-game-plugin' );
+        $existing_game = noveltool_get_game_by_title( $sample_game_title );
+        
+        // タイトルで見つかった場合、machine_name を付与して移行
+        if ( $existing_game && ! isset( $existing_game['machine_name'] ) ) {
+            $existing_game['machine_name'] = $game_data['machine_name'];
+            noveltool_save_game( $existing_game );
+        }
+    }
+    
+    if ( $existing_game ) {
+        return false; // 既に存在する
+    }
     
     // ゲームを作成
     $game_id = noveltool_save_game( $game_data );
@@ -239,17 +255,18 @@ function noveltool_install_sample_game() {
             'post_title'   => $scene_data['title'],
             'post_content' => '',
             'post_status'  => 'publish',
+            'post_author'  => get_current_user_id(), // 有効化したユーザーを作成者に設定
         );
         
         $post_id = wp_insert_post( $post_data );
         
-        if ( is_wp_error( $post_id ) ) {
+        if ( is_wp_error( $post_id ) || ! $post_id ) {
             // エラーをログに記録
             $creation_errors[] = sprintf(
                 'Failed to create scene %d (%s): %s',
                 $index + 1,
                 $scene_data['title'],
-                $post_id->get_error_message()
+                is_wp_error( $post_id ) ? $post_id->get_error_message() : 'wp_insert_post returned 0'
             );
             continue; // エラーの場合はスキップ
         }
@@ -633,6 +650,7 @@ function noveltool_get_shadow_detective_game_data() {
         'title_image'    => '',
         'game_over_text' => __( 'Game Over', 'novel-game-plugin' ),
         'is_sample'      => true,
+        'machine_name'   => 'shadow_detective_v1', // 機械識別子（多言語環境での重複防止）
     );
     
     // シーンデータ（全23シーン）
@@ -1469,19 +1487,34 @@ function noveltool_get_shadow_detective_game_data() {
  * @since 1.3.0
  */
 function noveltool_install_shadow_detective_game() {
-    // Shadow Detectiveが既に存在するかチェック
-    $game_title = __( 'Shadow Detective', 'novel-game-plugin' );
-    $existing_game = noveltool_get_game_by_title( $game_title );
-    
-    if ( $existing_game ) {
-        return false; // 既に存在する
-    }
-    
     // Shadow Detectiveデータを取得
     $detective_data = noveltool_get_shadow_detective_game_data();
     $game_data = $detective_data['game'];
     $scenes_data = $detective_data['scenes'];
     $flag_master = $detective_data['flag_master'];
+    
+    // Shadow Detectiveが既に存在するかチェック
+    // 1. 機械識別子（machine_name）で検索（優先）
+    $existing_game = null;
+    if ( isset( $game_data['machine_name'] ) ) {
+        $existing_game = noveltool_get_game_by_machine_name( $game_data['machine_name'] );
+    }
+    
+    // 2. machine_name が見つからない場合、タイトルベースでチェック（後方互換）
+    if ( ! $existing_game ) {
+        $game_title = __( 'Shadow Detective', 'novel-game-plugin' );
+        $existing_game = noveltool_get_game_by_title( $game_title );
+        
+        // タイトルで見つかった場合、machine_name を付与して移行
+        if ( $existing_game && ! isset( $existing_game['machine_name'] ) ) {
+            $existing_game['machine_name'] = $game_data['machine_name'];
+            noveltool_save_game( $existing_game );
+        }
+    }
+    
+    if ( $existing_game ) {
+        return false; // 既に存在する
+    }
     
     // ゲームを作成
     $game_id = noveltool_save_game( $game_data );
@@ -1561,17 +1594,18 @@ function noveltool_install_shadow_detective_game() {
             'post_title'   => $scene_data['title'],
             'post_content' => '',
             'post_status'  => 'publish',
+            'post_author'  => get_current_user_id(), // 有効化したユーザーを作成者に設定
         );
         
         $post_id = wp_insert_post( $post_data );
         
-        if ( is_wp_error( $post_id ) ) {
+        if ( is_wp_error( $post_id ) || ! $post_id ) {
             // エラーをログに記録
             $creation_errors[] = sprintf(
                 'Failed to create scene %d (%s): %s',
                 $index + 1,
                 $scene_data['title'],
-                $post_id->get_error_message()
+                is_wp_error( $post_id ) ? $post_id->get_error_message() : 'wp_insert_post returned 0'
             );
             continue; // エラーの場合はスキップ
         }

@@ -77,6 +77,13 @@ add_action( 'plugins_loaded', 'noveltool_init' );
  * @since 1.1.0
  */
 function noveltool_activate_plugin() {
+    // プラグイン有効化時に翻訳ファイルを明示的に読み込む（activation 時点で __() が正しく動作するように）
+    load_plugin_textdomain(
+        NOVEL_GAME_PLUGIN_TEXT_DOMAIN,
+        false,
+        dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
+    );
+    
     // カスタム投稿タイプを登録
     noveltool_register_post_type();
     
@@ -237,6 +244,27 @@ function noveltool_get_game_by_title( $title ) {
         }
     }
     
+    return null;
+}
+
+/**
+ * 機械識別子（machine_name）でゲームを取得する関数
+ *
+ * @param string $machine_name 機械識別子（例: 'sample_game_v1', 'shadow_detective_v1'）
+ * @return array|null ゲームデータ または null
+ * @since 1.3.0
+ */
+function noveltool_get_game_by_machine_name( $machine_name ) {
+    if ( ! $machine_name ) {
+        return null;
+    }
+
+    $games = noveltool_get_all_games();
+    foreach ( $games as $game ) {
+        if ( isset( $game['machine_name'] ) && $game['machine_name'] === $machine_name ) {
+            return $game;
+        }
+    }
     return null;
 }
 
