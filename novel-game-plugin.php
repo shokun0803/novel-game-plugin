@@ -90,18 +90,15 @@ function noveltool_activate_plugin() {
     // リライトルールを再生成
     flush_rewrite_rules();
     
-    // サンプルゲームをインストール（存在しない場合のみ）
-    noveltool_install_sample_game();
-    
     // Shadow Detectiveゲームをインストール（存在しない場合のみ）
     noveltool_install_shadow_detective_game();
 }
 register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
 
 /**
- * サンプルゲームインストール用のAJAXハンドラー
+ * サンプルゲーム（Shadow Detective）インストール用のAJAXハンドラー
  *
- * @since 1.2.0
+ * @since 1.3.0
  */
 function noveltool_install_sample_game_ajax() {
     // 権限チェック
@@ -114,8 +111,8 @@ function noveltool_install_sample_game_ajax() {
         wp_send_json_error( array( 'message' => __( 'Security check failed', 'novel-game-plugin' ) ) );
     }
     
-    // サンプルゲームをインストール
-    $result = noveltool_install_sample_game();
+    // Shadow Detectiveゲームをインストール
+    $result = noveltool_install_shadow_detective_game();
     
     if ( $result ) {
         wp_send_json_success( array( 'message' => __( 'Sample game installed successfully', 'novel-game-plugin' ) ) );
@@ -250,7 +247,7 @@ function noveltool_get_game_by_title( $title ) {
 /**
  * 機械識別子（machine_name）でゲームを取得する関数
  *
- * @param string $machine_name 機械識別子（例: 'sample_game_v1', 'shadow_detective_v1'）
+ * @param string $machine_name 機械識別子（例: 'shadow_detective_v1'）
  * @return array|null ゲームデータ または null
  * @since 1.3.0
  */

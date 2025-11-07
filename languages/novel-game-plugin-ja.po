@@ -982,9 +982,6 @@ msgstr "ゲームが削除されました。"
 
 #: admin/my-games.php:108 includes/sample-data.php:88
 #: includes/sample-data.php:212
-msgid "Sample Novel Game"
-msgstr "サンプルノベルゲーム"
-
 #: admin/my-games.php:114
 msgid ""
 "Sample game is not installed. You can install a sample game to see how the "
@@ -1254,17 +1251,8 @@ msgid "Game List"
 msgstr "ゲーム一覧"
 
 #: includes/sample-data.php:44
-msgid "Sample Background"
-msgstr "サンプル背景"
-
 #: includes/sample-data.php:63
-msgid "Character A"
-msgstr "キャラクターA"
-
 #: includes/sample-data.php:82
-msgid "Character B"
-msgstr "キャラクターB"
-
 #: includes/sample-data.php:89
 msgid ""
 "This is a sample visual novel game to help you understand how to use this "
@@ -1278,9 +1266,6 @@ msgid "Game Over"
 msgstr "ゲームオーバー"
 
 #: includes/sample-data.php:99
-msgid "Sample Novel Game - Opening"
-msgstr "サンプルノベルゲーム - オープニング"
-
 #: includes/sample-data.php:104 includes/sample-data.php:141
 #: includes/sample-data.php:172
 msgid "Alice"
@@ -1311,9 +1296,6 @@ msgid "I want to learn about choices"
 msgstr "選択肢について学びたい"
 
 #: includes/sample-data.php:136
-msgid "Sample Novel Game - About Story"
-msgstr "サンプルノベルゲーム - ストーリーについて"
-
 #: includes/sample-data.php:142
 msgid "Bob"
 msgstr "ボブ"
@@ -1343,9 +1325,6 @@ msgid "Story Path - End"
 msgstr "ストーリールート - 終了"
 
 #: includes/sample-data.php:166
-msgid "Sample Novel Game - About Choices"
-msgstr "サンプルノベルゲーム - 選択肢について"
-
 #: includes/sample-data.php:175
 msgid "Excellent! You are interested in branching stories."
 msgstr "素晴らしい！分岐ストーリーに興味があるんですね。"
@@ -2433,6 +2412,9 @@ msgstr "画像なし"
 #, php-format
 msgid "Start: %s"
 msgstr "開始: %s"
+msgid "Investigation Failed"
+msgstr "捜査失敗"
+
 
 #~ msgid "Failed to delete game."
 #~ msgstr "ゲームの削除に失敗しました。"
