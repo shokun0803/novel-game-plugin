@@ -73,6 +73,8 @@ add_action( 'plugins_loaded', 'noveltool_init' );
  * カスタム投稿タイプのリライトルールを登録するため、
  * flush_rewrite_rules()を実行してパーマリンク構造を更新する
  * また、サンプルゲームをインストールする
+ * 
+ * ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
  *
  * @since 1.1.0
  */
@@ -117,7 +119,8 @@ function noveltool_install_sample_game_ajax() {
     if ( $result ) {
         wp_send_json_success( array( 'message' => __( 'Sample game installed successfully', 'novel-game-plugin' ) ) );
     } else {
-        wp_send_json_error( array( 'message' => __( 'Failed to install sample game. It may already exist.', 'novel-game-plugin' ) ) );
+        // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
+        wp_send_json_error( array( 'message' => __( 'Shadow Detective is already installed. No changes were made.', 'novel-game-plugin' ) ) );
     }
 }
 add_action( 'wp_ajax_noveltool_install_sample_game', 'noveltool_install_sample_game_ajax' );
@@ -144,7 +147,8 @@ function noveltool_install_shadow_detective_ajax() {
     if ( $result ) {
         wp_send_json_success( array( 'message' => __( 'Shadow Detective game installed successfully', 'novel-game-plugin' ) ) );
     } else {
-        wp_send_json_error( array( 'message' => __( 'Failed to install Shadow Detective game. It may already exist.', 'novel-game-plugin' ) ) );
+        // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
+        wp_send_json_error( array( 'message' => __( 'Shadow Detective is already installed. No changes were made.', 'novel-game-plugin' ) ) );
     }
 }
 add_action( 'wp_ajax_noveltool_install_shadow_detective', 'noveltool_install_shadow_detective_ajax' );

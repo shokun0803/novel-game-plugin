@@ -1192,21 +1192,19 @@ msgstr ""
 msgid "Security check failed"
 msgstr "セキュリティチェックに失敗しました。"
 
-#: novel-game-plugin.php:114
+#: novel-game-plugin.php:118
 #, fuzzy
 msgid "Sample game installed successfully"
-msgstr "ゲームが更新されました。"
+msgstr "サンプルゲームが正常にインストールされました。"
 
-#: novel-game-plugin.php:116
-#, fuzzy
-msgid "Failed to install sample game. It may already exist."
-msgstr ""
-"フラグの追加に失敗しました。同名のフラグが既に存在する可能性があります。"
+#: novel-game-plugin.php:121 novel-game-plugin.php:148
+msgid "Shadow Detective is already installed. No changes were made."
+msgstr "Shadow Detective は既にインストールされています。変更は行われませんでした。"
 
-#: novel-game-plugin.php:141
+#: novel-game-plugin.php:145
 #, fuzzy
 msgid "Shadow Detective game installed successfully"
-msgstr "広告設定が正常に保存されました。"
+msgstr "Shadow Detective ゲームが正常にインストールされました。"
 
 #: novel-game-plugin.php:143
 #, fuzzy
