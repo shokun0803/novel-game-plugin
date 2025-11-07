@@ -85,6 +85,9 @@ function noveltool_activate_plugin() {
     
     // サンプルゲームをインストール（存在しない場合のみ）
     noveltool_install_sample_game();
+    
+    // Shadow Detectiveゲームをインストール（存在しない場合のみ）
+    noveltool_install_shadow_detective_game();
 }
 register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
 
@@ -114,6 +117,33 @@ function noveltool_install_sample_game_ajax() {
     }
 }
 add_action( 'wp_ajax_noveltool_install_sample_game', 'noveltool_install_sample_game_ajax' );
+
+/**
+ * Shadow Detectiveゲームインストール用のAJAXハンドラー
+ *
+ * @since 1.3.0
+ */
+function noveltool_install_shadow_detective_ajax() {
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'novel-game-plugin' ) ) );
+    }
+    
+    // ノンスチェック
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'noveltool_install_shadow_detective' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Security check failed', 'novel-game-plugin' ) ) );
+    }
+    
+    // Shadow Detectiveゲームをインストール
+    $result = noveltool_install_shadow_detective_game();
+    
+    if ( $result ) {
+        wp_send_json_success( array( 'message' => __( 'Shadow Detective game installed successfully', 'novel-game-plugin' ) ) );
+    } else {
+        wp_send_json_error( array( 'message' => __( 'Failed to install Shadow Detective game. It may already exist.', 'novel-game-plugin' ) ) );
+    }
+}
+add_action( 'wp_ajax_noveltool_install_shadow_detective', 'noveltool_install_shadow_detective_ajax' );
 
 /**
  * プラグイン無効化時の処理
