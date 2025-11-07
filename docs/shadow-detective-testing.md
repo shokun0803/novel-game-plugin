@@ -121,8 +121,13 @@
 1. ブラウザの開発者ツール（Console）を開く
 2. ゲームプレイ中に各シーンでフラグを確認
    ```javascript
-   novelGameShowFlags()
+   // フラグデータはlocalStorageに保存されているため、以下で確認可能
+   localStorage.getItem('novel_flags_' + gameTitle)
+   
+   // または、既存のデバッグ関数が実装されている場合
+   // novelGameShowFlags()  // ※実装済みの場合のみ使用可能
    ```
+3. または、ゲーム設定画面からフラグマスタを確認
 
 **期待される結果:**
 - シーン3通過後: flag_item_watch = 1
@@ -130,6 +135,10 @@
 - シーン8通過後: flag_item_note = 1
 - シーン10通過後: flag_item_key = 1, flag_found_hidden_room = 1
 - シーン14通過後: flag_item_trade_memo = 1
+
+**代替手順（フロントエンド未実装の場合）:**
+- ゲーム進行中に選択肢の有効/無効状態を目視確認
+- シーン16で「Explain this illicit transaction memo」選択肢が適切に制御されているか確認
 
 ## UI/表示テスト
 

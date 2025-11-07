@@ -1495,6 +1495,61 @@ function noveltool_install_shadow_detective_game() {
         noveltool_save_game_flag_master( $game_data['title'], $flag_master );
     }
     
+    // フラグIDの一覧を作成（検証用）
+    $valid_flag_ids = array();
+    if ( ! empty( $flag_master ) ) {
+        foreach ( $flag_master as $flag ) {
+            if ( isset( $flag['id'] ) ) {
+                $valid_flag_ids[] = $flag['id'];
+            }
+        }
+    }
+    
+    // required_flags の検証
+    $flag_validation_warnings = array();
+    foreach ( $scenes_data as $index => $scene_data ) {
+        $scene_num = $index + 1;
+        
+        // 選択肢のrequired_flagsをチェック
+        if ( ! empty( $scene_data['choices'] ) ) {
+            foreach ( $scene_data['choices'] as $choice_index => $choice ) {
+                if ( isset( $choice['required_flags'] ) && is_array( $choice['required_flags'] ) ) {
+                    foreach ( $choice['required_flags'] as $required_flag ) {
+                        if ( ! in_array( $required_flag, $valid_flag_ids, true ) ) {
+                            $flag_validation_warnings[] = sprintf(
+                                'Scene %d, choice %d references undefined flag: %s',
+                                $scene_num,
+                                $choice_index + 1,
+                                $required_flag
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        
+        // set_flagsをチェック
+        if ( ! empty( $scene_data['set_flags'] ) ) {
+            foreach ( $scene_data['set_flags'] as $set_flag ) {
+                if ( isset( $set_flag['id'] ) && ! in_array( $set_flag['id'], $valid_flag_ids, true ) ) {
+                    $flag_validation_warnings[] = sprintf(
+                        'Scene %d sets undefined flag: %s',
+                        $scene_num,
+                        $set_flag['id']
+                    );
+                }
+            }
+        }
+    }
+    
+    // フラグ検証警告をログに記録
+    if ( ! empty( $flag_validation_warnings ) && defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+        error_log( 'Novel Game Plugin - Shadow Detective flag validation warnings:' );
+        foreach ( $flag_validation_warnings as $warning ) {
+            error_log( '  - ' . $warning );
+        }
+    }
+    
     // シーンを作成し、IDを記録
     $scene_ids = array();
     $creation_errors = array();

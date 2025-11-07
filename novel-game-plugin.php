@@ -385,7 +385,7 @@ function noveltool_save_game_flag_master( $game_title, $flag_master ) {
     foreach ( $flag_master as $flag ) {
         if ( isset( $flag['id'], $flag['name'] ) ) {
             $sanitized_flags[] = array(
-                'id'          => intval( $flag['id'] ),
+                'id'          => sanitize_text_field( $flag['id'] ),
                 'name'        => sanitize_text_field( $flag['name'] ),
                 'description' => isset( $flag['description'] ) ? sanitize_text_field( $flag['description'] ) : '',
             );
