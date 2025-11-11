@@ -2374,3 +2374,7 @@ msgstr ""
 #, php-format
 msgid "Start: %s"
 msgstr ""
+
+#: includes/sample-data.php:53
+msgid "Investigation Failed"
+msgstr ""

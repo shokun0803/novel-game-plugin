@@ -2555,3 +2555,7 @@ msgstr "開始: %s"
 
 #~ msgid "novel"
 #~ msgstr "novel"
+
+#: includes/sample-data.php:53
+msgid "Investigation Failed"
+msgstr "捜査失敗"
