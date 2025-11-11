@@ -1445,7 +1445,7 @@ msgid ""
 "A full-fledged mystery game. Investigate the disappearance of businessman "
 "Makoto Kurosaki and uncover the truth. Gather evidence and make the right "
 "choices to reach the complete solution ending."
-msgstr ""
+msgstr "本格的なミステリーゲーム。実業家・黒崎誠の失踪を調査し、真実を明らかにします。証拠を集め、正しい選択をして完全解決エンディングを目指しましょう。"
 
 #: includes/sample-data.php:642
 msgid "Shadow Detective - The Beginning"
@@ -1462,19 +1462,19 @@ msgstr "秋の夕暮れ、私の事務所に一人の女性が訪れた。"
 #: includes/sample-data.php:652
 msgid ""
 "Detective, please help me... My husband has been missing for three days."
-msgstr ""
+msgstr "探偵さん、お願いします...夫が3日前から行方不明なんです。"
 
 #: includes/sample-data.php:653
 msgid ""
 "The police say there's no criminal activity, but my husband would never do "
 "this..."
-msgstr ""
+msgstr "警察は事件性はないと言いますが、夫は絶対にこんなことをする人ではありません..."
 
 #: includes/sample-data.php:654
 msgid ""
 "The client's name is Misaki Kurosaki. Her husband is businessman Makoto "
 "Kurosaki."
-msgstr ""
+msgstr "依頼者の名前は黒崎美咲。夫は実業家の黒崎誠だ。"
 
 #: includes/sample-data.php:660
 #, fuzzy
@@ -1499,7 +1499,7 @@ msgstr ""
 msgid ""
 "Since then, his phone hasn't connected, and he hasn't shown up at the "
 "company."
-msgstr ""
+msgstr "それ以来、電話は繋がらず、会社にも姿を見せていません。"
 
 #: includes/sample-data.php:686
 msgid "Recently he seemed strange... as if he was worried about something."
@@ -1509,7 +1509,7 @@ msgstr "最近は様子が変で...何か悩んでいるようでした。"
 msgid ""
 "Strange behavior before disappearing. This might not be a simple runaway "
 "case."
-msgstr ""
+msgstr "失踪前の奇妙な行動。これは単純な家出ではないかもしれない。"
 
 #: includes/sample-data.php:693
 msgid "First, I'll investigate the disappearance site"
@@ -1527,7 +1527,7 @@ msgstr "影の探偵 - 港の倉庫街"
 msgid ""
 "The warehouse district by the port where he was last seen. A deserted, dimly "
 "lit place."
-msgstr ""
+msgstr "最後に目撃された港の倉庫街。人気のない薄暗い場所だ。"
 
 #: includes/sample-data.php:718
 msgid "Something shiny is on the ground... It's a pocket watch."
@@ -1536,7 +1536,7 @@ msgstr "地面に何か光るものが落ちている...懐中時計だ。"
 #: includes/sample-data.php:719
 msgid ""
 "Opening the back reveals an inscription: \"To Makoto, with love, Misaki\""
-msgstr ""
+msgstr "裏蓋を開けると刻印がある：「誠へ 愛を込めて 美咲」"
 
 #: includes/sample-data.php:720
 msgid "This must belong to Makoto Kurosaki. Something happened here."
