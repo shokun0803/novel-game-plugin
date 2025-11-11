@@ -4,8 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Novel Game Plugin 1.2.0\n"
-"Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin/"
-"issues\n"
+"Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin/issues\n"
 "POT-Creation-Date: 2025-11-07 06:50+0000\n"
 "PO-Revision-Date: 2025-01-23 12:00+0000\n"
 "Last-Translator: Novel Game Plugin Team\n"
@@ -108,8 +107,8 @@ msgid ""
 "Are you sure you want to delete this scene? This action cannot be undone."
 msgstr "本当にこのシーンを削除しますか？この操作は取り消せません。"
 
-#: admin/game-manager.php:195 admin/game-manager.php:460 admin/my-games.php:183
-#: includes/revisions.php:320
+#: admin/game-manager.php:195 admin/game-manager.php:460
+#: admin/my-games.php:183 includes/revisions.php:320
 msgid "Delete"
 msgstr "削除"
 
@@ -118,9 +117,7 @@ msgid ""
 "Create a new scene for this game. After creation, you will be taken to the "
 "scene editing screen where you can add backgrounds, characters, dialogue, "
 "and choices."
-msgstr ""
-"このゲーム用の新しいシーンを作成します。作成後、背景、キャラクター、セリフ、"
-"選択肢を追加できる編集画面に移動します。"
+msgstr "このゲーム用の新しいシーンを作成します。作成後、背景、キャラクター、セリフ、選択肢を追加できる編集画面に移動します。"
 
 #: admin/game-manager.php:253 admin/new-game.php:133
 msgid "Please enter a game title."
@@ -179,14 +176,11 @@ msgstr "ゲームオーバー画面テキスト"
 msgid ""
 "Text displayed when there are no choices or next scenes in a non-ending. "
 "Default is \"Game Over\"."
-msgstr ""
-"非エンディングで選択肢や次のシーンがない場合に表示されるテキストです。デフォ"
-"ルトは「Game Over」です。"
+msgstr "非エンディングで選択肢や次のシーンがない場合に表示されるテキストです。デフォルトは「Game Over」です。"
 
 #: admin/game-manager.php:369
-#, fuzzy
 msgid "Ad Settings"
-msgstr "設定"
+msgstr "広告設定"
 
 #: admin/game-manager.php:373
 msgid "Ad Provider"
@@ -207,11 +201,9 @@ msgstr "Adsterra"
 #: admin/game-manager.php:410
 #, php-format
 msgid ""
-"Note: To display ads, you must first configure the ad provider IDs in %s. If "
-"IDs are not set, ads will not be displayed."
-msgstr ""
-"注意：広告を表示するには、まず%sで広告プロバイダーIDを設定する必要があります。"
-"IDが設定されていない場合、広告は表示されません。"
+"Note: To display ads, you must first configure the ad provider IDs in %s. If"
+" IDs are not set, ads will not be displayed."
+msgstr "注意：広告を表示するには、まず%sで広告プロバイダーIDを設定する必要があります。IDが設定されていない場合、広告は表示されません。"
 
 #: admin/game-manager.php:411 admin/ad-management.php:22
 #: admin/ad-management.php:23 admin/ad-management.php:71
@@ -307,9 +299,7 @@ msgstr "新しいゲームを作成"
 msgid ""
 "Click \"Create New Game\" to set up your game title, description, and title "
 "image."
-msgstr ""
-"「新規ゲーム作成」をクリックして、ゲームタイトル、説明、タイトル画像を設定し"
-"ます。"
+msgstr "「新規ゲーム作成」をクリックして、ゲームタイトル、説明、タイトル画像を設定します。"
 
 #: admin/dashboard.php:86
 msgid "Create Scenes"
@@ -326,8 +316,7 @@ msgstr "ゲームを公開"
 
 #: admin/dashboard.php:94
 msgid "Use shortcodes to display your game on any page or post on your site."
-msgstr ""
-"ショートコードを使用して、サイトの任意のページや投稿にゲームを表示します。"
+msgstr "ショートコードを使用して、サイトの任意のページや投稿にゲームを表示します。"
 
 #: admin/dashboard.php:102
 msgid "About Novel Game Plugin"
@@ -339,9 +328,7 @@ msgid ""
 "games directly in WordPress. You can create multiple games, manage scenes "
 "with branching storylines, and use flags for conditional content."
 msgstr ""
-"ノベルゲームプラグインは、WordPress上で直接ビジュアルノベルやサウンドノベル形"
-"式のゲームを作成できます。複数のゲームを作成し、分岐するストーリーラインで"
-"シーンを管理し、条件付きコンテンツにフラグを使用できます。"
+"ノベルゲームプラグインは、WordPress上で直接ビジュアルノベルやサウンドノベル形式のゲームを作成できます。複数のゲームを作成し、分岐するストーリーラインでシーンを管理し、条件付きコンテンツにフラグを使用できます。"
 
 #: admin/dashboard.php:104
 msgid "Key Features:"
@@ -577,27 +564,22 @@ msgstr "投稿が保存されていません。保存してから新しいコマ
 
 #: admin/meta-boxes.php:342
 #, php-format
-msgid ""
-"A new scene \"%s\" has been created. You can edit it from the edit link."
+msgid "A new scene \"%s\" has been created. You can edit it from the edit link."
 msgstr "新しいシーン「%s」が作成されました。編集リンクから編集できます。"
 
 #: admin/meta-boxes.php:344
 msgid ""
 "Unsupported file format. Only jpg, jpeg, png, gif, and webp files can be "
 "uploaded."
-msgstr ""
-"サポートされていないファイル形式です。jpg, jpeg, png, gif, webp のみアップ"
-"ロード可能です。"
+msgstr "サポートされていないファイル形式です。jpg, jpeg, png, gif, webp のみアップロード可能です。"
 
 #: admin/meta-boxes.php:345
 msgid "Unsupported file format. Only image files can be uploaded."
-msgstr ""
-"サポートされていないファイル形式です。画像ファイルのみアップロード可能です。"
+msgstr "サポートされていないファイル形式です。画像ファイルのみアップロード可能です。"
 
 #: admin/meta-boxes.php:346
 msgid "File size is too large. Please upload a file smaller than 5MB."
-msgstr ""
-"ファイルサイズが大きすぎます。5MB以下のファイルをアップロードしてください。"
+msgstr "ファイルサイズが大きすぎます。5MB以下のファイルをアップロードしてください。"
 
 #: admin/meta-boxes.php:649
 msgid "-- Please Select a Game --"
@@ -667,9 +649,7 @@ msgstr "+ セリフを追加"
 msgid ""
 "You can set a background image for each dialogue. If no background image is "
 "specified, the background from the previous scene will continue."
-msgstr ""
-"各セリフに対して背景画像を設定できます。背景画像が指定されていない場合は、前"
-"のシーンの背景が継続されます。"
+msgstr "各セリフに対して背景画像を設定できます。背景画像が指定されていない場合は、前のシーンの背景が継続されます。"
 
 #: admin/meta-boxes.php:840 includes/revisions.php:389
 msgid "Choices"
@@ -735,9 +715,7 @@ msgstr "このシーンをエンディング（ゲームの終了）として設
 msgid ""
 "When checked, the game will end at this scene. The ending takes priority "
 "even if choices are set."
-msgstr ""
-"チェックを入れると、このシーンでゲームが終了します。選択肢が設定されていても"
-"エンディングが優先されます。"
+msgstr "チェックを入れると、このシーンでゲームが終了します。選択肢が設定されていてもエンディングが優先されます。"
 
 #: admin/meta-boxes.php:900
 msgid "Ending Screen Text"
@@ -751,16 +729,15 @@ msgstr "エンディング画面に表示するテキスト（デフォルト: �
 msgid ""
 "Set the text to display on the ending screen. If blank, \"END\" will be "
 "displayed."
-msgstr ""
-"エンディング画面に表示するテキストを設定します。空欄の場合は「END」が表示され"
-"ます。"
+msgstr "エンディング画面に表示するテキストを設定します。空欄の場合は「END」が表示されます。"
 
 #: admin/meta-boxes.php:932
 msgid "Flags to Set on Scene Arrival"
 msgstr "シーン到達時に設定するフラグ"
 
 #: admin/meta-boxes.php:933
-msgid "Select flags that will be automatically set when this scene is reached."
+msgid ""
+"Select flags that will be automatically set when this scene is reached."
 msgstr "このシーンに到達した時に自動的に設定されるフラグを選択してください。"
 
 #: admin/meta-boxes.php:954
@@ -776,17 +753,13 @@ msgid ""
 "To set individual flag conditions for each dialogue, configure them when "
 "editing dialogues. Dialogues will not be displayed if flag conditions are "
 "not met."
-msgstr ""
-"各セリフに個別のフラグ条件を設定する場合は、セリフ編集時に設定してください。"
-"フラグ条件を満たさない場合、そのセリフは表示されません。"
+msgstr "各セリフに個別のフラグ条件を設定する場合は、セリフ編集時に設定してください。フラグ条件を満たさない場合、そのセリフは表示されません。"
 
 #: admin/meta-boxes.php:964
 msgid ""
 "Dialogue flag conditions can be set when editing each dialogue in the "
 "\"Dialogue\" section above."
-msgstr ""
-"セリフのフラグ条件は、上記の「セリフ」セクションで各セリフを編集する際に設定"
-"できます。"
+msgstr "セリフのフラグ条件は、上記の「セリフ」セクションで各セリフを編集する際に設定できます。"
 
 #: admin/ad-management.php:61
 msgid "Ad settings have been saved successfully."
@@ -801,32 +774,32 @@ msgid "Please read carefully before using the advertising feature:"
 msgstr "広告機能をご利用になる前に、必ずお読みください:"
 
 #: admin/ad-management.php:80
-msgid "The advertising IDs and settings you enter are your own responsibility."
-msgstr ""
-"入力される広告IDおよび設定内容は、ユーザーご自身の責任において管理してくださ"
-"い。"
+msgid ""
+"The advertising IDs and settings you enter are your own responsibility."
+msgstr "入力される広告IDおよび設定内容は、ユーザーご自身の責任において管理してください。"
 
 #: admin/ad-management.php:81
 msgid ""
 "This plugin does not verify the validity or compliance of the advertising "
 "IDs you provide."
-msgstr ""
+msgstr "このプラグインは、入力された広告IDの有効性や準拠性を検証しません。"
 
 #: admin/ad-management.php:82
-msgid "You must comply with the terms of service of each advertising provider."
+msgid ""
+"You must comply with the terms of service of each advertising provider."
 msgstr "各広告プロバイダーの利用規約を必ず遵守してください。"
 
 #: admin/ad-management.php:83
 msgid ""
 "The plugin developer is not responsible for any issues arising from the use "
 "of advertising features."
-msgstr ""
+msgstr "プラグイン開発者は、広告機能の使用に起因する問題について一切の責任を負いません。"
 
 #: admin/ad-management.php:84
 msgid ""
 "Make sure you have properly registered with the advertising provider and "
 "have an approved account before entering your IDs."
-msgstr ""
+msgstr "IDを入力する前に、広告プロバイダーに適切に登録し、承認されたアカウントを持っていることを確認してください。"
 
 #: admin/ad-management.php:104
 msgid "AdSense Publisher ID"
@@ -834,8 +807,7 @@ msgstr "AdSense Publisher ID"
 
 #: admin/ad-management.php:117
 msgid "Enter your Google AdSense Publisher ID (e.g., ca-pub-1234567890123456)"
-msgstr ""
-"Google AdSense Publisher IDを入力してください（例：ca-pub-1234567890123456）"
+msgstr "Google AdSense Publisher IDを入力してください（例：ca-pub-1234567890123456）"
 
 #: admin/ad-management.php:123 admin/ad-management.php:168
 msgid "Official Website"
@@ -849,7 +821,7 @@ msgstr "Google AdSenseにアクセス"
 msgid ""
 "Register for a Google AdSense account and get your Publisher ID from the "
 "official website."
-msgstr ""
+msgstr "Google AdSenseアカウントに登録し、公式ウェブサイトからPublisher IDを取得してください。"
 
 #: admin/ad-management.php:149
 msgid "Adsterra Publisher ID"
@@ -865,9 +837,9 @@ msgstr "Adsterraにアクセス"
 
 #: admin/ad-management.php:176
 msgid ""
-"Register for an Adsterra account and get your Publisher ID from the official "
-"website."
-msgstr ""
+"Register for an Adsterra account and get your Publisher ID from the official"
+" website."
+msgstr "Adsterraアカウントに登録し、公式ウェブサイトからPublisher IDを取得してください。"
 
 #: admin/ad-management.php:185
 msgid "Save Ad Settings"
@@ -881,7 +853,7 @@ msgstr "追加情報"
 msgid ""
 "This section allows you to manage advertising provider IDs for displaying "
 "ads in your novel games."
-msgstr ""
+msgstr "このセクションでは、ノベルゲームに広告を表示するための広告プロバイダーIDを管理できます。"
 
 #: admin/ad-management.php:194
 msgid "Currently supported advertising providers:"
@@ -891,13 +863,13 @@ msgstr "現在サポートしている広告プロバイダー:"
 msgid ""
 "One of the most popular advertising networks with a wide range of "
 "advertisers."
-msgstr ""
+msgstr "幅広い広告主を持つ最も人気のある広告ネットワークの一つです。"
 
 #: admin/ad-management.php:197
 msgid ""
 "An alternative advertising network with various ad formats and payment "
 "options."
-msgstr ""
+msgstr "さまざまな広告フォーマットと支払いオプションを持つ代替広告ネットワークです。"
 
 #: admin/ad-management.php:200
 msgid "Note:"
@@ -907,7 +879,7 @@ msgstr "注意:"
 msgid ""
 "Ad display functionality is currently under development. The IDs saved here "
 "will be used when the feature is fully implemented."
-msgstr ""
+msgstr "広告表示機能は現在開発中です。ここに保存されたIDは、機能が完全に実装された際に使用されます。"
 
 #: admin/new-game.php:136
 msgid "This game title is already in use."
@@ -947,26 +919,21 @@ msgstr "ヘルプ"
 
 #: admin/new-game.php:246
 msgid ""
-"Enter a game title and click the \"Create Game\" button to create a new game."
-msgstr ""
-"ゲームタイトルを入力して「ゲームを作成」ボタンをクリックすると、新しいゲーム"
-"が作成されます。"
+"Enter a game title and click the \"Create Game\" button to create a new "
+"game."
+msgstr "ゲームタイトルを入力して「ゲームを作成」ボタンをクリックすると、新しいゲームが作成されます。"
 
 #: admin/new-game.php:247
 msgid ""
 "After creation, you will be taken to the game management screen where you "
 "can create scenes, manage settings, and configure your game."
-msgstr ""
-"作成後、ゲーム管理画面に移動します。そこでシーンの作成、設定の管理、ゲームの"
-"構成ができます。"
+msgstr "作成後、ゲーム管理画面に移動します。そこでシーンの作成、設定の管理、ゲームの構成ができます。"
 
 #: admin/new-game.php:248
 msgid ""
 "You can optionally add a game overview and title screen image for a better "
 "presentation."
-msgstr ""
-"より良いプレゼンテーションのために、任意でゲーム概要とタイトル画面画像を追加"
-"できます。"
+msgstr "より良いプレゼンテーションのために、任意でゲーム概要とタイトル画面画像を追加できます。"
 
 #: admin/new-game.php:282
 #, php-format
@@ -991,15 +958,14 @@ msgstr "サンプルノベルゲーム"
 msgid ""
 "Sample game is not installed. You can install a sample game to see how the "
 "plugin works."
-msgstr ""
+msgstr "サンプルゲームがインストールされていません。プラグインの動作を確認するにはサンプルゲームをインストールしてください。"
 
 #: admin/my-games.php:117 admin/my-games.php:257 admin/my-games.php:261
-#, fuzzy
 msgid "Install Sample Game"
-msgstr "サンプルノベルゲーム"
+msgstr "サンプルゲームをインストール"
 
-#: admin/my-games.php:125 novel-game-plugin.php:1022 novel-game-plugin.php:1320
-#: templates/archive-novel_game.php:138
+#: admin/my-games.php:125 novel-game-plugin.php:1022
+#: novel-game-plugin.php:1320 templates/archive-novel_game.php:138
 msgid "No games have been created yet."
 msgstr "まだゲームが作成されていません。"
 
@@ -1007,8 +973,8 @@ msgstr "まだゲームが作成されていません。"
 msgid "Select a game to manage its scenes and settings."
 msgstr "シーンと設定を管理するゲームを選択してください。"
 
-#: admin/my-games.php:164 novel-game-plugin.php:1098 novel-game-plugin.php:1376
-#: templates/archive-novel_game.php:124
+#: admin/my-games.php:164 novel-game-plugin.php:1098
+#: novel-game-plugin.php:1376 templates/archive-novel_game.php:124
 #, php-format
 msgid "%d Scenes"
 msgstr "%d シーン"
@@ -1031,9 +997,8 @@ msgid "Installing..."
 msgstr "インストール中..."
 
 #: admin/my-games.php:256 admin/my-games.php:260
-#, fuzzy
 msgid "Installation failed."
-msgstr "作成に失敗しました。"
+msgstr "インストールに失敗しました。"
 
 #: admin/plugin-settings.php:27
 msgid "Plugin Settings"
@@ -1059,9 +1024,7 @@ msgstr "コピー"
 msgid ""
 "Displays all games in a beautiful card format. This is the most recommended "
 "shortcode for game lists."
-msgstr ""
-"すべてのゲームを美しいカード形式で表示します。ゲーム一覧に最も推奨される"
-"ショートコードです。"
+msgstr "すべてのゲームを美しいカード形式で表示します。ゲーム一覧に最も推奨されるショートコードです。"
 
 #: admin/plugin-settings.php:46 admin/plugin-settings.php:93
 msgid "Available Options:"
@@ -1127,9 +1090,7 @@ msgstr "特定のゲームを表示"
 msgid ""
 "Displays a specific game with a hero image and play button. Replace \"Game "
 "Name\" with your actual game title."
-msgstr ""
-"特定のゲームをヒーロー画像とプレイボタン付きで表示します。「ゲーム名」を実際"
-"のゲームタイトルに置き換えてください。"
+msgstr "特定のゲームをヒーロー画像とプレイボタン付きで表示します。「ゲーム名」を実際のゲームタイトルに置き換えてください。"
 
 #: admin/plugin-settings.php:96
 msgid "game_title"
@@ -1153,11 +1114,10 @@ msgstr "ブロックエディタ"
 
 #: admin/plugin-settings.php:109
 msgid ""
-"In the Gutenberg block editor, search for \"Novel Game List\" block. You can "
-"easily insert game lists or individual games with intuitive operations."
+"In the Gutenberg block editor, search for \"Novel Game List\" block. You can"
+" easily insert game lists or individual games with intuitive operations."
 msgstr ""
-"Gutenbergブロックエディタで「ノベルゲーム一覧」ブロックを検索してください。直"
-"感的な操作でゲーム一覧や個別のゲームを簡単に挿入できます。"
+"Gutenbergブロックエディタで「ノベルゲーム一覧」ブロックを検索してください。直感的な操作でゲーム一覧や個別のゲームを簡単に挿入できます。"
 
 #: admin/plugin-settings.php:117
 msgid "Plugin Information"
@@ -1184,40 +1144,32 @@ msgid "Invalid game ID."
 msgstr "無効なゲームIDです。"
 
 #: admin/game-settings.php:398
-#, fuzzy
 msgid "You do not have permission to edit this game."
-msgstr "このページにアクセスする権限がありません。"
+msgstr "このゲームを編集する権限がありません。"
 
 #: novel-game-plugin.php:102 novel-game-plugin.php:129
 msgid "Insufficient permissions"
 msgstr "権限が不足しています"
 
 #: novel-game-plugin.php:107 novel-game-plugin.php:134
-#, fuzzy
 msgid "Security check failed"
-msgstr "セキュリティチェックに失敗しました。"
+msgstr "セキュリティチェックに失敗しました"
 
 #: novel-game-plugin.php:114
-#, fuzzy
 msgid "Sample game installed successfully"
-msgstr "ゲームが更新されました。"
+msgstr "サンプルゲームのインストールに成功しました"
 
 #: novel-game-plugin.php:116
-#, fuzzy
 msgid "Failed to install sample game. It may already exist."
-msgstr ""
-"フラグの追加に失敗しました。同名のフラグが既に存在する可能性があります。"
+msgstr "サンプルゲームのインストールに失敗しました。既に存在する可能性があります。"
 
 #: novel-game-plugin.php:141
-#, fuzzy
 msgid "Shadow Detective game installed successfully"
-msgstr "広告設定が正常に保存されました。"
+msgstr "Shadow Detectiveゲームのインストールに成功しました"
 
 #: novel-game-plugin.php:143
-#, fuzzy
 msgid "Failed to install Shadow Detective game. It may already exist."
-msgstr "影の探偵ゲームのインストールに失敗しました。既に存在している可能性があります。"
-"フラグの追加に失敗しました。同名のフラグが既に存在する可能性があります。"
+msgstr "Shadow Detectiveゲームのインストールに失敗しました。既に存在する可能性があります。"
 
 #: novel-game-plugin.php:716 novel-game-plugin.php:1269
 #: templates/archive-novel_game.php:128
@@ -1271,9 +1223,7 @@ msgstr "キャラクターB"
 msgid ""
 "This is a sample visual novel game to help you understand how to use this "
 "plugin. You can edit or delete this game at any time."
-msgstr ""
-"このプラグインの使い方を理解するためのサンプルビジュアルノベルゲームです。こ"
-"のゲームはいつでも編集または削除できます。"
+msgstr "このプラグインの使い方を理解するためのサンプルビジュアルノベルゲームです。このゲームはいつでも編集または削除できます。"
 
 #: includes/sample-data.php:91 includes/sample-data.php:634
 msgid "Game Over"
@@ -1445,7 +1395,8 @@ msgid ""
 "A full-fledged mystery game. Investigate the disappearance of businessman "
 "Makoto Kurosaki and uncover the truth. Gather evidence and make the right "
 "choices to reach the complete solution ending."
-msgstr "本格的なミステリーゲーム。実業家・黒崎誠の失踪を調査し、真実を明らかにします。証拠を集め、正しい選択をして完全解決エンディングを目指しましょう。"
+msgstr ""
+"本格的なミステリーゲーム。実業家・黒崎誠の失踪を調査し、真実を明らかにします。証拠を集め、正しい選択をして完全解決エンディングを目指しましょう。"
 
 #: includes/sample-data.php:642
 msgid "Shadow Detective - The Beginning"
@@ -1477,9 +1428,8 @@ msgid ""
 msgstr "依頼者の名前は黒崎美咲。夫は実業家の黒崎誠だ。"
 
 #: includes/sample-data.php:660
-#, fuzzy
 msgid "Please tell me the details"
-msgstr "ゲームのタイトルを入力してください"
+msgstr "詳しく聞かせてください"
 
 #: includes/sample-data.php:664
 msgid "When did you last see him?"
@@ -1493,7 +1443,7 @@ msgstr "影の探偵 - 失踪の詳細"
 msgid ""
 "Three days ago in the evening, my husband said \"I have an important "
 "business meeting\" and left."
-msgstr ""
+msgstr "3日前の夕方、夫は「重要な商談がある」と言って家を出ました。"
 
 #: includes/sample-data.php:685
 msgid ""
@@ -1525,8 +1475,8 @@ msgstr "影の探偵 - 港の倉庫街"
 
 #: includes/sample-data.php:717
 msgid ""
-"The warehouse district by the port where he was last seen. A deserted, dimly "
-"lit place."
+"The warehouse district by the port where he was last seen. A deserted, dimly"
+" lit place."
 msgstr "最後に目撃された港の倉庫街。人気のない薄暗い場所だ。"
 
 #: includes/sample-data.php:718
@@ -1534,8 +1484,7 @@ msgid "Something shiny is on the ground... It's a pocket watch."
 msgstr "地面に何か光るものが落ちている...懐中時計だ。"
 
 #: includes/sample-data.php:719
-msgid ""
-"Opening the back reveals an inscription: \"To Makoto, with love, Misaki\""
+msgid "Opening the back reveals an inscription: \"To Makoto, with love, Misaki\""
 msgstr "裏蓋を開けると刻印がある：「誠へ 愛を込めて 美咲」"
 
 #: includes/sample-data.php:720
@@ -1566,7 +1515,7 @@ msgstr "懐中時計...これは失踪現場にいた証拠だ。"
 msgid ""
 "A businessman's sudden disappearance. Mention of family noticing strange "
 "behavior."
-msgstr ""
+msgstr "実業家の突然の失踪。家族が奇妙な行動に気づいていたという言及。"
 
 #: includes/sample-data.php:755
 msgid "This case doesn't seem superficial."
@@ -1587,13 +1536,13 @@ msgstr "影の探偵 - 家族の証言"
 #: includes/sample-data.php:785
 msgid ""
 "Actually... my husband was recently troubled by business management issues."
-msgstr ""
+msgstr "実は……夫は最近、事業経営の問題で悩んでいました。"
 
 #: includes/sample-data.php:786
 msgid ""
-"He seemed to have problems with business partners... but he wouldn't tell me "
-"details."
-msgstr ""
+"He seemed to have problems with business partners... but he wouldn't tell me"
+" details."
+msgstr "取引先との問題があったようですが……詳しいことは教えてくれませんでした。"
 
 #: includes/sample-data.php:787
 msgid "Also... there were calls from unknown men."
@@ -1631,7 +1580,7 @@ msgstr "心配になって写真を撮っておきました。これです。"
 msgid ""
 "In the photo, Kurosaki is with men who clearly seem to be from the "
 "underworld..."
-msgstr ""
+msgstr "写真には黒崎が明らかに裏社会の人間と思われる男たちと一緒に写っている……"
 
 #: includes/sample-data.php:829
 msgid "Investigate these men"
@@ -1653,7 +1602,7 @@ msgstr "許可を得て書斎を調査する。"
 msgid ""
 "Desk drawers contain receipts and contracts... nothing particularly "
 "suspicious."
-msgstr ""
+msgstr "机の引き出しには領収書や契約書類……特に怪しいものはない。"
 
 #: includes/sample-data.php:858
 msgid "However, the bookshelf arrangement seems unnatural..."
@@ -1734,7 +1683,7 @@ msgstr "影の探偵 - 鍵の発見"
 #: includes/sample-data.php:957
 msgid ""
 "The safe key... Oh, I think there was a spare in my husband's study drawer."
-msgstr ""
+msgstr "金庫の鍵……ああ、確か書斎の引き出しに予備があったと思います。"
 
 #: includes/sample-data.php:958
 msgid "Guided by Misaki, I find a small key deep in the drawer."
@@ -1772,7 +1721,7 @@ msgstr "ああ、この連中...ヤバい筋だぜ。"
 msgid ""
 "They're from \"Ryu-gumi\", a loan shark operation. Once you're in, you're "
 "done."
-msgstr ""
+msgstr "「龍組」って闇金業者だよ。一度関わったら終わりさ。"
 
 #: includes/sample-data.php:996
 msgid "Makoto Kurosaki? Yeah, I've heard. He owed them a huge amount."
@@ -1805,7 +1754,7 @@ msgstr "だが、俺たちは何もしちゃいねえ。証拠もないだろ？
 #: includes/sample-data.php:1029
 msgid ""
 "They won't say anything publicly... but they seem to be hiding something."
-msgstr ""
+msgstr "表立っては何も言わないが……何かを隠している様子だった。"
 
 #: includes/sample-data.php:1035
 msgid "Press hard"
@@ -1830,7 +1779,7 @@ msgstr "書類を見ると、闇取引の記録が..."
 #: includes/sample-data.php:1064
 msgid ""
 "And a name other than Ryu-gumi... \"Takagi Construction, President Takagi\"?"
-msgstr ""
+msgstr "龍組以外の名前も……「高木建設　代表　高木」？"
 
 #: includes/sample-data.php:1070
 msgid "Investigate Takagi Construction"
@@ -1848,7 +1797,7 @@ msgstr "影の探偵 - 黒幕の影"
 msgid ""
 "Takagi Construction... a major general contractor. Why involved in illicit "
 "deals?"
-msgstr ""
+msgstr "高木建設……大手ゼネコンだ。なぜ不正取引に関わっている？"
 
 #: includes/sample-data.php:1095
 msgid "While investigating around the office, I find a memo in the trash..."
@@ -1862,7 +1811,7 @@ msgstr "「黒崎から入金確認。次は龍組経由で処理」"
 msgid ""
 "This is... President Takagi using Kurosaki and Ryu-gumi for illegal "
 "transactions?"
-msgstr ""
+msgstr "これは……高木社長が黒崎と龍組を使って違法取引を？"
 
 #: includes/sample-data.php:1103
 msgid "Go directly to meet President Takagi"
@@ -1879,7 +1828,7 @@ msgstr "影の探偵 - 調査の深化"
 #: includes/sample-data.php:1129
 msgid ""
 "Evidence has been accumulating. But I still don't have complete certainty."
-msgstr ""
+msgstr "証拠は揃いつつある。だが、まだ確証が持てない。"
 
 #: includes/sample-data.php:1130
 msgid "President Takagi's memo... this could be the decisive evidence."
@@ -1889,7 +1838,7 @@ msgstr "高木社長のメモ...これが決定的証拠になる。"
 msgid ""
 "Ryu-gumi, Kurosaki, and Takagi Construction... the connections are becoming "
 "clear."
-msgstr ""
+msgstr "龍組、黒崎、そして高木建設……繋がりが見えてきた。"
 
 #: includes/sample-data.php:1132
 msgid "It's time to confront them directly."
@@ -1942,7 +1891,7 @@ msgstr "龍組？ああ、噂は聞いていますが、私は関係ありませ
 #: includes/sample-data.php:1197
 msgid ""
 "He skillfully evaded... Without decisive evidence, I can't press further."
-msgstr ""
+msgstr "巧みに逃げられた……決定的な証拠がなければ、これ以上追及できない。"
 
 #: includes/sample-data.php:1198
 msgid "Detective, baseless defamation is libel, you know."
@@ -2086,14 +2035,15 @@ msgstr "しかし、すべての証拠を集められなかった。"
 
 #: includes/sample-data.php:1365
 msgid ""
-"President Takagi's crimes couldn't be fully proven, leaving parts unresolved."
-msgstr ""
+"President Takagi's crimes couldn't be fully proven, leaving parts "
+"unresolved."
+msgstr "高木社長の罪を完全には証明できず、一部が未解決のまま終わった。"
 
 #: includes/sample-data.php:1366
 msgid ""
 "Frustrating, but this is detective work... perfect case resolution is "
 "difficult."
-msgstr ""
+msgstr "悔しいが、これも探偵業だ……完璧な事件解決は難しい。"
 
 #: includes/sample-data.php:1372
 msgid "Partial Solution - Some truths remain in darkness"
@@ -2131,7 +2081,7 @@ msgstr "懐中時計"
 msgid ""
 "A pocket watch belonging to Makoto Kurosaki. Evidence he was at the "
 "disappearance site."
-msgstr ""
+msgstr "黒崎誠の懐中時計。失踪現場にいた証拠。"
 
 #: includes/sample-data.php:1410
 msgid "Missing Person's Diary"
@@ -2461,8 +2411,8 @@ msgstr "開始: %s"
 #~ msgstr "例: visited_library"
 
 #~ msgid ""
-#~ "Only alphanumeric characters and underscores are allowed, cannot start "
-#~ "with a number"
+#~ "Only alphanumeric characters and underscores are allowed, cannot start with "
+#~ "a number"
 #~ msgstr "英数字とアンダースコアのみ使用可能、数字で始めることはできません"
 
 #~ msgid "Example: Visited the library"
@@ -2495,9 +2445,7 @@ msgstr "開始: %s"
 #~ msgid ""
 #~ "Displays all created games in a beautiful card format. This is the most "
 #~ "user-friendly and recommended shortcode."
-#~ msgstr ""
-#~ "作成された全てのゲームを美しいカード形式で一覧表示します。最も使いやすく推"
-#~ "奨のショートコードです。"
+#~ msgstr "作成された全てのゲームを美しいカード形式で一覧表示します。最も使いやすく推奨のショートコードです。"
 
 #~ msgid "Use in Block Editor (Recommended)"
 #~ msgstr "ブロックエディタでの使用（推奨）"
@@ -2506,8 +2454,7 @@ msgstr "開始: %s"
 #~ "In the Gutenberg block editor, use the \"Novel Game List\" block. You can "
 #~ "easily insert game lists or individual games with intuitive operations."
 #~ msgstr ""
-#~ "Gutenbergブロックエディタでは「ノベルゲーム一覧」ブロックを使用してくださ"
-#~ "い。直感的な操作でゲーム一覧や個別ゲームを簡単に挿入できます。"
+#~ "Gutenbergブロックエディタでは「ノベルゲーム一覧」ブロックを使用してください。直感的な操作でゲーム一覧や個別ゲームを簡単に挿入できます。"
 
 #~ msgid "Options for Game List Shortcode ([novel_game_list])"
 #~ msgstr "ゲーム一覧ショートコード（[novel_game_list]）のオプション"
