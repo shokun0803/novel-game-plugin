@@ -392,6 +392,7 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Gather other clues first', 'novel-game-plugin' ),
                     'next' => 'scene_11',
+                    'required_flags' => array( 'flag_item_photo' ),
                 ),
             ),
             'is_ending'       => false,
@@ -492,6 +493,7 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Investigate Takagi Construction', 'novel-game-plugin' ),
                     'next' => 'scene_14',
+                    'required_flags' => array( 'flag_found_hidden_room', 'flag_item_key' ),
                 ),
                 array(
                     'text' => __( 'Contact Ryu-gumi again', 'novel-game-plugin' ),
@@ -631,7 +633,7 @@ function noveltool_get_shadow_detective_game_data() {
                 ),
                 array(
                     'text' => __( 'Sorry, excuse me', 'novel-game-plugin' ),
-                    'next' => 'scene_22',
+                    'next' => 'scene_23',
                 ),
             ),
             'is_ending'       => false,
