@@ -115,7 +115,7 @@ function noveltool_get_shadow_detective_game_data() {
                 ),
                 array(
                     'text' => __( 'Let me talk to your family', 'novel-game-plugin' ),
-                    'next' => 'scene_4',
+                    'next' => 'scene_5',
                 ),
             ),
             'is_ending'       => false,
@@ -317,6 +317,7 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Try to open the safe', 'novel-game-plugin' ),
                     'next' => 'scene_10',
+                    'required_flags' => array( 'flag_found_hidden_room' ),
                 ),
                 array(
                     'text' => __( 'Take the diary back for analysis', 'novel-game-plugin' ),
@@ -356,6 +357,7 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Pursue the men in the photo', 'novel-game-plugin' ),
                     'next' => 'scene_11',
+                    'required_flags' => array( 'flag_item_photo' ),
                 ),
             ),
             'is_ending'       => false,
@@ -385,6 +387,7 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Open the safe in the hidden room immediately', 'novel-game-plugin' ),
                     'next' => 'scene_13',
+                    'required_flags' => array( 'flag_found_hidden_room' ),
                 ),
                 array(
                     'text' => __( 'Gather other clues first', 'novel-game-plugin' ),
