@@ -2156,13 +2156,11 @@ msgid "Confronted President Takagi."
 msgstr "高木社長と対峙した。"
 
 #: includes/post-types.php:21
-#, fuzzy
 msgctxt "Post Type General Name"
 msgid "Novel Game"
 msgstr "ノベルゲーム"
 
 #: includes/post-types.php:22
-#, fuzzy
 msgctxt "Post Type Singular Name"
 msgid "Novel Game"
 msgstr "ノベルゲーム"
@@ -2386,6 +2384,10 @@ msgstr "画像なし"
 msgid "Start: %s"
 msgstr "開始: %s"
 
+#: includes/sample-data.php:53
+msgid "Investigation Failed"
+msgstr "捜査失敗"
+
 #~ msgid "Failed to delete game."
 #~ msgstr "ゲームの削除に失敗しました。"
 
@@ -2555,7 +2557,3 @@ msgstr "開始: %s"
 
 #~ msgid "novel"
 #~ msgstr "novel"
-
-#: includes/sample-data.php:53
-msgid "Investigation Failed"
-msgstr "捜査失敗"
