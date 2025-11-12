@@ -217,6 +217,7 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Let me investigate the study', 'novel-game-plugin' ),
                     'next' => 'scene_7',
+                    'required_flags' => array( 'flag_talked_wife' ),
                 ),
             ),
             'is_ending'       => false,
@@ -248,6 +249,7 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Investigate these men', 'novel-game-plugin' ),
                     'next' => 'scene_11',
+                    'required_flags' => array( 'flag_item_photo' ),
                 ),
                 array(
                     'text' => __( 'First, investigate the Kurosaki residence more', 'novel-game-plugin' ),
