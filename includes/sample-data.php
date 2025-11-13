@@ -717,7 +717,7 @@ function noveltool_get_shadow_detective_game_data() {
             'title'           => __( 'Shadow Detective - Reunion with the Missing', 'novel-game-plugin' ),
             'background'      => $bg_villa,
             'character_left'  => '',
-            'character_center' => $char_kurosaki,
+            'character_center' => $char_makoto,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => __( 'Makoto Kurosaki', 'novel-game-plugin' ),
