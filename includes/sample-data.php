@@ -149,7 +149,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( 'This must belong to Makoto Kurosaki. Something happened here.', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
-            'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_backgrounds' => array( $bg_warehouse, '', '', $bg_warehouse ),
             'choices'         => array(
                 array(
                     'text' => __( 'Continue questioning the area', 'novel-game-plugin' ),
@@ -309,7 +309,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( 'Moving the bookshelf reveals... a hidden door!', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
-            'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_backgrounds' => array( $bg_study, '', '', $bg_hidden_room ),
             'choices'         => array(
                 array(
                     'text' => __( 'Try to open the hidden door', 'novel-game-plugin' ),
@@ -346,7 +346,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( '"I can\'t repay the debt to them. I don\'t want to trouble my family."', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
-            'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_backgrounds' => array( $bg_hidden_room, '', '', '' ),
             'choices'         => array(
                 array(
                     'text' => __( 'Try to open the safe', 'novel-game-plugin' ),
@@ -386,7 +386,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( 'I need to find the key to the safe.', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
-            'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_backgrounds' => array( $bg_office, '', '', '' ),
             'choices'         => array(
                 array(
                     'text' => __( 'Ask the wife about the safe key', 'novel-game-plugin' ),
@@ -466,7 +466,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( 'Makoto Kurosaki? Yeah, I\'ve heard. He owed them a huge amount.', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( '', 'right', 'right', 'right' ),
-            'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_backgrounds' => array( $bg_alley, '', '', '' ),
             'choices'         => array(
                 array(
                     'text' => __( 'Investigate Ryu-gumi in detail', 'novel-game-plugin' ),
@@ -504,7 +504,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( 'They won\'t say anything publicly... but they seem to be hiding something.', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( 'center', 'center', 'center', '' ),
-            'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_backgrounds' => array( $bg_yakuza_office, '', '', $bg_alley ),
             'choices'         => array(
                 array(
                     'text' => __( 'Press hard', 'novel-game-plugin' ),
@@ -659,7 +659,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( 'Ah, I had a business relationship with him.', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( 'center', '', '', 'center' ),
-            'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_backgrounds' => array( $bg_construction, '', '', '' ),
             'choices'         => array(
                 array(
                     'text' => __( 'Explain this illicit transaction memo', 'novel-game-plugin' ),
@@ -735,7 +735,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( 'Tch... Kurosaki left evidence behind.', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( '', 'center', '', 'center' ),
-            'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_backgrounds' => array( $bg_construction, '', '', '' ),
             'choices'         => array(
                 array(
                     'text' => __( 'Where is Makoto Kurosaki?', 'novel-game-plugin' ),
@@ -774,7 +774,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( 'Kurosaki is now hiding in my villa. By his own choice.', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( 'center', 'center', 'center', 'center' ),
-            'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_backgrounds' => array( $bg_construction, '', '', $bg_villa ),
             'choices'         => array(
                 array(
                     'text' => __( 'Protect Kurosaki immediately', 'novel-game-plugin' ),
@@ -811,7 +811,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( 'Please... let me see my wife, Misaki.', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( 'center', 'center', 'center', 'center' ),
-            'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_backgrounds' => array( $bg_villa, '', '', '' ),
             'choices'         => array(
                 array(
                     'text' => __( 'Everything is resolved. Let\'s go back to your family', 'novel-game-plugin' ),
