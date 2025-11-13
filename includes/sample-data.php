@@ -85,6 +85,10 @@ function noveltool_get_shadow_detective_game_data() {
                     'text' => __( 'When did you last see him?', 'novel-game-plugin' ),
                     'next' => 'scene_2',
                 ),
+                array(
+                    'text' => __( 'What kind of person is your husband?', 'novel-game-plugin' ),
+                    'next' => 'scene_2',
+                ),
             ),
             'is_ending'       => false,
             'ending_text'     => '',
@@ -118,6 +122,10 @@ function noveltool_get_shadow_detective_game_data() {
                     'text' => __( 'Let me talk to your family', 'novel-game-plugin' ),
                     'next' => 'scene_5',
                 ),
+                array(
+                    'text' => __( 'I\'d like to hear from friends and acquaintances', 'novel-game-plugin' ),
+                    'next' => 'scene_6',
+                ),
             ),
             'is_ending'       => false,
             'ending_text'     => '',
@@ -150,6 +158,13 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Return to the office to organize information', 'novel-game-plugin' ),
                     'next' => 'scene_4',
+                ),
+                array(
+                    'text' => __( 'Search more carefully around the pocket watch', 'novel-game-plugin' ),
+                    'next' => 'scene_4',
+                    'set_flags' => array(
+                        array( 'id' => 'flag_thorough_search', 'value' => 1 ),
+                    ),
                 ),
             ),
             'is_ending'       => false,
@@ -186,6 +201,10 @@ function noveltool_get_shadow_detective_game_data() {
                     'text' => __( 'Investigate friends and associates', 'novel-game-plugin' ),
                     'next' => 'scene_6',
                 ),
+                array(
+                    'text' => __( 'Search for clues in the company records', 'novel-game-plugin' ),
+                    'next' => 'scene_6',
+                ),
             ),
             'is_ending'       => false,
             'ending_text'     => '',
@@ -219,6 +238,10 @@ function noveltool_get_shadow_detective_game_data() {
                     'text' => __( 'Let me investigate the study', 'novel-game-plugin' ),
                     'next' => 'scene_7',
                     'required_flags' => array( 'flag_talked_wife' ),
+                ),
+                array(
+                    'text' => __( 'Ask about the unknown callers in detail', 'novel-game-plugin' ),
+                    'next' => 'scene_11',
                 ),
             ),
             'is_ending'       => false,
@@ -256,6 +279,10 @@ function noveltool_get_shadow_detective_game_data() {
                     'text' => __( 'First, investigate the Kurosaki residence more', 'novel-game-plugin' ),
                     'next' => 'scene_7',
                 ),
+                array(
+                    'text' => __( 'Ask Sato for more information', 'novel-game-plugin' ),
+                    'next' => 'scene_9',
+                ),
             ),
             'is_ending'       => false,
             'ending_text'     => '',
@@ -292,6 +319,10 @@ function noveltool_get_shadow_detective_game_data() {
                     'text' => __( 'Retreat for now', 'novel-game-plugin' ),
                     'next' => 'scene_9',
                 ),
+                array(
+                    'text' => __( 'Search the study more thoroughly first', 'novel-game-plugin' ),
+                    'next' => 'scene_10',
+                ),
             ),
             'is_ending'       => false,
             'ending_text'     => '',
@@ -324,6 +355,10 @@ function noveltool_get_shadow_detective_game_data() {
                 ),
                 array(
                     'text' => __( 'Take the diary back for analysis', 'novel-game-plugin' ),
+                    'next' => 'scene_9',
+                ),
+                array(
+                    'text' => __( 'Investigate other items in the hidden room', 'novel-game-plugin' ),
                     'next' => 'scene_9',
                 ),
             ),
@@ -362,6 +397,10 @@ function noveltool_get_shadow_detective_game_data() {
                     'next' => 'scene_11',
                     'required_flags' => array( 'flag_item_photo' ),
                 ),
+                array(
+                    'text' => __( 'Carefully review all gathered evidence', 'novel-game-plugin' ),
+                    'next' => 'scene_10',
+                ),
             ),
             'is_ending'       => false,
             'ending_text'     => '',
@@ -396,6 +435,10 @@ function noveltool_get_shadow_detective_game_data() {
                     'text' => __( 'Gather other clues first', 'novel-game-plugin' ),
                     'next' => 'scene_11',
                     'required_flags' => array( 'flag_item_photo' ),
+                ),
+                array(
+                    'text' => __( 'Check with the wife about her husband\'s business dealings', 'novel-game-plugin' ),
+                    'next' => 'scene_11',
                 ),
             ),
             'is_ending'       => false,
@@ -433,6 +476,11 @@ function noveltool_get_shadow_detective_game_data() {
                     'text' => __( 'Organize information for now', 'novel-game-plugin' ),
                     'next' => 'scene_9',
                 ),
+                array(
+                    'text' => __( 'Search for more connections to Ryu-gumi', 'novel-game-plugin' ),
+                    'next' => 'scene_13',
+                    'required_flags' => array( 'flag_item_key' ),
+                ),
             ),
             'is_ending'       => false,
             'ending_text'     => '',
@@ -465,6 +513,10 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Retreat for now', 'novel-game-plugin' ),
                     'next' => 'scene_13',
+                ),
+                array(
+                    'text' => __( 'Try a different approach and negotiate', 'novel-game-plugin' ),
+                    'next' => 'scene_14',
                 ),
             ),
             'is_ending'       => false,
@@ -503,6 +555,10 @@ function noveltool_get_shadow_detective_game_data() {
                     'next' => 'scene_15',
                     'required_flags' => array( 'flag_met_underworld' ),
                 ),
+                array(
+                    'text' => __( 'Carefully examine the documents in the safe', 'novel-game-plugin' ),
+                    'next' => 'scene_14',
+                ),
             ),
             'is_ending'       => false,
             'ending_text'     => '',
@@ -534,6 +590,10 @@ function noveltool_get_shadow_detective_game_data() {
                 ),
                 array(
                     'text' => __( 'Gather more evidence', 'novel-game-plugin' ),
+                    'next' => 'scene_15',
+                ),
+                array(
+                    'text' => __( 'Investigate Takagi Construction employees', 'novel-game-plugin' ),
                     'next' => 'scene_15',
                 ),
             ),
@@ -571,6 +631,11 @@ function noveltool_get_shadow_detective_game_data() {
                     'text' => __( 'Consult with the police', 'novel-game-plugin' ),
                     'next' => 'scene_17',
                 ),
+                array(
+                    'text' => __( 'Verify the evidence one more time', 'novel-game-plugin' ),
+                    'next' => 'scene_16',
+                    'required_flags' => array( 'flag_item_trade_memo' ),
+                ),
             ),
             'is_ending'       => false,
             'ending_text'     => '',
@@ -603,6 +668,10 @@ function noveltool_get_shadow_detective_game_data() {
                 ),
                 array(
                     'text' => __( 'What about your relationship with Ryu-gumi?', 'novel-game-plugin' ),
+                    'next' => 'scene_17',
+                ),
+                array(
+                    'text' => __( 'Ask about the disappearance directly', 'novel-game-plugin' ),
                     'next' => 'scene_17',
                 ),
             ),
@@ -639,6 +708,10 @@ function noveltool_get_shadow_detective_game_data() {
                     'text' => __( 'Sorry, excuse me', 'novel-game-plugin' ),
                     'next' => 'scene_23',
                 ),
+                array(
+                    'text' => __( 'Try bluffing with partial evidence', 'novel-game-plugin' ),
+                    'next' => 'scene_22',
+                ),
             ),
             'is_ending'       => false,
             'ending_text'     => '',
@@ -670,6 +743,10 @@ function noveltool_get_shadow_detective_game_data() {
                 ),
                 array(
                     'text' => __( 'I\'m calling the police', 'novel-game-plugin' ),
+                    'next' => 'scene_19',
+                ),
+                array(
+                    'text' => __( 'Tell me everything you know', 'novel-game-plugin' ),
                     'next' => 'scene_19',
                 ),
             ),
@@ -705,6 +782,10 @@ function noveltool_get_shadow_detective_game_data() {
                 ),
                 array(
                     'text' => __( 'Call the police', 'novel-game-plugin' ),
+                    'next' => 'scene_20',
+                ),
+                array(
+                    'text' => __( 'Get the villa location first', 'novel-game-plugin' ),
                     'next' => 'scene_20',
                 ),
             ),
@@ -747,6 +828,11 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'There are still unclear points...', 'novel-game-plugin' ),
                     'next' => 'scene_22',
+                ),
+                array(
+                    'text' => __( 'Let me confirm the evidence one more time', 'novel-game-plugin' ),
+                    'next' => 'scene_23',
+                    'required_flags' => array(),
                 ),
             ),
             'is_ending'       => false,
