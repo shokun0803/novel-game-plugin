@@ -43,7 +43,8 @@ function noveltool_get_shadow_detective_game_data() {
     $char_informant = $plugin_url . 'assets/sample-images/char-informant.png';
     $char_yakuza = $plugin_url . 'assets/sample-images/char-mastermind.png';
     $char_takagi = $plugin_url . 'assets/sample-images/char-detective.png';
-    $char_kurosaki = $plugin_url . 'assets/sample-images/char-wife.png';
+    $char_misaki = $plugin_url . 'assets/sample-images/char-wife.png';
+    $char_makoto = $plugin_url . 'assets/sample-images/char-husband.png';
     
     // Shadow Detective ゲームの基本情報
     $game_data = array(
@@ -62,10 +63,10 @@ function noveltool_get_shadow_detective_game_data() {
             'title'           => __( 'Shadow Detective - The Beginning', 'novel-game-plugin' ),
             'background'      => $bg_office,
             'character_left'  => '',
-            'character_center' => $char_client,
+            'character_center' => $char_misaki,
             'character_right' => '',
             'character_left_name' => '',
-            'character_center_name' => __( 'Client', 'novel-game-plugin' ),
+            'character_center_name' => __( 'Misaki', 'novel-game-plugin' ),
             'character_right_name' => '',
             'dialogue_texts'  => array(
                 __( 'On an autumn evening, a woman visited my office.', 'novel-game-plugin' ),
@@ -95,7 +96,7 @@ function noveltool_get_shadow_detective_game_data() {
             'title'           => __( 'Shadow Detective - Details of Disappearance', 'novel-game-plugin' ),
             'background'      => $bg_office,
             'character_left'  => '',
-            'character_center' => $char_client,
+            'character_center' => $char_misaki,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => __( 'Misaki', 'novel-game-plugin' ),
@@ -195,7 +196,7 @@ function noveltool_get_shadow_detective_game_data() {
         array(
             'title'           => __( 'Shadow Detective - Family Testimony', 'novel-game-plugin' ),
             'background'      => $bg_mansion,
-            'character_left'  => $char_client,
+            'character_left'  => $char_misaki,
             'character_center' => '',
             'character_right' => '',
             'character_left_name' => __( 'Misaki', 'novel-game-plugin' ),
@@ -371,7 +372,7 @@ function noveltool_get_shadow_detective_game_data() {
         array(
             'title'           => __( 'Shadow Detective - Finding the Key', 'novel-game-plugin' ),
             'background'      => $bg_mansion,
-            'character_left'  => $char_client,
+            'character_left'  => $char_misaki,
             'character_center' => '',
             'character_right' => '',
             'character_left_name' => __( 'Misaki', 'novel-game-plugin' ),
@@ -756,9 +757,9 @@ function noveltool_get_shadow_detective_game_data() {
         array(
             'title'           => __( 'Shadow Detective - Complete Solution', 'novel-game-plugin' ),
             'background'      => $bg_office,
-            'character_left'  => $char_client,
+            'character_left'  => $char_misaki,
             'character_center' => '',
-            'character_right' => $char_kurosaki,
+            'character_right' => $char_makoto,
             'character_left_name' => __( 'Misaki', 'novel-game-plugin' ),
             'character_center_name' => '',
             'character_right_name' => __( 'Makoto', 'novel-game-plugin' ),
