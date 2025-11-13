@@ -104,11 +104,10 @@ function noveltool_my_games_page() {
         <?php endif; ?>
         
         <?php
-        // サンプルゲームが存在するかチェック
-        $sample_game_title = __( 'Sample Novel Game', 'novel-game-plugin' );
-        $sample_exists = noveltool_get_game_by_title( $sample_game_title ) !== null;
+        // Shadow Detectiveサンプルゲームが存在するかチェック
+        $shadow_detective_exists = noveltool_get_game_by_machine_name( 'shadow_detective_v1' ) !== null;
         
-        if ( ! $sample_exists ) :
+        if ( ! $shadow_detective_exists ) :
         ?>
             <div class="notice notice-info">
                 <p><?php esc_html_e( 'Sample game is not installed. You can install a sample game to see how the plugin works.', 'novel-game-plugin' ); ?></p>

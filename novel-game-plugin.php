@@ -73,25 +73,34 @@ add_action( 'plugins_loaded', 'noveltool_init' );
  * カスタム投稿タイプのリライトルールを登録するため、
  * flush_rewrite_rules()を実行してパーマリンク構造を更新する
  * また、サンプルゲームをインストールする
+ * 
+ * ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
  *
  * @since 1.1.0
  */
 function noveltool_activate_plugin() {
+    // プラグイン有効化時に翻訳ファイルを明示的に読み込む（activation 時点で __() が正しく動作するように）
+    load_plugin_textdomain(
+        NOVEL_GAME_PLUGIN_TEXT_DOMAIN,
+        false,
+        dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
+    );
+    
     // カスタム投稿タイプを登録
     noveltool_register_post_type();
     
     // リライトルールを再生成
     flush_rewrite_rules();
     
-    // サンプルゲームをインストール（存在しない場合のみ）
-    noveltool_install_sample_game();
+    // Shadow Detectiveゲームをインストール（存在しない場合のみ）
+    noveltool_install_shadow_detective_game();
 }
 register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
 
 /**
- * サンプルゲームインストール用のAJAXハンドラー
+ * サンプルゲーム（Shadow Detective）インストール用のAJAXハンドラー
  *
- * @since 1.2.0
+ * @since 1.3.0
  */
 function noveltool_install_sample_game_ajax() {
     // 権限チェック
@@ -104,16 +113,45 @@ function noveltool_install_sample_game_ajax() {
         wp_send_json_error( array( 'message' => __( 'Security check failed', 'novel-game-plugin' ) ) );
     }
     
-    // サンプルゲームをインストール
-    $result = noveltool_install_sample_game();
+    // Shadow Detectiveゲームをインストール
+    $result = noveltool_install_shadow_detective_game();
     
     if ( $result ) {
         wp_send_json_success( array( 'message' => __( 'Sample game installed successfully', 'novel-game-plugin' ) ) );
     } else {
-        wp_send_json_error( array( 'message' => __( 'Failed to install sample game. It may already exist.', 'novel-game-plugin' ) ) );
+        // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
+        wp_send_json_error( array( 'message' => __( 'Shadow Detective is already installed. No changes were made.', 'novel-game-plugin' ) ) );
     }
 }
 add_action( 'wp_ajax_noveltool_install_sample_game', 'noveltool_install_sample_game_ajax' );
+
+/**
+ * Shadow Detectiveゲームインストール用のAJAXハンドラー
+ *
+ * @since 1.3.0
+ */
+function noveltool_install_shadow_detective_ajax() {
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'novel-game-plugin' ) ) );
+    }
+    
+    // ノンスチェック
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'noveltool_install_shadow_detective' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Security check failed', 'novel-game-plugin' ) ) );
+    }
+    
+    // Shadow Detectiveゲームをインストール
+    $result = noveltool_install_shadow_detective_game();
+    
+    if ( $result ) {
+        wp_send_json_success( array( 'message' => __( 'Shadow Detective game installed successfully', 'novel-game-plugin' ) ) );
+    } else {
+        // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
+        wp_send_json_error( array( 'message' => __( 'Shadow Detective is already installed. No changes were made.', 'novel-game-plugin' ) ) );
+    }
+}
+add_action( 'wp_ajax_noveltool_install_shadow_detective', 'noveltool_install_shadow_detective_ajax' );
 
 /**
  * プラグイン無効化時の処理
@@ -207,6 +245,27 @@ function noveltool_get_game_by_title( $title ) {
         }
     }
     
+    return null;
+}
+
+/**
+ * 機械識別子（machine_name）でゲームを取得する関数
+ *
+ * @param string $machine_name 機械識別子（例: 'shadow_detective_v1'）
+ * @return array|null ゲームデータ または null
+ * @since 1.3.0
+ */
+function noveltool_get_game_by_machine_name( $machine_name ) {
+    if ( ! $machine_name ) {
+        return null;
+    }
+
+    $games = noveltool_get_all_games();
+    foreach ( $games as $game ) {
+        if ( isset( $game['machine_name'] ) && $game['machine_name'] === $machine_name ) {
+            return $game;
+        }
+    }
     return null;
 }
 
@@ -355,7 +414,7 @@ function noveltool_save_game_flag_master( $game_title, $flag_master ) {
     foreach ( $flag_master as $flag ) {
         if ( isset( $flag['id'], $flag['name'] ) ) {
             $sanitized_flags[] = array(
-                'id'          => intval( $flag['id'] ),
+                'id'          => sanitize_text_field( $flag['id'] ),
                 'name'        => sanitize_text_field( $flag['name'] ),
                 'description' => isset( $flag['description'] ) ? sanitize_text_field( $flag['description'] ) : '',
             );

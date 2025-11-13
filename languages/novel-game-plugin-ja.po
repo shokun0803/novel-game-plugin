@@ -4,8 +4,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Novel Game Plugin 1.2.0\n"
-"Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin\n"
-"POT-Creation-Date: 2025-10-29 05:39+0000\n"
+"Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin/issues\n"
+"POT-Creation-Date: 2025-11-07 06:50+0000\n"
 "PO-Revision-Date: 2025-01-23 12:00+0000\n"
 "Last-Translator: Novel Game Plugin Team\n"
 "Language-Team: Japanese\n"
@@ -18,8 +18,10 @@ msgstr ""
 
 #: admin/game-manager.php:23 admin/dashboard.php:22 admin/ad-management.php:40
 #: admin/new-game.php:48 admin/new-game.php:122 admin/my-games.php:22
-#: admin/plugin-settings.php:22 admin/game-settings.php:56
-#: admin/game-settings.php:343
+#: admin/plugin-settings.php:22 admin/game-settings.php:40
+#: admin/game-settings.php:98 admin/game-settings.php:184
+#: admin/game-settings.php:221 admin/game-settings.php:268
+#: admin/game-settings.php:328
 msgid "You do not have permission to access this page."
 msgstr "このページにアクセスする権限がありません。"
 
@@ -35,193 +37,224 @@ msgstr "マイゲームに戻る"
 msgid "Scene List"
 msgstr "シーン一覧"
 
-#: admin/game-manager.php:60 admin/game-manager.php:112
-#: admin/game-manager.php:177
+#: admin/game-manager.php:60 admin/game-manager.php:150
+#: admin/game-manager.php:224
 msgid "Create New Scene"
 msgstr "新規シーン作成"
 
-#: admin/game-manager.php:64 admin/game-settings.php:606
+#: admin/game-manager.php:64
 msgid "Game Settings"
 msgstr "ゲーム設定"
 
-#: admin/game-manager.php:100
+#: admin/game-manager.php:103 admin/game-manager.php:250
+#: admin/meta-boxes.php:27 admin/new-game.php:130 admin/my-games.php:71
+#: admin/game-settings.php:387
+msgid "Security check failed."
+msgstr "セキュリティチェックに失敗しました。"
+
+#: admin/game-manager.php:106 admin/my-games.php:74
+msgid "Failed to delete."
+msgstr "削除に失敗しました。"
+
+#: admin/game-manager.php:109 admin/my-games.php:77
+msgid "Invalid ID."
+msgstr "無効なIDです。"
+
+#: admin/game-manager.php:117
+msgid "Scene has been deleted."
+msgstr "シーンが削除されました。"
+
+#: admin/game-manager.php:138
 msgid "No scenes have been created for this game yet."
 msgstr "このゲームにはまだシーンが作成されていません。"
 
-#: admin/game-manager.php:103
+#: admin/game-manager.php:141
 msgid "Create First Scene"
 msgstr "最初のシーンを作成"
 
-#: admin/game-manager.php:109
+#: admin/game-manager.php:147
 #, php-format
 msgid "Total: %d scenes"
 msgstr "合計: %d シーン"
 
-#: admin/game-manager.php:119
+#: admin/game-manager.php:157
 msgid "Scene Title"
 msgstr "シーンタイトル"
 
-#: admin/game-manager.php:120
+#: admin/game-manager.php:158
 msgid "Status"
 msgstr "ステータス"
 
-#: admin/game-manager.php:121
+#: admin/game-manager.php:159
 msgid "Date"
 msgstr "日付"
 
-#: admin/game-manager.php:122 admin/game-manager.php:336
-#: admin/meta-boxes.php:852 admin/game-settings.php:532
+#: admin/game-manager.php:160 admin/game-manager.php:442
+#: admin/meta-boxes.php:852
 msgid "Actions"
 msgstr "操作"
 
-#: admin/game-manager.php:146 admin/meta-boxes.php:343
-#: admin/game-settings.php:650
+#: admin/game-manager.php:184 admin/meta-boxes.php:343
 msgid "Edit"
 msgstr "編集"
 
-#: admin/game-manager.php:149
+#: admin/game-manager.php:187
 msgid "Preview"
 msgstr "プレビュー"
 
-#: admin/game-manager.php:171
+#: admin/game-manager.php:194
+msgid ""
+"Are you sure you want to delete this scene? This action cannot be undone."
+msgstr "本当にこのシーンを削除しますか？この操作は取り消せません。"
+
+#: admin/game-manager.php:195 admin/game-manager.php:460
+#: admin/my-games.php:183 includes/revisions.php:320
+msgid "Delete"
+msgstr "削除"
+
+#: admin/game-manager.php:218
 msgid ""
 "Create a new scene for this game. After creation, you will be taken to the "
 "scene editing screen where you can add backgrounds, characters, dialogue, "
 "and choices."
-msgstr ""
-"このゲーム用の新しいシーンを作成します。作成後、背景、キャラクター、セリフ、"
-"選択肢を追加できる編集画面に移動します。"
+msgstr "このゲーム用の新しいシーンを作成します。作成後、背景、キャラクター、セリフ、選択肢を追加できる編集画面に移動します。"
 
-#: admin/game-manager.php:203 admin/meta-boxes.php:27 admin/new-game.php:130
-#: admin/game-settings.php:367 admin/my-games.php:77 admin/game-manager.php:106
-#: admin/game-settings.php:230
-msgid "Security check failed."
-msgstr "セキュリティチェックに失敗しました。"
-
-#: admin/game-manager.php:206 admin/new-game.php:133
-#: admin/game-settings.php:370 admin/game-settings.php:1056
+#: admin/game-manager.php:253 admin/new-game.php:133
 msgid "Please enter a game title."
 msgstr "ゲームタイトルを入力してください。"
 
-#: admin/game-manager.php:209 admin/game-settings.php:373
+#: admin/game-manager.php:256
 msgid "A game with that title already exists."
 msgstr "そのタイトルのゲームは既に存在します。"
 
-#: admin/game-manager.php:212 admin/game-settings.php:376
+#: admin/game-manager.php:259
 msgid "Failed to save game."
 msgstr "ゲームの保存に失敗しました。"
 
-#: admin/game-manager.php:220 admin/game-settings.php:402
+#: admin/game-manager.php:267
 msgid "Game updated successfully."
 msgstr "ゲームが更新されました。"
 
-#: admin/game-manager.php:223 admin/game-settings.php:408
+#: admin/game-manager.php:270
 msgid "Flag added successfully."
 msgstr "フラグが正常に追加されました。"
 
-#: admin/game-manager.php:226 admin/game-settings.php:411
+#: admin/game-manager.php:273
 msgid "Flag deleted successfully."
 msgstr "フラグが正常に削除されました。"
 
-#: admin/game-manager.php:253 admin/meta-boxes.php:641 admin/new-game.php:169
-#: admin/game-settings.php:445 admin/game-settings.php:680
+#: admin/game-manager.php:301 admin/meta-boxes.php:641 admin/new-game.php:169
 #: includes/post-types.php:88 includes/revisions.php:390
 msgid "Game Title"
 msgstr "ゲームタイトル"
 
-#: admin/game-manager.php:267 admin/new-game.php:187
-#: admin/game-settings.php:460 admin/game-settings.php:695
+#: admin/game-manager.php:315 admin/new-game.php:187
 msgid "Game Overview"
 msgstr "ゲーム概要"
 
-#: admin/game-manager.php:279 admin/new-game.php:203
-#: admin/game-settings.php:474 admin/game-settings.php:709
+#: admin/game-manager.php:327 admin/new-game.php:203
 msgid "Title Screen Image"
 msgstr "タイトル画面画像"
 
-#: admin/game-manager.php:288 admin/new-game.php:212
-#: admin/game-settings.php:483 admin/game-settings.php:718
+#: admin/game-manager.php:336 admin/new-game.php:212
 msgid "Title Screen Image Preview"
 msgstr "タイトル画面画像プレビュー"
 
-#: admin/game-manager.php:294 admin/meta-boxes.php:696 admin/new-game.php:218
-#: admin/game-settings.php:489 admin/game-settings.php:724
+#: admin/game-manager.php:342 admin/meta-boxes.php:696 admin/new-game.php:218
 msgid "Select from Media"
 msgstr "メディアから選択"
 
-#: admin/game-manager.php:300 admin/new-game.php:224
-#: admin/game-settings.php:495 admin/game-settings.php:730
+#: admin/game-manager.php:348 admin/new-game.php:224
 msgid "Delete Image"
 msgstr "画像を削除"
 
-#: admin/game-manager.php:308 admin/game-settings.php:503
-#: admin/game-settings.php:738
+#: admin/game-manager.php:356
 msgid "Game Over Screen Text"
 msgstr "ゲームオーバー画面テキスト"
 
-#: admin/game-manager.php:316 admin/game-settings.php:512
-#: admin/game-settings.php:747
+#: admin/game-manager.php:364
 msgid ""
 "Text displayed when there are no choices or next scenes in a non-ending. "
 "Default is \"Game Over\"."
-msgstr ""
-"非エンディングで選択肢や次のシーンがない場合に表示されるテキストです。デフォ"
-"ルトは「Game Over」です。"
+msgstr "非エンディングで選択肢や次のシーンがない場合に表示されるテキストです。デフォルトは「Game Over」です。"
 
-#: admin/game-manager.php:321 admin/game-settings.php:517
+#: admin/game-manager.php:369
+msgid "Ad Settings"
+msgstr "広告設定"
+
+#: admin/game-manager.php:373
+msgid "Ad Provider"
+msgstr "広告プロバイダー"
+
+#: admin/game-manager.php:389
+msgid "No Ads"
+msgstr "広告なし"
+
+#: admin/game-manager.php:396 admin/ad-management.php:97
+msgid "Google AdSense"
+msgstr "Google AdSense"
+
+#: admin/game-manager.php:403 admin/ad-management.php:142
+msgid "Adsterra"
+msgstr "Adsterra"
+
+#: admin/game-manager.php:410
+#, php-format
+msgid ""
+"Note: To display ads, you must first configure the ad provider IDs in %s. If"
+" IDs are not set, ads will not be displayed."
+msgstr "注意：広告を表示するには、まず%sで広告プロバイダーIDを設定する必要があります。IDが設定されていない場合、広告は表示されません。"
+
+#: admin/game-manager.php:411 admin/ad-management.php:22
+#: admin/ad-management.php:23 admin/ad-management.php:71
+msgid "Ad Management"
+msgstr "広告管理"
+
+#: admin/game-manager.php:423
+msgid "Update Game"
+msgstr "ゲームを更新"
+
+#: admin/game-manager.php:427
 msgid "Flag Management"
 msgstr "フラグ管理"
 
-#: admin/game-manager.php:327 admin/game-settings.php:523
+#: admin/game-manager.php:433
 msgid "Current Flags List"
 msgstr "現在のフラグ一覧"
 
-#: admin/game-manager.php:333 admin/game-settings.php:529
+#: admin/game-manager.php:439
 msgid "ID"
 msgstr "ID"
 
-#: admin/game-manager.php:334 admin/game-manager.php:373
-#: admin/game-settings.php:530 admin/game-settings.php:569
+#: admin/game-manager.php:440 admin/game-manager.php:481
 msgid "Flag Name"
 msgstr "フラグ名"
 
-#: admin/game-manager.php:335 admin/game-manager.php:386
-#: admin/game-settings.php:531 admin/game-settings.php:584
+#: admin/game-manager.php:441 admin/game-manager.php:494
 msgid "Description"
 msgstr "説明"
 
-#: admin/game-manager.php:353 admin/game-settings.php:549
-#: admin/game-settings.php:657 includes/revisions.php:320
-#: admin/my-games.php:129 admin/game-manager.php:155
-msgid "Delete"
-msgstr "削除"
-
-#: admin/game-manager.php:354 admin/game-settings.php:550
+#: admin/game-manager.php:461
 msgid "Are you sure you want to delete this flag?"
 msgstr "本当にこのフラグを削除しますか？"
 
-#: admin/game-manager.php:362 admin/meta-boxes.php:952
-#: admin/game-settings.php:558
+#: admin/game-manager.php:469 admin/meta-boxes.php:952
 msgid "No flags have been set for this game yet."
 msgstr "このゲームにはまだフラグが設定されていません。"
 
-#: admin/game-manager.php:365 admin/game-settings.php:561
+#: admin/game-manager.php:472
 msgid "Add New Flag"
 msgstr "新しいフラグを追加"
 
-#: admin/game-manager.php:381 admin/game-settings.php:579
+#: admin/game-manager.php:489
 msgid ""
 "Only alphanumeric characters and underscores are allowed. Cannot start with "
 "a number."
 msgstr "英数字とアンダースコアのみ使用可能です。数字で始めることはできません。"
 
-#: admin/game-manager.php:401 admin/game-settings.php:601
+#: admin/game-manager.php:509
 msgid "Add Flag"
 msgstr "フラグを追加"
-
-#: admin/game-manager.php:410 admin/game-settings.php:613
-msgid "Update Game"
-msgstr "ゲームを更新"
 
 #: admin/dashboard.php:37
 msgid "Novel Game Plugin Dashboard"
@@ -244,12 +277,12 @@ msgid "Quick Actions"
 msgstr "クイックアクション"
 
 #: admin/dashboard.php:63 admin/new-game.php:22 admin/new-game.php:23
-#: admin/my-games.php:73 admin/my-games.php:131
+#: admin/my-games.php:128 admin/my-games.php:194
 #: templates/archive-novel_game.php:140
 msgid "Create New Game"
 msgstr "新しいゲームを作成"
 
-#: admin/dashboard.php:67 admin/my-games.php:66 includes/post-types.php:316
+#: admin/dashboard.php:67 admin/my-games.php:92 includes/post-types.php:316
 #: includes/post-types.php:317
 msgid "My Games"
 msgstr "マイゲーム"
@@ -266,9 +299,7 @@ msgstr "新しいゲームを作成"
 msgid ""
 "Click \"Create New Game\" to set up your game title, description, and title "
 "image."
-msgstr ""
-"「新規ゲーム作成」をクリックして、ゲームタイトル、説明、タイトル画像を設定し"
-"ます。"
+msgstr "「新規ゲーム作成」をクリックして、ゲームタイトル、説明、タイトル画像を設定します。"
 
 #: admin/dashboard.php:86
 msgid "Create Scenes"
@@ -285,8 +316,7 @@ msgstr "ゲームを公開"
 
 #: admin/dashboard.php:94
 msgid "Use shortcodes to display your game on any page or post on your site."
-msgstr ""
-"ショートコードを使用して、サイトの任意のページや投稿にゲームを表示します。"
+msgstr "ショートコードを使用して、サイトの任意のページや投稿にゲームを表示します。"
 
 #: admin/dashboard.php:102
 msgid "About Novel Game Plugin"
@@ -298,9 +328,7 @@ msgid ""
 "games directly in WordPress. You can create multiple games, manage scenes "
 "with branching storylines, and use flags for conditional content."
 msgstr ""
-"ノベルゲームプラグインは、WordPress上で直接ビジュアルノベルやサウンドノベル形"
-"式のゲームを作成できます。複数のゲームを作成し、分岐するストーリーラインで"
-"シーンを管理し、条件付きコンテンツにフラグを使用できます。"
+"ノベルゲームプラグインは、WordPress上で直接ビジュアルノベルやサウンドノベル形式のゲームを作成できます。複数のゲームを作成し、分岐するストーリーラインでシーンを管理し、条件付きコンテンツにフラグを使用できます。"
 
 #: admin/dashboard.php:104
 msgid "Key Features:"
@@ -356,11 +384,11 @@ msgid "Remove"
 msgstr "削除"
 
 #: admin/meta-boxes.php:300 admin/meta-boxes.php:735 admin/meta-boxes.php:770
-#: admin/meta-boxes.php:805 admin/game-settings.php:1053
+#: admin/meta-boxes.php:805
 msgid "Select Image"
 msgstr "画像を選択"
 
-#: admin/meta-boxes.php:301 admin/game-settings.php:1054
+#: admin/meta-boxes.php:301
 msgid "Use This Image"
 msgstr "この画像を使う"
 
@@ -396,15 +424,15 @@ msgstr "話者:"
 msgid "-- Select Speaker --"
 msgstr "-- 話者を選択 --"
 
-#: admin/meta-boxes.php:310 admin/meta-boxes.php:713 novel-game-plugin.php:673
+#: admin/meta-boxes.php:310 admin/meta-boxes.php:713 novel-game-plugin.php:758
 msgid "Left Character"
 msgstr "左キャラクター"
 
-#: admin/meta-boxes.php:311 admin/meta-boxes.php:748 novel-game-plugin.php:677
+#: admin/meta-boxes.php:311 admin/meta-boxes.php:748 novel-game-plugin.php:762
 msgid "Center Character"
 msgstr "中央キャラクター"
 
-#: admin/meta-boxes.php:312 admin/meta-boxes.php:783 novel-game-plugin.php:681
+#: admin/meta-boxes.php:312 admin/meta-boxes.php:783 novel-game-plugin.php:766
 msgid "Right Character"
 msgstr "右キャラクター"
 
@@ -536,27 +564,22 @@ msgstr "投稿が保存されていません。保存してから新しいコマ
 
 #: admin/meta-boxes.php:342
 #, php-format
-msgid ""
-"A new scene \"%s\" has been created. You can edit it from the edit link."
+msgid "A new scene \"%s\" has been created. You can edit it from the edit link."
 msgstr "新しいシーン「%s」が作成されました。編集リンクから編集できます。"
 
 #: admin/meta-boxes.php:344
 msgid ""
 "Unsupported file format. Only jpg, jpeg, png, gif, and webp files can be "
 "uploaded."
-msgstr ""
-"サポートされていないファイル形式です。jpg, jpeg, png, gif, webp のみアップ"
-"ロード可能です。"
+msgstr "サポートされていないファイル形式です。jpg, jpeg, png, gif, webp のみアップロード可能です。"
 
 #: admin/meta-boxes.php:345
 msgid "Unsupported file format. Only image files can be uploaded."
-msgstr ""
-"サポートされていないファイル形式です。画像ファイルのみアップロード可能です。"
+msgstr "サポートされていないファイル形式です。画像ファイルのみアップロード可能です。"
 
 #: admin/meta-boxes.php:346
 msgid "File size is too large. Please upload a file smaller than 5MB."
-msgstr ""
-"ファイルサイズが大きすぎます。5MB以下のファイルをアップロードしてください。"
+msgstr "ファイルサイズが大きすぎます。5MB以下のファイルをアップロードしてください。"
 
 #: admin/meta-boxes.php:649
 msgid "-- Please Select a Game --"
@@ -626,9 +649,7 @@ msgstr "+ セリフを追加"
 msgid ""
 "You can set a background image for each dialogue. If no background image is "
 "specified, the background from the previous scene will continue."
-msgstr ""
-"各セリフに対して背景画像を設定できます。背景画像が指定されていない場合は、前"
-"のシーンの背景が継続されます。"
+msgstr "各セリフに対して背景画像を設定できます。背景画像が指定されていない場合は、前のシーンの背景が継続されます。"
 
 #: admin/meta-boxes.php:840 includes/revisions.php:389
 msgid "Choices"
@@ -694,9 +715,7 @@ msgstr "このシーンをエンディング（ゲームの終了）として設
 msgid ""
 "When checked, the game will end at this scene. The ending takes priority "
 "even if choices are set."
-msgstr ""
-"チェックを入れると、このシーンでゲームが終了します。選択肢が設定されていても"
-"エンディングが優先されます。"
+msgstr "チェックを入れると、このシーンでゲームが終了します。選択肢が設定されていてもエンディングが優先されます。"
 
 #: admin/meta-boxes.php:900
 msgid "Ending Screen Text"
@@ -710,16 +729,15 @@ msgstr "エンディング画面に表示するテキスト（デフォルト: �
 msgid ""
 "Set the text to display on the ending screen. If blank, \"END\" will be "
 "displayed."
-msgstr ""
-"エンディング画面に表示するテキストを設定します。空欄の場合は「END」が表示され"
-"ます。"
+msgstr "エンディング画面に表示するテキストを設定します。空欄の場合は「END」が表示されます。"
 
 #: admin/meta-boxes.php:932
 msgid "Flags to Set on Scene Arrival"
 msgstr "シーン到達時に設定するフラグ"
 
 #: admin/meta-boxes.php:933
-msgid "Select flags that will be automatically set when this scene is reached."
+msgid ""
+"Select flags that will be automatically set when this scene is reached."
 msgstr "このシーンに到達した時に自動的に設定されるフラグを選択してください。"
 
 #: admin/meta-boxes.php:954
@@ -735,22 +753,13 @@ msgid ""
 "To set individual flag conditions for each dialogue, configure them when "
 "editing dialogues. Dialogues will not be displayed if flag conditions are "
 "not met."
-msgstr ""
-"各セリフに個別のフラグ条件を設定する場合は、セリフ編集時に設定してください。"
-"フラグ条件を満たさない場合、そのセリフは表示されません。"
+msgstr "各セリフに個別のフラグ条件を設定する場合は、セリフ編集時に設定してください。フラグ条件を満たさない場合、そのセリフは表示されません。"
 
 #: admin/meta-boxes.php:964
 msgid ""
 "Dialogue flag conditions can be set when editing each dialogue in the "
 "\"Dialogue\" section above."
-msgstr ""
-"セリフのフラグ条件は、上記の「セリフ」セクションで各セリフを編集する際に設定"
-"できます。"
-
-#: admin/ad-management.php:22 admin/ad-management.php:23
-#: admin/ad-management.php:71
-msgid "Ad Management"
-msgstr "広告管理"
+msgstr "セリフのフラグ条件は、上記の「セリフ」セクションで各セリフを編集する際に設定できます。"
 
 #: admin/ad-management.php:61
 msgid "Ad settings have been saved successfully."
@@ -765,34 +774,32 @@ msgid "Please read carefully before using the advertising feature:"
 msgstr "広告機能をご利用になる前に、必ずお読みください:"
 
 #: admin/ad-management.php:80
-msgid "The advertising IDs and settings you enter are your own responsibility."
+msgid ""
+"The advertising IDs and settings you enter are your own responsibility."
 msgstr "入力される広告IDおよび設定内容は、ユーザーご自身の責任において管理してください。"
 
 #: admin/ad-management.php:81
 msgid ""
 "This plugin does not verify the validity or compliance of the advertising "
 "IDs you provide."
-msgstr ""
+msgstr "このプラグインは、入力された広告IDの有効性や準拠性を検証しません。"
 
 #: admin/ad-management.php:82
-msgid "You must comply with the terms of service of each advertising provider."
+msgid ""
+"You must comply with the terms of service of each advertising provider."
 msgstr "各広告プロバイダーの利用規約を必ず遵守してください。"
 
 #: admin/ad-management.php:83
 msgid ""
 "The plugin developer is not responsible for any issues arising from the use "
 "of advertising features."
-msgstr ""
+msgstr "プラグイン開発者は、広告機能の使用に起因する問題について一切の責任を負いません。"
 
 #: admin/ad-management.php:84
 msgid ""
 "Make sure you have properly registered with the advertising provider and "
 "have an approved account before entering your IDs."
-msgstr ""
-
-#: admin/ad-management.php:97
-msgid "Google AdSense"
-msgstr ""
+msgstr "IDを入力する前に、広告プロバイダーに適切に登録し、承認されたアカウントを持っていることを確認してください。"
 
 #: admin/ad-management.php:104
 msgid "AdSense Publisher ID"
@@ -814,11 +821,7 @@ msgstr "Google AdSenseにアクセス"
 msgid ""
 "Register for a Google AdSense account and get your Publisher ID from the "
 "official website."
-msgstr ""
-
-#: admin/ad-management.php:142
-msgid "Adsterra"
-msgstr ""
+msgstr "Google AdSenseアカウントに登録し、公式ウェブサイトからPublisher IDを取得してください。"
 
 #: admin/ad-management.php:149
 msgid "Adsterra Publisher ID"
@@ -834,9 +837,9 @@ msgstr "Adsterraにアクセス"
 
 #: admin/ad-management.php:176
 msgid ""
-"Register for an Adsterra account and get your Publisher ID from the official "
-"website."
-msgstr ""
+"Register for an Adsterra account and get your Publisher ID from the official"
+" website."
+msgstr "Adsterraアカウントに登録し、公式ウェブサイトからPublisher IDを取得してください。"
 
 #: admin/ad-management.php:185
 msgid "Save Ad Settings"
@@ -850,7 +853,7 @@ msgstr "追加情報"
 msgid ""
 "This section allows you to manage advertising provider IDs for displaying "
 "ads in your novel games."
-msgstr ""
+msgstr "このセクションでは、ノベルゲームに広告を表示するための広告プロバイダーIDを管理できます。"
 
 #: admin/ad-management.php:194
 msgid "Currently supported advertising providers:"
@@ -860,23 +863,23 @@ msgstr "現在サポートしている広告プロバイダー:"
 msgid ""
 "One of the most popular advertising networks with a wide range of "
 "advertisers."
-msgstr ""
+msgstr "幅広い広告主を持つ最も人気のある広告ネットワークの一つです。"
 
 #: admin/ad-management.php:197
 msgid ""
 "An alternative advertising network with various ad formats and payment "
 "options."
-msgstr ""
+msgstr "さまざまな広告フォーマットと支払いオプションを持つ代替広告ネットワークです。"
 
 #: admin/ad-management.php:200
 msgid "Note:"
-msgstr ""
+msgstr "注意:"
 
 #: admin/ad-management.php:201
 msgid ""
 "Ad display functionality is currently under development. The IDs saved here "
 "will be used when the feature is fully implemented."
-msgstr ""
+msgstr "広告表示機能は現在開発中です。ここに保存されたIDは、機能が完全に実装された際に使用されます。"
 
 #: admin/new-game.php:136
 msgid "This game title is already in use."
@@ -894,8 +897,7 @@ msgstr "新しいゲームのタイトルを入力してください"
 msgid "This title will be used as the overall game title."
 msgstr "このタイトルは全体のゲームタイトルとして使用されます。"
 
-#: admin/new-game.php:194 admin/game-settings.php:468
-#: admin/game-settings.php:703
+#: admin/new-game.php:194
 msgid "Please enter a game overview/description"
 msgstr "ゲームの概要・説明を入力してください"
 
@@ -911,32 +913,27 @@ msgstr "ゲームのタイトル画面画像（任意）。"
 msgid "Create Game"
 msgstr "ゲームを作成"
 
-#: admin/new-game.php:245 admin/game-settings.php:814
+#: admin/new-game.php:245
 msgid "Help"
 msgstr "ヘルプ"
 
 #: admin/new-game.php:246
 msgid ""
-"Enter a game title and click the \"Create Game\" button to create a new game."
-msgstr ""
-"ゲームタイトルを入力して「ゲームを作成」ボタンをクリックすると、新しいゲーム"
-"が作成されます。"
+"Enter a game title and click the \"Create Game\" button to create a new "
+"game."
+msgstr "ゲームタイトルを入力して「ゲームを作成」ボタンをクリックすると、新しいゲームが作成されます。"
 
 #: admin/new-game.php:247
 msgid ""
 "After creation, you will be taken to the game management screen where you "
 "can create scenes, manage settings, and configure your game."
-msgstr ""
-"作成後、ゲーム管理画面に移動します。そこでシーンの作成、設定の管理、ゲームの"
-"構成ができます。"
+msgstr "作成後、ゲーム管理画面に移動します。そこでシーンの作成、設定の管理、ゲームの構成ができます。"
 
 #: admin/new-game.php:248
 msgid ""
 "You can optionally add a game overview and title screen image for a better "
 "presentation."
-msgstr ""
-"より良いプレゼンテーションのために、任意でゲーム概要とタイトル画面画像を追加"
-"できます。"
+msgstr "より良いプレゼンテーションのために、任意でゲーム概要とタイトル画面画像を追加できます。"
 
 #: admin/new-game.php:282
 #, php-format
@@ -948,24 +945,60 @@ msgstr "%s - 開始シーン"
 msgid "Welcome to \"%s\"!"
 msgstr "ようこそ「%s」へ！"
 
-#: admin/my-games.php:70 admin/game-settings.php:666 novel-game-plugin.php:906
-#: novel-game-plugin.php:1204 templates/archive-novel_game.php:138
+#: admin/my-games.php:85
+msgid "Game has been deleted."
+msgstr "ゲームが削除されました。"
+
+#: admin/my-games.php:108 includes/sample-data.php:88
+#: includes/sample-data.php:212
+msgid "Sample Novel Game"
+msgstr "サンプルノベルゲーム"
+
+#: admin/my-games.php:114
+msgid ""
+"Sample game is not installed. You can install a sample game to see how the "
+"plugin works."
+msgstr "サンプルゲームがインストールされていません。プラグインの動作を確認するにはサンプルゲームをインストールしてください。"
+
+#: admin/my-games.php:117 admin/my-games.php:257 admin/my-games.php:261
+msgid "Install Sample Game"
+msgstr "サンプルゲームをインストール"
+
+#: admin/my-games.php:125 novel-game-plugin.php:1022
+#: novel-game-plugin.php:1320 templates/archive-novel_game.php:138
 msgid "No games have been created yet."
 msgstr "まだゲームが作成されていません。"
 
-#: admin/my-games.php:79
+#: admin/my-games.php:134
 msgid "Select a game to manage its scenes and settings."
 msgstr "シーンと設定を管理するゲームを選択してください。"
 
-#: admin/my-games.php:109 novel-game-plugin.php:982 novel-game-plugin.php:1260
-#: templates/archive-novel_game.php:124
+#: admin/my-games.php:164 novel-game-plugin.php:1098
+#: novel-game-plugin.php:1376 templates/archive-novel_game.php:124
 #, php-format
 msgid "%d Scenes"
 msgstr "%d シーン"
 
-#: admin/my-games.php:121
+#: admin/my-games.php:176
 msgid "Manage"
 msgstr "管理"
+
+#: admin/my-games.php:182
+msgid ""
+"Are you sure you want to delete this game? This action cannot be undone."
+msgstr "本当にこのゲームを削除しますか？この操作は取り消せません。"
+
+#: admin/my-games.php:242
+msgid "Install sample game?"
+msgstr "サンプルゲームをインストールしますか？"
+
+#: admin/my-games.php:247
+msgid "Installing..."
+msgstr "インストール中..."
+
+#: admin/my-games.php:256 admin/my-games.php:260
+msgid "Installation failed."
+msgstr "インストールに失敗しました。"
 
 #: admin/plugin-settings.php:27
 msgid "Plugin Settings"
@@ -984,7 +1017,6 @@ msgid "Display All Games List"
 msgstr "全ゲーム一覧を表示"
 
 #: admin/plugin-settings.php:41 admin/plugin-settings.php:88
-#: admin/game-settings.php:774
 msgid "Copy"
 msgstr "コピー"
 
@@ -992,51 +1024,49 @@ msgstr "コピー"
 msgid ""
 "Displays all games in a beautiful card format. This is the most recommended "
 "shortcode for game lists."
-msgstr ""
-"すべてのゲームを美しいカード形式で表示します。ゲーム一覧に最も推奨される"
-"ショートコードです。"
+msgstr "すべてのゲームを美しいカード形式で表示します。ゲーム一覧に最も推奨されるショートコードです。"
 
 #: admin/plugin-settings.php:46 admin/plugin-settings.php:93
 msgid "Available Options:"
 msgstr "利用可能なオプション："
 
-#: admin/plugin-settings.php:49 admin/game-settings.php:790
+#: admin/plugin-settings.php:49
 msgid "show_count"
 msgstr "show_count"
 
-#: admin/plugin-settings.php:50 admin/game-settings.php:791
+#: admin/plugin-settings.php:50
 msgid "Show scene count (true/false, default: true)"
 msgstr "シーン数の表示（true/false、デフォルト: true）"
 
-#: admin/plugin-settings.php:53 admin/game-settings.php:794
+#: admin/plugin-settings.php:53
 msgid "show_description"
 msgstr "show_description"
 
-#: admin/plugin-settings.php:54 admin/game-settings.php:795
+#: admin/plugin-settings.php:54
 msgid "Show game description (true/false, default: false)"
 msgstr "ゲーム説明の表示（true/false、デフォルト: false）"
 
-#: admin/plugin-settings.php:57 admin/game-settings.php:798
+#: admin/plugin-settings.php:57
 msgid "columns"
 msgstr "columns"
 
-#: admin/plugin-settings.php:58 admin/game-settings.php:799
+#: admin/plugin-settings.php:58
 msgid "Number of columns (1-6, default: 3)"
 msgstr "表示列数（1-6、デフォルト: 3）"
 
-#: admin/plugin-settings.php:61 admin/game-settings.php:802
+#: admin/plugin-settings.php:61
 msgid "orderby"
 msgstr "orderby"
 
-#: admin/plugin-settings.php:62 admin/game-settings.php:803
+#: admin/plugin-settings.php:62
 msgid "Sort order (title, etc., default: title)"
 msgstr "並び順（title等、デフォルト: title）"
 
-#: admin/plugin-settings.php:65 admin/game-settings.php:806
+#: admin/plugin-settings.php:65
 msgid "order"
 msgstr "order"
 
-#: admin/plugin-settings.php:66 admin/game-settings.php:807
+#: admin/plugin-settings.php:66
 msgid "Ascending/Descending (ASC/DESC, default: ASC)"
 msgstr "昇順/降順（ASC/DESC、デフォルト: ASC）"
 
@@ -1060,9 +1090,7 @@ msgstr "特定のゲームを表示"
 msgid ""
 "Displays a specific game with a hero image and play button. Replace \"Game "
 "Name\" with your actual game title."
-msgstr ""
-"特定のゲームをヒーロー画像とプレイボタン付きで表示します。「ゲーム名」を実際"
-"のゲームタイトルに置き換えてください。"
+msgstr "特定のゲームをヒーロー画像とプレイボタン付きで表示します。「ゲーム名」を実際のゲームタイトルに置き換えてください。"
 
 #: admin/plugin-settings.php:96
 msgid "game_title"
@@ -1086,11 +1114,10 @@ msgstr "ブロックエディタ"
 
 #: admin/plugin-settings.php:109
 msgid ""
-"In the Gutenberg block editor, search for \"Novel Game List\" block. You can "
-"easily insert game lists or individual games with intuitive operations."
+"In the Gutenberg block editor, search for \"Novel Game List\" block. You can"
+" easily insert game lists or individual games with intuitive operations."
 msgstr ""
-"Gutenbergブロックエディタで「ノベルゲーム一覧」ブロックを検索してください。直"
-"感的な操作でゲーム一覧や個別のゲームを簡単に挿入できます。"
+"Gutenbergブロックエディタで「ノベルゲーム一覧」ブロックを検索してください。直感的な操作でゲーム一覧や個別のゲームを簡単に挿入できます。"
 
 #: admin/plugin-settings.php:117
 msgid "Plugin Information"
@@ -1112,206 +1139,1028 @@ msgstr "コピーしました！"
 msgid "Settings"
 msgstr "設定"
 
-#: admin/game-settings.php:379
-msgid "Failed to delete game."
-msgstr "ゲームの削除に失敗しました。"
-
-#: admin/my-games.php:80 admin/game-manager.php:109 admin/game-settings.php:256
-msgid "Failed to delete."
-msgstr "削除に失敗しました。"
-
-#: admin/my-games.php:83 admin/game-manager.php:112
-msgid "Invalid ID."
-msgstr "無効なIDです。"
-
-#: admin/my-games.php:89
-msgid "Game has been deleted."
-msgstr "ゲームが削除されました。"
-
-#: admin/game-manager.php:118
-msgid "Scene has been deleted."
-msgstr "シーンが削除されました。"
-
-#: admin/my-games.php:128
-msgid "Are you sure you want to delete this game? This action cannot be undone."
-msgstr "本当にこのゲームを削除しますか？この操作は取り消せません。"
-
-#: admin/game-manager.php:154
-msgid "Are you sure you want to delete this scene? This action cannot be undone."
-msgstr "本当にこのシーンを削除しますか？この操作は取り消せません。"
-
-#: admin/game-settings.php:382
+#: admin/game-settings.php:393
 msgid "Invalid game ID."
 msgstr "無効なゲームIDです。"
 
-#: admin/game-settings.php:385
-msgid "Please enter a flag name and game title."
-msgstr "フラグ名とゲームタイトルを入力してください。"
+#: admin/game-settings.php:398
+msgid "You do not have permission to edit this game."
+msgstr "このゲームを編集する権限がありません。"
 
-#: admin/game-settings.php:388
-msgid "Failed to add flag. A flag with the same name may already exist."
-msgstr ""
-"フラグの追加に失敗しました。同名のフラグが既に存在する可能性があります。"
+#: novel-game-plugin.php:102 novel-game-plugin.php:129
+msgid "Insufficient permissions"
+msgstr "権限が不足しています"
 
-#: admin/game-settings.php:391
-msgid "Failed to delete flag."
-msgstr "フラグの削除に失敗しました。"
+#: novel-game-plugin.php:107 novel-game-plugin.php:134
+msgid "Security check failed"
+msgstr "セキュリティチェックに失敗しました"
 
-#: admin/game-settings.php:399
-msgid "Game added successfully."
-msgstr "ゲームが追加されました。"
+#: novel-game-plugin.php:114
+msgid "Sample game installed successfully"
+msgstr "サンプルゲームのインストールに成功しました"
 
-#: admin/game-settings.php:405
-msgid "Game deleted successfully."
-msgstr "ゲームが削除されました。"
+#: novel-game-plugin.php:116
+msgid "Failed to install sample game. It may already exist."
+msgstr "サンプルゲームのインストールに失敗しました。既に存在する可能性があります。"
 
-#: admin/game-settings.php:436
-msgid "Edit Game"
-msgstr "ゲームを編集"
+#: novel-game-plugin.php:141
+msgid "Shadow Detective game installed successfully"
+msgstr "Shadow Detectiveゲームのインストールに成功しました"
 
-#: admin/game-settings.php:454 admin/game-settings.php:689
-msgid "Please enter a game title"
-msgstr "ゲームのタイトルを入力してください"
+#: novel-game-plugin.php:143
+msgid "Failed to install Shadow Detective game. It may already exist."
+msgstr "Shadow Detectiveゲームのインストールに失敗しました。既に存在する可能性があります。"
 
-#: admin/game-settings.php:511 admin/game-settings.php:746
-msgid "Text to display on Game Over screen"
-msgstr "ゲームオーバー画面に表示するテキスト"
-
-#: admin/game-settings.php:576
-msgid "Example: visited_library"
-msgstr "例: visited_library"
-
-#: admin/game-settings.php:578
-msgid ""
-"Only alphanumeric characters and underscores are allowed, cannot start with "
-"a number"
-msgstr "英数字とアンダースコアのみ使用可能、数字で始めることはできません"
-
-#: admin/game-settings.php:591
-msgid "Example: Visited the library"
-msgstr "例: 図書館を訪れた"
-
-#: admin/game-settings.php:592
-msgid "Optional text describing the purpose of the flag."
-msgstr "フラグの用途を説明する任意のテキストです。"
-
-#: admin/game-settings.php:615
-msgid "Cancel"
-msgstr "キャンセル"
-
-#: admin/game-settings.php:622 novel-game-plugin.php:1210
-msgid "Game List"
-msgstr "ゲーム一覧"
-
-#: admin/game-settings.php:658
-msgid "Are you sure you want to delete this game?"
-msgstr "本当にこのゲームを削除しますか？"
-
-#: admin/game-settings.php:673
-msgid "Add New Game"
-msgstr "新しいゲームを追加"
-
-#: admin/game-settings.php:756
-msgid "Add Game"
-msgstr "ゲームを追加"
-
-#: admin/game-settings.php:765
-msgid "Shortcode"
-msgstr "ショートコード"
-
-#: admin/game-settings.php:766
-msgid "Shortcode used to display a game list on pages or posts."
-msgstr "ページや投稿でゲーム一覧を表示するためのショートコードです。"
-
-#: admin/game-settings.php:770
-msgid "Display All Games List (Recommended)"
-msgstr "全ゲーム一覧を表示（推奨）"
-
-#: admin/game-settings.php:777
-msgid ""
-"Displays all created games in a beautiful card format. This is the most user-"
-"friendly and recommended shortcode."
-msgstr ""
-"作成された全てのゲームを美しいカード形式で一覧表示します。最も使いやすく推奨"
-"のショートコードです。"
-
-#: admin/game-settings.php:781
-msgid "Use in Block Editor (Recommended)"
-msgstr "ブロックエディタでの使用（推奨）"
-
-#: admin/game-settings.php:782
-msgid ""
-"In the Gutenberg block editor, use the \"Novel Game List\" block. You can "
-"easily insert game lists or individual games with intuitive operations."
-msgstr ""
-"Gutenbergブロックエディタでは「ノベルゲーム一覧」ブロックを使用してください。"
-"直感的な操作でゲーム一覧や個別ゲームを簡単に挿入できます。"
-
-#: admin/game-settings.php:787
-msgid "Options for Game List Shortcode ([novel_game_list])"
-msgstr "ゲーム一覧ショートコード（[novel_game_list]）のオプション"
-
-#: admin/game-settings.php:815
-msgid "Here you can manage basic information for multiple novel games."
-msgstr "ここでは、複数のノベルゲームの基本情報を管理できます。"
-
-#: admin/game-settings.php:816
-msgid "The game title can be selected when creating a scene."
-msgstr "ゲームタイトルは、シーン作成時に選択できます。"
-
-#: admin/game-settings.php:817
-msgid "Please enter a game introduction or synopsis in the game overview."
-msgstr "ゲーム概要は、ゲームの紹介やあらすじを記載してください。"
-
-#: admin/game-settings.php:818
-msgid ""
-"The title screen image is the main image displayed when the game starts."
-msgstr "タイトル画面画像は、ゲームの開始時に表示されるメイン画像です。"
-
-#: admin/game-settings.php:1055
-msgid "Are you sure you want to delete this image?"
-msgstr "本当に画像を削除しますか？"
-
-#: novel-game-plugin.php:636 novel-game-plugin.php:1153
+#: novel-game-plugin.php:716 novel-game-plugin.php:1269
 #: templates/archive-novel_game.php:128
 msgid "Start Game"
 msgstr "ゲーム開始"
 
-#: novel-game-plugin.php:639
+#: novel-game-plugin.php:719
 msgid "Clear Progress"
 msgstr "進捗をクリア"
 
-#: novel-game-plugin.php:648 novel-game-plugin.php:1018
-#: novel-game-plugin.php:1162 templates/archive-novel_game.php:154
+#: novel-game-plugin.php:728 novel-game-plugin.php:1134
+#: novel-game-plugin.php:1278 templates/archive-novel_game.php:154
 msgid "Close Game"
 msgstr "ゲームを閉じる"
 
-#: novel-game-plugin.php:660 novel-game-plugin.php:1029
-#: novel-game-plugin.php:1173 templates/archive-novel_game.php:166
+#: novel-game-plugin.php:740 novel-game-plugin.php:1145
+#: novel-game-plugin.php:1289 templates/archive-novel_game.php:166
 msgid "Start from Beginning"
 msgstr "最初から開始"
 
-#: novel-game-plugin.php:663 novel-game-plugin.php:1032
-#: novel-game-plugin.php:1176 templates/archive-novel_game.php:169
+#: novel-game-plugin.php:743 novel-game-plugin.php:1148
+#: novel-game-plugin.php:1292 templates/archive-novel_game.php:169
 msgid "Continue from Save"
 msgstr "続きから始める"
 
-#: novel-game-plugin.php:1004 novel-game-plugin.php:1262
+#: novel-game-plugin.php:1120 novel-game-plugin.php:1378
 msgid "Start Playing"
 msgstr "プレイ開始"
 
-#: novel-game-plugin.php:1098
+#: novel-game-plugin.php:1214
 msgid "There are no posts for this game."
 msgstr "このゲームには投稿がありません。"
 
+#: novel-game-plugin.php:1326
+msgid "Game List"
+msgstr "ゲーム一覧"
+
+#: includes/sample-data.php:44
+msgid "Sample Background"
+msgstr "サンプル背景"
+
+#: includes/sample-data.php:63
+msgid "Character A"
+msgstr "キャラクターA"
+
+#: includes/sample-data.php:82
+msgid "Character B"
+msgstr "キャラクターB"
+
+#: includes/sample-data.php:89
+msgid ""
+"This is a sample visual novel game to help you understand how to use this "
+"plugin. You can edit or delete this game at any time."
+msgstr "このプラグインの使い方を理解するためのサンプルビジュアルノベルゲームです。このゲームはいつでも編集または削除できます。"
+
+#: includes/sample-data.php:91 includes/sample-data.php:634
+msgid "Game Over"
+msgstr "ゲームオーバー"
+
+#: includes/sample-data.php:99
+msgid "Sample Novel Game - Opening"
+msgstr "サンプルノベルゲーム - オープニング"
+
+#: includes/sample-data.php:104 includes/sample-data.php:141
+#: includes/sample-data.php:172
+msgid "Alice"
+msgstr "アリス"
+
+#: includes/sample-data.php:108
+msgid "Welcome to this sample novel game!"
+msgstr "サンプルノベルゲームへようこそ！"
+
+#: includes/sample-data.php:109
+msgid "I am Alice. Nice to meet you."
+msgstr "私はアリスです。はじめまして。"
+
+#: includes/sample-data.php:110
+msgid "This game will show you how to create branching stories."
+msgstr "このゲームは分岐ストーリーの作り方をお見せします。"
+
+#: includes/sample-data.php:111
+msgid "Now, let me ask you a question..."
+msgstr "それでは、質問させてください..."
+
+#: includes/sample-data.php:122
+msgid "I want to hear more about the story"
+msgstr "ストーリーについてもっと聞きたい"
+
+#: includes/sample-data.php:126
+msgid "I want to learn about choices"
+msgstr "選択肢について学びたい"
+
+#: includes/sample-data.php:136
+msgid "Sample Novel Game - About Story"
+msgstr "サンプルノベルゲーム - ストーリーについて"
+
+#: includes/sample-data.php:142
+msgid "Bob"
+msgstr "ボブ"
+
+#: includes/sample-data.php:145
+msgid "Great choice! Let me introduce my friend Bob."
+msgstr "良い選択です！友達のボブを紹介します。"
+
+#: includes/sample-data.php:146
+msgid "Hi there! Nice to meet you."
+msgstr "こんにちは！はじめまして。"
+
+#: includes/sample-data.php:147
+msgid "You can create rich stories with multiple characters."
+msgstr "複数のキャラクターで豊かなストーリーを作ることができます。"
+
+#: includes/sample-data.php:148
+msgid "Each character can have different positions and expressions."
+msgstr "各キャラクターは異なる位置や表情を持つことができます。"
+
+#: includes/sample-data.php:149 includes/sample-data.php:179
+msgid "This is the end of this branch. Thank you for playing!"
+msgstr "この分岐の終わりです。プレイありがとうございました！"
+
+#: includes/sample-data.php:161
+msgid "Story Path - End"
+msgstr "ストーリールート - 終了"
+
+#: includes/sample-data.php:166
+msgid "Sample Novel Game - About Choices"
+msgstr "サンプルノベルゲーム - 選択肢について"
+
+#: includes/sample-data.php:175
+msgid "Excellent! You are interested in branching stories."
+msgstr "素晴らしい！分岐ストーリーに興味があるんですね。"
+
+#: includes/sample-data.php:176
+msgid "In visual novels, choices are very important."
+msgstr "ビジュアルノベルでは、選択肢がとても重要です。"
+
+#: includes/sample-data.php:177
+msgid "Your decisions will affect the story outcome."
+msgstr "あなたの決定がストーリーの結末に影響します。"
+
+#: includes/sample-data.php:178
+msgid "You can create multiple endings based on player choices."
+msgstr "プレイヤーの選択に基づいて複数のエンディングを作成できます。"
+
+#: includes/sample-data.php:191
+msgid "Choice Path - End"
+msgstr "選択ルート - 終了"
+
+#: includes/sample-data.php:356
+msgid "Detective Office"
+msgstr "探偵事務所"
+
+#: includes/sample-data.php:373
+msgid "Warehouse District"
+msgstr "倉庫街"
+
+#: includes/sample-data.php:390
+msgid "Kurosaki Mansion"
+msgstr "黒崎邸"
+
+#: includes/sample-data.php:407
+msgid "Cafe"
+msgstr "カフェ"
+
+#: includes/sample-data.php:425
+msgid "Study"
+msgstr "書斎"
+
+#: includes/sample-data.php:442
+msgid "Hidden Room"
+msgstr "隠し部屋"
+
+#: includes/sample-data.php:462
+msgid "Back Alley"
+msgstr "裏路地"
+
+#: includes/sample-data.php:479
+msgid "Ryu-gumi Office"
+msgstr "龍組事務所"
+
+#: includes/sample-data.php:496
+msgid "Takagi Construction"
+msgstr "高木建設"
+
+#: includes/sample-data.php:513
+msgid "Villa"
+msgstr "別荘"
+
+#: includes/sample-data.php:535 includes/sample-data.php:681
+#: includes/sample-data.php:781 includes/sample-data.php:953
+#: includes/sample-data.php:1335
+msgid "Misaki"
+msgstr "美咲"
+
+#: includes/sample-data.php:553 includes/sample-data.php:818
+msgid "Sato"
+msgstr "佐藤"
+
+#: includes/sample-data.php:571 includes/sample-data.php:991
+msgid "Informant"
+msgstr "情報屋"
+
+#: includes/sample-data.php:589 includes/sample-data.php:1023
+msgid "Ryu-gumi Executive"
+msgstr "龍組幹部"
+
+#: includes/sample-data.php:607 includes/sample-data.php:1159
+#: includes/sample-data.php:1193 includes/sample-data.php:1227
+#: includes/sample-data.php:1262
+msgid "President Takagi"
+msgstr "高木社長"
+
+#: includes/sample-data.php:625 includes/sample-data.php:1295
+msgid "Makoto Kurosaki"
+msgstr "黒崎誠"
+
+#: includes/sample-data.php:631 includes/sample-data.php:1473
+msgid "Shadow Detective"
+msgstr "影の探偵"
+
+#: includes/sample-data.php:632
+msgid ""
+"A full-fledged mystery game. Investigate the disappearance of businessman "
+"Makoto Kurosaki and uncover the truth. Gather evidence and make the right "
+"choices to reach the complete solution ending."
+msgstr ""
+"本格的なミステリーゲーム。実業家・黒崎誠の失踪を調査し、真実を明らかにします。証拠を集め、正しい選択をして完全解決エンディングを目指しましょう。"
+
+#: includes/sample-data.php:642
+msgid "Shadow Detective - The Beginning"
+msgstr "影の探偵 - 事件の始まり"
+
+#: includes/sample-data.php:648
+msgid "Client"
+msgstr "依頼者"
+
+#: includes/sample-data.php:651
+msgid "On an autumn evening, a woman visited my office."
+msgstr "秋の夕暮れ、私の事務所に一人の女性が訪れた。"
+
+#: includes/sample-data.php:652
+msgid ""
+"Detective, please help me... My husband has been missing for three days."
+msgstr "探偵さん、お願いします...夫が3日前から行方不明なんです。"
+
+#: includes/sample-data.php:653
+msgid ""
+"The police say there's no criminal activity, but my husband would never do "
+"this..."
+msgstr "警察は事件性はないと言いますが、夫は絶対にこんなことをする人ではありません..."
+
+#: includes/sample-data.php:654
+msgid ""
+"The client's name is Misaki Kurosaki. Her husband is businessman Makoto "
+"Kurosaki."
+msgstr "依頼者の名前は黒崎美咲。夫は実業家の黒崎誠だ。"
+
+#: includes/sample-data.php:660
+msgid "Please tell me the details"
+msgstr "詳しく聞かせてください"
+
+#: includes/sample-data.php:664
+msgid "When did you last see him?"
+msgstr "最後に会ったのはいつですか？"
+
+#: includes/sample-data.php:675
+msgid "Shadow Detective - Details of Disappearance"
+msgstr "影の探偵 - 失踪の詳細"
+
+#: includes/sample-data.php:684
+msgid ""
+"Three days ago in the evening, my husband said \"I have an important "
+"business meeting\" and left."
+msgstr "3日前の夕方、夫は「重要な商談がある」と言って家を出ました。"
+
+#: includes/sample-data.php:685
+msgid ""
+"Since then, his phone hasn't connected, and he hasn't shown up at the "
+"company."
+msgstr "それ以来、電話は繋がらず、会社にも姿を見せていません。"
+
+#: includes/sample-data.php:686
+msgid "Recently he seemed strange... as if he was worried about something."
+msgstr "最近は様子が変で...何か悩んでいるようでした。"
+
+#: includes/sample-data.php:687
+msgid ""
+"Strange behavior before disappearing. This might not be a simple runaway "
+"case."
+msgstr "失踪前の奇妙な行動。これは単純な家出ではないかもしれない。"
+
+#: includes/sample-data.php:693
+msgid "First, I'll investigate the disappearance site"
+msgstr "まずは失踪現場を調査します"
+
+#: includes/sample-data.php:697
+msgid "Let me talk to your family"
+msgstr "ご家族に話を聞かせてください"
+
+#: includes/sample-data.php:708
+msgid "Shadow Detective - Warehouse District"
+msgstr "影の探偵 - 港の倉庫街"
+
+#: includes/sample-data.php:717
+msgid ""
+"The warehouse district by the port where he was last seen. A deserted, dimly"
+" lit place."
+msgstr "最後に目撃された港の倉庫街。人気のない薄暗い場所だ。"
+
+#: includes/sample-data.php:718
+msgid "Something shiny is on the ground... It's a pocket watch."
+msgstr "地面に何か光るものが落ちている...懐中時計だ。"
+
+#: includes/sample-data.php:719
+msgid "Opening the back reveals an inscription: \"To Makoto, with love, Misaki\""
+msgstr "裏蓋を開けると刻印がある：「誠へ 愛を込めて 美咲」"
+
+#: includes/sample-data.php:720
+msgid "This must belong to Makoto Kurosaki. Something happened here."
+msgstr "これは黒崎誠のものに違いない。ここで何かがあったはずだ。"
+
+#: includes/sample-data.php:726
+msgid "Continue questioning the area"
+msgstr "周辺の聞き込みを続ける"
+
+#: includes/sample-data.php:730
+msgid "Return to the office to organize information"
+msgstr "一旦事務所に戻って情報を整理する"
+
+#: includes/sample-data.php:743
+msgid "Shadow Detective - Time to Deduce"
+msgstr "影の探偵 - 推理の時間"
+
+#: includes/sample-data.php:752
+msgid "Time to organize the gathered information."
+msgstr "集めた情報を整理する時間だ。"
+
+#: includes/sample-data.php:753
+msgid "The pocket watch... evidence he was at the disappearance site."
+msgstr "懐中時計...これは失踪現場にいた証拠だ。"
+
+#: includes/sample-data.php:754
+msgid ""
+"A businessman's sudden disappearance. Mention of family noticing strange "
+"behavior."
+msgstr "実業家の突然の失踪。家族が奇妙な行動に気づいていたという言及。"
+
+#: includes/sample-data.php:755
+msgid "This case doesn't seem superficial."
+msgstr "この事件、表面的なものではない気がする。"
+
+#: includes/sample-data.php:761
+msgid "Prioritize questioning the family"
+msgstr "家族への聞き込みを優先する"
+
+#: includes/sample-data.php:765
+msgid "Investigate friends and associates"
+msgstr "友人・関係者を調査する"
+
+#: includes/sample-data.php:776
+msgid "Shadow Detective - Family Testimony"
+msgstr "影の探偵 - 家族の証言"
+
+#: includes/sample-data.php:785
+msgid ""
+"Actually... my husband was recently troubled by business management issues."
+msgstr "実は……夫は最近、事業経営の問題で悩んでいました。"
+
+#: includes/sample-data.php:786
+msgid ""
+"He seemed to have problems with business partners... but he wouldn't tell me"
+" details."
+msgstr "取引先との問題があったようですが……詳しいことは教えてくれませんでした。"
+
+#: includes/sample-data.php:787
+msgid "Also... there were calls from unknown men."
+msgstr "あと...見知らぬ男性から電話がかかってくることもありました。"
+
+#: includes/sample-data.php:788
+msgid "My husband said \"It's fine\" but his expression was dark..."
+msgstr "夫は「大丈夫だ」と言っていましたが、表情は暗かった..."
+
+#: includes/sample-data.php:794
+msgid "Talk to company associates"
+msgstr "会社関係者に話を聞く"
+
+#: includes/sample-data.php:798
+msgid "Let me investigate the study"
+msgstr "書斎を調査させてもらう"
+
+#: includes/sample-data.php:811
+msgid "Shadow Detective - Friend's Testimony"
+msgstr "影の探偵 - 友人の証言"
+
+#: includes/sample-data.php:820
+msgid "Mr. Makoto has been acting strange recently."
+msgstr "誠さん、最近おかしかったんです。"
+
+#: includes/sample-data.php:821
+msgid "Last week, I happened to see him... talking with suspicious men."
+msgstr "先週、偶然見かけたんですが...怪しい男たちと話していて。"
+
+#: includes/sample-data.php:822
+msgid "I was worried, so I took a photo. Here it is."
+msgstr "心配になって写真を撮っておきました。これです。"
+
+#: includes/sample-data.php:823
+msgid ""
+"In the photo, Kurosaki is with men who clearly seem to be from the "
+"underworld..."
+msgstr "写真には黒崎が明らかに裏社会の人間と思われる男たちと一緒に写っている……"
+
+#: includes/sample-data.php:829
+msgid "Investigate these men"
+msgstr "この男たちについて調べる"
+
+#: includes/sample-data.php:833
+msgid "First, investigate the Kurosaki residence more"
+msgstr "まずは黒崎邸をもっと調査する"
+
+#: includes/sample-data.php:847
+msgid "Shadow Detective - Secret of the Study"
+msgstr "影の探偵 - 書斎の秘密"
+
+#: includes/sample-data.php:856
+msgid "With permission, I investigate the study."
+msgstr "許可を得て書斎を調査する。"
+
+#: includes/sample-data.php:857
+msgid ""
+"Desk drawers contain receipts and contracts... nothing particularly "
+"suspicious."
+msgstr "机の引き出しには領収書や契約書類……特に怪しいものはない。"
+
+#: includes/sample-data.php:858
+msgid "However, the bookshelf arrangement seems unnatural..."
+msgstr "しかし、本棚の配置が不自然だ..."
+
+#: includes/sample-data.php:859
+msgid "Moving the bookshelf reveals... a hidden door!"
+msgstr "本棚を動かすと...隠し扉！"
+
+#: includes/sample-data.php:865
+msgid "Try to open the hidden door"
+msgstr "隠し扉を開けてみる"
+
+#: includes/sample-data.php:869 includes/sample-data.php:1039
+msgid "Retreat for now"
+msgstr "いったん引き返す"
+
+#: includes/sample-data.php:880
+msgid "Shadow Detective - Hidden Truth"
+msgstr "影の探偵 - 隠された真実"
+
+#: includes/sample-data.php:889
+msgid "Beyond the hidden door is a small room. There's a safe and a desk."
+msgstr "隠し扉の先は小さな部屋。金庫と机がある。"
+
+#: includes/sample-data.php:890
+msgid "A diary on the desk... It's Makoto Kurosaki's handwriting."
+msgstr "机の上に手記が...黒崎誠の筆跡だ。"
+
+#: includes/sample-data.php:891
+msgid "\"I chose the wrong path...\""
+msgstr "「私は間違った道を選んでしまった...」"
+
+#: includes/sample-data.php:892
+msgid "\"I can't repay the debt to them. I don't want to trouble my family.\""
+msgstr "「彼らからの借金を返せない。家族に迷惑をかけたくない。」"
+
+#: includes/sample-data.php:898
+msgid "Try to open the safe"
+msgstr "金庫を開けてみる"
+
+#: includes/sample-data.php:902
+msgid "Take the diary back for analysis"
+msgstr "手記を持ち帰って分析する"
+
+#: includes/sample-data.php:915
+msgid "Shadow Detective - To the Core of the Case"
+msgstr "影の探偵 - 事件の核心へ"
+
+#: includes/sample-data.php:924
+msgid "From the diary, it's clear Kurosaki had debt problems."
+msgstr "手記の内容から、黒崎は借金問題を抱えていたことがわかった。"
+
+#: includes/sample-data.php:925
+msgid "The men in the photo from my friend... loan sharks?"
+msgstr "友人からもらった写真の男たち...金貸しか？"
+
+#: includes/sample-data.php:926
+msgid "But why a hidden room? There must be something he's hiding."
+msgstr "しかし、なぜ隠し部屋を？何か隠しているものがあるはずだ。"
+
+#: includes/sample-data.php:927
+msgid "I need to find the key to the safe."
+msgstr "金庫を開ける鍵を探さなければ。"
+
+#: includes/sample-data.php:933
+msgid "Ask the wife about the safe key"
+msgstr "妻に金庫の鍵について聞く"
+
+#: includes/sample-data.php:937
+msgid "Pursue the men in the photo"
+msgstr "友人の写真の男たちを追う"
+
+#: includes/sample-data.php:948
+msgid "Shadow Detective - Finding the Key"
+msgstr "影の探偵 - 鍵の発見"
+
+#: includes/sample-data.php:957
+msgid ""
+"The safe key... Oh, I think there was a spare in my husband's study drawer."
+msgstr "金庫の鍵……ああ、確か書斎の引き出しに予備があったと思います。"
+
+#: includes/sample-data.php:958
+msgid "Guided by Misaki, I find a small key deep in the drawer."
+msgstr "美咲に案内され、引き出しの奥から小さな鍵を発見。"
+
+#: includes/sample-data.php:959
+msgid "Will this reveal anything...?"
+msgstr "これで何か分かるでしょうか..."
+
+#: includes/sample-data.php:960
+msgid "This key might open the safe in the hidden room."
+msgstr "この鍵で隠し部屋の金庫を開けられるかもしれない。"
+
+#: includes/sample-data.php:966
+msgid "Open the safe in the hidden room immediately"
+msgstr "すぐに隠し部屋の金庫を開ける"
+
+#: includes/sample-data.php:970
+msgid "Gather other clues first"
+msgstr "その前に他の手がかりも集める"
+
+#: includes/sample-data.php:984
+msgid "Shadow Detective - Dangerous Investigation"
+msgstr "影の探偵 - 危険な調査"
+
+#: includes/sample-data.php:993
+msgid "I ask a well-connected informant about the men in the photo."
+msgstr "写真の男たちについて、顔の利く情報屋に聞いてみる。"
+
+#: includes/sample-data.php:994
+msgid "Ah, these guys... dangerous bunch."
+msgstr "ああ、この連中...ヤバい筋だぜ。"
+
+#: includes/sample-data.php:995
+msgid ""
+"They're from \"Ryu-gumi\", a loan shark operation. Once you're in, you're "
+"done."
+msgstr "「龍組」って闇金業者だよ。一度関わったら終わりさ。"
+
+#: includes/sample-data.php:996
+msgid "Makoto Kurosaki? Yeah, I've heard. He owed them a huge amount."
+msgstr "黒崎誠？聞いたことあるな...相当な額を借りてたらしいぜ。"
+
+#: includes/sample-data.php:1002
+msgid "Investigate Ryu-gumi in detail"
+msgstr "龍組について詳しく調べる"
+
+#: includes/sample-data.php:1006
+msgid "Organize information for now"
+msgstr "一旦情報を整理する"
+
+#: includes/sample-data.php:1017
+msgid "Shadow Detective - Dragon's Den"
+msgstr "影の探偵 - 龍の巣窟"
+
+#: includes/sample-data.php:1026
+msgid "Makoto Kurosaki? Yeah, I know him."
+msgstr "黒崎誠のことか？ああ、知ってるよ。"
+
+#: includes/sample-data.php:1027
+msgid "He ran away after defaulting on a 30 million yen debt."
+msgstr "3,000万の借金を踏み倒して逃げやがった。"
+
+#: includes/sample-data.php:1028
+msgid "But we didn't do anything. You got no proof, right?"
+msgstr "だが、俺たちは何もしちゃいねえ。証拠もないだろ？"
+
+#: includes/sample-data.php:1029
+msgid ""
+"They won't say anything publicly... but they seem to be hiding something."
+msgstr "表立っては何も言わないが……何かを隠している様子だった。"
+
+#: includes/sample-data.php:1035
+msgid "Press hard"
+msgstr "強く追及する"
+
+#: includes/sample-data.php:1052
+msgid "Shadow Detective - Decisive Evidence"
+msgstr "影の探偵 - 決定的証拠"
+
+#: includes/sample-data.php:1061
+msgid "I use the key to open the safe."
+msgstr "鍵を使って金庫を開ける。"
+
+#: includes/sample-data.php:1062
+msgid "Inside are numerous documents and... cash!"
+msgstr "中には大量の書類と...現金！"
+
+#: includes/sample-data.php:1063
+msgid "Looking at the documents, records of illicit transactions..."
+msgstr "書類を見ると、闇取引の記録が..."
+
+#: includes/sample-data.php:1064
+msgid ""
+"And a name other than Ryu-gumi... \"Takagi Construction, President Takagi\"?"
+msgstr "龍組以外の名前も……「高木建設　代表　高木」？"
+
+#: includes/sample-data.php:1070
+msgid "Investigate Takagi Construction"
+msgstr "高木建設について調べる"
+
+#: includes/sample-data.php:1074
+msgid "Contact Ryu-gumi again"
+msgstr "龍組にもう一度接触する"
+
+#: includes/sample-data.php:1085
+msgid "Shadow Detective - Shadow of the Mastermind"
+msgstr "影の探偵 - 黒幕の影"
+
+#: includes/sample-data.php:1094
+msgid ""
+"Takagi Construction... a major general contractor. Why involved in illicit "
+"deals?"
+msgstr "高木建設……大手ゼネコンだ。なぜ不正取引に関わっている？"
+
+#: includes/sample-data.php:1095
+msgid "While investigating around the office, I find a memo in the trash..."
+msgstr "事務所周辺を調査していると、ゴミ捨て場にメモが..."
+
+#: includes/sample-data.php:1096
+msgid "\"Payment from Kurosaki confirmed. Process next through Ryu-gumi\""
+msgstr "「黒崎から入金確認。次は龍組経由で処理」"
+
+#: includes/sample-data.php:1097
+msgid ""
+"This is... President Takagi using Kurosaki and Ryu-gumi for illegal "
+"transactions?"
+msgstr "これは……高木社長が黒崎と龍組を使って違法取引を？"
+
+#: includes/sample-data.php:1103
+msgid "Go directly to meet President Takagi"
+msgstr "高木社長に直接会いに行く"
+
+#: includes/sample-data.php:1107
+msgid "Gather more evidence"
+msgstr "証拠をもっと集める"
+
+#: includes/sample-data.php:1120
+msgid "Shadow Detective - Deepening Investigation"
+msgstr "影の探偵 - 調査の深化"
+
+#: includes/sample-data.php:1129
+msgid ""
+"Evidence has been accumulating. But I still don't have complete certainty."
+msgstr "証拠は揃いつつある。だが、まだ確証が持てない。"
+
+#: includes/sample-data.php:1130
+msgid "President Takagi's memo... this could be the decisive evidence."
+msgstr "高木社長のメモ...これが決定的証拠になる。"
+
+#: includes/sample-data.php:1131
+msgid ""
+"Ryu-gumi, Kurosaki, and Takagi Construction... the connections are becoming "
+"clear."
+msgstr "龍組、黒崎、そして高木建設……繋がりが見えてきた。"
+
+#: includes/sample-data.php:1132
+msgid "It's time to confront them directly."
+msgstr "次は直接対峙する時だ。"
+
+#: includes/sample-data.php:1138
+msgid "Interrogate President Takagi"
+msgstr "高木社長を問い詰める"
+
+#: includes/sample-data.php:1142
+msgid "Consult with the police"
+msgstr "警察に相談する"
+
+#: includes/sample-data.php:1153
+msgid "Shadow Detective - Encounter with the Mastermind"
+msgstr "影の探偵 - 黒幕との邂逅"
+
+#: includes/sample-data.php:1162
+msgid "Detective, what brings you here?"
+msgstr "探偵さん、何の用ですか？"
+
+#: includes/sample-data.php:1163
+msgid "Calm demeanor, but his eyes aren't smiling."
+msgstr "冷静な態度だが、目が笑っていない。"
+
+#: includes/sample-data.php:1164
+msgid "Please tell me about your relationship with Makoto Kurosaki."
+msgstr "黒崎誠との関係について教えてください。"
+
+#: includes/sample-data.php:1165
+msgid "Ah, I had a business relationship with him."
+msgstr "ああ、彼とは仕事上の付き合いがありましたね。"
+
+#: includes/sample-data.php:1171
+msgid "Explain this illicit transaction memo"
+msgstr "この闇取引メモについて説明してください"
+
+#: includes/sample-data.php:1176
+msgid "What about your relationship with Ryu-gumi?"
+msgstr "龍組との関係は？"
+
+#: includes/sample-data.php:1187
+msgid "Shadow Detective - Cautious Approach"
+msgstr "影の探偵 - 慎重な攻め"
+
+#: includes/sample-data.php:1196
+msgid "Ryu-gumi? Ah, I've heard rumors, but I have no connection with them."
+msgstr "龍組？ああ、噂は聞いていますが、私は関係ありません。"
+
+#: includes/sample-data.php:1197
+msgid ""
+"He skillfully evaded... Without decisive evidence, I can't press further."
+msgstr "巧みに逃げられた……決定的な証拠がなければ、これ以上追及できない。"
+
+#: includes/sample-data.php:1198
+msgid "Detective, baseless defamation is libel, you know."
+msgstr "探偵さん、根拠のない中傷は名誉毀損ですよ。"
+
+#: includes/sample-data.php:1199
+msgid "At this rate, I can't reach the truth..."
+msgstr "このままでは真相に辿り着けない..."
+
+#: includes/sample-data.php:1205
+msgid "Wait, please look at this evidence"
+msgstr "待ってください、この証拠を見てください"
+
+#: includes/sample-data.php:1210
+msgid "Sorry, excuse me"
+msgstr "すみません、失礼しました"
+
+#: includes/sample-data.php:1221
+msgid "Shadow Detective - Revealing the Truth"
+msgstr "影の探偵 - 真実の暴露"
+
+#: includes/sample-data.php:1230
+msgid "I place the illicit transaction memo on the desk."
+msgstr "闇取引メモを机の上に置く。"
+
+#: includes/sample-data.php:1231
+msgid "...This is..."
+msgstr "...これは..."
+
+#: includes/sample-data.php:1232
+msgid "His expression changed. Bull's eye."
+msgstr "表情が変わった。図星だ。"
+
+#: includes/sample-data.php:1233
+msgid "Tch... Kurosaki left evidence behind."
+msgstr "ちっ...黒崎のやつ、証拠を残していたのか。"
+
+#: includes/sample-data.php:1239
+msgid "Where is Makoto Kurosaki?"
+msgstr "黒崎誠はどこですか？"
+
+#: includes/sample-data.php:1243
+msgid "I'm calling the police"
+msgstr "警察を呼びます"
+
+#: includes/sample-data.php:1256
+msgid "Shadow Detective - All the Truth"
+msgstr "影の探偵 - すべての真実"
+
+#: includes/sample-data.php:1265
+msgid "Fine... I'll tell you everything."
+msgstr "わかった...すべて話そう。"
+
+#: includes/sample-data.php:1266
+msgid "Kurosaki discovered my fraud. So I tried to silence him..."
+msgstr "黒崎は私の不正を知ってしまった。それで口封じを..."
+
+#: includes/sample-data.php:1267
+msgid "But I didn't kill him. I asked Ryu-gumi to threaten him."
+msgstr "だが、殺してはいない。龍組に頼んで脅したんだ。"
+
+#: includes/sample-data.php:1268
+msgid "Kurosaki is now hiding in my villa. By his own choice."
+msgstr "黒崎は今、私の別荘に隠れている。自ら望んで。"
+
+#: includes/sample-data.php:1274
+msgid "Protect Kurosaki immediately"
+msgstr "すぐに黒崎を保護する"
+
+#: includes/sample-data.php:1278
+msgid "Call the police"
+msgstr "警察を呼ぶ"
+
+#: includes/sample-data.php:1289
+msgid "Shadow Detective - Reunion with the Missing"
+msgstr "影の探偵 - 失踪者との再会"
+
+#: includes/sample-data.php:1298
+msgid "You're the detective..."
+msgstr "あなたが探偵の..."
+
+#: includes/sample-data.php:1299
+msgid "I discovered Takagi's fraud and was threatened."
+msgstr "私は高木の不正を知り、脅されていました。"
+
+#: includes/sample-data.php:1300
+msgid "I was told my family would be harmed, so I had no choice but to hide."
+msgstr "家族に危害が及ぶと言われ、隠れるしかなかった。"
+
+#: includes/sample-data.php:1301
+msgid "Please... let me see my wife, Misaki."
+msgstr "妻に...美咲に会わせてください。"
+
+#: includes/sample-data.php:1307
+msgid "Everything is resolved. Let's go back to your family"
+msgstr "すべて解決しました。家族のもとへ帰りましょう"
+
+#: includes/sample-data.php:1319
+msgid "There are still unclear points..."
+msgstr "まだ不明な点が..."
+
+#: includes/sample-data.php:1330
+msgid "Shadow Detective - Complete Solution"
+msgstr "影の探偵 - 完全解決"
+
+#: includes/sample-data.php:1337
+msgid "Makoto"
+msgstr "誠"
+
+#: includes/sample-data.php:1339
+msgid "All evidence gathered, the truth has been revealed."
+msgstr "すべての証拠を集め、真相を解明した。"
+
+#: includes/sample-data.php:1340
+msgid "Detective, thank you so much."
+msgstr "探偵さん、本当にありがとうございました。"
+
+#: includes/sample-data.php:1341
+msgid "President Takagi was arrested, and I will cooperate with the police."
+msgstr "高木社長は逮捕され、私も警察に協力することになりました。"
+
+#: includes/sample-data.php:1342
+msgid "Another case solved. This is a detective's work."
+msgstr "また一つ、事件が解決した。これが探偵の仕事だ。"
+
+#: includes/sample-data.php:1348
+msgid "Complete Solution - All truths have been revealed"
+msgstr "完全解決 - すべての真実が明らかになった"
+
+#: includes/sample-data.php:1354
+msgid "Shadow Detective - Partial Solution"
+msgstr "影の探偵 - 部分解決"
+
+#: includes/sample-data.php:1363
+msgid "Makoto Kurosaki was protected, and the case saw some resolution."
+msgstr "黒崎誠を保護し、事件は一応の解決を見た。"
+
+#: includes/sample-data.php:1364
+msgid "However, I couldn't gather all the evidence."
+msgstr "しかし、すべての証拠を集められなかった。"
+
+#: includes/sample-data.php:1365
+msgid ""
+"President Takagi's crimes couldn't be fully proven, leaving parts "
+"unresolved."
+msgstr "高木社長の罪を完全には証明できず、一部が未解決のまま終わった。"
+
+#: includes/sample-data.php:1366
+msgid ""
+"Frustrating, but this is detective work... perfect case resolution is "
+"difficult."
+msgstr "悔しいが、これも探偵業だ……完璧な事件解決は難しい。"
+
+#: includes/sample-data.php:1372
+msgid "Partial Solution - Some truths remain in darkness"
+msgstr "部分解決 - 真相の一部は闇の中に"
+
+#: includes/sample-data.php:1378
+msgid "Shadow Detective - Insufficient Evidence"
+msgstr "影の探偵 - 証拠不足"
+
+#: includes/sample-data.php:1387
+msgid "Evidence was insufficient, couldn't reach the truth."
+msgstr "証拠が不十分で、真相に辿り着けなかった。"
+
+#: includes/sample-data.php:1388
+msgid "Makoto Kurosaki remains missing."
+msgstr "黒崎誠は今も行方不明のままだ。"
+
+#: includes/sample-data.php:1389
+msgid "I should have been more careful and thorough in my investigation."
+msgstr "もっと慎重に、丁寧に調査すべきだった。"
+
+#: includes/sample-data.php:1390
+msgid "Let's start the investigation over from the beginning."
+msgstr "もう一度、最初から調査をやり直そう。"
+
+#: includes/sample-data.php:1396
+msgid "Insufficient Evidence - Detective Failure"
+msgstr "証拠不足 - 探偵失格"
+
+#: includes/sample-data.php:1405
+msgid "Pocket Watch"
+msgstr "懐中時計"
+
+#: includes/sample-data.php:1406
+msgid ""
+"A pocket watch belonging to Makoto Kurosaki. Evidence he was at the "
+"disappearance site."
+msgstr "黒崎誠の懐中時計。失踪現場にいた証拠。"
+
+#: includes/sample-data.php:1410
+msgid "Missing Person's Diary"
+msgstr "失踪者の手記"
+
+#: includes/sample-data.php:1411
+msgid "Kurosaki's diary revealing his troubles and evidence of transactions."
+msgstr "黒崎の手記。悩みと取引の証拠が記されている。"
+
+#: includes/sample-data.php:1415
+msgid "Evidence Photo"
+msgstr "証拠写真"
+
+#: includes/sample-data.php:1416
+msgid "A photo of the illicit transaction scene."
+msgstr "裏取引現場の写真。"
+
+#: includes/sample-data.php:1420
+msgid "Hidden Room Key"
+msgstr "隠し部屋の鍵"
+
+#: includes/sample-data.php:1421
+msgid "The key to access the hidden room."
+msgstr "隠し部屋へのアクセスキー。"
+
+#: includes/sample-data.php:1425
+msgid "Illicit Transaction Memo"
+msgstr "闇取引メモ"
+
+#: includes/sample-data.php:1426
+msgid "Decisive evidence revealing the mastermind's identity."
+msgstr "黒幕の正体を示す決定的証拠。"
+
+#: includes/sample-data.php:1430
+msgid "Talked to Wife"
+msgstr "妻と会話済み"
+
+#: includes/sample-data.php:1431
+msgid "Obtained testimony from Misaki."
+msgstr "美咲から証言を得た。"
+
+#: includes/sample-data.php:1435
+msgid "Talked to Friend"
+msgstr "友人と会話済み"
+
+#: includes/sample-data.php:1436
+msgid "Obtained testimony from friend Sato."
+msgstr "友人・佐藤から証言を得た。"
+
+#: includes/sample-data.php:1440
+msgid "Discovered Hidden Room"
+msgstr "隠し部屋発見"
+
+#: includes/sample-data.php:1441
+msgid "Found the hidden room in the study."
+msgstr "書斎の隠し部屋を発見した。"
+
+#: includes/sample-data.php:1445
+msgid "Contacted Underworld"
+msgstr "裏社会接触"
+
+#: includes/sample-data.php:1446
+msgid "Made contact with Ryu-gumi."
+msgstr "龍組と接触した。"
+
+#: includes/sample-data.php:1450
+msgid "Confronted Mastermind"
+msgstr "黒幕対峙"
+
+#: includes/sample-data.php:1451
+msgid "Confronted President Takagi."
+msgstr "高木社長と対峙した。"
+
 #: includes/post-types.php:21
-#, fuzzy
 msgctxt "Post Type General Name"
 msgid "Novel Game"
 msgstr "ノベルゲーム"
 
 #: includes/post-types.php:22
-#, fuzzy
 msgctxt "Post Type Singular Name"
 msgid "Novel Game"
 msgstr "ノベルゲーム"
@@ -1535,6 +2384,99 @@ msgstr "画像なし"
 msgid "Start: %s"
 msgstr "開始: %s"
 
+#: includes/sample-data.php:53
+msgid "Investigation Failed"
+msgstr "捜査失敗"
+
+#~ msgid "Failed to delete game."
+#~ msgstr "ゲームの削除に失敗しました。"
+
+#~ msgid "Please enter a flag name and game title."
+#~ msgstr "フラグ名とゲームタイトルを入力してください。"
+
+#~ msgid "Failed to delete flag."
+#~ msgstr "フラグの削除に失敗しました。"
+
+#~ msgid "Game added successfully."
+#~ msgstr "ゲームが追加されました。"
+
+#~ msgid "Game deleted successfully."
+#~ msgstr "ゲームが削除されました。"
+
+#~ msgid "Edit Game"
+#~ msgstr "ゲームを編集"
+
+#~ msgid "Text to display on Game Over screen"
+#~ msgstr "ゲームオーバー画面に表示するテキスト"
+
+#~ msgid "Example: visited_library"
+#~ msgstr "例: visited_library"
+
+#~ msgid ""
+#~ "Only alphanumeric characters and underscores are allowed, cannot start with "
+#~ "a number"
+#~ msgstr "英数字とアンダースコアのみ使用可能、数字で始めることはできません"
+
+#~ msgid "Example: Visited the library"
+#~ msgstr "例: 図書館を訪れた"
+
+#~ msgid "Optional text describing the purpose of the flag."
+#~ msgstr "フラグの用途を説明する任意のテキストです。"
+
+#~ msgid "Cancel"
+#~ msgstr "キャンセル"
+
+#~ msgid "Are you sure you want to delete this game?"
+#~ msgstr "本当にこのゲームを削除しますか？"
+
+#~ msgid "Add New Game"
+#~ msgstr "新しいゲームを追加"
+
+#~ msgid "Add Game"
+#~ msgstr "ゲームを追加"
+
+#~ msgid "Shortcode"
+#~ msgstr "ショートコード"
+
+#~ msgid "Shortcode used to display a game list on pages or posts."
+#~ msgstr "ページや投稿でゲーム一覧を表示するためのショートコードです。"
+
+#~ msgid "Display All Games List (Recommended)"
+#~ msgstr "全ゲーム一覧を表示（推奨）"
+
+#~ msgid ""
+#~ "Displays all created games in a beautiful card format. This is the most "
+#~ "user-friendly and recommended shortcode."
+#~ msgstr "作成された全てのゲームを美しいカード形式で一覧表示します。最も使いやすく推奨のショートコードです。"
+
+#~ msgid "Use in Block Editor (Recommended)"
+#~ msgstr "ブロックエディタでの使用（推奨）"
+
+#~ msgid ""
+#~ "In the Gutenberg block editor, use the \"Novel Game List\" block. You can "
+#~ "easily insert game lists or individual games with intuitive operations."
+#~ msgstr ""
+#~ "Gutenbergブロックエディタでは「ノベルゲーム一覧」ブロックを使用してください。直感的な操作でゲーム一覧や個別ゲームを簡単に挿入できます。"
+
+#~ msgid "Options for Game List Shortcode ([novel_game_list])"
+#~ msgstr "ゲーム一覧ショートコード（[novel_game_list]）のオプション"
+
+#~ msgid "Here you can manage basic information for multiple novel games."
+#~ msgstr "ここでは、複数のノベルゲームの基本情報を管理できます。"
+
+#~ msgid "The game title can be selected when creating a scene."
+#~ msgstr "ゲームタイトルは、シーン作成時に選択できます。"
+
+#~ msgid "Please enter a game introduction or synopsis in the game overview."
+#~ msgstr "ゲーム概要は、ゲームの紹介やあらすじを記載してください。"
+
+#~ msgid ""
+#~ "The title screen image is the main image displayed when the game starts."
+#~ msgstr "タイトル画面画像は、ゲームの開始時に表示されるメイン画像です。"
+
+#~ msgid "Are you sure you want to delete this image?"
+#~ msgstr "本当に画像を削除しますか？"
+
 #~ msgid "%d Posts"
 #~ msgstr "%d 投稿"
 
@@ -1615,115 +2557,3 @@ msgstr "開始: %s"
 
 #~ msgid "novel"
 #~ msgstr "novel"
-
-#: includes/sample-data.php:35
-msgid "Sample Background"
-msgstr "サンプル背景"
-
-#: includes/sample-data.php:54
-msgid "Character A"
-msgstr "キャラクターA"
-
-#: includes/sample-data.php:72
-msgid "Character B"
-msgstr "キャラクターB"
-
-#: includes/sample-data.php:85
-msgid "Sample Novel Game"
-msgstr "サンプルノベルゲーム"
-
-#: includes/sample-data.php:86
-msgid "This is a sample visual novel game to help you understand how to use this plugin. You can edit or delete this game at any time."
-msgstr "このプラグインの使い方を理解するためのサンプルビジュアルノベルゲームです。このゲームはいつでも編集または削除できます。"
-
-#: includes/sample-data.php:88
-msgid "Game Over"
-msgstr "ゲームオーバー"
-
-#: includes/sample-data.php:95
-msgid "Sample Novel Game - Opening"
-msgstr "サンプルノベルゲーム - オープニング"
-
-#: includes/sample-data.php:100
-msgid "Alice"
-msgstr "アリス"
-
-#: includes/sample-data.php:104
-msgid "Welcome to this sample novel game!"
-msgstr "サンプルノベルゲームへようこそ！"
-
-#: includes/sample-data.php:105
-msgid "I am Alice. Nice to meet you."
-msgstr "私はアリスです。はじめまして。"
-
-#: includes/sample-data.php:106
-msgid "This game will show you how to create branching stories."
-msgstr "このゲームは分岐ストーリーの作り方をお見せします。"
-
-#: includes/sample-data.php:107
-msgid "Now, let me ask you a question..."
-msgstr "それでは、質問させてください..."
-
-#: includes/sample-data.php:118
-msgid "I want to hear more about the story"
-msgstr "ストーリーについてもっと聞きたい"
-
-#: includes/sample-data.php:122
-msgid "I want to learn about choices"
-msgstr "選択肢について学びたい"
-
-#: includes/sample-data.php:132
-msgid "Sample Novel Game - About Story"
-msgstr "サンプルノベルゲーム - ストーリーについて"
-
-#: includes/sample-data.php:138
-msgid "Bob"
-msgstr "ボブ"
-
-#: includes/sample-data.php:141
-msgid "Great choice! Let me introduce my friend Bob."
-msgstr "良い選択です！友達のボブを紹介します。"
-
-#: includes/sample-data.php:142
-msgid "Hi there! Nice to meet you."
-msgstr "こんにちは！はじめまして。"
-
-#: includes/sample-data.php:143
-msgid "You can create rich stories with multiple characters."
-msgstr "複数のキャラクターで豊かなストーリーを作ることができます。"
-
-#: includes/sample-data.php:144
-msgid "Each character can have different positions and expressions."
-msgstr "各キャラクターは異なる位置や表情を持つことができます。"
-
-#: includes/sample-data.php:145
-msgid "This is the end of this branch. Thank you for playing!"
-msgstr "この分岐の終わりです。プレイありがとうございました！"
-
-#: includes/sample-data.php:157
-msgid "Story Path - End"
-msgstr "ストーリールート - 終了"
-
-#: includes/sample-data.php:162
-msgid "Sample Novel Game - About Choices"
-msgstr "サンプルノベルゲーム - 選択肢について"
-
-#: includes/sample-data.php:171
-msgid "Excellent! You are interested in branching stories."
-msgstr "素晴らしい！分岐ストーリーに興味があるんですね。"
-
-#: includes/sample-data.php:172
-msgid "In visual novels, choices are very important."
-msgstr "ビジュアルノベルでは、選択肢がとても重要です。"
-
-#: includes/sample-data.php:173
-msgid "Your decisions will affect the story outcome."
-msgstr "あなたの決定がストーリーの結末に影響します。"
-
-#: includes/sample-data.php:174
-msgid "You can create multiple endings based on player choices."
-msgstr "プレイヤーの選択に基づいて複数のエンディングを作成できます。"
-
-#: includes/sample-data.php:187
-msgid "Choice Path - End"
-msgstr "選択ルート - 終了"
