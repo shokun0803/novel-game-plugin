@@ -1768,9 +1768,10 @@ msgstr ""
 msgid "Looking at the documents, records of illicit transactions..."
 msgstr ""
 
-#: includes/sample-data.php:1064
+#: includes/sample-data.php:491
 msgid ""
-"And a name other than Ryu-gumi... \"Takagi Construction, President Takagi\"?"
+"And another corporate name appears... \"Takagi Construction, President "
+"Takagi\"?"
 msgstr ""
 
 #: includes/sample-data.php:1070

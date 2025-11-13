@@ -1776,10 +1776,11 @@ msgstr "中には大量の書類と...現金！"
 msgid "Looking at the documents, records of illicit transactions..."
 msgstr "書類を見ると、闇取引の記録が..."
 
-#: includes/sample-data.php:1064
+#: includes/sample-data.php:491
 msgid ""
-"And a name other than Ryu-gumi... \"Takagi Construction, President Takagi\"?"
-msgstr "龍組以外の名前も……「高木建設　代表　高木」？"
+"And another corporate name appears... \"Takagi Construction, President "
+"Takagi\"?"
+msgstr "別の企業名が出てくる……「高木建設　代表　高木」？"
 
 #: includes/sample-data.php:1070
 msgid "Investigate Takagi Construction"

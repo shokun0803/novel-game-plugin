@@ -488,7 +488,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( 'I use the key to open the safe.', 'novel-game-plugin' ),
                 __( 'Inside are numerous documents and... cash!', 'novel-game-plugin' ),
                 __( 'Looking at the documents, records of illicit transactions...', 'novel-game-plugin' ),
-                __( 'And a name other than Ryu-gumi... "Takagi Construction, President Takagi"?', 'novel-game-plugin' ),
+                __( 'And another corporate name appears... "Takagi Construction, President Takagi"?', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
@@ -501,6 +501,7 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Contact Ryu-gumi again', 'novel-game-plugin' ),
                     'next' => 'scene_15',
+                    'required_flags' => array( 'flag_met_underworld' ),
                 ),
             ),
             'is_ending'       => false,
