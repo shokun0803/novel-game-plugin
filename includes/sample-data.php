@@ -541,6 +541,16 @@ function noveltool_get_shadow_detective_game_data() {
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_flag_conditions' => array(
+                3 => array( // 4行目（index 3）: フラグによる条件分岐
+                    'conditions' => array(
+                        array( 'name' => 'flag_met_underworld', 'state' => 1 ),
+                    ),
+                    'logic' => 'AND',
+                    'displayMode' => 'alternative',
+                    'alternativeText' => __( 'And a name other than Ryu-gumi... "Takagi Construction, President Takagi"?', 'novel-game-plugin' ),
+                ),
+            ),
             'choices'         => array(
                 array(
                     'text' => __( 'Investigate Takagi Construction', 'novel-game-plugin' ),
@@ -1118,6 +1128,11 @@ function noveltool_install_shadow_detective_game() {
         update_post_meta( $post_id, '_dialogue_texts', wp_json_encode( $scene_data['dialogue_texts'], JSON_UNESCAPED_UNICODE ) );
         update_post_meta( $post_id, '_dialogue_speakers', wp_json_encode( $scene_data['dialogue_speakers'], JSON_UNESCAPED_UNICODE ) );
         update_post_meta( $post_id, '_dialogue_backgrounds', wp_json_encode( $scene_data['dialogue_backgrounds'], JSON_UNESCAPED_UNICODE ) );
+        
+        // セリフのフラグ条件データを保存
+        if ( isset( $scene_data['dialogue_flag_conditions'] ) && ! empty( $scene_data['dialogue_flag_conditions'] ) ) {
+            update_post_meta( $post_id, '_dialogue_flag_conditions', $scene_data['dialogue_flag_conditions'] );
+        }
         
         // エンディング設定
         update_post_meta( $post_id, '_is_ending', $scene_data['is_ending'] );

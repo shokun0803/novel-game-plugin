@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Novel Game Plugin 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin/"
 "issues\n"
-"POT-Creation-Date: 2025-11-14 03:14+0000\n"
+"POT-Creation-Date: 2025-11-14 05:31+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,15 +26,15 @@ msgstr ""
 msgid " The flag to set when this choice is selected"
 msgstr ""
 
-#: includes/sample-data.php:346
+#: includes/sample-data.php:343
 msgid "\"I can't repay the debt to them. I don't want to trouble my family.\""
 msgstr ""
 
-#: includes/sample-data.php:345
+#: includes/sample-data.php:342
 msgid "\"I chose the wrong path...\""
 msgstr ""
 
-#: includes/sample-data.php:581
+#: includes/sample-data.php:588
 msgid "\"Payment from Kurosaki confirmed. Process next through Ryu-gumi\""
 msgstr ""
 
@@ -91,17 +91,17 @@ msgstr ""
 msgid "-- Select Speaker --"
 msgstr ""
 
-#: includes/sample-data.php:733
+#: includes/sample-data.php:740
 msgid "...This is..."
 msgstr ""
 
-#: includes/sample-data.php:190
+#: includes/sample-data.php:187
 msgid ""
 "A businessman's sudden disappearance. Mention of family noticing strange "
 "behavior."
 msgstr ""
 
-#: includes/sample-data.php:344
+#: includes/sample-data.php:341
 msgid "A diary on the desk... It's Makoto Kurosaki's handwriting."
 msgstr ""
 
@@ -122,11 +122,11 @@ msgid ""
 "A new scene \"%s\" has been created. You can edit it from the edit link."
 msgstr ""
 
-#: includes/sample-data.php:931
+#: includes/sample-data.php:937
 msgid "A photo of the illicit transaction scene."
 msgstr ""
 
-#: includes/sample-data.php:921
+#: includes/sample-data.php:927
 msgid ""
 "A pocket watch belonging to Makoto Kurosaki. Evidence he was at the "
 "disappearance site."
@@ -145,7 +145,7 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: includes/sample-data.php:225
+#: includes/sample-data.php:222
 msgid ""
 "Actually... my husband was recently troubled by business management issues."
 msgstr ""
@@ -224,11 +224,11 @@ msgid ""
 "can create scenes, manage settings, and configure your game."
 msgstr ""
 
-#: includes/sample-data.php:659
+#: includes/sample-data.php:666
 msgid "Ah, I had a business relationship with him."
 msgstr ""
 
-#: includes/sample-data.php:464
+#: includes/sample-data.php:461
 msgid "Ah, these guys... dangerous bunch."
 msgstr ""
 
@@ -248,11 +248,11 @@ msgstr ""
 msgid "All choices have been deleted."
 msgstr ""
 
-#: includes/sample-data.php:854
+#: includes/sample-data.php:860
 msgid "All evidence gathered, the truth has been revealed."
 msgstr ""
 
-#: includes/sample-data.php:227
+#: includes/sample-data.php:224
 msgid "Also... there were calls from unknown men."
 msgstr ""
 
@@ -270,13 +270,18 @@ msgid ""
 "options."
 msgstr ""
 
-#: includes/sample-data.php:543
+#: includes/sample-data.php:551
+msgid ""
+"And a name other than Ryu-gumi... \"Takagi Construction, President Takagi\"?"
+msgstr ""
+
+#: includes/sample-data.php:540
 msgid ""
 "And another corporate name appears... \"Takagi Construction, President "
 "Takagi\"?"
 msgstr ""
 
-#: includes/sample-data.php:857
+#: includes/sample-data.php:863
 msgid "Another case solved. This is a detective's work."
 msgstr ""
 
@@ -311,19 +316,19 @@ msgstr ""
 msgid "Ascending/Descending (ASC/DESC, default: ASC)"
 msgstr ""
 
-#: includes/sample-data.php:283
+#: includes/sample-data.php:280
 msgid "Ask Sato for more information"
 msgstr ""
 
-#: includes/sample-data.php:674
+#: includes/sample-data.php:681
 msgid "Ask about the disappearance directly"
 msgstr ""
 
-#: includes/sample-data.php:243
+#: includes/sample-data.php:240
 msgid "Ask about the unknown callers in detail"
 msgstr ""
 
-#: includes/sample-data.php:392
+#: includes/sample-data.php:389
 msgid "Ask the wife about the safe key"
 msgstr ""
 
@@ -331,7 +336,7 @@ msgstr ""
 msgid "At least one dialogue is required."
 msgstr ""
 
-#: includes/sample-data.php:697
+#: includes/sample-data.php:704
 msgid "At this rate, I can't reach the truth..."
 msgstr ""
 
@@ -359,7 +364,7 @@ msgstr ""
 msgid "Background Image:"
 msgstr ""
 
-#: includes/sample-data.php:343
+#: includes/sample-data.php:340
 msgid "Beyond the hidden door is a small room. There's a safe and a desk."
 msgstr ""
 
@@ -371,31 +376,31 @@ msgstr ""
 msgid "Branching dialogue and choices"
 msgstr ""
 
-#: includes/sample-data.php:773
+#: includes/sample-data.php:780
 msgid "But I didn't kill him. I asked Ryu-gumi to threaten him."
 msgstr ""
 
-#: includes/sample-data.php:503
+#: includes/sample-data.php:500
 msgid "But we didn't do anything. You got no proof, right?"
 msgstr ""
 
-#: includes/sample-data.php:385
+#: includes/sample-data.php:382
 msgid "But why a hidden room? There must be something he's hiding."
 msgstr ""
 
-#: includes/sample-data.php:784
+#: includes/sample-data.php:791
 msgid "Call the police"
 msgstr ""
 
-#: includes/sample-data.php:657
+#: includes/sample-data.php:664
 msgid "Calm demeanor, but his eyes aren't smiling."
 msgstr ""
 
-#: includes/sample-data.php:559
+#: includes/sample-data.php:566
 msgid "Carefully examine the documents in the safe"
 msgstr ""
 
-#: includes/sample-data.php:401
+#: includes/sample-data.php:398
 msgid "Carefully review all gathered evidence"
 msgstr ""
 
@@ -431,7 +436,7 @@ msgstr ""
 msgid "Character Name"
 msgstr ""
 
-#: includes/sample-data.php:440
+#: includes/sample-data.php:437
 msgid "Check with the wife about her husband's business dealings"
 msgstr ""
 
@@ -454,7 +459,7 @@ msgstr ""
 msgid "Close Game"
 msgstr ""
 
-#: includes/sample-data.php:863
+#: includes/sample-data.php:869
 msgid "Complete Solution - All truths have been revealed"
 msgstr ""
 
@@ -462,23 +467,23 @@ msgstr ""
 msgid "Condition:"
 msgstr ""
 
-#: includes/sample-data.php:965
+#: includes/sample-data.php:971
 msgid "Confronted Mastermind"
 msgstr ""
 
-#: includes/sample-data.php:966
+#: includes/sample-data.php:972
 msgid "Confronted President Takagi."
 msgstr ""
 
-#: includes/sample-data.php:631
+#: includes/sample-data.php:638
 msgid "Consult with the police"
 msgstr ""
 
-#: includes/sample-data.php:554
+#: includes/sample-data.php:561
 msgid "Contact Ryu-gumi again"
 msgstr ""
 
-#: includes/sample-data.php:960
+#: includes/sample-data.php:966
 msgid "Contacted Underworld"
 msgstr ""
 
@@ -566,7 +571,7 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
-#: includes/sample-data.php:941
+#: includes/sample-data.php:947
 msgid "Decisive evidence revealing the mastermind's identity."
 msgstr ""
 
@@ -591,13 +596,13 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: includes/sample-data.php:307
+#: includes/sample-data.php:304
 msgid ""
 "Desk drawers contain receipts and contracts... nothing particularly "
 "suspicious."
 msgstr ""
 
-#: includes/sample-data.php:696
+#: includes/sample-data.php:703
 msgid "Detective, baseless defamation is libel, you know."
 msgstr ""
 
@@ -606,11 +611,11 @@ msgid ""
 "Detective, please help me... My husband has been missing for three days."
 msgstr ""
 
-#: includes/sample-data.php:855
+#: includes/sample-data.php:861
 msgid "Detective, thank you so much."
 msgstr ""
 
-#: includes/sample-data.php:656
+#: includes/sample-data.php:663
 msgid "Detective, what brings you here?"
 msgstr ""
 
@@ -648,7 +653,7 @@ msgstr ""
 msgid "Dialogue-Level Flag Conditions"
 msgstr ""
 
-#: includes/sample-data.php:955
+#: includes/sample-data.php:961
 msgid "Discovered Hidden Room"
 msgstr ""
 
@@ -729,24 +734,24 @@ msgstr ""
 msgid "Enter your Google AdSense Publisher ID (e.g., ca-pub-1234567890123456)"
 msgstr ""
 
-#: includes/sample-data.php:817
+#: includes/sample-data.php:824
 msgid "Everything is resolved. Let's go back to your family"
 msgstr ""
 
-#: includes/sample-data.php:930
+#: includes/sample-data.php:936
 msgid "Evidence Photo"
 msgstr ""
 
-#: includes/sample-data.php:618
+#: includes/sample-data.php:625
 msgid ""
 "Evidence has been accumulating. But I still don't have complete certainty."
 msgstr ""
 
-#: includes/sample-data.php:902
+#: includes/sample-data.php:908
 msgid "Evidence was insufficient, couldn't reach the truth."
 msgstr ""
 
-#: includes/sample-data.php:665
+#: includes/sample-data.php:672
 msgid "Explain this illicit transaction memo"
 msgstr ""
 
@@ -778,7 +783,7 @@ msgstr ""
 msgid "Filter Novel Game List"
 msgstr ""
 
-#: includes/sample-data.php:771
+#: includes/sample-data.php:778
 msgid "Fine... I'll tell you everything."
 msgstr ""
 
@@ -786,7 +791,7 @@ msgstr ""
 msgid "First, I'll investigate the disappearance site"
 msgstr ""
 
-#: includes/sample-data.php:279
+#: includes/sample-data.php:276
 msgid "First, investigate the Kurosaki residence more"
 msgstr ""
 
@@ -842,15 +847,15 @@ msgstr ""
 msgid "Flags to Set on Scene Arrival"
 msgstr ""
 
-#: includes/sample-data.php:956
+#: includes/sample-data.php:962
 msgid "Found the hidden room in the study."
 msgstr ""
 
-#: includes/sample-data.php:383
+#: includes/sample-data.php:380
 msgid "From the diary, it's clear Kurosaki had debt problems."
 msgstr ""
 
-#: includes/sample-data.php:881
+#: includes/sample-data.php:887
 msgid ""
 "Frustrating, but this is detective work... perfect case resolution is "
 "difficult."
@@ -894,15 +899,15 @@ msgstr ""
 msgid "Game updated successfully."
 msgstr ""
 
-#: includes/sample-data.php:592
+#: includes/sample-data.php:599
 msgid "Gather more evidence"
 msgstr ""
 
-#: includes/sample-data.php:435
+#: includes/sample-data.php:432
 msgid "Gather other clues first"
 msgstr ""
 
-#: includes/sample-data.php:788
+#: includes/sample-data.php:795
 msgid "Get the villa location first"
 msgstr ""
 
@@ -910,7 +915,7 @@ msgstr ""
 msgid "Getting Started Guide"
 msgstr ""
 
-#: includes/sample-data.php:588
+#: includes/sample-data.php:595
 msgid "Go directly to meet President Takagi"
 msgstr ""
 
@@ -918,21 +923,21 @@ msgstr ""
 msgid "Google AdSense"
 msgstr ""
 
-#: includes/sample-data.php:422
+#: includes/sample-data.php:419
 msgid "Guided by Misaki, I find a small key deep in the drawer."
 msgstr ""
 
-#: includes/sample-data.php:502
+#: includes/sample-data.php:499
 msgid "He ran away after defaulting on a 30 million yen debt."
 msgstr ""
 
-#: includes/sample-data.php:226
+#: includes/sample-data.php:223
 msgid ""
 "He seemed to have problems with business partners... but he wouldn't tell me "
 "details."
 msgstr ""
 
-#: includes/sample-data.php:695
+#: includes/sample-data.php:702
 msgid ""
 "He skillfully evaded... Without decisive evidence, I can't press further."
 msgstr ""
@@ -941,7 +946,7 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
-#: includes/sample-data.php:935
+#: includes/sample-data.php:941
 msgid "Hidden Room Key"
 msgstr ""
 
@@ -949,47 +954,47 @@ msgstr ""
 msgid "Hide When Condition Met"
 msgstr ""
 
-#: includes/sample-data.php:734
+#: includes/sample-data.php:741
 msgid "His expression changed. Bull's eye."
 msgstr ""
 
-#: includes/sample-data.php:879
+#: includes/sample-data.php:885
 msgid "However, I couldn't gather all the evidence."
 msgstr ""
 
-#: includes/sample-data.php:308
+#: includes/sample-data.php:305
 msgid "However, the bookshelf arrangement seems unnatural..."
 msgstr ""
 
-#: includes/sample-data.php:463
+#: includes/sample-data.php:460
 msgid "I ask a well-connected informant about the men in the photo."
 msgstr ""
 
-#: includes/sample-data.php:809
+#: includes/sample-data.php:816
 msgid "I discovered Takagi's fraud and was threatened."
 msgstr ""
 
-#: includes/sample-data.php:386
+#: includes/sample-data.php:383
 msgid "I need to find the key to the safe."
 msgstr ""
 
-#: includes/sample-data.php:732
+#: includes/sample-data.php:739
 msgid "I place the illicit transaction memo on the desk."
 msgstr ""
 
-#: includes/sample-data.php:904
+#: includes/sample-data.php:910
 msgid "I should have been more careful and thorough in my investigation."
 msgstr ""
 
-#: includes/sample-data.php:540
+#: includes/sample-data.php:537
 msgid "I use the key to open the safe."
 msgstr ""
 
-#: includes/sample-data.php:810
+#: includes/sample-data.php:817
 msgid "I was told my family would be harmed, so I had no choice but to hide."
 msgstr ""
 
-#: includes/sample-data.php:267
+#: includes/sample-data.php:264
 msgid "I was worried, so I took a photo. Here it is."
 msgstr ""
 
@@ -997,7 +1002,7 @@ msgstr ""
 msgid "I'd like to hear from friends and acquaintances"
 msgstr ""
 
-#: includes/sample-data.php:745
+#: includes/sample-data.php:752
 msgid "I'm calling the police"
 msgstr ""
 
@@ -1005,7 +1010,7 @@ msgstr ""
 msgid "ID"
 msgstr ""
 
-#: includes/sample-data.php:940
+#: includes/sample-data.php:946
 msgid "Illicit Transaction Memo"
 msgstr ""
 
@@ -1019,13 +1024,13 @@ msgid ""
 "easily insert game lists or individual games with intuitive operations."
 msgstr ""
 
-#: includes/sample-data.php:268
+#: includes/sample-data.php:265
 msgid ""
 "In the photo, Kurosaki is with men who clearly seem to be from the "
 "underworld..."
 msgstr ""
 
-#: includes/sample-data.php:461
+#: includes/sample-data.php:458
 msgid "Informant"
 msgstr ""
 
@@ -1033,7 +1038,7 @@ msgstr ""
 msgid "Insert into Novel Game"
 msgstr ""
 
-#: includes/sample-data.php:541
+#: includes/sample-data.php:538
 msgid "Inside are numerous documents and... cash!"
 msgstr ""
 
@@ -1054,7 +1059,7 @@ msgstr ""
 msgid "Installing..."
 msgstr ""
 
-#: includes/sample-data.php:911
+#: includes/sample-data.php:917
 msgid "Insufficient Evidence - Detective Failure"
 msgstr ""
 
@@ -1062,7 +1067,7 @@ msgstr ""
 msgid "Insufficient permissions"
 msgstr ""
 
-#: includes/sample-data.php:627
+#: includes/sample-data.php:634
 msgid "Interrogate President Takagi"
 msgstr ""
 
@@ -1074,27 +1079,27 @@ msgstr ""
 msgid "Invalid game ID."
 msgstr ""
 
-#: includes/sample-data.php:472
+#: includes/sample-data.php:469
 msgid "Investigate Ryu-gumi in detail"
 msgstr ""
 
-#: includes/sample-data.php:549
+#: includes/sample-data.php:556
 msgid "Investigate Takagi Construction"
 msgstr ""
 
-#: includes/sample-data.php:596
+#: includes/sample-data.php:603
 msgid "Investigate Takagi Construction employees"
 msgstr ""
 
-#: includes/sample-data.php:201
+#: includes/sample-data.php:198
 msgid "Investigate friends and associates"
 msgstr ""
 
-#: includes/sample-data.php:361
+#: includes/sample-data.php:358
 msgid "Investigate other items in the hidden room"
 msgstr ""
 
-#: includes/sample-data.php:274
+#: includes/sample-data.php:271
 msgid "Investigate these men"
 msgstr ""
 
@@ -1102,7 +1107,7 @@ msgstr ""
 msgid "Investigation Failed"
 msgstr ""
 
-#: includes/sample-data.php:621
+#: includes/sample-data.php:628
 msgid "It's time to confront them directly."
 msgstr ""
 
@@ -1110,19 +1115,19 @@ msgstr ""
 msgid "Key Features:"
 msgstr ""
 
-#: includes/sample-data.php:772
+#: includes/sample-data.php:779
 msgid "Kurosaki discovered my fraud. So I tried to silence him..."
 msgstr ""
 
-#: includes/sample-data.php:774
+#: includes/sample-data.php:781
 msgid "Kurosaki is now hiding in my villa. By his own choice."
 msgstr ""
 
-#: includes/sample-data.php:926
+#: includes/sample-data.php:932
 msgid "Kurosaki's diary revealing his troubles and evidence of transactions."
 msgstr ""
 
-#: includes/sample-data.php:266
+#: includes/sample-data.php:263
 msgid "Last week, I happened to see him... talking with suspicious men."
 msgstr ""
 
@@ -1142,11 +1147,11 @@ msgstr ""
 msgid "Left Character Name"
 msgstr ""
 
-#: includes/sample-data.php:833
+#: includes/sample-data.php:840
 msgid "Let me confirm the evidence one more time"
 msgstr ""
 
-#: includes/sample-data.php:238
+#: includes/sample-data.php:235
 msgid "Let me investigate the study"
 msgstr ""
 
@@ -1154,15 +1159,15 @@ msgstr ""
 msgid "Let me talk to your family"
 msgstr ""
 
-#: includes/sample-data.php:905
+#: includes/sample-data.php:911
 msgid "Let's start the investigation over from the beginning."
 msgstr ""
 
-#: includes/sample-data.php:542
+#: includes/sample-data.php:539
 msgid "Looking at the documents, records of illicit transactions..."
 msgstr ""
 
-#: includes/sample-data.php:961
+#: includes/sample-data.php:967
 msgid "Made contact with Ryu-gumi."
 msgstr ""
 
@@ -1172,27 +1177,27 @@ msgid ""
 "have an approved account before entering your IDs."
 msgstr ""
 
-#: includes/sample-data.php:852
+#: includes/sample-data.php:858
 msgid "Makoto"
 msgstr ""
 
-#: includes/sample-data.php:805
+#: includes/sample-data.php:812
 msgid "Makoto Kurosaki"
 msgstr ""
 
-#: includes/sample-data.php:903
+#: includes/sample-data.php:909
 msgid "Makoto Kurosaki remains missing."
 msgstr ""
 
-#: includes/sample-data.php:878
+#: includes/sample-data.php:884
 msgid "Makoto Kurosaki was protected, and the case saw some resolution."
 msgstr ""
 
-#: includes/sample-data.php:501
+#: includes/sample-data.php:498
 msgid "Makoto Kurosaki? Yeah, I know him."
 msgstr ""
 
-#: includes/sample-data.php:466
+#: includes/sample-data.php:463
 msgid "Makoto Kurosaki? Yeah, I've heard. He owed them a huge amount."
 msgstr ""
 
@@ -1217,20 +1222,20 @@ msgid "Media library is not available."
 msgstr ""
 
 #: includes/sample-data.php:69 includes/sample-data.php:106
-#: includes/sample-data.php:221 includes/sample-data.php:417
-#: includes/sample-data.php:850
+#: includes/sample-data.php:218 includes/sample-data.php:414
+#: includes/sample-data.php:856
 msgid "Misaki"
 msgstr ""
 
-#: includes/sample-data.php:925
+#: includes/sample-data.php:931
 msgid "Missing Person's Diary"
 msgstr ""
 
-#: includes/sample-data.php:309
+#: includes/sample-data.php:306
 msgid "Moving the bookshelf reveals... a hidden door!"
 msgstr ""
 
-#: includes/sample-data.php:265
+#: includes/sample-data.php:262
 msgid "Mr. Makoto has been acting strange recently."
 msgstr ""
 
@@ -1243,7 +1248,7 @@ msgstr ""
 msgid "My Games"
 msgstr ""
 
-#: includes/sample-data.php:228
+#: includes/sample-data.php:225
 msgid "My husband said \"It's fine\" but his expression was dark..."
 msgstr ""
 
@@ -1371,11 +1376,11 @@ msgstr ""
 msgid "OR (Any)"
 msgstr ""
 
-#: includes/sample-data.php:946
+#: includes/sample-data.php:952
 msgid "Obtained testimony from Misaki."
 msgstr ""
 
-#: includes/sample-data.php:951
+#: includes/sample-data.php:957
 msgid "Obtained testimony from friend Sato."
 msgstr ""
 
@@ -1399,7 +1404,7 @@ msgid ""
 "a number."
 msgstr ""
 
-#: includes/sample-data.php:430
+#: includes/sample-data.php:427
 msgid "Open the safe in the hidden room immediately"
 msgstr ""
 
@@ -1420,7 +1425,7 @@ msgstr ""
 msgid "Order"
 msgstr ""
 
-#: includes/sample-data.php:476
+#: includes/sample-data.php:473
 msgid "Organize information for now"
 msgstr ""
 
@@ -1428,7 +1433,7 @@ msgstr ""
 msgid "Parent Novel Game:"
 msgstr ""
 
-#: includes/sample-data.php:887
+#: includes/sample-data.php:893
 msgid "Partial Solution - Some truths remain in darkness"
 msgstr ""
 
@@ -1468,7 +1473,7 @@ msgstr ""
 msgid "Please select the game this scene belongs to."
 msgstr ""
 
-#: includes/sample-data.php:658
+#: includes/sample-data.php:665
 msgid "Please tell me about your relationship with Makoto Kurosaki."
 msgstr ""
 
@@ -1476,7 +1481,7 @@ msgstr ""
 msgid "Please tell me the details"
 msgstr ""
 
-#: includes/sample-data.php:811
+#: includes/sample-data.php:818
 msgid "Please... let me see my wife, Misaki."
 msgstr ""
 
@@ -1488,29 +1493,29 @@ msgstr ""
 msgid "Plugin Settings"
 msgstr ""
 
-#: includes/sample-data.php:920
+#: includes/sample-data.php:926
 msgid "Pocket Watch"
 msgstr ""
 
-#: includes/sample-data.php:653 includes/sample-data.php:691
-#: includes/sample-data.php:729 includes/sample-data.php:768
+#: includes/sample-data.php:660 includes/sample-data.php:698
+#: includes/sample-data.php:736 includes/sample-data.php:775
 msgid "President Takagi"
 msgstr ""
 
-#: includes/sample-data.php:856
+#: includes/sample-data.php:862
 msgid "President Takagi was arrested, and I will cooperate with the police."
 msgstr ""
 
-#: includes/sample-data.php:880
+#: includes/sample-data.php:886
 msgid ""
 "President Takagi's crimes couldn't be fully proven, leaving parts unresolved."
 msgstr ""
 
-#: includes/sample-data.php:619
+#: includes/sample-data.php:626
 msgid "President Takagi's memo... this could be the decisive evidence."
 msgstr ""
 
-#: includes/sample-data.php:510
+#: includes/sample-data.php:507
 msgid "Press hard"
 msgstr ""
 
@@ -1518,11 +1523,11 @@ msgstr ""
 msgid "Preview"
 msgstr ""
 
-#: includes/sample-data.php:197
+#: includes/sample-data.php:194
 msgid "Prioritize questioning the family"
 msgstr ""
 
-#: includes/sample-data.php:780
+#: includes/sample-data.php:787
 msgid "Protect Kurosaki immediately"
 msgstr ""
 
@@ -1530,7 +1535,7 @@ msgstr ""
 msgid "Publish Your Game"
 msgstr ""
 
-#: includes/sample-data.php:396
+#: includes/sample-data.php:393
 msgid "Pursue the men in the photo"
 msgstr ""
 
@@ -1563,7 +1568,7 @@ msgstr ""
 msgid "Remove Featured Image"
 msgstr ""
 
-#: includes/sample-data.php:319 includes/sample-data.php:514
+#: includes/sample-data.php:316 includes/sample-data.php:511
 msgid "Retreat for now"
 msgstr ""
 
@@ -1587,17 +1592,17 @@ msgstr ""
 msgid "Right Character Name"
 msgstr ""
 
-#: includes/sample-data.php:498
+#: includes/sample-data.php:495
 msgid "Ryu-gumi Executive"
 msgstr ""
 
-#: includes/sample-data.php:620
+#: includes/sample-data.php:627
 msgid ""
 "Ryu-gumi, Kurosaki, and Takagi Construction... the connections are becoming "
 "clear."
 msgstr ""
 
-#: includes/sample-data.php:694
+#: includes/sample-data.php:701
 msgid "Ryu-gumi? Ah, I've heard rumors, but I have no connection with them."
 msgstr ""
 
@@ -1615,7 +1620,7 @@ msgid ""
 "plugin works."
 msgstr ""
 
-#: includes/sample-data.php:263
+#: includes/sample-data.php:260
 msgid "Sato"
 msgstr ""
 
@@ -1651,11 +1656,11 @@ msgstr ""
 msgid "Search Novel Games"
 msgstr ""
 
-#: includes/sample-data.php:205
+#: includes/sample-data.php:202
 msgid "Search for clues in the company records"
 msgstr ""
 
-#: includes/sample-data.php:480
+#: includes/sample-data.php:477
 msgid "Search for more connections to Ryu-gumi"
 msgstr ""
 
@@ -1663,7 +1668,7 @@ msgstr ""
 msgid "Search more carefully around the pocket watch"
 msgstr ""
 
-#: includes/sample-data.php:323
+#: includes/sample-data.php:320
 msgid "Search the study more thoroughly first"
 msgstr ""
 
@@ -1732,31 +1737,31 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: includes/sample-data.php:51 includes/sample-data.php:1005
+#: includes/sample-data.php:51 includes/sample-data.php:1011
 msgid "Shadow Detective"
 msgstr ""
 
-#: includes/sample-data.php:762
+#: includes/sample-data.php:769
 msgid "Shadow Detective - All the Truth"
 msgstr ""
 
-#: includes/sample-data.php:685
+#: includes/sample-data.php:692
 msgid "Shadow Detective - Cautious Approach"
 msgstr ""
 
-#: includes/sample-data.php:845
+#: includes/sample-data.php:851
 msgid "Shadow Detective - Complete Solution"
 msgstr ""
 
-#: includes/sample-data.php:454
+#: includes/sample-data.php:451
 msgid "Shadow Detective - Dangerous Investigation"
 msgstr ""
 
-#: includes/sample-data.php:531
+#: includes/sample-data.php:528
 msgid "Shadow Detective - Decisive Evidence"
 msgstr ""
 
-#: includes/sample-data.php:609
+#: includes/sample-data.php:616
 msgid "Shadow Detective - Deepening Investigation"
 msgstr ""
 
@@ -1764,51 +1769,51 @@ msgstr ""
 msgid "Shadow Detective - Details of Disappearance"
 msgstr ""
 
-#: includes/sample-data.php:492
+#: includes/sample-data.php:489
 msgid "Shadow Detective - Dragon's Den"
 msgstr ""
 
-#: includes/sample-data.php:647
+#: includes/sample-data.php:654
 msgid "Shadow Detective - Encounter with the Mastermind"
 msgstr ""
 
-#: includes/sample-data.php:216
+#: includes/sample-data.php:213
 msgid "Shadow Detective - Family Testimony"
 msgstr ""
 
-#: includes/sample-data.php:412
+#: includes/sample-data.php:409
 msgid "Shadow Detective - Finding the Key"
 msgstr ""
 
-#: includes/sample-data.php:256
+#: includes/sample-data.php:253
 msgid "Shadow Detective - Friend's Testimony"
 msgstr ""
 
-#: includes/sample-data.php:334
+#: includes/sample-data.php:331
 msgid "Shadow Detective - Hidden Truth"
 msgstr ""
 
-#: includes/sample-data.php:893
+#: includes/sample-data.php:899
 msgid "Shadow Detective - Insufficient Evidence"
 msgstr ""
 
-#: includes/sample-data.php:869
+#: includes/sample-data.php:875
 msgid "Shadow Detective - Partial Solution"
 msgstr ""
 
-#: includes/sample-data.php:799
+#: includes/sample-data.php:806
 msgid "Shadow Detective - Reunion with the Missing"
 msgstr ""
 
-#: includes/sample-data.php:723
+#: includes/sample-data.php:730
 msgid "Shadow Detective - Revealing the Truth"
 msgstr ""
 
-#: includes/sample-data.php:297
+#: includes/sample-data.php:294
 msgid "Shadow Detective - Secret of the Study"
 msgstr ""
 
-#: includes/sample-data.php:570
+#: includes/sample-data.php:577
 msgid "Shadow Detective - Shadow of the Mastermind"
 msgstr ""
 
@@ -1816,11 +1821,11 @@ msgstr ""
 msgid "Shadow Detective - The Beginning"
 msgstr ""
 
-#: includes/sample-data.php:179
+#: includes/sample-data.php:176
 msgid "Shadow Detective - Time to Deduce"
 msgstr ""
 
-#: includes/sample-data.php:374
+#: includes/sample-data.php:371
 msgid "Shadow Detective - To the Core of the Case"
 msgstr ""
 
@@ -1863,7 +1868,7 @@ msgstr ""
 msgid "Something shiny is on the ground... It's a pocket watch."
 msgstr ""
 
-#: includes/sample-data.php:708
+#: includes/sample-data.php:715
 msgid "Sorry, excuse me"
 msgstr ""
 
@@ -1908,33 +1913,33 @@ msgid ""
 "case."
 msgstr ""
 
-#: includes/sample-data.php:579
+#: includes/sample-data.php:586
 msgid ""
 "Takagi Construction... a major general contractor. Why involved in illicit "
 "deals?"
 msgstr ""
 
-#: includes/sample-data.php:357
+#: includes/sample-data.php:354
 msgid "Take the diary back for analysis"
 msgstr ""
 
-#: includes/sample-data.php:234
+#: includes/sample-data.php:231
 msgid "Talk to company associates"
 msgstr ""
 
-#: includes/sample-data.php:950
+#: includes/sample-data.php:956
 msgid "Talked to Friend"
 msgstr ""
 
-#: includes/sample-data.php:945
+#: includes/sample-data.php:951
 msgid "Talked to Wife"
 msgstr ""
 
-#: includes/sample-data.php:735
+#: includes/sample-data.php:742
 msgid "Tch... Kurosaki left evidence behind."
 msgstr ""
 
-#: includes/sample-data.php:749
+#: includes/sample-data.php:756
 msgid "Tell me everything you know"
 msgstr ""
 
@@ -1966,11 +1971,11 @@ msgid ""
 "Kurosaki."
 msgstr ""
 
-#: includes/sample-data.php:936
+#: includes/sample-data.php:942
 msgid "The key to access the hidden room."
 msgstr ""
 
-#: includes/sample-data.php:384
+#: includes/sample-data.php:381
 msgid "The men in the photo from my friend... loan sharks?"
 msgstr ""
 
@@ -1980,7 +1985,7 @@ msgid ""
 "of advertising features."
 msgstr ""
 
-#: includes/sample-data.php:189
+#: includes/sample-data.php:186
 msgid "The pocket watch... evidence he was at the disappearance site."
 msgstr ""
 
@@ -1996,7 +2001,7 @@ msgid ""
 "command?"
 msgstr ""
 
-#: includes/sample-data.php:421
+#: includes/sample-data.php:418
 msgid ""
 "The safe key... Oh, I think there was a spare in my husband's study drawer."
 msgstr ""
@@ -2011,7 +2016,7 @@ msgstr ""
 msgid "There are no posts for this game."
 msgstr ""
 
-#: includes/sample-data.php:829
+#: includes/sample-data.php:836
 msgid "There are still unclear points..."
 msgstr ""
 
@@ -2022,18 +2027,18 @@ msgid ""
 "first."
 msgstr ""
 
-#: includes/sample-data.php:504
+#: includes/sample-data.php:501
 msgid ""
 "They won't say anything publicly... but they seem to be hiding something."
 msgstr ""
 
-#: includes/sample-data.php:465
+#: includes/sample-data.php:462
 msgid ""
 "They're from \"Ryu-gumi\", a loan shark operation. Once you're in, you're "
 "done."
 msgstr ""
 
-#: includes/sample-data.php:191
+#: includes/sample-data.php:188
 msgid "This case doesn't seem superficial."
 msgstr ""
 
@@ -2041,13 +2046,13 @@ msgstr ""
 msgid "This game title is already in use."
 msgstr ""
 
-#: includes/sample-data.php:582
+#: includes/sample-data.php:589
 msgid ""
 "This is... President Takagi using Kurosaki and Ryu-gumi for illegal "
 "transactions?"
 msgstr ""
 
-#: includes/sample-data.php:424
+#: includes/sample-data.php:421
 msgid "This key might open the safe in the hidden room."
 msgstr ""
 
@@ -2077,7 +2082,7 @@ msgid ""
 "business meeting\" and left."
 msgstr ""
 
-#: includes/sample-data.php:188
+#: includes/sample-data.php:185
 msgid "Time to organize the gathered information."
 msgstr ""
 
@@ -2113,19 +2118,19 @@ msgstr ""
 msgid "Total: %d scenes"
 msgstr ""
 
-#: includes/sample-data.php:518
+#: includes/sample-data.php:515
 msgid "Try a different approach and negotiate"
 msgstr ""
 
-#: includes/sample-data.php:712
+#: includes/sample-data.php:719
 msgid "Try bluffing with partial evidence"
 msgstr ""
 
-#: includes/sample-data.php:315
+#: includes/sample-data.php:312
 msgid "Try to open the hidden door"
 msgstr ""
 
-#: includes/sample-data.php:352
+#: includes/sample-data.php:349
 msgid "Try to open the safe"
 msgstr ""
 
@@ -2171,7 +2176,7 @@ msgstr ""
 msgid "Use these shortcodes to display your games on pages or posts."
 msgstr ""
 
-#: includes/sample-data.php:635
+#: includes/sample-data.php:642
 msgid "Verify the evidence one more time"
 msgstr ""
 
@@ -2191,7 +2196,7 @@ msgstr ""
 msgid "Visit Google AdSense"
 msgstr ""
 
-#: includes/sample-data.php:703
+#: includes/sample-data.php:710
 msgid "Wait, please look at this evidence"
 msgstr ""
 
@@ -2205,7 +2210,7 @@ msgstr ""
 msgid "Welcome to \"%s\"!"
 msgstr ""
 
-#: includes/sample-data.php:670
+#: includes/sample-data.php:677
 msgid "What about your relationship with Ryu-gumi?"
 msgstr ""
 
@@ -2223,19 +2228,19 @@ msgstr ""
 msgid "When did you last see him?"
 msgstr ""
 
-#: includes/sample-data.php:741
+#: includes/sample-data.php:748
 msgid "Where is Makoto Kurosaki?"
 msgstr ""
 
-#: includes/sample-data.php:580
+#: includes/sample-data.php:587
 msgid "While investigating around the office, I find a memo in the trash..."
 msgstr ""
 
-#: includes/sample-data.php:423
+#: includes/sample-data.php:420
 msgid "Will this reveal anything...?"
 msgstr ""
 
-#: includes/sample-data.php:306
+#: includes/sample-data.php:303
 msgid "With permission, I investigate the study."
 msgstr ""
 
@@ -2280,7 +2285,7 @@ msgstr ""
 msgid "You must comply with the terms of service of each advertising provider."
 msgstr ""
 
-#: includes/sample-data.php:808
+#: includes/sample-data.php:815
 msgid "You're the detective..."
 msgstr ""
 
