@@ -162,9 +162,6 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Search more carefully around the pocket watch', 'novel-game-plugin' ),
                     'next' => 'scene_4',
-                    'set_flags' => array(
-                        array( 'id' => 'flag_thorough_search', 'value' => 1 ),
-                    ),
                 ),
             ),
             'is_ending'       => false,
@@ -832,7 +829,6 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Let me confirm the evidence one more time', 'novel-game-plugin' ),
                     'next' => 'scene_23',
-                    'required_flags' => array(),
                 ),
             ),
             'is_ending'       => false,
