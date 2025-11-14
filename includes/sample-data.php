@@ -189,6 +189,16 @@ function noveltool_get_shadow_detective_game_data() {
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
+            'dialogue_flag_conditions' => array(
+                2 => array( // 3行目（index 2）: 証拠取得状況による推理の変化
+                    'conditions' => array(
+                        array( 'name' => 'flag_item_watch', 'state' => 1 ),
+                    ),
+                    'logic' => 'AND',
+                    'displayMode' => 'alternative',
+                    'alternativeText' => __( 'The pocket watch found at the scene... and sudden disappearance. This connects to something bigger.', 'novel-game-plugin' ),
+                ),
+            ),
             'choices'         => array(
                 array(
                     'text' => __( 'Prioritize questioning the family', 'novel-game-plugin' ),
@@ -384,6 +394,24 @@ function noveltool_get_shadow_detective_game_data() {
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( $bg_office, '', '', '' ),
+            'dialogue_flag_conditions' => array(
+                1 => array( // 2行目（index 1）: 証拠収集状況による推理の変化
+                    'conditions' => array(
+                        array( 'name' => 'flag_item_photo', 'state' => 1 ),
+                    ),
+                    'logic' => 'AND',
+                    'displayMode' => 'alternative',
+                    'alternativeText' => __( 'The men in the photo from my friend... clearly loan sharks from Ryu-gumi.', 'novel-game-plugin' ),
+                ),
+                2 => array( // 3行目（index 2）: 隠し部屋発見後の推理変化
+                    'conditions' => array(
+                        array( 'name' => 'flag_found_hidden_room', 'state' => 1 ),
+                    ),
+                    'logic' => 'AND',
+                    'displayMode' => 'alternative',
+                    'alternativeText' => __( 'The hidden room I found... There\'s definitely something big he was hiding.', 'novel-game-plugin' ),
+                ),
+            ),
             'choices'         => array(
                 array(
                     'text' => __( 'Ask the wife about the safe key', 'novel-game-plugin' ),
