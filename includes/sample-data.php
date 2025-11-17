@@ -1051,18 +1051,14 @@ function noveltool_get_shadow_detective_game_data() {
  * 
  * ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
  * 既存ゲームが見つかった場合は何も変更せずに false を返します
+ * 
+ * ⚠️ 注意: この関数は plugins_loaded フック以降に呼び出される必要があります
+ * 翻訳ファイルがロードされた後に実行されることを前提としています
  *
  * @return bool 成功した場合true、失敗または既に存在する場合false
  * @since 1.3.0
  */
 function noveltool_install_shadow_detective_game() {
-    // 翻訳ファイルを明示的にロード（サンプルデータのインストール時に __() が日本語を返すように）
-    load_plugin_textdomain(
-        'novel-game-plugin',
-        false,
-        dirname( plugin_basename( dirname( __FILE__ ) ) ) . '/languages'
-    );
-    
     // Shadow Detectiveデータを取得
     $detective_data = noveltool_get_shadow_detective_game_data();
     $game_data = $detective_data['game'];

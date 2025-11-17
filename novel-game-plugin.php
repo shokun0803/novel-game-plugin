@@ -64,6 +64,9 @@ function noveltool_init() {
         false,
         dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
     );
+    
+    // サンプルゲーム追加フラグをチェックし、必要であればインストール実行
+    noveltool_check_and_install_sample_games();
 }
 add_action( 'plugins_loaded', 'noveltool_init' );
 
@@ -72,30 +75,51 @@ add_action( 'plugins_loaded', 'noveltool_init' );
  * 
  * カスタム投稿タイプのリライトルールを登録するため、
  * flush_rewrite_rules()を実行してパーマリンク構造を更新する
- * また、サンプルゲームをインストールする
+ * サンプルゲーム追加は plugins_loaded フックで実行されるため、ここではフラグのみ設定
  * 
  * ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
  *
  * @since 1.1.0
  */
 function noveltool_activate_plugin() {
-    // プラグイン有効化時に翻訳ファイルを明示的に読み込む（activation 時点で __() が正しく動作するように）
-    load_plugin_textdomain(
-        NOVEL_GAME_PLUGIN_TEXT_DOMAIN,
-        false,
-        dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
-    );
-    
     // カスタム投稿タイプを登録
     noveltool_register_post_type();
     
     // リライトルールを再生成
     flush_rewrite_rules();
     
-    // Shadow Detectiveゲームをインストール（存在しない場合のみ）
-    noveltool_install_shadow_detective_game();
+    // サンプルゲーム追加フラグを設定（実際のインストールは plugins_loaded で実行）
+    // これにより、翻訳ファイルが確実にロードされた後にサンプルデータが追加される
+    if ( ! get_option( 'noveltool_sample_games_installed' ) ) {
+        update_option( 'noveltool_pending_sample_install', true );
+    }
 }
 register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
+
+/**
+ * サンプルゲーム追加処理の確認と実行
+ * 
+ * plugins_loaded フックで実行され、有効化時に設定されたフラグを確認し、
+ * 必要であればサンプルゲームをインストールする
+ * これにより、翻訳ファイルが確実にロードされた後にサンプルデータが追加される
+ *
+ * @since 1.3.0
+ */
+function noveltool_check_and_install_sample_games() {
+    // サンプルゲーム追加フラグをチェック
+    if ( get_option( 'noveltool_pending_sample_install' ) ) {
+        // フラグを削除（一度だけ実行されるように）
+        delete_option( 'noveltool_pending_sample_install' );
+        
+        // Shadow Detectiveゲームをインストール
+        $result = noveltool_install_shadow_detective_game();
+        
+        // インストール完了フラグを設定
+        if ( $result ) {
+            update_option( 'noveltool_sample_games_installed', true );
+        }
+    }
+}
 
 /**
  * サンプルゲーム（Shadow Detective）インストール用のAJAXハンドラー
