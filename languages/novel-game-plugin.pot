@@ -270,14 +270,14 @@ msgid ""
 "options."
 msgstr ""
 
-#: includes/sample-data.php:551
+#: includes/sample-data.php:600
 msgid ""
 "And a name other than Ryu-gumi... \"Takagi Construction, President Takagi\"?"
 msgstr ""
 
-#: includes/sample-data.php:540
+#: includes/sample-data.php:589
 msgid ""
-"And another corporate name appears... \"Takagi Construction, President "
+"Another name surfaces... \"Takagi Construction, President "
 "Takagi\"?"
 msgstr ""
 

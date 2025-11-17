@@ -586,7 +586,7 @@ function noveltool_get_shadow_detective_game_data() {
                 __( 'I use the key to open the safe.', 'novel-game-plugin' ),
                 __( 'Inside are numerous documents and... cash!', 'novel-game-plugin' ),
                 __( 'Looking at the documents, records of illicit transactions...', 'novel-game-plugin' ),
-                __( 'And another corporate name appears... "Takagi Construction, President Takagi"?', 'novel-game-plugin' ),
+                __( 'Another name surfaces... "Takagi Construction, President Takagi"?', 'novel-game-plugin' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
@@ -1192,9 +1192,13 @@ function noveltool_install_shadow_detective_game() {
         update_post_meta( $post_id, '_dialogue_speakers', wp_json_encode( $scene_data['dialogue_speakers'], JSON_UNESCAPED_UNICODE ) );
         update_post_meta( $post_id, '_dialogue_backgrounds', wp_json_encode( $scene_data['dialogue_backgrounds'], JSON_UNESCAPED_UNICODE ) );
         
-        // セリフのフラグ条件データを保存
-        if ( isset( $scene_data['dialogue_flag_conditions'] ) && ! empty( $scene_data['dialogue_flag_conditions'] ) ) {
-            update_post_meta( $post_id, '_dialogue_flag_conditions', $scene_data['dialogue_flag_conditions'] );
+        // セリフのフラグ条件データを保存（JSON形式）
+        if ( isset( $scene_data['dialogue_flag_conditions'] ) && is_array( $scene_data['dialogue_flag_conditions'] ) ) {
+            update_post_meta(
+                $post_id,
+                '_dialogue_flag_conditions',
+                wp_json_encode( $scene_data['dialogue_flag_conditions'], JSON_UNESCAPED_UNICODE )
+            );
         }
         
         // エンディング設定
@@ -1226,9 +1230,12 @@ function noveltool_install_shadow_detective_game() {
                         'next' => $scene_ids[ $choice['next'] ],
                     );
                     
-                    // required_flags がある場合は追加
-                    if ( isset( $choice['required_flags'] ) && is_array( $choice['required_flags'] ) ) {
-                        $choice_data['required_flags'] = $choice['required_flags'];
+                    // flagConditions と flagConditionLogic を保存（required_flags は保存しない）
+                    if ( isset( $choice['flagConditions'] ) ) {
+                        $choice_data['flagConditions'] = $choice['flagConditions'];
+                    }
+                    if ( isset( $choice['flagConditionLogic'] ) ) {
+                        $choice_data['flagConditionLogic'] = $choice['flagConditionLogic'];
                     }
                     
                     $choices[] = $choice_data;

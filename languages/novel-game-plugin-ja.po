@@ -277,16 +277,16 @@ msgstr ""
 "さまざまな広告フォーマットと支払いオプションを持つ代替広告ネットワークです。"
 
 #: includes/sample-data.php:551
-#: includes/sample-data.php:552
+#: includes/sample-data.php:600
 msgid ""
 "And a name other than Ryu-gumi... \"Takagi Construction, President Takagi\"?"
 msgstr "龍組以外の名前も……「高木建設　代表　高木」？"
 
-#: includes/sample-data.php:540
+#: includes/sample-data.php:589
 msgid ""
-"And another corporate name appears... \"Takagi Construction, President "
+"Another name surfaces... \"Takagi Construction, President "
 "Takagi\"?"
-msgstr "別の企業名が出てくる……「高木建設　代表　高木」？"
+msgstr "別の名前が浮上する……「高木建設　代表　高木」？"
 
 #: includes/sample-data.php:863
 msgid "Another case solved. This is a detective's work."
