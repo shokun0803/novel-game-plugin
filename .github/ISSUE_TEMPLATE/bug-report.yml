@@ -5,6 +5,12 @@ body:
   - type: markdown
     attributes:
       value: |
+        # タイトル
+        （ここに Issue のタイトルを記載してください）
+
+  - type: markdown
+    attributes:
+      value: |
         以下のフォームに沿って、バグの詳細を日本語で記入してください。
         すべての PR は base: dev を必須とします。タイトル・概要の後追い変更は行わないでください。
   - type: textarea
