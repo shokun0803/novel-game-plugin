@@ -1056,6 +1056,13 @@ function noveltool_get_shadow_detective_game_data() {
  * @since 1.3.0
  */
 function noveltool_install_shadow_detective_game() {
+    // 翻訳ファイルを明示的にロード（サンプルデータのインストール時に __() が日本語を返すように）
+    load_plugin_textdomain(
+        'novel-game-plugin',
+        false,
+        dirname( plugin_basename( dirname( __FILE__ ) ) ) . '/languages'
+    );
+    
     // Shadow Detectiveデータを取得
     $detective_data = noveltool_get_shadow_detective_game_data();
     $game_data = $detective_data['game'];
