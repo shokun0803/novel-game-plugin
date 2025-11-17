@@ -192,7 +192,7 @@ function noveltool_get_shadow_detective_game_data() {
             'dialogue_flag_conditions' => array(
                 2 => array( // 3行目（index 2）: 証拠取得状況による推理の変化
                     'conditions' => array(
-                        array( 'name' => 'flag_item_watch', 'state' => 1 ),
+                        array( 'name' => 'Pocket Watch', 'state' => 1 ),
                     ),
                     'logic' => 'AND',
                     'displayMode' => 'alternative',
@@ -244,7 +244,10 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Let me investigate the study', 'novel-game-plugin' ),
                     'next' => 'scene_7',
-                    'required_flags' => array( 'flag_talked_wife' ),
+                    'flagConditions' => array(
+                        array( 'name' => 'Talked to Wife', 'state' => true ),
+                    ),
+                    'flagConditionLogic' => 'AND',
                 ),
                 array(
                     'text' => __( 'Ask about the unknown callers in detail', 'novel-game-plugin' ),
@@ -280,7 +283,10 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Investigate these men', 'novel-game-plugin' ),
                     'next' => 'scene_11',
-                    'required_flags' => array( 'flag_item_photo' ),
+                    'flagConditions' => array(
+                        array( 'name' => 'Evidence Photo', 'state' => true ),
+                    ),
+                    'flagConditionLogic' => 'AND',
                 ),
                 array(
                     'text' => __( 'First, investigate the Kurosaki residence more', 'novel-game-plugin' ),
@@ -358,7 +364,10 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Try to open the safe', 'novel-game-plugin' ),
                     'next' => 'scene_10',
-                    'required_flags' => array( 'flag_found_hidden_room' ),
+                    'flagConditions' => array(
+                        array( 'name' => 'Discovered Hidden Room', 'state' => true ),
+                    ),
+                    'flagConditionLogic' => 'AND',
                 ),
                 array(
                     'text' => __( 'Take the diary back for analysis', 'novel-game-plugin' ),
@@ -397,7 +406,7 @@ function noveltool_get_shadow_detective_game_data() {
             'dialogue_flag_conditions' => array(
                 1 => array( // 2行目（index 1）: 証拠収集状況による推理の変化
                     'conditions' => array(
-                        array( 'name' => 'flag_item_photo', 'state' => 1 ),
+                        array( 'name' => 'Evidence Photo', 'state' => 1 ),
                     ),
                     'logic' => 'AND',
                     'displayMode' => 'alternative',
@@ -405,7 +414,7 @@ function noveltool_get_shadow_detective_game_data() {
                 ),
                 2 => array( // 3行目（index 2）: 隠し部屋発見後の推理変化
                     'conditions' => array(
-                        array( 'name' => 'flag_found_hidden_room', 'state' => 1 ),
+                        array( 'name' => 'Discovered Hidden Room', 'state' => 1 ),
                     ),
                     'logic' => 'AND',
                     'displayMode' => 'alternative',
@@ -420,7 +429,10 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Pursue the men in the photo', 'novel-game-plugin' ),
                     'next' => 'scene_11',
-                    'required_flags' => array( 'flag_item_photo' ),
+                    'flagConditions' => array(
+                        array( 'name' => 'Evidence Photo', 'state' => true ),
+                    ),
+                    'flagConditionLogic' => 'AND',
                 ),
                 array(
                     'text' => __( 'Carefully review all gathered evidence', 'novel-game-plugin' ),
@@ -454,12 +466,18 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Open the safe in the hidden room immediately', 'novel-game-plugin' ),
                     'next' => 'scene_13',
-                    'required_flags' => array( 'flag_found_hidden_room' ),
+                    'flagConditions' => array(
+                        array( 'name' => 'Discovered Hidden Room', 'state' => true ),
+                    ),
+                    'flagConditionLogic' => 'AND',
                 ),
                 array(
                     'text' => __( 'Gather other clues first', 'novel-game-plugin' ),
                     'next' => 'scene_11',
-                    'required_flags' => array( 'flag_item_photo' ),
+                    'flagConditions' => array(
+                        array( 'name' => 'Evidence Photo', 'state' => true ),
+                    ),
+                    'flagConditionLogic' => 'AND',
                 ),
                 array(
                     'text' => __( 'Check with the wife about her husband\'s business dealings', 'novel-game-plugin' ),
@@ -504,7 +522,10 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Search for more connections to Ryu-gumi', 'novel-game-plugin' ),
                     'next' => 'scene_13',
-                    'required_flags' => array( 'flag_item_key' ),
+                    'flagConditions' => array(
+                        array( 'name' => 'Hidden Room Key', 'state' => true ),
+                    ),
+                    'flagConditionLogic' => 'AND',
                 ),
             ),
             'is_ending'       => false,
@@ -572,7 +593,7 @@ function noveltool_get_shadow_detective_game_data() {
             'dialogue_flag_conditions' => array(
                 3 => array( // 4行目（index 3）: フラグによる条件分岐
                     'conditions' => array(
-                        array( 'name' => 'flag_met_underworld', 'state' => 1 ),
+                        array( 'name' => 'Contacted Underworld', 'state' => 1 ),
                     ),
                     'logic' => 'AND',
                     'displayMode' => 'alternative',
@@ -583,12 +604,19 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Investigate Takagi Construction', 'novel-game-plugin' ),
                     'next' => 'scene_14',
-                    'required_flags' => array( 'flag_found_hidden_room', 'flag_item_key' ),
+                    'flagConditions' => array(
+                        array( 'name' => 'Discovered Hidden Room', 'state' => true ),
+                        array( 'name' => 'Hidden Room Key', 'state' => true ),
+                    ),
+                    'flagConditionLogic' => 'AND',
                 ),
                 array(
                     'text' => __( 'Contact Ryu-gumi again', 'novel-game-plugin' ),
                     'next' => 'scene_15',
-                    'required_flags' => array( 'flag_met_underworld' ),
+                    'flagConditions' => array(
+                        array( 'name' => 'Contacted Underworld', 'state' => true ),
+                    ),
+                    'flagConditionLogic' => 'AND',
                 ),
                 array(
                     'text' => __( 'Carefully examine the documents in the safe', 'novel-game-plugin' ),
@@ -669,7 +697,10 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Verify the evidence one more time', 'novel-game-plugin' ),
                     'next' => 'scene_16',
-                    'required_flags' => array( 'flag_item_trade_memo' ),
+                    'flagConditions' => array(
+                        array( 'name' => 'Illicit Transaction Memo', 'state' => true ),
+                    ),
+                    'flagConditionLogic' => 'AND',
                 ),
             ),
             'is_ending'       => false,
@@ -737,7 +768,10 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Wait, please look at this evidence', 'novel-game-plugin' ),
                     'next' => 'scene_18',
-                    'required_flags' => array( 'flag_item_trade_memo' ),
+                    'flagConditions' => array(
+                        array( 'name' => 'Illicit Transaction Memo', 'state' => true ),
+                    ),
+                    'flagConditionLogic' => 'AND',
                 ),
                 array(
                     'text' => __( 'Sorry, excuse me', 'novel-game-plugin' ),
@@ -851,14 +885,15 @@ function noveltool_get_shadow_detective_game_data() {
                 array(
                     'text' => __( 'Everything is resolved. Let\'s go back to your family', 'novel-game-plugin' ),
                     'next' => 'scene_21',
-                    'required_flags' => array(
-                        'flag_item_watch',
-                        'flag_item_note',
-                        'flag_item_photo',
-                        'flag_item_key',
-                        'flag_item_trade_memo',
-                        'flag_confronted_mastermind',
+                    'flagConditions' => array(
+                        array( 'name' => 'Pocket Watch', 'state' => true ),
+                        array( 'name' => 'Missing Person\'s Diary', 'state' => true ),
+                        array( 'name' => 'Evidence Photo', 'state' => true ),
+                        array( 'name' => 'Hidden Room Key', 'state' => true ),
+                        array( 'name' => 'Illicit Transaction Memo', 'state' => true ),
+                        array( 'name' => 'Confronted Mastermind', 'state' => true ),
                     ),
+                    'flagConditionLogic' => 'AND',
                 ),
                 array(
                     'text' => __( 'There are still unclear points...', 'novel-game-plugin' ),
