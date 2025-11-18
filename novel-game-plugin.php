@@ -64,18 +64,18 @@ function noveltool_init() {
         false,
         dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
     );
-    
-    // サンプルゲーム追加フラグをチェックし、必要であればインストール実行
-    noveltool_check_and_install_sample_games();
 }
 add_action( 'plugins_loaded', 'noveltool_init' );
+
+// サンプルゲームインストールは init フックで実行（翻訳が確実に利用可能になった後）
+add_action( 'init', 'noveltool_check_and_install_sample_games', 20 );
 
 /**
  * プラグイン有効化時の処理
  * 
  * カスタム投稿タイプのリライトルールを登録するため、
  * flush_rewrite_rules()を実行してパーマリンク構造を更新する
- * サンプルゲーム追加は plugins_loaded フックで実行されるため、ここではフラグのみ設定
+ * サンプルゲーム追加は init フックで実行されるため、ここではフラグのみ設定
  * 
  * ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
  *
@@ -88,7 +88,7 @@ function noveltool_activate_plugin() {
     // リライトルールを再生成
     flush_rewrite_rules();
     
-    // サンプルゲーム追加フラグを設定（実際のインストールは plugins_loaded で実行）
+    // サンプルゲーム追加フラグを設定（実際のインストールは init フックで実行）
     // これにより、翻訳ファイルが確実にロードされた後にサンプルデータが追加される
     if ( ! get_option( 'noveltool_sample_games_installed' ) ) {
         update_option( 'noveltool_pending_sample_install', true );
@@ -99,9 +99,9 @@ register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
 /**
  * サンプルゲーム追加処理の確認と実行
  * 
- * plugins_loaded フックで実行され、有効化時に設定されたフラグを確認し、
+ * init フックで実行され、有効化時に設定されたフラグを確認し、
  * 必要であればサンプルゲームをインストールする
- * これにより、翻訳ファイルが確実にロードされた後にサンプルデータが追加される
+ * WordPress 6.7以降では、翻訳ファイルは init アクション以降でのみ完全に利用可能
  *
  * @since 1.3.0
  */
