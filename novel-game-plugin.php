@@ -67,35 +67,59 @@ function noveltool_init() {
 }
 add_action( 'plugins_loaded', 'noveltool_init' );
 
+// サンプルゲームインストールは init フックで実行（翻訳が確実に利用可能になった後）
+add_action( 'init', 'noveltool_check_and_install_sample_games', 20 );
+
 /**
  * プラグイン有効化時の処理
  * 
  * カスタム投稿タイプのリライトルールを登録するため、
  * flush_rewrite_rules()を実行してパーマリンク構造を更新する
- * また、サンプルゲームをインストールする
+ * サンプルゲーム追加は init フックで実行されるため、ここではフラグのみ設定
  * 
  * ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
  *
  * @since 1.1.0
  */
 function noveltool_activate_plugin() {
-    // プラグイン有効化時に翻訳ファイルを明示的に読み込む（activation 時点で __() が正しく動作するように）
-    load_plugin_textdomain(
-        NOVEL_GAME_PLUGIN_TEXT_DOMAIN,
-        false,
-        dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
-    );
-    
     // カスタム投稿タイプを登録
     noveltool_register_post_type();
     
     // リライトルールを再生成
     flush_rewrite_rules();
     
-    // Shadow Detectiveゲームをインストール（存在しない場合のみ）
-    noveltool_install_shadow_detective_game();
+    // サンプルゲーム追加フラグを設定（実際のインストールは init フックで実行）
+    // これにより、翻訳ファイルが確実にロードされた後にサンプルデータが追加される
+    if ( ! get_option( 'noveltool_sample_games_installed' ) ) {
+        update_option( 'noveltool_pending_sample_install', true );
+    }
 }
 register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
+
+/**
+ * サンプルゲーム追加処理の確認と実行
+ * 
+ * init フックで実行され、有効化時に設定されたフラグを確認し、
+ * 必要であればサンプルゲームをインストールする
+ * WordPress 6.7以降では、翻訳ファイルは init アクション以降でのみ完全に利用可能
+ *
+ * @since 1.3.0
+ */
+function noveltool_check_and_install_sample_games() {
+    // サンプルゲーム追加フラグをチェック
+    if ( get_option( 'noveltool_pending_sample_install' ) ) {
+        // フラグを削除（一度だけ実行されるように）
+        delete_option( 'noveltool_pending_sample_install' );
+        
+        // Shadow Detectiveゲームをインストール
+        $result = noveltool_install_shadow_detective_game();
+        
+        // インストール完了フラグを設定
+        if ( $result ) {
+            update_option( 'noveltool_sample_games_installed', true );
+        }
+    }
+}
 
 /**
  * サンプルゲーム（Shadow Detective）インストール用のAJAXハンドラー

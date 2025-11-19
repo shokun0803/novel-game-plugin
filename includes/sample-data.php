@@ -1044,115 +1044,23 @@ function noveltool_get_shadow_detective_game_data() {
 }
 
 /**
- * Shadow Detectiveゲームをインストール
+ * ゲームのシーンを生成する
  *
- * 本格推理ゲーム「影の探偵」をインストールする
- * 機械識別子（machine_name）とタイトルベースで既存チェックを行い、存在しない場合のみインストール
+ * 指定されたゲームIDとタイトルに対して、シーンデータからシーンを生成する
  * 
- * ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
- * 既存ゲームが見つかった場合は何も変更せずに false を返します
- *
- * @return bool 成功した場合true、失敗または既に存在する場合false
+ * @param int    $game_id     ゲームID
+ * @param string $target_title ゲームタイトル（メタデータ保存用）
+ * @param array  $scenes_data シーンデータの配列
+ * @return int 作成されたシーン数
  * @since 1.3.0
  */
-function noveltool_install_shadow_detective_game() {
-    // 翻訳ファイルを明示的にロード（サンプルデータのインストール時に __() が日本語を返すように）
-    load_plugin_textdomain(
-        'novel-game-plugin',
-        false,
-        dirname( plugin_basename( dirname( __FILE__ ) ) ) . '/languages'
-    );
-    
-    // Shadow Detectiveデータを取得
-    $detective_data = noveltool_get_shadow_detective_game_data();
-    $game_data = $detective_data['game'];
-    $scenes_data = $detective_data['scenes'];
-    $flag_master = $detective_data['flag_master'];
-    
-    // Shadow Detectiveが既に存在するかチェック
-    // 1. 機械識別子（machine_name）で検索（優先）
-    $existing_game = null;
-    if ( isset( $game_data['machine_name'] ) ) {
-        $existing_game = noveltool_get_game_by_machine_name( $game_data['machine_name'] );
+function noveltool_generate_scenes_for_game( $game_id, $target_title, $scenes_data ) {
+    if ( ! $game_id || ! $target_title || empty( $scenes_data ) ) {
+        error_log( 'noveltool_generate_scenes_for_game: Invalid parameters' );
+        return 0;
     }
     
-    // 2. machine_name が見つからない場合、タイトルベースでチェック（後方互換）
-    if ( ! $existing_game ) {
-        $game_title = __( 'Shadow Detective', 'novel-game-plugin' );
-        $existing_game = noveltool_get_game_by_title( $game_title );
-    }
-    
-    // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
-    if ( $existing_game ) {
-        return false; // 既に存在する場合はスキップ（何も変更しない）
-    }
-    
-    // ゲームを作成
-    $game_id = noveltool_save_game( $game_data );
-    
-    if ( ! $game_id ) {
-        return false; // ゲーム作成に失敗
-    }
-    
-    // フラグマスタを保存
-    if ( ! empty( $flag_master ) ) {
-        noveltool_save_game_flag_master( $game_data['title'], $flag_master );
-    }
-    
-    // フラグIDの一覧を作成（検証用）
-    $valid_flag_ids = array();
-    if ( ! empty( $flag_master ) ) {
-        foreach ( $flag_master as $flag ) {
-            if ( isset( $flag['id'] ) ) {
-                $valid_flag_ids[] = $flag['id'];
-            }
-        }
-    }
-    
-    // required_flags の検証
-    $flag_validation_warnings = array();
-    foreach ( $scenes_data as $index => $scene_data ) {
-        $scene_num = $index + 1;
-        
-        // 選択肢のrequired_flagsをチェック
-        if ( ! empty( $scene_data['choices'] ) ) {
-            foreach ( $scene_data['choices'] as $choice_index => $choice ) {
-                if ( isset( $choice['required_flags'] ) && is_array( $choice['required_flags'] ) ) {
-                    foreach ( $choice['required_flags'] as $required_flag ) {
-                        if ( ! in_array( $required_flag, $valid_flag_ids, true ) ) {
-                            $flag_validation_warnings[] = sprintf(
-                                'Scene %d, choice %d references undefined flag: %s',
-                                $scene_num,
-                                $choice_index + 1,
-                                $required_flag
-                            );
-                        }
-                    }
-                }
-            }
-        }
-        
-        // set_flagsをチェック
-        if ( ! empty( $scene_data['set_flags'] ) ) {
-            foreach ( $scene_data['set_flags'] as $set_flag ) {
-                if ( isset( $set_flag['id'] ) && ! in_array( $set_flag['id'], $valid_flag_ids, true ) ) {
-                    $flag_validation_warnings[] = sprintf(
-                        'Scene %d sets undefined flag: %s',
-                        $scene_num,
-                        $set_flag['id']
-                    );
-                }
-            }
-        }
-    }
-    
-    // フラグ検証警告をログに記録
-    if ( ! empty( $flag_validation_warnings ) && defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-        error_log( 'Novel Game Plugin - Shadow Detective flag validation warnings:' );
-        foreach ( $flag_validation_warnings as $warning ) {
-            error_log( '  - ' . $warning );
-        }
-    }
+    error_log( sprintf( 'noveltool_generate_scenes_for_game: Starting scene generation for game ID %d (%s)', $game_id, $target_title ) );
     
     // シーンを作成し、IDを記録
     $scene_ids = array();
@@ -1165,7 +1073,7 @@ function noveltool_install_shadow_detective_game() {
             'post_title'   => $scene_data['title'],
             'post_content' => '',
             'post_status'  => 'publish',
-            'post_author'  => get_current_user_id(), // 有効化したユーザーを作成者に設定
+            'post_author'  => get_current_user_id(),
         );
         
         $post_id = wp_insert_post( $post_data );
@@ -1178,14 +1086,14 @@ function noveltool_install_shadow_detective_game() {
                 $scene_data['title'],
                 is_wp_error( $post_id ) ? $post_id->get_error_message() : 'wp_insert_post returned 0'
             );
-            continue; // エラーの場合はスキップ
+            continue;
         }
         
         // シーンIDを記録
         $scene_ids[ 'scene_' . ( $index + 1 ) ] = $post_id;
         
         // メタデータを保存
-        update_post_meta( $post_id, '_game_title', $game_data['title'] );
+        update_post_meta( $post_id, '_game_title', $target_title );
         update_post_meta( $post_id, '_background_image', $scene_data['background'] );
         update_post_meta( $post_id, '_character_left', $scene_data['character_left'] );
         update_post_meta( $post_id, '_character_center', $scene_data['character_center'] );
@@ -1258,22 +1166,173 @@ function noveltool_install_shadow_detective_game() {
     
     // エラーが発生していた場合はログに記録
     if ( ! empty( $creation_errors ) ) {
-        // WordPressのデバッグログに記録（WP_DEBUGが有効な場合）
-        if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-            error_log( 'Novel Game Plugin - Shadow Detective installation errors:' );
-            foreach ( $creation_errors as $error ) {
-                error_log( '  - ' . $error );
+        error_log( 'noveltool_generate_scenes_for_game: Scene creation errors:' );
+        foreach ( $creation_errors as $error ) {
+            error_log( '  - ' . $error );
+        }
+    }
+    
+    $created_count = count( $scene_ids );
+    error_log( sprintf( 'noveltool_generate_scenes_for_game: Completed. Created %d scenes for game ID %d', $created_count, $game_id ) );
+    
+    return $created_count;
+}
+
+/**
+ * Shadow Detectiveゲームをインストール
+ *
+ * 本格推理ゲーム「影の探偵」をインストールする
+ * 機械識別子（machine_name）とタイトルベースで既存チェックを行い、存在しない場合のみインストール
+ * 
+ * ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
+ * 既存ゲームが見つかった場合は何も変更せずに false を返します
+ * 
+ * ⚠️ 注意: この関数は init アクション以降に呼び出される必要があります
+ * WordPress 6.7以降では、翻訳ファイルは init アクション以降でのみ完全に利用可能です
+ *
+ * @return bool 成功した場合true、失敗または既に存在する場合false
+ * @since 1.3.0
+ */
+function noveltool_install_shadow_detective_game() {
+    // Shadow Detectiveデータを取得
+    $detective_data = noveltool_get_shadow_detective_game_data();
+    $game_data = $detective_data['game'];
+    $scenes_data = $detective_data['scenes'];
+    $flag_master = $detective_data['flag_master'];
+    
+    // Shadow Detectiveが既に存在するかチェック
+    // 1. 機械識別子（machine_name）で検索（優先）
+    $existing_game = null;
+    if ( isset( $game_data['machine_name'] ) ) {
+        $existing_game = noveltool_get_game_by_machine_name( $game_data['machine_name'] );
+    }
+    
+    // 2. machine_name が見つからない場合、タイトルベースでチェック（後方互換）
+    if ( ! $existing_game ) {
+        $game_title = __( 'Shadow Detective', 'novel-game-plugin' );
+        $existing_game = noveltool_get_game_by_title( $game_title );
+    }
+    
+    // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
+    if ( $existing_game ) {
+        error_log( 'noveltool_install_shadow_detective_game: Existing game detected' );
+        
+        $target_title = $existing_game['title'] ?? '';
+        if ( ! $target_title ) {
+            error_log( 'noveltool_install_shadow_detective_game: Existing game has no title' );
+            return false;
+        }
+        
+        $existing_scenes = noveltool_get_posts_by_game_title( $target_title );
+        if ( is_array( $existing_scenes ) && count( $existing_scenes ) === 0 ) {
+            error_log( sprintf( 'noveltool_install_shadow_detective_game: Game exists but has 0 scenes, regenerating for "%s"', $target_title ) );
+            
+            // 既存ゲームの ID を取得
+            $target_game_id = isset( $existing_game['id'] ) ? (int) $existing_game['id'] : null;
+            if ( ! $target_game_id ) {
+                error_log( 'noveltool_install_shadow_detective_game: Cannot determine target game ID' );
+                return false;
+            }
+            
+            // フラグマスタが未保存なら保存
+            $current_flag_master = noveltool_get_game_flag_master( $target_title );
+            if ( empty( $current_flag_master ) && ! empty( $flag_master ) ) {
+                noveltool_save_game_flag_master( $target_title, $flag_master );
+                error_log( 'noveltool_install_shadow_detective_game: Flag master saved' );
+            }
+            
+            // シーン再生成
+            $created = noveltool_generate_scenes_for_game( $target_game_id, $target_title, $scenes_data );
+            $expected_count = count( $scenes_data );
+            if ( $created < $expected_count ) {
+                error_log( sprintf(
+                    'noveltool_install_shadow_detective_game: Incomplete regeneration. Expected %d scenes, created %d',
+                    $expected_count,
+                    $created
+                ) );
+                return false;
+            }
+            return true;
+        }
+        
+        error_log( sprintf( 'noveltool_install_shadow_detective_game: Game exists with %d scenes, skipping', count( $existing_scenes ) ) );
+        return false; // 既に存在する場合はスキップ（何も変更しない）
+    }
+    
+    // ゲームを作成
+    $game_id = noveltool_save_game( $game_data );
+    
+    if ( ! $game_id ) {
+        return false; // ゲーム作成に失敗
+    }
+    
+    // フラグマスタを保存
+    if ( ! empty( $flag_master ) ) {
+        noveltool_save_game_flag_master( $game_data['title'], $flag_master );
+    }
+    
+    // フラグIDの一覧を作成（検証用）
+    $valid_flag_ids = array();
+    if ( ! empty( $flag_master ) ) {
+        foreach ( $flag_master as $flag ) {
+            if ( isset( $flag['id'] ) ) {
+                $valid_flag_ids[] = $flag['id'];
             }
         }
     }
     
-    // すべてのシーンが正常に作成されたかチェック
-    $expected_scenes = count( $scenes_data );
-    $created_scenes = count( $scene_ids );
+    // required_flags の検証
+    $flag_validation_warnings = array();
+    foreach ( $scenes_data as $index => $scene_data ) {
+        $scene_num = $index + 1;
+        
+        // 選択肢のrequired_flagsをチェック
+        if ( ! empty( $scene_data['choices'] ) ) {
+            foreach ( $scene_data['choices'] as $choice_index => $choice ) {
+                if ( isset( $choice['required_flags'] ) && is_array( $choice['required_flags'] ) ) {
+                    foreach ( $choice['required_flags'] as $required_flag ) {
+                        if ( ! in_array( $required_flag, $valid_flag_ids, true ) ) {
+                            $flag_validation_warnings[] = sprintf(
+                                'Scene %d, choice %d references undefined flag: %s',
+                                $scene_num,
+                                $choice_index + 1,
+                                $required_flag
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        
+        // set_flagsをチェック
+        if ( ! empty( $scene_data['set_flags'] ) ) {
+            foreach ( $scene_data['set_flags'] as $set_flag ) {
+                if ( isset( $set_flag['id'] ) && ! in_array( $set_flag['id'], $valid_flag_ids, true ) ) {
+                    $flag_validation_warnings[] = sprintf(
+                        'Scene %d sets undefined flag: %s',
+                        $scene_num,
+                        $set_flag['id']
+                    );
+                }
+            }
+        }
+    }
     
-    if ( $created_scenes < $expected_scenes ) {
+    // フラグ検証警告をログに記録
+    if ( ! empty( $flag_validation_warnings ) && defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+        error_log( 'Novel Game Plugin - Shadow Detective flag validation warnings:' );
+        foreach ( $flag_validation_warnings as $warning ) {
+            error_log( '  - ' . $warning );
+        }
+    }
+    
+    // シーン生成を実行
+    $created_scenes = noveltool_generate_scenes_for_game( $game_id, $game_data['title'], $scenes_data );
+    
+    if ( $created_scenes < count( $scenes_data ) ) {
         // 一部のシーンの作成に失敗した場合
-        return false; // 不完全なインストール
+        error_log( sprintf( 'noveltool_install_shadow_detective_game: Incomplete installation. Expected %d scenes, created %d', count( $scenes_data ), $created_scenes ) );
+        return false;
     }
     
     return true;
