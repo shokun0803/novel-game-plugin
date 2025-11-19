@@ -1217,9 +1217,9 @@ function noveltool_install_shadow_detective_game() {
     if ( $existing_game ) {
         error_log( 'noveltool_install_shadow_detective_game: Existing game detected' );
         
-        $target_title = isset( $existing_game['title'] ) ? $existing_game['title'] : ( isset( $game_data['title'] ) ? $game_data['title'] : '' );
+        $target_title = $existing_game['title'] ?? '';
         if ( ! $target_title ) {
-            error_log( 'noveltool_install_shadow_detective_game: Cannot determine target title' );
+            error_log( 'noveltool_install_shadow_detective_game: Existing game has no title' );
             return false;
         }
         
@@ -1243,7 +1243,16 @@ function noveltool_install_shadow_detective_game() {
             
             // シーン再生成
             $created = noveltool_generate_scenes_for_game( $target_game_id, $target_title, $scenes_data );
-            return ( $created > 0 );
+            $expected_count = count( $scenes_data );
+            if ( $created < $expected_count ) {
+                error_log( sprintf(
+                    'noveltool_install_shadow_detective_game: Incomplete regeneration. Expected %d scenes, created %d',
+                    $expected_count,
+                    $created
+                ) );
+                return false;
+            }
+            return true;
         }
         
         error_log( sprintf( 'noveltool_install_shadow_detective_game: Game exists with %d scenes, skipping', count( $existing_scenes ) ) );
