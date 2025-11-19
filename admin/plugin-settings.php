@@ -22,6 +22,23 @@ function noveltool_plugin_settings_page() {
         wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
+    // 保存処理（POST メソッド＆nonce 検証）
+    if ( 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['noveltool_settings_nonce'] ) ) {
+        check_admin_referer( 'noveltool_settings_save', 'noveltool_settings_nonce' );
+        
+        // アンインストール時のデータ削除オプション
+        $delete_data_on_uninstall = isset( $_POST['noveltool_delete_data_on_uninstall'] ) ? true : false;
+        update_option( 'noveltool_delete_data_on_uninstall', $delete_data_on_uninstall );
+        
+        // 保存成功メッセージ
+        echo '<div class="notice notice-success is-dismissible"><p>' . 
+             esc_html__( 'Settings have been saved successfully.', 'novel-game-plugin' ) . 
+             '</p></div>';
+    }
+
+    // 現在の設定値を取得
+    $delete_data_on_uninstall = get_option( 'noveltool_delete_data_on_uninstall', false );
+
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'Plugin Settings', 'novel-game-plugin' ); ?></h1>
@@ -125,6 +142,49 @@ function noveltool_plugin_settings_page() {
                         <td><code><?php echo esc_html( NOVEL_GAME_PLUGIN_TEXT_DOMAIN ); ?></code></td>
                     </tr>
                 </table>
+            </div>
+
+            <!-- アンインストール設定セクション -->
+            <div class="noveltool-uninstall-section">
+                <h2><?php esc_html_e( 'Uninstall Settings', 'novel-game-plugin' ); ?></h2>
+                
+                <form method="post" action="">
+                    <?php wp_nonce_field( 'noveltool_settings_save', 'noveltool_settings_nonce' ); ?>
+                    
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row">
+                                <label for="noveltool_delete_data_on_uninstall">
+                                    <?php esc_html_e( 'Delete all data on uninstall', 'novel-game-plugin' ); ?>
+                                </label>
+                            </th>
+                            <td>
+                                <fieldset>
+                                    <label for="noveltool_delete_data_on_uninstall">
+                                        <input type="checkbox" 
+                                               name="noveltool_delete_data_on_uninstall" 
+                                               id="noveltool_delete_data_on_uninstall" 
+                                               value="1" 
+                                               <?php checked( $delete_data_on_uninstall, true ); ?> />
+                                        <?php esc_html_e( 'Delete all data on uninstall', 'novel-game-plugin' ); ?>
+                                    </label>
+                                    <p class="description">
+                                        <?php esc_html_e( 'When enabled, all game data, posts, and settings will be permanently deleted when you uninstall this plugin. This action cannot be undone. Normally, leave this unchecked.', 'novel-game-plugin' ); ?>
+                                    </p>
+                                    
+                                    <?php if ( $delete_data_on_uninstall ) : ?>
+                                        <div class="noveltool-warning-box">
+                                            <span class="dashicons dashicons-warning"></span>
+                                            <strong><?php esc_html_e( 'Warning: When this setting is enabled, all games you created will be deleted upon uninstallation.', 'novel-game-plugin' ); ?></strong>
+                                        </div>
+                                    <?php endif; ?>
+                                </fieldset>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <?php submit_button( __( 'Save Settings', 'novel-game-plugin' ) ); ?>
+                </form>
             </div>
         </div>
     </div>

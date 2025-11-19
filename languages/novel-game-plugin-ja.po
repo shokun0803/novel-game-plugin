@@ -2688,3 +2688,27 @@ msgstr "show_description"
 
 #~ msgid "novel"
 #~ msgstr "novel"
+
+#: admin/plugin-settings.php
+msgid "Uninstall Settings"
+msgstr "アンインストール設定"
+
+#: admin/plugin-settings.php
+msgid "Delete all data on uninstall"
+msgstr "プラグイン削除時にすべてのデータを削除する"
+
+#: admin/plugin-settings.php
+msgid "When enabled, all game data, posts, and settings will be permanently deleted when you uninstall this plugin. This action cannot be undone. Normally, leave this unchecked."
+msgstr "この設定を有効にすると、プラグイン削除時にすべてのゲームデータ、投稿、設定が完全に削除されます。この操作は元に戻せません。通常はチェックを外したままにしてください。"
+
+#: admin/plugin-settings.php
+msgid "Warning: When this setting is enabled, all games you created will be deleted upon uninstallation."
+msgstr "警告: この設定を有効にすると、作成したすべてのゲームが削除されます。"
+
+#: admin/plugin-settings.php
+msgid "Save Settings"
+msgstr "設定を保存"
+
+#: admin/plugin-settings.php
+msgid "Settings have been saved successfully."
+msgstr "設定が正常に保存されました。"
