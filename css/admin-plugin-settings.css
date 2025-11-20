@@ -112,3 +112,40 @@
         border-color: #00a32a !important;
         color: white !important;
     }
+
+    /* アンインストール設定セクション */
+    .noveltool-uninstall-section {
+        background: #fff;
+        padding: 20px;
+        margin: 20px 0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+
+    .noveltool-uninstall-section h2 {
+        margin-top: 0;
+        color: #d63638;
+    }
+
+    .noveltool-warning-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px;
+        margin-top: 10px;
+        background: #fef7f1;
+        border: 2px solid #d63638;
+        border-radius: 4px;
+        color: #d63638;
+    }
+
+    .noveltool-warning-box .dashicons {
+        flex-shrink: 0;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    .noveltool-warning-box strong {
+        font-weight: 600;
+    }

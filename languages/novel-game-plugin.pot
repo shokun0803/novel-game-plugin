@@ -2316,3 +2316,31 @@ msgstr ""
 #: admin/plugin-settings.php:53
 msgid "show_description"
 msgstr ""
+
+#: admin/plugin-settings.php
+msgid "Uninstall Settings"
+msgstr ""
+
+#: admin/plugin-settings.php
+msgid "Delete all data on uninstall"
+msgstr ""
+
+#: admin/plugin-settings.php
+msgid "When enabled, all game data, posts, and settings will be permanently deleted when you uninstall this plugin. This action cannot be undone. Normally, leave this unchecked."
+msgstr ""
+
+#: admin/plugin-settings.php
+msgid "Warning: When this setting is enabled, all games you created will be deleted upon uninstallation."
+msgstr ""
+
+#: admin/plugin-settings.php
+msgid "Save Settings"
+msgstr ""
+
+#: admin/plugin-settings.php
+msgid "Settings have been saved successfully."
+msgstr ""
+
+#: admin/plugin-settings.php
+msgid "Are you sure you want to delete all data on uninstall? This action cannot be undone."
+msgstr ""
