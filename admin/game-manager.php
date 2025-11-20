@@ -581,7 +581,11 @@ function noveltool_render_game_settings_tab( $game ) {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ( $recent_logs as $log ) : ?>
+                            <?php foreach ( $recent_logs as $log ) : 
+                                // 防御的表示: 古いスキーマや不整合に対応
+                                $scenes_count = isset( $log['scenes'] ) ? intval( $log['scenes'] ) : ( isset( $log['scenes_count'] ) ? intval( $log['scenes_count'] ) : 0 );
+                                $flags_count = isset( $log['flags'] ) ? intval( $log['flags'] ) : ( isset( $log['flags_count'] ) ? intval( $log['flags_count'] ) : 0 );
+                            ?>
                                 <tr>
                                     <td>
                                         <?php
@@ -595,8 +599,8 @@ function noveltool_render_game_settings_tab( $game ) {
                                         ?>
                                     </td>
                                     <td><?php echo esc_html( $log['game_title'] ); ?></td>
-                                    <td><?php echo esc_html( $log['scenes'] ); ?></td>
-                                    <td><?php echo esc_html( $log['flags'] ); ?></td>
+                                    <td><?php echo esc_html( $scenes_count ); ?></td>
+                                    <td><?php echo esc_html( $flags_count ); ?></td>
                                     <td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $log['date'] ) ) ); ?></td>
                                 </tr>
                             <?php endforeach; ?>

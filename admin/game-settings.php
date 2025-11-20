@@ -474,7 +474,7 @@ function noveltool_update_scenes_game_title( $old_title, $new_title ) {
 /**
  * エクスポート/インポート操作の履歴を記録
  *
- * 保存されるキー: type, game_title, date, scenes, flags
+ * 保存されるキー名と型: type (string), game_title (string), date (string), scenes (int), flags (int)
  *
  * @param string $type 操作タイプ ('export' または 'import')
  * @param string $game_title ゲームタイトル
@@ -489,7 +489,7 @@ function noveltool_log_transfer_operation( $type, $game_title, $scenes, $flags )
         $logs = array();
     }
     
-    // 新しいログエントリを追加
+    // 新しいログエントリを追加（型保証）
     $logs[] = array(
         'type'       => sanitize_text_field( $type ),
         'game_title' => sanitize_text_field( $game_title ),
@@ -851,6 +851,7 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
     $imported_scenes = 0;
     $old_post_id_to_new_map = array();
     $first_scene_post_id = null; // 画像ダウンロード時の親関連付け用
+    $image_download_failures = 0; // 画像ダウンロード失敗件数
     
     foreach ( $import_data['scenes'] as $scene_index => $scene_data ) {
         // 大規模データ対応: タイムアウト防止
@@ -925,7 +926,8 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
                         if ( ! is_wp_error( $downloaded_url ) ) {
                             $meta_value = $downloaded_url;
                         } else {
-                            // 失敗ログ記録
+                            // 失敗ログ記録とカウント
+                            $image_download_failures++;
                             error_log( sprintf( '[noveltool] Image download failed for URL: %s, reason: %s', $meta_value, $downloaded_url->get_error_message() ) );
                         }
                         // 失敗時は元URLをそのまま使用
@@ -1002,12 +1004,13 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
     noveltool_log_transfer_operation( 'import', $new_game_data['title'], $imported_scenes, isset( $import_data['flags'] ) ? count( $import_data['flags'] ) : 0 );
 
     return array(
-        'success'          => true,
-        'game_id'          => $game_id,
-        'imported_scenes'  => $imported_scenes,
-        'remapped_choices' => $remapped_choices,
-        'original_title'   => $original_title,
-        'renamed'          => $title !== $original_title,
+        'success'                 => true,
+        'game_id'                 => $game_id,
+        'imported_scenes'         => $imported_scenes,
+        'remapped_choices'        => $remapped_choices,
+        'original_title'          => $original_title,
+        'renamed'                 => $title !== $original_title,
+        'image_download_failures' => $image_download_failures,
     );
 }
 
@@ -1253,13 +1256,22 @@ function noveltool_ajax_import_game() {
             $result['original_title']
         );
     }
+    
+    // 画像ダウンロード失敗件数を通知
+    if ( isset( $result['image_download_failures'] ) && $result['image_download_failures'] > 0 ) {
+        $message .= ' ' . sprintf(
+            __( 'Note: %d image(s) failed to download.', 'novel-game-plugin' ),
+            $result['image_download_failures']
+        );
+    }
 
     wp_send_json_success( array(
-        'message'         => $message,
-        'game_id'         => $result['game_id'],
-        'imported_scenes' => $result['imported_scenes'],
-        'remapped_choices' => isset( $result['remapped_choices'] ) ? $result['remapped_choices'] : 0,
-        'renamed'         => isset( $result['renamed'] ) ? $result['renamed'] : false,
+        'message'                 => $message,
+        'game_id'                 => $result['game_id'],
+        'imported_scenes'         => $result['imported_scenes'],
+        'remapped_choices'        => isset( $result['remapped_choices'] ) ? $result['remapped_choices'] : 0,
+        'renamed'                 => isset( $result['renamed'] ) ? $result['renamed'] : false,
+        'image_download_failures' => isset( $result['image_download_failures'] ) ? $result['image_download_failures'] : 0,
     ) );
 }
 add_action( 'wp_ajax_noveltool_import_game', 'noveltool_ajax_import_game' );
