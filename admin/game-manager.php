@@ -595,8 +595,8 @@ function noveltool_render_game_settings_tab( $game ) {
                                         ?>
                                     </td>
                                     <td><?php echo esc_html( $log['game_title'] ); ?></td>
-                                    <td><?php echo esc_html( $log['scenes_count'] ); ?></td>
-                                    <td><?php echo esc_html( $log['flags_count'] ); ?></td>
+                                    <td><?php echo esc_html( $log['scenes'] ); ?></td>
+                                    <td><?php echo esc_html( $log['flags'] ); ?></td>
                                     <td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $log['date'] ) ) ); ?></td>
                                 </tr>
                             <?php endforeach; ?>

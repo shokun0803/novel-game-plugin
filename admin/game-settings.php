@@ -474,6 +474,8 @@ function noveltool_update_scenes_game_title( $old_title, $new_title ) {
 /**
  * エクスポート/インポート操作の履歴を記録
  *
+ * 保存されるキー: type, game_title, date, scenes, flags
+ *
  * @param string $type 操作タイプ ('export' または 'import')
  * @param string $game_title ゲームタイトル
  * @param int    $scenes シーン数
@@ -999,9 +1001,6 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
     // インポート履歴を記録
     noveltool_log_transfer_operation( 'import', $new_game_data['title'], $imported_scenes, isset( $import_data['flags'] ) ? count( $import_data['flags'] ) : 0 );
 
-    // エクスポート/インポート履歴の記録
-    noveltool_log_transfer_operation( 'import', $new_game_data['title'], $imported_scenes, isset( $import_data['flags'] ) ? count( $import_data['flags'] ) : 0 );
-
     return array(
         'success'          => true,
         'game_id'          => $game_id,
@@ -1013,16 +1012,9 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
 }
 
 /**
- * 画像URLからメディアライブラリにダウンロード
+ * 外部画像URLをメディアライブラリにダウンロード
  *
  * セキュリティ強化: URLスキーム検証、Content-Type確認、画像検証を実施
- *
- * @param string $image_url 画像URL
- * @return string|WP_Error ダウンロードされた画像のURLまたはエラー
- * @since 1.3.0
- */
-/**
- * 外部画像URLをメディアライブラリにダウンロード
  *
  * @param string $image_url ダウンロードする画像のURL
  * @param int    $parent_post_id 親投稿ID（画像を関連付ける投稿）
