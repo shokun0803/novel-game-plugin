@@ -489,8 +489,10 @@ function noveltool_export_game_data( $game_id ) {
     $scenes = noveltool_get_posts_by_game_title( $game['title'] );
     $scenes_data = array();
 
-    foreach ( $scenes as $scene ) {
+    // シーンごとに安定識別子を付与
+    foreach ( $scenes as $i => $scene ) {
         $scene_meta = array(
+            'original_index'          => $i,
             'title'                   => $scene->post_title,
             'background_image'        => get_post_meta( $scene->ID, '_background_image', true ),
             'character_image'         => get_post_meta( $scene->ID, '_character_image', true ),
@@ -519,17 +521,21 @@ function noveltool_export_game_data( $game_id ) {
 
     // エクスポートデータの構築
     $export_data = array(
-        'version'      => '1.0',
-        'export_date'  => current_time( 'mysql' ),
-        'game'         => array(
+        'version'        => '1.0',
+        'plugin_version' => NOVEL_GAME_PLUGIN_VERSION,
+        'export_date'    => current_time( 'mysql' ),
+        'game'           => array(
             'title'         => $game['title'],
             'description'   => isset( $game['description'] ) ? $game['description'] : '',
             'title_image'   => isset( $game['title_image'] ) ? $game['title_image'] : '',
             'game_over_text' => isset( $game['game_over_text'] ) ? $game['game_over_text'] : 'Game Over',
         ),
-        'flags'        => $flag_master,
-        'scenes'       => $scenes_data,
+        'flags'          => $flag_master,
+        'scenes'         => $scenes_data,
     );
+
+    // エクスポート履歴を記録
+    noveltool_log_transfer_operation( 'export', $game['title'], count( $scenes_data ), count( $flag_master ) );
 
     return $export_data;
 }
