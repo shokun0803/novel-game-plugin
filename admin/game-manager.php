@@ -518,8 +518,9 @@ function noveltool_render_game_settings_tab( $game ) {
                 <p>
                     <button type="button" 
                             class="button button-primary noveltool-export-button"
-                            data-game-id="<?php echo esc_attr( $editing_game['id'] ); ?>">
-                        <span class="dashicons dashicons-download"></span>
+                            data-game-id="<?php echo esc_attr( $editing_game['id'] ); ?>"
+                            aria-label="<?php esc_attr_e( 'Export game data as JSON file', 'novel-game-plugin' ); ?>">
+                        <span class="dashicons dashicons-download" aria-hidden="true"></span>
                         <?php esc_html_e( 'Export Data', 'novel-game-plugin' ); ?>
                     </button>
                 </p>
@@ -532,7 +533,8 @@ function noveltool_render_game_settings_tab( $game ) {
                             <input type="file" 
                                    id="noveltool-import-file" 
                                    accept=".json,application/json" 
-                                   class="noveltool-import-file" />
+                                   class="noveltool-import-file"
+                                   aria-label="<?php esc_attr_e( 'Select JSON file to import', 'novel-game-plugin' ); ?>" />
                         </label>
                     </p>
                     <p>
@@ -546,8 +548,9 @@ function noveltool_render_game_settings_tab( $game ) {
                     <p>
                         <button type="button" 
                                 class="button button-primary noveltool-import-button"
-                                disabled>
-                            <span class="dashicons dashicons-upload"></span>
+                                disabled
+                                aria-label="<?php esc_attr_e( 'Import game data from selected file', 'novel-game-plugin' ); ?>">
+                            <span class="dashicons dashicons-upload" aria-hidden="true"></span>
                             <?php esc_html_e( 'Import Data', 'novel-game-plugin' ); ?>
                         </button>
                     </p>
@@ -570,14 +573,14 @@ function noveltool_render_game_settings_tab( $game ) {
                     // 最新10件のみ表示
                     $recent_logs = array_slice( array_reverse( $transfer_logs ), 0, 10 );
                     ?>
-                    <table class="wp-list-table widefat fixed striped">
+                    <table class="wp-list-table widefat fixed striped" aria-label="<?php esc_attr_e( 'Export and Import History', 'novel-game-plugin' ); ?>">
                         <thead>
                             <tr>
-                                <th><?php esc_html_e( 'Operation', 'novel-game-plugin' ); ?></th>
-                                <th><?php esc_html_e( 'Game Title', 'novel-game-plugin' ); ?></th>
-                                <th><?php esc_html_e( 'Scenes', 'novel-game-plugin' ); ?></th>
-                                <th><?php esc_html_e( 'Flags', 'novel-game-plugin' ); ?></th>
-                                <th><?php esc_html_e( 'Date/Time', 'novel-game-plugin' ); ?></th>
+                                <th aria-label="<?php esc_attr_e( 'Operation Type', 'novel-game-plugin' ); ?>"><?php esc_html_e( 'Operation', 'novel-game-plugin' ); ?></th>
+                                <th aria-label="<?php esc_attr_e( 'Game Title', 'novel-game-plugin' ); ?>"><?php esc_html_e( 'Game Title', 'novel-game-plugin' ); ?></th>
+                                <th aria-label="<?php esc_attr_e( 'Number of Scenes', 'novel-game-plugin' ); ?>"><?php esc_html_e( 'Scenes', 'novel-game-plugin' ); ?></th>
+                                <th aria-label="<?php esc_attr_e( 'Number of Flags', 'novel-game-plugin' ); ?>"><?php esc_html_e( 'Flags', 'novel-game-plugin' ); ?></th>
+                                <th aria-label="<?php esc_attr_e( 'Operation Date and Time', 'novel-game-plugin' ); ?>"><?php esc_html_e( 'Date/Time', 'novel-game-plugin' ); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -590,10 +593,12 @@ function noveltool_render_game_settings_tab( $game ) {
                                     <td>
                                         <?php
                                         if ( $log['type'] === 'export' ) {
-                                            echo '<span class="dashicons dashicons-download"></span> ';
+                                            echo '<span class="dashicons dashicons-download" aria-hidden="true"></span>';
+                                            echo '<span class="screen-reader-text">' . esc_html__( 'Export Operation', 'novel-game-plugin' ) . '</span> ';
                                             esc_html_e( 'Export', 'novel-game-plugin' );
                                         } else {
-                                            echo '<span class="dashicons dashicons-upload"></span> ';
+                                            echo '<span class="dashicons dashicons-upload" aria-hidden="true"></span>';
+                                            echo '<span class="screen-reader-text">' . esc_html__( 'Import Operation', 'novel-game-plugin' ) . '</span> ';
                                             esc_html_e( 'Import', 'novel-game-plugin' );
                                         }
                                         ?>
@@ -660,17 +665,18 @@ function noveltool_game_manager_admin_scripts( $hook ) {
         'noveltool-export-import',
         'noveltoolExportImport',
         array(
-            'exportNonce'    => wp_create_nonce( 'noveltool_export_game' ),
-            'importNonce'    => wp_create_nonce( 'noveltool_import_game' ),
-            'myGamesUrl'     => admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ),
-            'exportButton'   => __( 'Export Data', 'novel-game-plugin' ),
-            'exporting'      => __( 'Exporting...', 'novel-game-plugin' ),
-            'exportSuccess'  => __( 'Game data exported successfully.', 'novel-game-plugin' ),
-            'exportError'    => __( 'Failed to export game data.', 'novel-game-plugin' ),
-            'importSuccess'  => __( 'Game data imported successfully.', 'novel-game-plugin' ),
-            'importError'    => __( 'Failed to import game data.', 'novel-game-plugin' ),
-            'noFileSelected' => __( 'Please select a file to import.', 'novel-game-plugin' ),
-            'fileTooLarge'   => __( 'File size is too large. Maximum 10MB allowed.', 'novel-game-plugin' ),
+            'exportNonce'             => wp_create_nonce( 'noveltool_export_game' ),
+            'importNonce'             => wp_create_nonce( 'noveltool_import_game' ),
+            'myGamesUrl'              => admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ),
+            'exportButton'            => __( 'Export Data', 'novel-game-plugin' ),
+            'exporting'               => __( 'Exporting...', 'novel-game-plugin' ),
+            'exportSuccess'           => __( 'Game data exported successfully.', 'novel-game-plugin' ),
+            'exportError'             => __( 'Failed to export game data.', 'novel-game-plugin' ),
+            'importSuccess'           => __( 'Game data imported successfully.', 'novel-game-plugin' ),
+            'importError'             => __( 'Failed to import game data.', 'novel-game-plugin' ),
+            'noFileSelected'          => __( 'Please select a file to import.', 'novel-game-plugin' ),
+            'fileTooLarge'            => __( 'File size is too large. Maximum 10MB allowed.', 'novel-game-plugin' ),
+            'imageDownloadFailures'   => __( 'Note: %d image(s) failed to download.', 'novel-game-plugin' ),
         )
     );
 }

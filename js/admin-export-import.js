@@ -106,7 +106,14 @@
                 contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        showNotice('success', response.data.message);
+                        var message = response.data.message;
+                        
+                        // 画像ダウンロード失敗件数を追加
+                        if (response.data.image_download_failures && response.data.image_download_failures > 0) {
+                            message += ' ' + noveltoolExportImport.imageDownloadFailures.replace('%d', response.data.image_download_failures);
+                        }
+                        
+                        showNotice('success', message);
                         
                         // ファイル入力をクリア
                         fileInput.value = '';
