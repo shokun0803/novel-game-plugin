@@ -2712,3 +2712,7 @@ msgstr "設定を保存"
 #: admin/plugin-settings.php
 msgid "Settings have been saved successfully."
 msgstr "設定が正常に保存されました。"
+
+#: admin/plugin-settings.php
+msgid "Are you sure you want to delete all data on uninstall? This action cannot be undone."
+msgstr "本当にアンインストール時にすべてのデータを削除しますか？この操作は元に戻せません。"

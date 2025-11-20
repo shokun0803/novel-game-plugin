@@ -2340,3 +2340,7 @@ msgstr ""
 #: admin/plugin-settings.php
 msgid "Settings have been saved successfully."
 msgstr ""
+
+#: admin/plugin-settings.php
+msgid "Are you sure you want to delete all data on uninstall? This action cannot be undone."
+msgstr ""

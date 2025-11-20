@@ -229,6 +229,15 @@ function noveltool_plugin_settings_admin_scripts( $hook ) {
                     }, 2000);
                 });
             });
+            
+            // アンインストールデータ削除オプションの確認ダイアログ
+            $('#noveltool_delete_data_on_uninstall').on('change', function() {
+                if ($(this).is(':checked')) {
+                    if (!confirm('" . esc_js( __( 'Are you sure you want to delete all data on uninstall? This action cannot be undone.', 'novel-game-plugin' ) ) . "')) {
+                        $(this).prop('checked', false);
+                    }
+                }
+            });
         });"
     );
 }
