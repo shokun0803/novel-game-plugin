@@ -50,7 +50,7 @@ function noveltool_admin_post_add_game() {
     // ゲーム情報の取得とバリデーション
     $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
     $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
-    $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
+    $game_title_image = isset( $_POST['game_title_image'] ) ? esc_url_raw( wp_unslash( $_POST['game_title_image'] ) ) : '';
     $game_over_text = isset( $_POST['game_over_text'] ) ? sanitize_text_field( wp_unslash( $_POST['game_over_text'] ) ) : 'Game Over';
 
     if ( empty( $game_title ) ) {
@@ -108,7 +108,7 @@ function noveltool_admin_post_update_game() {
     $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
     $game_title = isset( $_POST['game_title'] ) ? sanitize_text_field( wp_unslash( $_POST['game_title'] ) ) : '';
     $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
-    $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
+    $game_title_image = isset( $_POST['game_title_image'] ) ? esc_url_raw( wp_unslash( $_POST['game_title_image'] ) ) : '';
     $game_over_text = isset( $_POST['game_over_text'] ) ? sanitize_text_field( wp_unslash( $_POST['game_over_text'] ) ) : 'Game Over';
     $old_title = isset( $_POST['old_title'] ) ? sanitize_text_field( wp_unslash( $_POST['old_title'] ) ) : '';
 
@@ -472,6 +472,39 @@ function noveltool_update_scenes_game_title( $old_title, $new_title ) {
 }
 
 /**
+ * エクスポート/インポート操作の履歴を記録
+ *
+ * @param string $type 操作タイプ ('export' または 'import')
+ * @param string $game_title ゲームタイトル
+ * @param int    $scenes シーン数
+ * @param int    $flags フラグ数
+ * @since 1.3.0
+ */
+function noveltool_log_transfer_operation( $type, $game_title, $scenes, $flags ) {
+    $logs = get_option( 'noveltool_game_transfer_logs', array() );
+    
+    if ( ! is_array( $logs ) ) {
+        $logs = array();
+    }
+    
+    // 新しいログエントリを追加
+    $logs[] = array(
+        'type'       => sanitize_text_field( $type ),
+        'game_title' => sanitize_text_field( $game_title ),
+        'date'       => current_time( 'mysql' ),
+        'scenes'     => intval( $scenes ),
+        'flags'      => intval( $flags ),
+    );
+    
+    // 最大100件まで保持
+    if ( count( $logs ) > 100 ) {
+        $logs = array_slice( $logs, -100 );
+    }
+    
+    update_option( 'noveltool_game_transfer_logs', $logs );
+}
+
+/**
  * ゲームデータをエクスポート
  *
  * @param int $game_id ゲームID
@@ -493,6 +526,7 @@ function noveltool_export_game_data( $game_id ) {
     foreach ( $scenes as $i => $scene ) {
         $scene_meta = array(
             'original_index'          => $i,
+            'original_post_id'        => $scene->ID,
             'title'                   => $scene->post_title,
             'background_image'        => get_post_meta( $scene->ID, '_background_image', true ),
             'character_image'         => get_post_meta( $scene->ID, '_character_image', true ),
@@ -721,9 +755,9 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
         noveltool_save_game_flag_master( $new_game_data['title'], $import_data['flags'] );
     }
 
-    // シーンデータの保存（フェーズ1: シーン挿入とインデックスマッピング）
+    // シーンデータの保存（フェーズ1: シーン挿入とマッピング構築）
     $imported_scenes = 0;
-    $index_to_post_id_map = array();
+    $old_post_id_to_new_map = array();
     
     foreach ( $import_data['scenes'] as $scene_index => $scene_data ) {
         // シーンの作成
@@ -738,9 +772,11 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
             continue;
         }
         
-        // original_indexが存在する場合はそれを使用、なければ配列インデックスを使用
-        $original_index = isset( $scene_data['original_index'] ) ? intval( $scene_data['original_index'] ) : $scene_index;
-        $index_to_post_id_map[ $original_index ] = $post_id;
+        // original_post_idが存在する場合は旧ID→新IDマップを構築
+        if ( isset( $scene_data['original_post_id'] ) ) {
+            $old_post_id = intval( $scene_data['original_post_id'] );
+            $old_post_id_to_new_map[ $old_post_id ] = $post_id;
+        }
 
         // ゲームタイトルを設定
         update_post_meta( $post_id, '_game_title', $new_game_data['title'] );
@@ -818,11 +854,11 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
         $imported_scenes++;
     }
     
-    // フェーズ2: 選択肢ID再マッピング処理
+    // フェーズ2: 選択肢ID再マッピング処理（旧post_id→新post_idベース）
     $remapped_choices = 0;
     
-    foreach ( $index_to_post_id_map as $original_index => $post_id ) {
-        $choices_meta = get_post_meta( $post_id, '_choices', true );
+    foreach ( $old_post_id_to_new_map as $old_id => $new_post_id ) {
+        $choices_meta = get_post_meta( $new_post_id, '_choices', true );
         
         if ( empty( $choices_meta ) ) {
             continue;
@@ -831,30 +867,33 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
         // JSON形式の選択肢を処理
         $json_choices = json_decode( $choices_meta, true );
         if ( json_last_error() === JSON_ERROR_NONE && is_array( $json_choices ) ) {
-            // JSON形式の選択肢: nextをマップで置換
+            // JSON形式の選択肢: nextを旧post_id→新post_idマップで置換
             $modified = false;
             
             foreach ( $json_choices as &$choice ) {
                 if ( isset( $choice['next'] ) && is_numeric( $choice['next'] ) ) {
                     $old_next = intval( $choice['next'] );
                     
-                    // マップ内でold_nextをキーとして検索
-                    if ( isset( $index_to_post_id_map[ $old_next ] ) ) {
-                        $choice['next'] = $index_to_post_id_map[ $old_next ];
+                    // マップ内で旧post_idをキーとして検索
+                    if ( isset( $old_post_id_to_new_map[ $old_next ] ) ) {
+                        $choice['next'] = $old_post_id_to_new_map[ $old_next ];
                         $modified = true;
                     } else {
                         // マップに存在しない場合は警告ログ
-                        error_log( sprintf( '[noveltool] Warning: Choice ID remapping failed for scene %d, original next=%d not found in index map', $post_id, $old_next ) );
+                        error_log( sprintf( '[noveltool] Warning: Choice ID remapping failed for scene %d, original next=%d not found in post ID map', $new_post_id, $old_next ) );
                     }
                 }
             }
             
             if ( $modified ) {
-                update_post_meta( $post_id, '_choices', wp_json_encode( $json_choices, JSON_UNESCAPED_UNICODE ) );
+                update_post_meta( $new_post_id, '_choices', wp_json_encode( $json_choices, JSON_UNESCAPED_UNICODE ) );
                 $remapped_choices++;
             }
         }
     }
+
+    // インポート履歴を記録
+    noveltool_log_transfer_operation( 'import', $new_game_data['title'], $imported_scenes, isset( $import_data['flags'] ) ? count( $import_data['flags'] ) : 0 );
 
     return array(
         'success'          => true,
@@ -1072,10 +1111,15 @@ function noveltool_ajax_import_game() {
         wp_send_json_error( array( 'message' => __( 'Failed to read file.', 'novel-game-plugin' ) ) );
     }
 
-    // JSONデコード
+    // JSONデコードと構造検証
     $import_data = json_decode( $file_content, true );
     if ( json_last_error() !== JSON_ERROR_NONE ) {
-        wp_send_json_error( array( 'message' => __( 'Invalid JSON format.', 'novel-game-plugin' ) ) );
+        wp_send_json_error( array( 'message' => __( 'Invalid JSON encoding.', 'novel-game-plugin' ) ) );
+    }
+    
+    // JSON構造の検証
+    if ( ! is_array( $import_data ) || ! isset( $import_data['game'] ) || ! isset( $import_data['scenes'] ) ) {
+        wp_send_json_error( array( 'message' => __( 'Missing required "game" or "scenes" keys.', 'novel-game-plugin' ) ) );
     }
 
     // 画像ダウンロードオプション
