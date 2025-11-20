@@ -541,6 +541,134 @@ function noveltool_export_game_data( $game_id ) {
 }
 
 /**
+ * JSON形式のメタフィールドをサニタイズ
+ *
+ * @param mixed  $value メタ値
+ * @param string $meta_key メタキー
+ * @return string|array サニタイズ済みの値
+ * @since 1.3.0
+ */
+function noveltool_sanitize_json_meta_field( $value, $meta_key ) {
+    // 既にJSON文字列の場合はデコード
+    if ( is_string( $value ) ) {
+        $decoded = json_decode( $value, true );
+        if ( json_last_error() === JSON_ERROR_NONE ) {
+            $value = $decoded;
+        }
+    }
+    
+    if ( ! is_array( $value ) ) {
+        return '';
+    }
+    
+    // メタキーに応じたサニタイズ
+    switch ( $meta_key ) {
+        case '_dialogue_texts':
+            // 各要素をテキストとしてサニタイズ
+            return wp_json_encode( array_map( 'sanitize_text_field', $value ), JSON_UNESCAPED_UNICODE );
+            
+        case '_dialogue_speakers':
+            // 各要素をテキストとしてサニタイズ
+            return wp_json_encode( array_map( 'sanitize_text_field', $value ), JSON_UNESCAPED_UNICODE );
+            
+        case '_dialogue_backgrounds':
+            // URL要素はesc_url_raw、それ以外はsanitize_text_field
+            $sanitized = array();
+            foreach ( $value as $item ) {
+                if ( filter_var( $item, FILTER_VALIDATE_URL ) ) {
+                    $sanitized[] = esc_url_raw( $item );
+                } else {
+                    $sanitized[] = sanitize_text_field( $item );
+                }
+            }
+            return wp_json_encode( $sanitized, JSON_UNESCAPED_UNICODE );
+            
+        case '_dialogue_flag_conditions':
+            // 各条件の要素をサニタイズ
+            $sanitized = array();
+            foreach ( $value as $condition ) {
+                if ( ! is_array( $condition ) ) {
+                    continue;
+                }
+                $sanitized_condition = array();
+                if ( isset( $condition['conditions'] ) && is_array( $condition['conditions'] ) ) {
+                    $sanitized_condition['conditions'] = noveltool_sanitize_flag_conditions( $condition['conditions'] );
+                }
+                if ( isset( $condition['logic'] ) ) {
+                    $sanitized_condition['logic'] = sanitize_text_field( $condition['logic'] );
+                }
+                if ( isset( $condition['displayMode'] ) ) {
+                    $sanitized_condition['displayMode'] = sanitize_text_field( $condition['displayMode'] );
+                }
+                if ( isset( $condition['alternativeText'] ) ) {
+                    $sanitized_condition['alternativeText'] = sanitize_text_field( $condition['alternativeText'] );
+                }
+                $sanitized[] = $sanitized_condition;
+            }
+            return wp_json_encode( $sanitized, JSON_UNESCAPED_UNICODE );
+            
+        case '_choices':
+            // 選択肢の各フィールドをサニタイズ
+            $sanitized = array();
+            foreach ( $value as $choice ) {
+                if ( ! is_array( $choice ) ) {
+                    continue;
+                }
+                
+                $sanitized_choice = array(
+                    'text' => isset( $choice['text'] ) ? sanitize_text_field( $choice['text'] ) : '',
+                    'next' => isset( $choice['next'] ) ? intval( $choice['next'] ) : 0,
+                );
+                
+                if ( isset( $choice['flagConditions'] ) && is_array( $choice['flagConditions'] ) ) {
+                    $sanitized_choice['flagConditions'] = noveltool_sanitize_flag_conditions( $choice['flagConditions'] );
+                }
+                
+                if ( isset( $choice['flagConditionLogic'] ) ) {
+                    $sanitized_choice['flagConditionLogic'] = sanitize_text_field( $choice['flagConditionLogic'] );
+                }
+                
+                if ( isset( $choice['setFlags'] ) && is_array( $choice['setFlags'] ) ) {
+                    $sanitized_choice['setFlags'] = noveltool_sanitize_flag_conditions( $choice['setFlags'] );
+                }
+                
+                $sanitized[] = $sanitized_choice;
+            }
+            return wp_json_encode( $sanitized, JSON_UNESCAPED_UNICODE );
+            
+        default:
+            return wp_json_encode( $value, JSON_UNESCAPED_UNICODE );
+    }
+}
+
+/**
+ * フラグ条件配列をサニタイズ
+ *
+ * @param array $conditions フラグ条件配列
+ * @return array サニタイズ済みの条件配列
+ * @since 1.3.0
+ */
+function noveltool_sanitize_flag_conditions( $conditions ) {
+    if ( ! is_array( $conditions ) ) {
+        return array();
+    }
+    
+    $sanitized = array();
+    foreach ( $conditions as $condition ) {
+        if ( ! is_array( $condition ) || ! isset( $condition['name'] ) ) {
+            continue;
+        }
+        
+        $sanitized[] = array(
+            'name'  => sanitize_text_field( $condition['name'] ),
+            'state' => isset( $condition['state'] ) ? (bool) $condition['state'] : true,
+        );
+    }
+    
+    return $sanitized;
+}
+
+/**
  * ゲームデータをインポート
  *
  * @param array $import_data インポートデータ
@@ -571,7 +699,7 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
     $new_game_data = array(
         'title'         => sanitize_text_field( $game_data['title'] ),
         'description'   => isset( $game_data['description'] ) ? sanitize_textarea_field( $game_data['description'] ) : '',
-        'title_image'   => isset( $game_data['title_image'] ) ? sanitize_url( $game_data['title_image'] ) : '',
+        'title_image'   => isset( $game_data['title_image'] ) ? esc_url_raw( $game_data['title_image'] ) : '',
         'game_over_text' => isset( $game_data['game_over_text'] ) ? sanitize_text_field( $game_data['game_over_text'] ) : 'Game Over',
     );
 
@@ -593,9 +721,11 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
         noveltool_save_game_flag_master( $new_game_data['title'], $import_data['flags'] );
     }
 
-    // シーンデータの保存
+    // シーンデータの保存（フェーズ1: シーン挿入とインデックスマッピング）
     $imported_scenes = 0;
-    foreach ( $import_data['scenes'] as $scene_data ) {
+    $index_to_post_id_map = array();
+    
+    foreach ( $import_data['scenes'] as $scene_index => $scene_data ) {
         // シーンの作成
         $post_data = array(
             'post_type'   => 'novel_game',
@@ -607,11 +737,15 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
         if ( is_wp_error( $post_id ) ) {
             continue;
         }
+        
+        // original_indexが存在する場合はそれを使用、なければ配列インデックスを使用
+        $original_index = isset( $scene_data['original_index'] ) ? intval( $scene_data['original_index'] ) : $scene_index;
+        $index_to_post_id_map[ $original_index ] = $post_id;
 
         // ゲームタイトルを設定
         update_post_meta( $post_id, '_game_title', $new_game_data['title'] );
 
-        // 各メタデータの保存
+        // 各メタデータの保存（サニタイズ強化）
         $meta_fields = array(
             'background_image'        => '_background_image',
             'character_image'         => '_character_image',
@@ -633,35 +767,135 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
         );
 
         foreach ( $meta_fields as $field_name => $meta_key ) {
-            if ( isset( $scene_data[ $field_name ] ) ) {
-                $meta_value = $scene_data[ $field_name ];
-                
+            if ( ! isset( $scene_data[ $field_name ] ) ) {
+                continue;
+            }
+            
+            $meta_value = $scene_data[ $field_name ];
+            
+            // メタデータサニタイズ強化
+            $image_meta_keys = array( '_background_image', '_character_image', '_character_left', '_character_center', '_character_right' );
+            
+            if ( in_array( $meta_key, $image_meta_keys, true ) ) {
                 // 画像URLの処理
-                if ( $download_images && in_array( $meta_key, array( '_background_image', '_character_image', '_character_left', '_character_center', '_character_right' ), true ) ) {
-                    if ( ! empty( $meta_value ) && filter_var( $meta_value, FILTER_VALIDATE_URL ) ) {
+                if ( ! empty( $meta_value ) && filter_var( $meta_value, FILTER_VALIDATE_URL ) ) {
+                    $meta_value = esc_url_raw( $meta_value );
+                    
+                    if ( $download_images ) {
                         $downloaded_url = noveltool_download_image_to_media_library( $meta_value );
                         if ( ! is_wp_error( $downloaded_url ) ) {
                             $meta_value = $downloaded_url;
                         }
+                        // 失敗時は元URLをそのまま使用
+                    }
+                } else {
+                    $meta_value = '';
+                }
+            } elseif ( $meta_key === '_is_ending' ) {
+                // Boolean型
+                $meta_value = (bool) $meta_value;
+            } elseif ( in_array( $meta_key, array( '_dialogue_texts', '_dialogue_speakers', '_dialogue_backgrounds', '_dialogue_flag_conditions', '_choices' ), true ) ) {
+                // JSON配列/オブジェクト: デコード→サニタイズ→エンコード
+                $meta_value = noveltool_sanitize_json_meta_field( $meta_value, $meta_key );
+            } elseif ( in_array( $meta_key, array( '_character_left_name', '_character_center_name', '_character_right_name', '_dialogue_text', '_ending_text' ), true ) ) {
+                // テキストフィールド
+                $meta_value = sanitize_text_field( $meta_value );
+            } elseif ( $meta_key === '_scene_arrival_flags' ) {
+                // 配列フィールド
+                if ( is_array( $meta_value ) ) {
+                    $meta_value = array_map( 'sanitize_text_field', $meta_value );
+                } elseif ( is_string( $meta_value ) ) {
+                    $decoded = json_decode( $meta_value, true );
+                    if ( is_array( $decoded ) ) {
+                        $meta_value = array_map( 'sanitize_text_field', $decoded );
                     }
                 }
-                
-                update_post_meta( $post_id, $meta_key, $meta_value );
             }
+            
+            update_post_meta( $post_id, $meta_key, $meta_value );
         }
 
         $imported_scenes++;
     }
+    
+    // フェーズ2: 選択肢ID再マッピング処理
+    $remapped_choices = 0;
+    
+    foreach ( $index_to_post_id_map as $original_index => $post_id ) {
+        $choices_meta = get_post_meta( $post_id, '_choices', true );
+        
+        if ( empty( $choices_meta ) ) {
+            continue;
+        }
+        
+        // JSON形式を試行
+        $json_choices = json_decode( $choices_meta, true );
+        if ( json_last_error() === JSON_ERROR_NONE && is_array( $json_choices ) ) {
+            // JSON形式の選択肢: nextをマップで置換
+            $modified = false;
+            
+            foreach ( $json_choices as &$choice ) {
+                if ( isset( $choice['next'] ) && is_numeric( $choice['next'] ) ) {
+                    $old_next = intval( $choice['next'] );
+                    
+                    // マップ内でold_nextをキーとして検索
+                    if ( isset( $index_to_post_id_map[ $old_next ] ) ) {
+                        $choice['next'] = $index_to_post_id_map[ $old_next ];
+                        $modified = true;
+                    } else {
+                        // マップに存在しない場合は警告ログ
+                        error_log( sprintf( '[noveltool] Warning: Choice ID remapping failed for scene %d, original next=%d not found in index map', $post_id, $old_next ) );
+                    }
+                }
+            }
+            
+            if ( $modified ) {
+                update_post_meta( $post_id, '_choices', wp_json_encode( $json_choices, JSON_UNESCAPED_UNICODE ) );
+                $remapped_choices++;
+            }
+        } else {
+            // レガシー形式（"テキスト | 投稿ID"）: 行を再構築
+            $lines = explode( "\n", $choices_meta );
+            $modified = false;
+            $new_lines = array();
+            
+            foreach ( $lines as $line ) {
+                $parts = explode( '|', $line, 2 );
+                if ( count( $parts ) === 2 ) {
+                    $text = trim( $parts[0] );
+                    $old_id = intval( trim( $parts[1] ) );
+                    
+                    if ( isset( $index_to_post_id_map[ $old_id ] ) ) {
+                        $new_lines[] = $text . ' | ' . $index_to_post_id_map[ $old_id ];
+                        $modified = true;
+                    } else {
+                        $new_lines[] = $line;
+                        error_log( sprintf( '[noveltool] Warning: Legacy choice ID remapping failed for scene %d, original ID=%d not found in index map', $post_id, $old_id ) );
+                    }
+                } else {
+                    $new_lines[] = $line;
+                }
+            }
+            
+            if ( $modified ) {
+                update_post_meta( $post_id, '_choices', implode( "\n", $new_lines ) );
+                $remapped_choices++;
+            }
+        }
+    }
 
     return array(
-        'success'         => true,
-        'game_id'         => $game_id,
-        'imported_scenes' => $imported_scenes,
+        'success'          => true,
+        'game_id'          => $game_id,
+        'imported_scenes'  => $imported_scenes,
+        'remapped_choices' => $remapped_choices,
     );
 }
 
 /**
  * 画像URLからメディアライブラリにダウンロード
+ *
+ * セキュリティ強化: URLスキーム検証、Content-Type確認、画像検証を実施
  *
  * @param string $image_url 画像URL
  * @return string|WP_Error ダウンロードされた画像のURLまたはエラー
@@ -671,26 +905,68 @@ function noveltool_download_image_to_media_library( $image_url ) {
     if ( ! filter_var( $image_url, FILTER_VALIDATE_URL ) ) {
         return new WP_Error( 'invalid_url', __( 'Invalid image URL.', 'novel-game-plugin' ) );
     }
+    
+    // URLスキーム検証: httpまたはhttpsのみ許可
+    $parsed_url = wp_parse_url( $image_url );
+    if ( ! isset( $parsed_url['scheme'] ) || ! in_array( $parsed_url['scheme'], array( 'http', 'https' ), true ) ) {
+        error_log( '[noveltool] Image download failed: Invalid URL scheme for ' . $image_url );
+        return new WP_Error( 'invalid_scheme', __( 'Only HTTP/HTTPS URLs are allowed.', 'novel-game-plugin' ) );
+    }
+    
+    // Content-Type事前チェック
+    $response = wp_remote_head( $image_url, array( 'timeout' => 10 ) );
+    if ( is_wp_error( $response ) ) {
+        error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $response->get_error_message() );
+        return $response;
+    }
+    
+    $content_type = wp_remote_retrieve_header( $response, 'content-type' );
+    if ( $content_type && strpos( $content_type, 'image/' ) !== 0 ) {
+        error_log( '[noveltool] Image download failed: Invalid Content-Type for ' . $image_url . ' (got: ' . $content_type . ')' );
+        return new WP_Error( 'invalid_content_type', __( 'URL does not point to an image.', 'novel-game-plugin' ) );
+    }
 
     // WordPress HTTP APIを使用して画像をダウンロード
     require_once ABSPATH . 'wp-admin/includes/media.php';
     require_once ABSPATH . 'wp-admin/includes/file.php';
     require_once ABSPATH . 'wp-admin/includes/image.php';
 
-    $temp_file = download_url( $image_url );
+    $temp_file = download_url( $image_url, 10 );
     if ( is_wp_error( $temp_file ) ) {
+        error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $temp_file->get_error_message() );
         return $temp_file;
     }
+    
+    // 画像検証: getimagesizeで画像であることを確認
+    $image_info = getimagesize( $temp_file );
+    if ( $image_info === false ) {
+        if ( file_exists( $temp_file ) ) {
+            unlink( $temp_file );
+        }
+        error_log( '[noveltool] Image download failed: File is not a valid image ' . $image_url );
+        return new WP_Error( 'invalid_image', __( 'Downloaded file is not a valid image.', 'novel-game-plugin' ) );
+    }
+
+    // MIMEタイプに基づいて拡張子を決定
+    $mime_to_ext = array(
+        'image/jpeg' => '.jpg',
+        'image/png'  => '.png',
+        'image/gif'  => '.gif',
+        'image/webp' => '.webp',
+    );
+    
+    $mime_type = $image_info['mime'];
+    $extension = isset( $mime_to_ext[ $mime_type ] ) ? $mime_to_ext[ $mime_type ] : '.jpg';
 
     // ファイル名を取得
     $file_name = basename( wp_parse_url( $image_url, PHP_URL_PATH ) );
-    if ( empty( $file_name ) ) {
-        $file_name = 'imported-image-' . time() . '.jpg';
+    if ( empty( $file_name ) || strpos( $file_name, '.' ) === false ) {
+        $file_name = 'imported-image-' . time() . $extension;
     }
 
     // メディアライブラリに追加
     $file_array = array(
-        'name'     => $file_name,
+        'name'     => sanitize_file_name( $file_name ),
         'tmp_name' => $temp_file,
     );
 
@@ -702,6 +978,7 @@ function noveltool_download_image_to_media_library( $image_url ) {
     }
 
     if ( is_wp_error( $attachment_id ) ) {
+        error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $attachment_id->get_error_message() );
         return $attachment_id;
     }
 
@@ -710,6 +987,8 @@ function noveltool_download_image_to_media_library( $image_url ) {
 
 /**
  * AJAXハンドラー: ゲームデータのエクスポート
+ *
+ * エラーメッセージは静的文言のみ利用し外部入力を直接連結しない方針
  *
  * @since 1.3.0
  */
@@ -746,6 +1025,9 @@ add_action( 'wp_ajax_noveltool_export_game', 'noveltool_ajax_export_game' );
 /**
  * AJAXハンドラー: ゲームデータのインポート
  *
+ * セキュリティ強化: ファイルサイズ、MIME、アップロードエラーの詳細チェックを実施
+ * エラーメッセージは静的文言のみ利用し外部入力を直接連結しない方針
+ *
  * @since 1.3.0
  */
 function noveltool_ajax_import_game() {
@@ -759,9 +1041,57 @@ function noveltool_ajax_import_game() {
         wp_send_json_error( array( 'message' => __( 'Security check failed.', 'novel-game-plugin' ) ) );
     }
 
-    // ファイルのアップロードチェック
-    if ( ! isset( $_FILES['import_file'] ) || $_FILES['import_file']['error'] !== UPLOAD_ERR_OK ) {
-        wp_send_json_error( array( 'message' => __( 'File upload failed.', 'novel-game-plugin' ) ) );
+    // ファイルアップロードエラーの詳細チェック
+    if ( ! isset( $_FILES['import_file'] ) ) {
+        wp_send_json_error( array( 'message' => __( 'No file selected.', 'novel-game-plugin' ) ) );
+    }
+    
+    if ( isset( $_FILES['import_file']['error'] ) && $_FILES['import_file']['error'] !== UPLOAD_ERR_OK ) {
+        switch ( $_FILES['import_file']['error'] ) {
+            case UPLOAD_ERR_INI_SIZE:
+            case UPLOAD_ERR_FORM_SIZE:
+                wp_send_json_error( array( 'message' => __( 'File size exceeds limit.', 'novel-game-plugin' ) ) );
+                break;
+            case UPLOAD_ERR_PARTIAL:
+                wp_send_json_error( array( 'message' => __( 'File upload was interrupted.', 'novel-game-plugin' ) ) );
+                break;
+            case UPLOAD_ERR_NO_FILE:
+                wp_send_json_error( array( 'message' => __( 'No file selected.', 'novel-game-plugin' ) ) );
+                break;
+            case UPLOAD_ERR_NO_TMP_DIR:
+            case UPLOAD_ERR_CANT_WRITE:
+                wp_send_json_error( array( 'message' => __( 'Server upload error.', 'novel-game-plugin' ) ) );
+                break;
+            case UPLOAD_ERR_EXTENSION:
+                wp_send_json_error( array( 'message' => __( 'File upload blocked by extension.', 'novel-game-plugin' ) ) );
+                break;
+            default:
+                wp_send_json_error( array( 'message' => __( 'File upload failed.', 'novel-game-plugin' ) ) );
+        }
+    }
+    
+    // ファイルサイズチェック（10MB制限）
+    if ( isset( $_FILES['import_file']['size'] ) && $_FILES['import_file']['size'] > 10 * 1024 * 1024 ) {
+        wp_send_json_error( array( 'message' => __( 'File size exceeds 10MB limit.', 'novel-game-plugin' ) ) );
+    }
+    
+    // MIMEタイプ検証
+    $file_type = wp_check_filetype_and_ext( $_FILES['import_file']['tmp_name'], $_FILES['import_file']['name'] );
+    
+    // JSONファイルかどうかを確認
+    $allowed_types = array( 'application/json', 'text/plain' );
+    $is_json = false;
+    
+    if ( isset( $file_type['type'] ) && in_array( $file_type['type'], $allowed_types, true ) ) {
+        $is_json = true;
+    } elseif ( isset( $_FILES['import_file']['type'] ) && in_array( $_FILES['import_file']['type'], $allowed_types, true ) ) {
+        $is_json = true;
+    } elseif ( isset( $_FILES['import_file']['name'] ) && substr( $_FILES['import_file']['name'], -5 ) === '.json' ) {
+        $is_json = true;
+    }
+    
+    if ( ! $is_json ) {
+        wp_send_json_error( array( 'message' => __( 'Only JSON files are allowed.', 'novel-game-plugin' ) ) );
     }
 
     // ファイルの読み込み
@@ -787,11 +1117,13 @@ function noveltool_ajax_import_game() {
 
     wp_send_json_success( array(
         'message'         => sprintf(
-            __( 'Successfully imported game with %d scenes.', 'novel-game-plugin' ),
-            $result['imported_scenes']
+            __( 'Successfully imported game with %d scenes (%d choices remapped).', 'novel-game-plugin' ),
+            $result['imported_scenes'],
+            isset( $result['remapped_choices'] ) ? $result['remapped_choices'] : 0
         ),
         'game_id'         => $result['game_id'],
         'imported_scenes' => $result['imported_scenes'],
+        'remapped_choices' => isset( $result['remapped_choices'] ) ? $result['remapped_choices'] : 0,
     ) );
 }
 add_action( 'wp_ajax_noveltool_import_game', 'noveltool_ajax_import_game' );
