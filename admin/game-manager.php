@@ -558,6 +558,53 @@ function noveltool_render_game_settings_tab( $game ) {
                         </div>
                     </div>
                 </div>
+                
+                <h4><?php esc_html_e( 'Export/Import History', 'novel-game-plugin' ); ?></h4>
+                <?php
+                // エクスポート/インポート履歴を取得
+                $transfer_logs = get_option( 'noveltool_game_transfer_logs', array() );
+                
+                if ( empty( $transfer_logs ) ) {
+                    echo '<p>' . esc_html__( 'No export/import history yet.', 'novel-game-plugin' ) . '</p>';
+                } else {
+                    // 最新10件のみ表示
+                    $recent_logs = array_slice( array_reverse( $transfer_logs ), 0, 10 );
+                    ?>
+                    <table class="wp-list-table widefat fixed striped">
+                        <thead>
+                            <tr>
+                                <th><?php esc_html_e( 'Operation', 'novel-game-plugin' ); ?></th>
+                                <th><?php esc_html_e( 'Game Title', 'novel-game-plugin' ); ?></th>
+                                <th><?php esc_html_e( 'Scenes', 'novel-game-plugin' ); ?></th>
+                                <th><?php esc_html_e( 'Flags', 'novel-game-plugin' ); ?></th>
+                                <th><?php esc_html_e( 'Date/Time', 'novel-game-plugin' ); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ( $recent_logs as $log ) : ?>
+                                <tr>
+                                    <td>
+                                        <?php
+                                        if ( $log['type'] === 'export' ) {
+                                            echo '<span class="dashicons dashicons-download"></span> ';
+                                            esc_html_e( 'Export', 'novel-game-plugin' );
+                                        } else {
+                                            echo '<span class="dashicons dashicons-upload"></span> ';
+                                            esc_html_e( 'Import', 'novel-game-plugin' );
+                                        }
+                                        ?>
+                                    </td>
+                                    <td><?php echo esc_html( $log['game_title'] ); ?></td>
+                                    <td><?php echo esc_html( $log['scenes_count'] ); ?></td>
+                                    <td><?php echo esc_html( $log['flags_count'] ); ?></td>
+                                    <td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $log['date'] ) ) ); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <?php
+                }
+                ?>
             </div>
     </div>
     <?php
