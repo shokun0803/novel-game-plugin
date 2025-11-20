@@ -607,27 +607,26 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
 
         // 各メタデータの保存
         $meta_fields = array(
-            '_background_image',
-            '_character_image',
-            '_character_left',
-            '_character_center',
-            '_character_right',
-            '_character_left_name',
-            '_character_center_name',
-            '_character_right_name',
-            '_dialogue_text',
-            '_dialogue_texts',
-            '_dialogue_speakers',
-            '_dialogue_backgrounds',
-            '_dialogue_flag_conditions',
-            '_choices',
-            '_is_ending',
-            '_ending_text',
-            '_scene_arrival_flags',
+            'background_image'        => '_background_image',
+            'character_image'         => '_character_image',
+            'character_left'          => '_character_left',
+            'character_center'        => '_character_center',
+            'character_right'         => '_character_right',
+            'character_left_name'     => '_character_left_name',
+            'character_center_name'   => '_character_center_name',
+            'character_right_name'    => '_character_right_name',
+            'dialogue_text'           => '_dialogue_text',
+            'dialogue_texts'          => '_dialogue_texts',
+            'dialogue_speakers'       => '_dialogue_speakers',
+            'dialogue_backgrounds'    => '_dialogue_backgrounds',
+            'dialogue_flag_conditions' => '_dialogue_flag_conditions',
+            'choices'                 => '_choices',
+            'is_ending'               => '_is_ending',
+            'ending_text'             => '_ending_text',
+            'scene_arrival_flags'     => '_scene_arrival_flags',
         );
 
-        foreach ( $meta_fields as $meta_key ) {
-            $field_name = str_replace( '_', '', $meta_key );
+        foreach ( $meta_fields as $field_name => $meta_key ) {
             if ( isset( $scene_data[ $field_name ] ) ) {
                 $meta_value = $scene_data[ $field_name ];
                 
