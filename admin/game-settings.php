@@ -828,7 +828,7 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
             continue;
         }
         
-        // JSON形式を試行
+        // JSON形式の選択肢を処理
         $json_choices = json_decode( $choices_meta, true );
         if ( json_last_error() === JSON_ERROR_NONE && is_array( $json_choices ) ) {
             // JSON形式の選択肢: nextをマップで置換
@@ -851,34 +851,6 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
             
             if ( $modified ) {
                 update_post_meta( $post_id, '_choices', wp_json_encode( $json_choices, JSON_UNESCAPED_UNICODE ) );
-                $remapped_choices++;
-            }
-        } else {
-            // レガシー形式（"テキスト | 投稿ID"）: 行を再構築
-            $lines = explode( "\n", $choices_meta );
-            $modified = false;
-            $new_lines = array();
-            
-            foreach ( $lines as $line ) {
-                $parts = explode( '|', $line, 2 );
-                if ( count( $parts ) === 2 ) {
-                    $text = trim( $parts[0] );
-                    $old_id = intval( trim( $parts[1] ) );
-                    
-                    if ( isset( $index_to_post_id_map[ $old_id ] ) ) {
-                        $new_lines[] = $text . ' | ' . $index_to_post_id_map[ $old_id ];
-                        $modified = true;
-                    } else {
-                        $new_lines[] = $line;
-                        error_log( sprintf( '[noveltool] Warning: Legacy choice ID remapping failed for scene %d, original ID=%d not found in index map', $post_id, $old_id ) );
-                    }
-                } else {
-                    $new_lines[] = $line;
-                }
-            }
-            
-            if ( $modified ) {
-                update_post_meta( $post_id, '_choices', implode( "\n", $new_lines ) );
                 $remapped_choices++;
             }
         }

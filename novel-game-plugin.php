@@ -667,10 +667,10 @@ function noveltool_filter_novel_game_content( $content ) {
         $dialogue_data[] = $dialogue_item;
     }
 
-    // 選択肢の処理（JSON形式とレガシー形式の両方に対応）
+    // 選択肢の処理（JSON形式）
     $choices = array();
     if ( $choices_raw ) {
-        // JSON形式を試行
+        // JSON形式を処理
         $json_choices = json_decode( $choices_raw, true );
         if ( json_last_error() === JSON_ERROR_NONE && is_array( $json_choices ) ) {
             // JSON形式の場合
@@ -729,22 +729,6 @@ function noveltool_filter_novel_game_content( $content ) {
                         }
                         
                         $choices[] = $choice_item;
-                    }
-                }
-            }
-        } else {
-            // レガシー形式（"テキスト | 投稿ID" の行形式）
-            foreach ( explode( "\n", $choices_raw ) as $line ) {
-                $parts = explode( '|', $line );
-                if ( count( $parts ) === 2 ) {
-                    $post_id   = intval( trim( $parts[1] ) );
-                    $permalink = get_permalink( $post_id );
-
-                    if ( $permalink ) {
-                        $choices[] = array(
-                            'text'      => trim( $parts[0] ),
-                            'nextScene' => $permalink,
-                        );
                     }
                 }
             }
