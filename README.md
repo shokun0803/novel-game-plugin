@@ -341,6 +341,41 @@ msginit --input=languages/novel-game-plugin.pot \
 msgfmt languages/novel-game-plugin-en_US.po -o languages/novel-game-plugin-en_US.mo
 ```
 
+#### サンプルデータの翻訳ファイル
+サンプルゲーム（Shadow Detective）の翻訳は、UI翻訳とは別のテキストドメイン `novel-game-plugin-sample` に分離されています。
+
+**サンプルデータ用POTファイルの生成:**
+```bash
+# includes/sample-data.php から POT ファイルを生成
+xgettext \
+  --default-domain=novel-game-plugin-sample \
+  --from-code=UTF-8 \
+  --language=PHP \
+  --keyword=__ \
+  --keyword=_e \
+  --keyword=_x \
+  --package-name="Novel Game Plugin - Sample Data" \
+  --package-version="1.3.0" \
+  --msgid-bugs-address="https://github.com/shokun0803/novel-game-plugin/issues" \
+  --output=languages/novel-game-plugin-sample.pot \
+  includes/sample-data.php
+```
+
+**サンプルデータ用翻訳ファイルの更新:**
+```bash
+# 既存の .po ファイルを .pot から更新
+msgmerge --update languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample.pot
+
+# .mo ファイルのコンパイル（ja.mo と ja_JP.mo の両方を生成）
+msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja.mo
+msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja_JP.mo
+```
+
+**注意**: 
+- サンプルデータの翻訳は `includes/sample-data.php` のみに含まれます
+- UI翻訳（`novel-game-plugin`）とサンプルデータ翻訳（`novel-game-plugin-sample`）は独立して管理されます
+- これによりサンプルデータの翻訳更新がUI翻訳に影響を与えることを防ぎます
+
 ### フック・フィルター
 プラグインでは以下のWordPressフックを利用：
 - `init` - 投稿タイプ登録
