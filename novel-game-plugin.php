@@ -3,7 +3,7 @@
  * Plugin Name: Novel Game Plugin
  * Plugin URI: https://github.com/shokun0803/novel-game-plugin
  * Description: WordPressでノベルゲームを作成できるプラグイン。
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: shokun0803
  * Author URI: https://profiles.wordpress.org/shokun0803/
  * Text Domain: novel-game-plugin
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // プラグインの基本定数を定義
 if ( ! defined( 'NOVEL_GAME_PLUGIN_VERSION' ) ) {
     // キャッシュ更新のためバージョンを更新
-    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.2.0' );
+    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.3.0' );
 }
 if ( ! defined( 'NOVEL_GAME_PLUGIN_URL' ) ) {
     define( 'NOVEL_GAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -438,7 +438,7 @@ function noveltool_save_game_flag_master( $game_title, $flag_master ) {
     foreach ( $flag_master as $flag ) {
         if ( isset( $flag['id'], $flag['name'] ) ) {
             $sanitized_flags[] = array(
-                'id'          => sanitize_text_field( $flag['id'] ),
+                'id'          => intval( $flag['id'] ),
                 'name'        => sanitize_text_field( $flag['name'] ),
                 'description' => isset( $flag['description'] ) ? sanitize_text_field( $flag['description'] ) : '',
             );
@@ -667,10 +667,10 @@ function noveltool_filter_novel_game_content( $content ) {
         $dialogue_data[] = $dialogue_item;
     }
 
-    // 選択肢の処理（JSON形式とレガシー形式の両方に対応）
+    // 選択肢の処理（JSON形式）
     $choices = array();
     if ( $choices_raw ) {
-        // JSON形式を試行
+        // JSON形式を処理
         $json_choices = json_decode( $choices_raw, true );
         if ( json_last_error() === JSON_ERROR_NONE && is_array( $json_choices ) ) {
             // JSON形式の場合
@@ -729,22 +729,6 @@ function noveltool_filter_novel_game_content( $content ) {
                         }
                         
                         $choices[] = $choice_item;
-                    }
-                }
-            }
-        } else {
-            // レガシー形式（"テキスト | 投稿ID" の行形式）
-            foreach ( explode( "\n", $choices_raw ) as $line ) {
-                $parts = explode( '|', $line );
-                if ( count( $parts ) === 2 ) {
-                    $post_id   = intval( trim( $parts[1] ) );
-                    $permalink = get_permalink( $post_id );
-
-                    if ( $permalink ) {
-                        $choices[] = array(
-                            'text'      => trim( $parts[0] ),
-                            'nextScene' => $permalink,
-                        );
                     }
                 }
             }
