@@ -35,4 +35,5 @@ wp-config.php
 validate-*.php
 
 # Translation build artifacts
+messages.mo*.bak
 messages.mo
