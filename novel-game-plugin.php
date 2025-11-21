@@ -64,6 +64,13 @@ function noveltool_init() {
         false,
         dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
     );
+    
+    // サンプルゲーム用の翻訳ファイルの読み込み
+    load_plugin_textdomain(
+        'novel-game-plugin-samples',
+        false,
+        dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
+    );
 }
 add_action( 'plugins_loaded', 'noveltool_init' );
 

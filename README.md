@@ -330,6 +330,52 @@ msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja_JP.mo
 - 互換性を確保するため、両方のファイルを生成・同梱することを推奨します
 - これにより、異なるWordPress環境での翻訳表示が確実になります
 
+
+#### サンプルゲーム用翻訳ファイルの更新
+
+**v1.3.0以降**: サンプルゲーム（Shadow Detective）の翻訳は、プラグイン本体のUIと分離され、専用のテキストドメイン `novel-game-plugin-samples` を使用します。
+
+**テキストドメインの使い分け:**
+- `novel-game-plugin` - プラグイン本体のUI（管理画面、設定画面等）
+- `novel-game-plugin-samples` - サンプルゲームの本文・セリフ
+
+**サンプル翻訳ファイルの更新手順:**
+
+```bash
+# WP-CLI を使用したサンプル用 POT ファイル生成（推奨）
+# 一時ディレクトリを作成してsample-data.phpをコピー
+mkdir -p /tmp/sample-extract
+cp includes/sample-data.php /tmp/sample-extract/
+
+# POT ファイル生成
+wp i18n make-pot /tmp/sample-extract languages/novel-game-plugin-samples.pot \
+  --domain=novel-game-plugin-samples \
+  --headers='{"Project-Id-Version":"Novel Game Plugin - Sample Games 1.3.0","Report-Msgid-Bugs-To":"https://github.com/shokun0803/novel-game-plugin/issues"}'
+
+# クリーンアップ
+rm -rf /tmp/sample-extract
+
+# PO ファイルの更新（既存の場合）
+msgmerge --update languages/novel-game-plugin-samples-ja.po languages/novel-game-plugin-samples.pot
+
+# MO ファイルのコンパイル
+msgfmt languages/novel-game-plugin-samples-ja.po -o languages/novel-game-plugin-samples-ja.mo
+cp languages/novel-game-plugin-samples-ja.mo languages/novel-game-plugin-samples-ja_JP.mo
+```
+
+**ファイル構成:**
+```
+languages/
+├── novel-game-plugin.pot              # プラグイン本体用POT
+├── novel-game-plugin-ja.po            # プラグイン本体用日本語PO
+├── novel-game-plugin-ja.mo            # プラグイン本体用日本語MO
+├── novel-game-plugin-ja_JP.mo         # プラグイン本体用日本語MO（互換性）
+├── novel-game-plugin-samples.pot      # サンプルゲーム用POT
+├── novel-game-plugin-samples-ja.po    # サンプルゲーム用日本語PO
+├── novel-game-plugin-samples-ja.mo    # サンプルゲーム用日本語MO
+└── novel-game-plugin-samples-ja_JP.mo # サンプルゲーム用日本語MO（互換性）
+```
+
 #### 新しい言語の追加
 ```bash
 # 新しい言語の .po ファイルを作成（例: 英語）
