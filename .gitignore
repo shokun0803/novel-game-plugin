@@ -33,3 +33,6 @@ wp-config.php
 *.test.js
 *.spec.js
 validate-*.php
+
+# Translation build artifacts
+messages.mo
