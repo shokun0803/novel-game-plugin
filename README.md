@@ -333,11 +333,11 @@ msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja_JP.mo
 
 #### サンプルゲーム用翻訳ファイルの更新
 
-**v1.3.0以降**: サンプルゲーム（Shadow Detective）の翻訳は、プラグイン本体のUIと分離され、専用のテキストドメイン `novel-game-plugin-samples` を使用します。
+**v1.3.0以降**: サンプルゲーム（Shadow Detective）の翻訳は、プラグイン本体のUIと分離され、専用のテキストドメイン `novel-game-plugin-sample` を使用します。
 
 **テキストドメインの使い分け:**
 - `novel-game-plugin` - プラグイン本体のUI（管理画面、設定画面等）
-- `novel-game-plugin-samples` - サンプルゲームの本文・セリフ
+- `novel-game-plugin-sample` - サンプルゲームの本文・セリフ
 
 **サンプル翻訳ファイルの更新手順:**
 
@@ -348,19 +348,19 @@ mkdir -p /tmp/sample-extract
 cp includes/sample-data.php /tmp/sample-extract/
 
 # POT ファイル生成
-wp i18n make-pot /tmp/sample-extract languages/novel-game-plugin-samples.pot \
-  --domain=novel-game-plugin-samples \
+wp i18n make-pot /tmp/sample-extract languages/novel-game-plugin-sample.pot \
+  --domain=novel-game-plugin-sample \
   --headers='{"Project-Id-Version":"Novel Game Plugin - Sample Games 1.3.0","Report-Msgid-Bugs-To":"https://github.com/shokun0803/novel-game-plugin/issues"}'
 
 # クリーンアップ
 rm -rf /tmp/sample-extract
 
 # PO ファイルの更新（既存の場合）
-msgmerge --update languages/novel-game-plugin-samples-ja.po languages/novel-game-plugin-samples.pot
+msgmerge --update languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample.pot
 
 # MO ファイルのコンパイル
-msgfmt languages/novel-game-plugin-samples-ja.po -o languages/novel-game-plugin-samples-ja.mo
-cp languages/novel-game-plugin-samples-ja.mo languages/novel-game-plugin-samples-ja_JP.mo
+msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja.mo
+cp languages/novel-game-plugin-sample-ja.mo languages/novel-game-plugin-sample-ja_JP.mo
 ```
 
 **ファイル構成:**
@@ -370,10 +370,10 @@ languages/
 ├── novel-game-plugin-ja.po            # プラグイン本体用日本語PO
 ├── novel-game-plugin-ja.mo            # プラグイン本体用日本語MO
 ├── novel-game-plugin-ja_JP.mo         # プラグイン本体用日本語MO（互換性）
-├── novel-game-plugin-samples.pot      # サンプルゲーム用POT
-├── novel-game-plugin-samples-ja.po    # サンプルゲーム用日本語PO
-├── novel-game-plugin-samples-ja.mo    # サンプルゲーム用日本語MO
-└── novel-game-plugin-samples-ja_JP.mo # サンプルゲーム用日本語MO（互換性）
+├── novel-game-plugin-sample.pot      # サンプルゲーム用POT
+├── novel-game-plugin-sample-ja.po    # サンプルゲーム用日本語PO
+├── novel-game-plugin-sample-ja.mo    # サンプルゲーム用日本語MO
+└── novel-game-plugin-sample-ja_JP.mo # サンプルゲーム用日本語MO（互換性）
 ```
 
 #### 新しい言語の追加

@@ -11,7 +11,7 @@ msgstr ""
 "POT-Creation-Date: 2025-11-21T05:38:37+00:00\n"
 "PO-Revision-Date: 2025-11-21 05:40+0000\n"
 "X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: novel-game-plugin-samples\n"
+"X-Domain: novel-game-plugin-sample\n"
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
