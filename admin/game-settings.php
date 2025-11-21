@@ -480,6 +480,7 @@ function noveltool_update_scenes_game_title( $old_title, $new_title ) {
  * @param string $game_title ゲームタイトル
  * @param int    $scenes シーン数
  * @param int    $flags フラグ数
+ * @return bool 成功時true、失敗時false
  * @since 1.3.0
  */
 function noveltool_log_transfer_operation( $type, $game_title, $scenes, $flags ) {
@@ -503,7 +504,7 @@ function noveltool_log_transfer_operation( $type, $game_title, $scenes, $flags )
         $logs = array_slice( $logs, -100 );
     }
     
-    update_option( 'noveltool_game_transfer_logs', $logs );
+    return update_option( 'noveltool_game_transfer_logs', $logs );
 }
 
 /**
