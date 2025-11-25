@@ -281,43 +281,45 @@ __( 'Translatable string', 'novel-game-plugin' )
 #### .pot ファイルの更新
 翻訳可能文字列を追加・変更したら、以下のコマンドで .pot ファイルを更新してください：
 
+**重要**: メイン POT の生成時は `includes/sample-data.php` を除外してください（サンプルデータは別ドメイン）。
+
 ```bash
-# xgettext を使用した POT ファイル生成（PHP）
-xgettext \
-  --language=PHP \
+# メインプラグイン用 POT ファイル生成（sample-data.php を除外）
+find . -name "*.php" \
+  -not -path "./languages/*" \
+  -not -path "./node_modules/*" \
+  -not -path "./.git/*" \
+  -not -path "./includes/sample-data.php" \
+  -print0 | xargs -0 xgettext \
+  --default-domain=novel-game-plugin \
   --from-code=UTF-8 \
+  --language=PHP \
   --keyword=__ \
   --keyword=_e \
   --keyword=_x:1,2c \
+  --keyword=_n:1,2 \
+  --keyword=_nx:1,2,4c \
   --keyword=esc_html__ \
   --keyword=esc_html_e \
   --keyword=esc_attr__ \
   --keyword=esc_attr_e \
+  --add-comments=translators \
   --package-name="Novel Game Plugin" \
-  --package-version="1.1.2" \
+  --package-version="1.3.0" \
   --msgid-bugs-address="https://github.com/shokun0803/novel-game-plugin/issues" \
-  --output=languages/novel-game-plugin-php.pot \
-  $(find . -name "*.php" -not -path "./node_modules/*" -not -path "./.git/*")
-
-# JavaScript ファイルからの抽出
-xgettext \
-  --language=JavaScript \
-  --from-code=UTF-8 \
-  --keyword=__ \
-  --output=languages/novel-game-plugin-js.pot \
-  $(find . -name "*.js" -not -path "./node_modules/*" -not -path "./.git/*")
-
-# 統合
-msgcat --use-first --sort-output \
-  languages/novel-game-plugin-php.pot \
-  languages/novel-game-plugin-js.pot \
-  -o languages/novel-game-plugin.pot
+  --output=languages/novel-game-plugin.pot
 ```
 
 #### .po / .mo ファイルの更新
+
+**重要**: 翻訳ファイルを更新する前に、必ずバックアップを作成してください。
+
 ```bash
-# 既存の .po ファイルを .pot から更新
-msgmerge --update languages/novel-game-plugin-ja.po languages/novel-game-plugin.pot
+# バックアップの作成
+cp languages/novel-game-plugin-ja.po languages/novel-game-plugin-ja.po.bak
+
+# 既存の .po ファイルを .pot から更新（既存翻訳を保持しながらマージ）
+msgmerge --update --backup=none languages/novel-game-plugin-ja.po languages/novel-game-plugin.pot
 
 # .mo ファイルのコンパイル
 # WordPress環境の互換性のため、ja.mo と ja_JP.mo の両方を生成します
@@ -340,6 +342,55 @@ msginit --input=languages/novel-game-plugin.pot \
 # 翻訳後、.mo ファイルにコンパイル
 msgfmt languages/novel-game-plugin-en_US.po -o languages/novel-game-plugin-en_US.mo
 ```
+
+#### サンプルデータの翻訳ファイル
+サンプルゲーム（Shadow Detective）の翻訳は、UI翻訳とは別のテキストドメイン `novel-game-plugin-sample` に分離されています。
+
+**サンプルデータ用POTファイルの生成:**
+```bash
+# includes/sample-data.php から POT ファイルを生成
+xgettext \
+  --default-domain=novel-game-plugin-sample \
+  --from-code=UTF-8 \
+  --language=PHP \
+  --keyword=__ \
+  --keyword=_e \
+  --keyword=_x:1,2c \
+  --keyword=_n:1,2 \
+  --keyword=_nx:1,2,4c \
+  --keyword=esc_html__ \
+  --keyword=esc_html_e \
+  --keyword=esc_attr__ \
+  --keyword=esc_attr_e \
+  --add-comments=translators \
+  --package-name="Novel Game Plugin - Sample Data" \
+  --package-version="1.3.0" \
+  --msgid-bugs-address="https://github.com/shokun0803/novel-game-plugin/issues" \
+  --output=languages/novel-game-plugin-sample.pot \
+  includes/sample-data.php
+```
+
+**サンプルデータ用翻訳ファイルの更新:**
+
+**重要**: 翻訳ファイルを更新する前に、必ずバックアップを作成してください。
+
+```bash
+# バックアップの作成
+cp languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample-ja.po.bak
+
+# 既存の .po ファイルを .pot から更新（既存翻訳を保持しながらマージ）
+msgmerge --update --backup=none languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample.pot
+
+# .mo ファイルのコンパイル（ja.mo と ja_JP.mo の両方を生成）
+msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja.mo
+msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja_JP.mo
+```
+
+**注意**: 
+- サンプルデータの翻訳は `includes/sample-data.php` のみに含まれます
+- UI翻訳（`novel-game-plugin`）とサンプルデータ翻訳（`novel-game-plugin-sample`）は独立して管理されます
+- これによりサンプルデータの翻訳更新がUI翻訳に影響を与えることを防ぎます
+- `msgmerge` を使用することで、既存の翻訳を失わずに新しい文字列を追加できます
 
 ### フック・フィルター
 プラグインでは以下のWordPressフックを利用：
