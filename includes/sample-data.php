@@ -48,10 +48,10 @@ function noveltool_get_shadow_detective_game_data() {
     
     // Shadow Detective ゲームの基本情報
     $game_data = array(
-        'title'          => __( 'Shadow Detective', 'novel-game-plugin' ),
-        'description'    => __( 'A full-fledged mystery game. Investigate the disappearance of businessman Makoto Kurosaki and uncover the truth. Gather evidence and make the right choices to reach the complete solution ending.', 'novel-game-plugin' ),
+        'title'          => __( 'Shadow Detective', 'novel-game-plugin-sample' ),
+        'description'    => __( 'A full-fledged mystery game. Investigate the disappearance of businessman Makoto Kurosaki and uncover the truth. Gather evidence and make the right choices to reach the complete solution ending.', 'novel-game-plugin-sample' ),
         'title_image'    => '',
-        'game_over_text' => __( 'Investigation Failed', 'novel-game-plugin' ),
+        'game_over_text' => __( 'Investigation Failed', 'novel-game-plugin-sample' ),
         'is_sample'      => true,
         'machine_name'   => 'shadow_detective_v1', // 機械識別子（多言語環境での重複防止）
     );
@@ -60,33 +60,33 @@ function noveltool_get_shadow_detective_game_data() {
     $scenes = array(
         // シーン1: 依頼者来訪（探偵事務所）
         array(
-            'title'           => __( 'Shadow Detective - The Beginning', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - The Beginning', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
             'character_center' => $char_misaki,
             'character_right' => '',
             'character_left_name' => '',
-            'character_center_name' => __( 'Misaki', 'novel-game-plugin' ),
+            'character_center_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'On an autumn evening, a woman visited my office.', 'novel-game-plugin' ),
-                __( 'Detective, please help me... My husband has been missing for three days.', 'novel-game-plugin' ),
-                __( 'The police say there\'s no criminal activity, but my husband would never do this...', 'novel-game-plugin' ),
-                __( 'The client\'s name is Misaki Kurosaki. Her husband is businessman Makoto Kurosaki.', 'novel-game-plugin' ),
+                __( 'On an autumn evening, a woman visited my office.', 'novel-game-plugin-sample' ),
+                __( 'Detective, please help me... My husband has been missing for three days.', 'novel-game-plugin-sample' ),
+                __( 'The police say there\'s no criminal activity, but my husband would never do this...', 'novel-game-plugin-sample' ),
+                __( 'The client\'s name is Misaki Kurosaki. Her husband is businessman Makoto Kurosaki.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', 'center', 'center', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Please tell me the details', 'novel-game-plugin' ),
+                    'text' => __( 'Please tell me the details', 'novel-game-plugin-sample' ),
                     'next' => 'scene_2',
                 ),
                 array(
-                    'text' => __( 'When did you last see him?', 'novel-game-plugin' ),
+                    'text' => __( 'When did you last see him?', 'novel-game-plugin-sample' ),
                     'next' => 'scene_2',
                 ),
                 array(
-                    'text' => __( 'What kind of person is your husband?', 'novel-game-plugin' ),
+                    'text' => __( 'What kind of person is your husband?', 'novel-game-plugin-sample' ),
                     'next' => 'scene_2',
                 ),
             ),
@@ -97,33 +97,33 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン2: 失踪の詳細聴取
         array(
-            'title'           => __( 'Shadow Detective - Details of Disappearance', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Details of Disappearance', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
             'character_center' => $char_misaki,
             'character_right' => '',
             'character_left_name' => '',
-            'character_center_name' => __( 'Misaki', 'novel-game-plugin' ),
+            'character_center_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Three days ago in the evening, my husband said "I have an important business meeting" and left.', 'novel-game-plugin' ),
-                __( 'Since then, his phone hasn\'t connected, and he hasn\'t shown up at the company.', 'novel-game-plugin' ),
-                __( 'Recently he seemed strange... as if he was worried about something.', 'novel-game-plugin' ),
-                __( 'Strange behavior before disappearing. This might not be a simple runaway case.', 'novel-game-plugin' ),
+                __( 'Three days ago in the evening, my husband said "I have an important business meeting" and left.', 'novel-game-plugin-sample' ),
+                __( 'Since then, his phone hasn\'t connected, and he hasn\'t shown up at the company.', 'novel-game-plugin-sample' ),
+                __( 'Recently he seemed strange... as if he was worried about something.', 'novel-game-plugin-sample' ),
+                __( 'Strange behavior before disappearing. This might not be a simple runaway case.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( 'center', 'center', 'center', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'First, I\'ll investigate the disappearance site', 'novel-game-plugin' ),
+                    'text' => __( 'First, I\'ll investigate the disappearance site', 'novel-game-plugin-sample' ),
                     'next' => 'scene_3',
                 ),
                 array(
-                    'text' => __( 'Let me talk to your family', 'novel-game-plugin' ),
+                    'text' => __( 'Let me talk to your family', 'novel-game-plugin-sample' ),
                     'next' => 'scene_5',
                 ),
                 array(
-                    'text' => __( 'I\'d like to hear from friends and acquaintances', 'novel-game-plugin' ),
+                    'text' => __( 'I\'d like to hear from friends and acquaintances', 'novel-game-plugin-sample' ),
                     'next' => 'scene_6',
                 ),
             ),
@@ -134,7 +134,7 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン3: 失踪現場の調査（懐中時計入手）
         array(
-            'title'           => __( 'Shadow Detective - Warehouse District', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Warehouse District', 'novel-game-plugin-sample' ),
             'background'      => $bg_warehouse,
             'character_left'  => '',
             'character_center' => '',
@@ -143,24 +143,24 @@ function noveltool_get_shadow_detective_game_data() {
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'The warehouse district by the port where he was last seen. A deserted, dimly lit place.', 'novel-game-plugin' ),
-                __( 'Something shiny is on the ground... It\'s a pocket watch.', 'novel-game-plugin' ),
-                __( 'Opening the back reveals an inscription: "To Makoto, with love, Misaki"', 'novel-game-plugin' ),
-                __( 'This must belong to Makoto Kurosaki. Something happened here.', 'novel-game-plugin' ),
+                __( 'The warehouse district by the port where he was last seen. A deserted, dimly lit place.', 'novel-game-plugin-sample' ),
+                __( 'Something shiny is on the ground... It\'s a pocket watch.', 'novel-game-plugin-sample' ),
+                __( 'Opening the back reveals an inscription: "To Makoto, with love, Misaki"', 'novel-game-plugin-sample' ),
+                __( 'This must belong to Makoto Kurosaki. Something happened here.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( $bg_warehouse, '', '', $bg_warehouse ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Continue questioning the area', 'novel-game-plugin' ),
+                    'text' => __( 'Continue questioning the area', 'novel-game-plugin-sample' ),
                     'next' => 'scene_5',
                 ),
                 array(
-                    'text' => __( 'Return to the office to organize information', 'novel-game-plugin' ),
+                    'text' => __( 'Return to the office to organize information', 'novel-game-plugin-sample' ),
                     'next' => 'scene_4',
                 ),
                 array(
-                    'text' => __( 'Search more carefully around the pocket watch', 'novel-game-plugin' ),
+                    'text' => __( 'Search more carefully around the pocket watch', 'novel-game-plugin-sample' ),
                     'next' => 'scene_4',
                 ),
             ),
@@ -173,7 +173,7 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン4: 情報整理と方針決定
         array(
-            'title'           => __( 'Shadow Detective - Time to Deduce', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Time to Deduce', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
             'character_center' => '',
@@ -182,10 +182,10 @@ function noveltool_get_shadow_detective_game_data() {
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Time to organize the gathered information.', 'novel-game-plugin' ),
-                __( 'The pocket watch... evidence he was at the disappearance site.', 'novel-game-plugin' ),
-                __( 'A businessman\'s sudden disappearance. Mention of family noticing strange behavior.', 'novel-game-plugin' ),
-                __( 'This case doesn\'t seem superficial.', 'novel-game-plugin' ),
+                __( 'Time to organize the gathered information.', 'novel-game-plugin-sample' ),
+                __( 'The pocket watch... evidence he was at the disappearance site.', 'novel-game-plugin-sample' ),
+                __( 'A businessman\'s sudden disappearance. Mention of family noticing strange behavior.', 'novel-game-plugin-sample' ),
+                __( 'This case doesn\'t seem superficial.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
@@ -196,20 +196,20 @@ function noveltool_get_shadow_detective_game_data() {
                     ),
                     'logic' => 'AND',
                     'displayMode' => 'alternative',
-                    'alternativeText' => __( 'The pocket watch found at the scene... and sudden disappearance. This connects to something bigger.', 'novel-game-plugin' ),
+                    'alternativeText' => __( 'The pocket watch found at the scene... and sudden disappearance. This connects to something bigger.', 'novel-game-plugin-sample' ),
                 ),
             ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Prioritize questioning the family', 'novel-game-plugin' ),
+                    'text' => __( 'Prioritize questioning the family', 'novel-game-plugin-sample' ),
                     'next' => 'scene_5',
                 ),
                 array(
-                    'text' => __( 'Investigate friends and associates', 'novel-game-plugin' ),
+                    'text' => __( 'Investigate friends and associates', 'novel-game-plugin-sample' ),
                     'next' => 'scene_6',
                 ),
                 array(
-                    'text' => __( 'Search for clues in the company records', 'novel-game-plugin' ),
+                    'text' => __( 'Search for clues in the company records', 'novel-game-plugin-sample' ),
                     'next' => 'scene_6',
                 ),
             ),
@@ -220,29 +220,29 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン5: 妻への聴取
         array(
-            'title'           => __( 'Shadow Detective - Family Testimony', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Family Testimony', 'novel-game-plugin-sample' ),
             'background'      => $bg_mansion,
             'character_left'  => $char_misaki,
             'character_center' => '',
             'character_right' => '',
-            'character_left_name' => __( 'Misaki', 'novel-game-plugin' ),
+            'character_left_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Actually... my husband was recently troubled by business management issues.', 'novel-game-plugin' ),
-                __( 'He seemed to have problems with business partners... but he wouldn\'t tell me details.', 'novel-game-plugin' ),
-                __( 'Also... there were calls from unknown men.', 'novel-game-plugin' ),
-                __( 'My husband said "It\'s fine" but his expression was dark...', 'novel-game-plugin' ),
+                __( 'Actually... my husband was recently troubled by business management issues.', 'novel-game-plugin-sample' ),
+                __( 'He seemed to have problems with business partners... but he wouldn\'t tell me details.', 'novel-game-plugin-sample' ),
+                __( 'Also... there were calls from unknown men.', 'novel-game-plugin-sample' ),
+                __( 'My husband said "It\'s fine" but his expression was dark...', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( 'left', 'left', 'left', 'left' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Talk to company associates', 'novel-game-plugin' ),
+                    'text' => __( 'Talk to company associates', 'novel-game-plugin-sample' ),
                     'next' => 'scene_6',
                 ),
                 array(
-                    'text' => __( 'Let me investigate the study', 'novel-game-plugin' ),
+                    'text' => __( 'Let me investigate the study', 'novel-game-plugin-sample' ),
                     'next' => 'scene_7',
                     'flagConditions' => array(
                         array( 'name' => 'Talked to Wife', 'state' => true ),
@@ -250,7 +250,7 @@ function noveltool_get_shadow_detective_game_data() {
                     'flagConditionLogic' => 'AND',
                 ),
                 array(
-                    'text' => __( 'Ask about the unknown callers in detail', 'novel-game-plugin' ),
+                    'text' => __( 'Ask about the unknown callers in detail', 'novel-game-plugin-sample' ),
                     'next' => 'scene_11',
                 ),
             ),
@@ -263,25 +263,25 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン6: 友人の証言と証拠写真入手
         array(
-            'title'           => __( 'Shadow Detective - Friend\'s Testimony', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Friend\'s Testimony', 'novel-game-plugin-sample' ),
             'background'      => $bg_cafe,
             'character_left'  => '',
             'character_center' => '',
             'character_right' => $char_friend,
             'character_left_name' => '',
             'character_center_name' => '',
-            'character_right_name' => __( 'Sato', 'novel-game-plugin' ),
+            'character_right_name' => __( 'Sato', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
-                __( 'Mr. Makoto has been acting strange recently.', 'novel-game-plugin' ),
-                __( 'Last week, I happened to see him... talking with suspicious men.', 'novel-game-plugin' ),
-                __( 'I was worried, so I took a photo. Here it is.', 'novel-game-plugin' ),
-                __( 'In the photo, Kurosaki is with men who clearly seem to be from the underworld...', 'novel-game-plugin' ),
+                __( 'Mr. Makoto has been acting strange recently.', 'novel-game-plugin-sample' ),
+                __( 'Last week, I happened to see him... talking with suspicious men.', 'novel-game-plugin-sample' ),
+                __( 'I was worried, so I took a photo. Here it is.', 'novel-game-plugin-sample' ),
+                __( 'In the photo, Kurosaki is with men who clearly seem to be from the underworld...', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( 'right', 'right', 'right', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Investigate these men', 'novel-game-plugin' ),
+                    'text' => __( 'Investigate these men', 'novel-game-plugin-sample' ),
                     'next' => 'scene_11',
                     'flagConditions' => array(
                         array( 'name' => 'Evidence Photo', 'state' => true ),
@@ -289,11 +289,11 @@ function noveltool_get_shadow_detective_game_data() {
                     'flagConditionLogic' => 'AND',
                 ),
                 array(
-                    'text' => __( 'First, investigate the Kurosaki residence more', 'novel-game-plugin' ),
+                    'text' => __( 'First, investigate the Kurosaki residence more', 'novel-game-plugin-sample' ),
                     'next' => 'scene_7',
                 ),
                 array(
-                    'text' => __( 'Ask Sato for more information', 'novel-game-plugin' ),
+                    'text' => __( 'Ask Sato for more information', 'novel-game-plugin-sample' ),
                     'next' => 'scene_9',
                 ),
             ),
@@ -307,7 +307,7 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン7: 黒崎邸の書斎調査
         array(
-            'title'           => __( 'Shadow Detective - Secret of the Study', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Secret of the Study', 'novel-game-plugin-sample' ),
             'background'      => $bg_study,
             'character_left'  => '',
             'character_center' => '',
@@ -316,24 +316,24 @@ function noveltool_get_shadow_detective_game_data() {
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'With permission, I investigate the study.', 'novel-game-plugin' ),
-                __( 'Desk drawers contain receipts and contracts... nothing particularly suspicious.', 'novel-game-plugin' ),
-                __( 'However, the bookshelf arrangement seems unnatural...', 'novel-game-plugin' ),
-                __( 'Moving the bookshelf reveals... a hidden door!', 'novel-game-plugin' ),
+                __( 'With permission, I investigate the study.', 'novel-game-plugin-sample' ),
+                __( 'Desk drawers contain receipts and contracts... nothing particularly suspicious.', 'novel-game-plugin-sample' ),
+                __( 'However, the bookshelf arrangement seems unnatural...', 'novel-game-plugin-sample' ),
+                __( 'Moving the bookshelf reveals... a hidden door!', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( $bg_study, '', '', $bg_hidden_room ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Try to open the hidden door', 'novel-game-plugin' ),
+                    'text' => __( 'Try to open the hidden door', 'novel-game-plugin-sample' ),
                     'next' => 'scene_8',
                 ),
                 array(
-                    'text' => __( 'Retreat for now', 'novel-game-plugin' ),
+                    'text' => __( 'Retreat for now', 'novel-game-plugin-sample' ),
                     'next' => 'scene_9',
                 ),
                 array(
-                    'text' => __( 'Search the study more thoroughly first', 'novel-game-plugin' ),
+                    'text' => __( 'Search the study more thoroughly first', 'novel-game-plugin-sample' ),
                     'next' => 'scene_10',
                 ),
             ),
@@ -344,7 +344,7 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン8: 隠し部屋の発見と手記入手
         array(
-            'title'           => __( 'Shadow Detective - Hidden Truth', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Hidden Truth', 'novel-game-plugin-sample' ),
             'background'      => $bg_hidden_room,
             'character_left'  => '',
             'character_center' => '',
@@ -353,16 +353,16 @@ function noveltool_get_shadow_detective_game_data() {
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Beyond the hidden door is a small room. There\'s a safe and a desk.', 'novel-game-plugin' ),
-                __( 'A diary on the desk... It\'s Makoto Kurosaki\'s handwriting.', 'novel-game-plugin' ),
-                __( '"I chose the wrong path..."', 'novel-game-plugin' ),
-                __( '"I can\'t repay the debt to them. I don\'t want to trouble my family."', 'novel-game-plugin' ),
+                __( 'Beyond the hidden door is a small room. There\'s a safe and a desk.', 'novel-game-plugin-sample' ),
+                __( 'A diary on the desk... It\'s Makoto Kurosaki\'s handwriting.', 'novel-game-plugin-sample' ),
+                __( '"I chose the wrong path..."', 'novel-game-plugin-sample' ),
+                __( '"I can\'t repay the debt to them. I don\'t want to trouble my family."', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( $bg_hidden_room, '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Try to open the safe', 'novel-game-plugin' ),
+                    'text' => __( 'Try to open the safe', 'novel-game-plugin-sample' ),
                     'next' => 'scene_10',
                     'flagConditions' => array(
                         array( 'name' => 'Discovered Hidden Room', 'state' => true ),
@@ -370,11 +370,11 @@ function noveltool_get_shadow_detective_game_data() {
                     'flagConditionLogic' => 'AND',
                 ),
                 array(
-                    'text' => __( 'Take the diary back for analysis', 'novel-game-plugin' ),
+                    'text' => __( 'Take the diary back for analysis', 'novel-game-plugin-sample' ),
                     'next' => 'scene_9',
                 ),
                 array(
-                    'text' => __( 'Investigate other items in the hidden room', 'novel-game-plugin' ),
+                    'text' => __( 'Investigate other items in the hidden room', 'novel-game-plugin-sample' ),
                     'next' => 'scene_9',
                 ),
             ),
@@ -387,7 +387,7 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン9: 情報の分析
         array(
-            'title'           => __( 'Shadow Detective - To the Core of the Case', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - To the Core of the Case', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
             'character_center' => '',
@@ -396,10 +396,10 @@ function noveltool_get_shadow_detective_game_data() {
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'From the diary, it\'s clear Kurosaki had debt problems.', 'novel-game-plugin' ),
-                __( 'The men in the photo from my friend... loan sharks?', 'novel-game-plugin' ),
-                __( 'But why a hidden room? There must be something he\'s hiding.', 'novel-game-plugin' ),
-                __( 'I need to find the key to the safe.', 'novel-game-plugin' ),
+                __( 'From the diary, it\'s clear Kurosaki had debt problems.', 'novel-game-plugin-sample' ),
+                __( 'The men in the photo from my friend... loan sharks?', 'novel-game-plugin-sample' ),
+                __( 'But why a hidden room? There must be something he\'s hiding.', 'novel-game-plugin-sample' ),
+                __( 'I need to find the key to the safe.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( $bg_office, '', '', '' ),
@@ -410,7 +410,7 @@ function noveltool_get_shadow_detective_game_data() {
                     ),
                     'logic' => 'AND',
                     'displayMode' => 'alternative',
-                    'alternativeText' => __( 'The men in the photo from my friend... clearly loan sharks from Ryu-gumi.', 'novel-game-plugin' ),
+                    'alternativeText' => __( 'The men in the photo from my friend... clearly loan sharks from Ryu-gumi.', 'novel-game-plugin-sample' ),
                 ),
                 2 => array( // 3行目（index 2）: 隠し部屋発見後の推理変化
                     'conditions' => array(
@@ -418,16 +418,16 @@ function noveltool_get_shadow_detective_game_data() {
                     ),
                     'logic' => 'AND',
                     'displayMode' => 'alternative',
-                    'alternativeText' => __( 'The hidden room I found... There\'s definitely something big he was hiding.', 'novel-game-plugin' ),
+                    'alternativeText' => __( 'The hidden room I found... There\'s definitely something big he was hiding.', 'novel-game-plugin-sample' ),
                 ),
             ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Ask the wife about the safe key', 'novel-game-plugin' ),
+                    'text' => __( 'Ask the wife about the safe key', 'novel-game-plugin-sample' ),
                     'next' => 'scene_10',
                 ),
                 array(
-                    'text' => __( 'Pursue the men in the photo', 'novel-game-plugin' ),
+                    'text' => __( 'Pursue the men in the photo', 'novel-game-plugin-sample' ),
                     'next' => 'scene_11',
                     'flagConditions' => array(
                         array( 'name' => 'Evidence Photo', 'state' => true ),
@@ -435,7 +435,7 @@ function noveltool_get_shadow_detective_game_data() {
                     'flagConditionLogic' => 'AND',
                 ),
                 array(
-                    'text' => __( 'Carefully review all gathered evidence', 'novel-game-plugin' ),
+                    'text' => __( 'Carefully review all gathered evidence', 'novel-game-plugin-sample' ),
                     'next' => 'scene_10',
                 ),
             ),
@@ -446,25 +446,25 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン10: 金庫の鍵入手
         array(
-            'title'           => __( 'Shadow Detective - Finding the Key', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Finding the Key', 'novel-game-plugin-sample' ),
             'background'      => $bg_mansion,
             'character_left'  => $char_misaki,
             'character_center' => '',
             'character_right' => '',
-            'character_left_name' => __( 'Misaki', 'novel-game-plugin' ),
+            'character_left_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'The safe key... Oh, I think there was a spare in my husband\'s study drawer.', 'novel-game-plugin' ),
-                __( 'Guided by Misaki, I find a small key deep in the drawer.', 'novel-game-plugin' ),
-                __( 'Will this reveal anything...?', 'novel-game-plugin' ),
-                __( 'This key might open the safe in the hidden room.', 'novel-game-plugin' ),
+                __( 'The safe key... Oh, I think there was a spare in my husband\'s study drawer.', 'novel-game-plugin-sample' ),
+                __( 'Guided by Misaki, I find a small key deep in the drawer.', 'novel-game-plugin-sample' ),
+                __( 'Will this reveal anything...?', 'novel-game-plugin-sample' ),
+                __( 'This key might open the safe in the hidden room.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( 'left', '', 'left', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Open the safe in the hidden room immediately', 'novel-game-plugin' ),
+                    'text' => __( 'Open the safe in the hidden room immediately', 'novel-game-plugin-sample' ),
                     'next' => 'scene_13',
                     'flagConditions' => array(
                         array( 'name' => 'Discovered Hidden Room', 'state' => true ),
@@ -472,7 +472,7 @@ function noveltool_get_shadow_detective_game_data() {
                     'flagConditionLogic' => 'AND',
                 ),
                 array(
-                    'text' => __( 'Gather other clues first', 'novel-game-plugin' ),
+                    'text' => __( 'Gather other clues first', 'novel-game-plugin-sample' ),
                     'next' => 'scene_11',
                     'flagConditions' => array(
                         array( 'name' => 'Evidence Photo', 'state' => true ),
@@ -480,7 +480,7 @@ function noveltool_get_shadow_detective_game_data() {
                     'flagConditionLogic' => 'AND',
                 ),
                 array(
-                    'text' => __( 'Check with the wife about her husband\'s business dealings', 'novel-game-plugin' ),
+                    'text' => __( 'Check with the wife about her husband\'s business dealings', 'novel-game-plugin-sample' ),
                     'next' => 'scene_11',
                 ),
             ),
@@ -494,33 +494,33 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン11: 裏社会への接触
         array(
-            'title'           => __( 'Shadow Detective - Dangerous Investigation', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Dangerous Investigation', 'novel-game-plugin-sample' ),
             'background'      => $bg_alley,
             'character_left'  => '',
             'character_center' => '',
             'character_right' => $char_informant,
             'character_left_name' => '',
             'character_center_name' => '',
-            'character_right_name' => __( 'Informant', 'novel-game-plugin' ),
+            'character_right_name' => __( 'Informant', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
-                __( 'I ask a well-connected informant about the men in the photo.', 'novel-game-plugin' ),
-                __( 'Ah, these guys... dangerous bunch.', 'novel-game-plugin' ),
-                __( 'They\'re from "Ryu-gumi", a loan shark operation. Once you\'re in, you\'re done.', 'novel-game-plugin' ),
-                __( 'Makoto Kurosaki? Yeah, I\'ve heard. He owed them a huge amount.', 'novel-game-plugin' ),
+                __( 'I ask a well-connected informant about the men in the photo.', 'novel-game-plugin-sample' ),
+                __( 'Ah, these guys... dangerous bunch.', 'novel-game-plugin-sample' ),
+                __( 'They\'re from "Ryu-gumi", a loan shark operation. Once you\'re in, you\'re done.', 'novel-game-plugin-sample' ),
+                __( 'Makoto Kurosaki? Yeah, I\'ve heard. He owed them a huge amount.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', 'right', 'right', 'right' ),
             'dialogue_backgrounds' => array( $bg_alley, '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Investigate Ryu-gumi in detail', 'novel-game-plugin' ),
+                    'text' => __( 'Investigate Ryu-gumi in detail', 'novel-game-plugin-sample' ),
                     'next' => 'scene_12',
                 ),
                 array(
-                    'text' => __( 'Organize information for now', 'novel-game-plugin' ),
+                    'text' => __( 'Organize information for now', 'novel-game-plugin-sample' ),
                     'next' => 'scene_9',
                 ),
                 array(
-                    'text' => __( 'Search for more connections to Ryu-gumi', 'novel-game-plugin' ),
+                    'text' => __( 'Search for more connections to Ryu-gumi', 'novel-game-plugin-sample' ),
                     'next' => 'scene_13',
                     'flagConditions' => array(
                         array( 'name' => 'Hidden Room Key', 'state' => true ),
@@ -535,33 +535,33 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン12: 龍組の事務所訪問
         array(
-            'title'           => __( 'Shadow Detective - Dragon\'s Den', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Dragon\'s Den', 'novel-game-plugin-sample' ),
             'background'      => $bg_yakuza_office,
             'character_left'  => '',
             'character_center' => $char_yakuza,
             'character_right' => '',
             'character_left_name' => '',
-            'character_center_name' => __( 'Ryu-gumi Executive', 'novel-game-plugin' ),
+            'character_center_name' => __( 'Ryu-gumi Executive', 'novel-game-plugin-sample' ),
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Makoto Kurosaki? Yeah, I know him.', 'novel-game-plugin' ),
-                __( 'He ran away after defaulting on a 30 million yen debt.', 'novel-game-plugin' ),
-                __( 'But we didn\'t do anything. You got no proof, right?', 'novel-game-plugin' ),
-                __( 'They won\'t say anything publicly... but they seem to be hiding something.', 'novel-game-plugin' ),
+                __( 'Makoto Kurosaki? Yeah, I know him.', 'novel-game-plugin-sample' ),
+                __( 'He ran away after defaulting on a 30 million yen debt.', 'novel-game-plugin-sample' ),
+                __( 'But we didn\'t do anything. You got no proof, right?', 'novel-game-plugin-sample' ),
+                __( 'They won\'t say anything publicly... but they seem to be hiding something.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( 'center', 'center', 'center', '' ),
             'dialogue_backgrounds' => array( $bg_yakuza_office, '', '', $bg_alley ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Press hard', 'novel-game-plugin' ),
+                    'text' => __( 'Press hard', 'novel-game-plugin-sample' ),
                     'next' => 'scene_15',
                 ),
                 array(
-                    'text' => __( 'Retreat for now', 'novel-game-plugin' ),
+                    'text' => __( 'Retreat for now', 'novel-game-plugin-sample' ),
                     'next' => 'scene_13',
                 ),
                 array(
-                    'text' => __( 'Try a different approach and negotiate', 'novel-game-plugin' ),
+                    'text' => __( 'Try a different approach and negotiate', 'novel-game-plugin-sample' ),
                     'next' => 'scene_14',
                 ),
             ),
@@ -574,7 +574,7 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン13: 隠し部屋の金庫を開ける
         array(
-            'title'           => __( 'Shadow Detective - Decisive Evidence', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Decisive Evidence', 'novel-game-plugin-sample' ),
             'background'      => $bg_hidden_room,
             'character_left'  => '',
             'character_center' => '',
@@ -583,10 +583,10 @@ function noveltool_get_shadow_detective_game_data() {
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'I use the key to open the safe.', 'novel-game-plugin' ),
-                __( 'Inside are numerous documents and... cash!', 'novel-game-plugin' ),
-                __( 'Looking at the documents, records of illicit transactions...', 'novel-game-plugin' ),
-                __( 'Another name surfaces... "Takagi Construction, President Takagi"?', 'novel-game-plugin' ),
+                __( 'I use the key to open the safe.', 'novel-game-plugin-sample' ),
+                __( 'Inside are numerous documents and... cash!', 'novel-game-plugin-sample' ),
+                __( 'Looking at the documents, records of illicit transactions...', 'novel-game-plugin-sample' ),
+                __( 'Another name surfaces... "Takagi Construction, President Takagi"?', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
@@ -597,12 +597,12 @@ function noveltool_get_shadow_detective_game_data() {
                     ),
                     'logic' => 'AND',
                     'displayMode' => 'alternative',
-                    'alternativeText' => __( 'And a name other than Ryu-gumi... "Takagi Construction, President Takagi"?', 'novel-game-plugin' ),
+                    'alternativeText' => __( 'And a name other than Ryu-gumi... "Takagi Construction, President Takagi"?', 'novel-game-plugin-sample' ),
                 ),
             ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Investigate Takagi Construction', 'novel-game-plugin' ),
+                    'text' => __( 'Investigate Takagi Construction', 'novel-game-plugin-sample' ),
                     'next' => 'scene_14',
                     'flagConditions' => array(
                         array( 'name' => 'Discovered Hidden Room', 'state' => true ),
@@ -611,7 +611,7 @@ function noveltool_get_shadow_detective_game_data() {
                     'flagConditionLogic' => 'AND',
                 ),
                 array(
-                    'text' => __( 'Contact Ryu-gumi again', 'novel-game-plugin' ),
+                    'text' => __( 'Contact Ryu-gumi again', 'novel-game-plugin-sample' ),
                     'next' => 'scene_15',
                     'flagConditions' => array(
                         array( 'name' => 'Contacted Underworld', 'state' => true ),
@@ -619,7 +619,7 @@ function noveltool_get_shadow_detective_game_data() {
                     'flagConditionLogic' => 'AND',
                 ),
                 array(
-                    'text' => __( 'Carefully examine the documents in the safe', 'novel-game-plugin' ),
+                    'text' => __( 'Carefully examine the documents in the safe', 'novel-game-plugin-sample' ),
                     'next' => 'scene_14',
                 ),
             ),
@@ -630,7 +630,7 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン14: 高木建設の調査と闇取引メモ入手
         array(
-            'title'           => __( 'Shadow Detective - Shadow of the Mastermind', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Shadow of the Mastermind', 'novel-game-plugin-sample' ),
             'background'      => $bg_construction,
             'character_left'  => '',
             'character_center' => '',
@@ -639,24 +639,24 @@ function noveltool_get_shadow_detective_game_data() {
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Takagi Construction... a major general contractor. Why involved in illicit deals?', 'novel-game-plugin' ),
-                __( 'While investigating around the office, I find a memo in the trash...', 'novel-game-plugin' ),
-                __( '"Payment from Kurosaki confirmed. Process next through Ryu-gumi"', 'novel-game-plugin' ),
-                __( 'This is... President Takagi using Kurosaki and Ryu-gumi for illegal transactions?', 'novel-game-plugin' ),
+                __( 'Takagi Construction... a major general contractor. Why involved in illicit deals?', 'novel-game-plugin-sample' ),
+                __( 'While investigating around the office, I find a memo in the trash...', 'novel-game-plugin-sample' ),
+                __( '"Payment from Kurosaki confirmed. Process next through Ryu-gumi"', 'novel-game-plugin-sample' ),
+                __( 'This is... President Takagi using Kurosaki and Ryu-gumi for illegal transactions?', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Go directly to meet President Takagi', 'novel-game-plugin' ),
+                    'text' => __( 'Go directly to meet President Takagi', 'novel-game-plugin-sample' ),
                     'next' => 'scene_16',
                 ),
                 array(
-                    'text' => __( 'Gather more evidence', 'novel-game-plugin' ),
+                    'text' => __( 'Gather more evidence', 'novel-game-plugin-sample' ),
                     'next' => 'scene_15',
                 ),
                 array(
-                    'text' => __( 'Investigate Takagi Construction employees', 'novel-game-plugin' ),
+                    'text' => __( 'Investigate Takagi Construction employees', 'novel-game-plugin-sample' ),
                     'next' => 'scene_15',
                 ),
             ),
@@ -669,7 +669,7 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン15: 追加調査
         array(
-            'title'           => __( 'Shadow Detective - Deepening Investigation', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Deepening Investigation', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
             'character_center' => '',
@@ -678,24 +678,24 @@ function noveltool_get_shadow_detective_game_data() {
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Evidence has been accumulating. But I still don\'t have complete certainty.', 'novel-game-plugin' ),
-                __( 'President Takagi\'s memo... this could be the decisive evidence.', 'novel-game-plugin' ),
-                __( 'Ryu-gumi, Kurosaki, and Takagi Construction... the connections are becoming clear.', 'novel-game-plugin' ),
-                __( 'It\'s time to confront them directly.', 'novel-game-plugin' ),
+                __( 'Evidence has been accumulating. But I still don\'t have complete certainty.', 'novel-game-plugin-sample' ),
+                __( 'President Takagi\'s memo... this could be the decisive evidence.', 'novel-game-plugin-sample' ),
+                __( 'Ryu-gumi, Kurosaki, and Takagi Construction... the connections are becoming clear.', 'novel-game-plugin-sample' ),
+                __( 'It\'s time to confront them directly.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Interrogate President Takagi', 'novel-game-plugin' ),
+                    'text' => __( 'Interrogate President Takagi', 'novel-game-plugin-sample' ),
                     'next' => 'scene_16',
                 ),
                 array(
-                    'text' => __( 'Consult with the police', 'novel-game-plugin' ),
+                    'text' => __( 'Consult with the police', 'novel-game-plugin-sample' ),
                     'next' => 'scene_17',
                 ),
                 array(
-                    'text' => __( 'Verify the evidence one more time', 'novel-game-plugin' ),
+                    'text' => __( 'Verify the evidence one more time', 'novel-game-plugin-sample' ),
                     'next' => 'scene_16',
                     'flagConditions' => array(
                         array( 'name' => 'Illicit Transaction Memo', 'state' => true ),
@@ -710,34 +710,34 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン16: 高木社長との対峙（第一段階）
         array(
-            'title'           => __( 'Shadow Detective - Encounter with the Mastermind', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Encounter with the Mastermind', 'novel-game-plugin-sample' ),
             'background'      => $bg_construction,
             'character_left'  => '',
             'character_center' => $char_takagi,
             'character_right' => '',
             'character_left_name' => '',
-            'character_center_name' => __( 'President Takagi', 'novel-game-plugin' ),
+            'character_center_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Detective, what brings you here?', 'novel-game-plugin' ),
-                __( 'Calm demeanor, but his eyes aren\'t smiling.', 'novel-game-plugin' ),
-                __( 'Please tell me about your relationship with Makoto Kurosaki.', 'novel-game-plugin' ),
-                __( 'Ah, I had a business relationship with him.', 'novel-game-plugin' ),
+                __( 'Detective, what brings you here?', 'novel-game-plugin-sample' ),
+                __( 'Calm demeanor, but his eyes aren\'t smiling.', 'novel-game-plugin-sample' ),
+                __( 'Please tell me about your relationship with Makoto Kurosaki.', 'novel-game-plugin-sample' ),
+                __( 'Ah, I had a business relationship with him.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( 'center', '', '', 'center' ),
             'dialogue_backgrounds' => array( $bg_construction, '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Explain this illicit transaction memo', 'novel-game-plugin' ),
+                    'text' => __( 'Explain this illicit transaction memo', 'novel-game-plugin-sample' ),
                     'next' => 'scene_18',
                     'required_flags' => array( 'flag_item_trade_memo' ),
                 ),
                 array(
-                    'text' => __( 'What about your relationship with Ryu-gumi?', 'novel-game-plugin' ),
+                    'text' => __( 'What about your relationship with Ryu-gumi?', 'novel-game-plugin-sample' ),
                     'next' => 'scene_17',
                 ),
                 array(
-                    'text' => __( 'Ask about the disappearance directly', 'novel-game-plugin' ),
+                    'text' => __( 'Ask about the disappearance directly', 'novel-game-plugin-sample' ),
                     'next' => 'scene_17',
                 ),
             ),
@@ -748,25 +748,25 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン17: 間接的な追及
         array(
-            'title'           => __( 'Shadow Detective - Cautious Approach', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Cautious Approach', 'novel-game-plugin-sample' ),
             'background'      => $bg_construction,
             'character_left'  => '',
             'character_center' => $char_takagi,
             'character_right' => '',
             'character_left_name' => '',
-            'character_center_name' => __( 'President Takagi', 'novel-game-plugin' ),
+            'character_center_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Ryu-gumi? Ah, I\'ve heard rumors, but I have no connection with them.', 'novel-game-plugin' ),
-                __( 'He skillfully evaded... Without decisive evidence, I can\'t press further.', 'novel-game-plugin' ),
-                __( 'Detective, baseless defamation is libel, you know.', 'novel-game-plugin' ),
-                __( 'At this rate, I can\'t reach the truth...', 'novel-game-plugin' ),
+                __( 'Ryu-gumi? Ah, I\'ve heard rumors, but I have no connection with them.', 'novel-game-plugin-sample' ),
+                __( 'He skillfully evaded... Without decisive evidence, I can\'t press further.', 'novel-game-plugin-sample' ),
+                __( 'Detective, baseless defamation is libel, you know.', 'novel-game-plugin-sample' ),
+                __( 'At this rate, I can\'t reach the truth...', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( 'center', '', 'center', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Wait, please look at this evidence', 'novel-game-plugin' ),
+                    'text' => __( 'Wait, please look at this evidence', 'novel-game-plugin-sample' ),
                     'next' => 'scene_18',
                     'flagConditions' => array(
                         array( 'name' => 'Illicit Transaction Memo', 'state' => true ),
@@ -774,11 +774,11 @@ function noveltool_get_shadow_detective_game_data() {
                     'flagConditionLogic' => 'AND',
                 ),
                 array(
-                    'text' => __( 'Sorry, excuse me', 'novel-game-plugin' ),
+                    'text' => __( 'Sorry, excuse me', 'novel-game-plugin-sample' ),
                     'next' => 'scene_23',
                 ),
                 array(
-                    'text' => __( 'Try bluffing with partial evidence', 'novel-game-plugin' ),
+                    'text' => __( 'Try bluffing with partial evidence', 'novel-game-plugin-sample' ),
                     'next' => 'scene_22',
                 ),
             ),
@@ -789,33 +789,33 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン18: 黒幕との対峙（証拠提示）
         array(
-            'title'           => __( 'Shadow Detective - Revealing the Truth', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Revealing the Truth', 'novel-game-plugin-sample' ),
             'background'      => $bg_construction,
             'character_left'  => '',
             'character_center' => $char_takagi,
             'character_right' => '',
             'character_left_name' => '',
-            'character_center_name' => __( 'President Takagi', 'novel-game-plugin' ),
+            'character_center_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'I place the illicit transaction memo on the desk.', 'novel-game-plugin' ),
-                __( '...This is...', 'novel-game-plugin' ),
-                __( 'His expression changed. Bull\'s eye.', 'novel-game-plugin' ),
-                __( 'Tch... Kurosaki left evidence behind.', 'novel-game-plugin' ),
+                __( 'I place the illicit transaction memo on the desk.', 'novel-game-plugin-sample' ),
+                __( '...This is...', 'novel-game-plugin-sample' ),
+                __( 'His expression changed. Bull\'s eye.', 'novel-game-plugin-sample' ),
+                __( 'Tch... Kurosaki left evidence behind.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', 'center', '', 'center' ),
             'dialogue_backgrounds' => array( $bg_construction, '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Where is Makoto Kurosaki?', 'novel-game-plugin' ),
+                    'text' => __( 'Where is Makoto Kurosaki?', 'novel-game-plugin-sample' ),
                     'next' => 'scene_19',
                 ),
                 array(
-                    'text' => __( 'I\'m calling the police', 'novel-game-plugin' ),
+                    'text' => __( 'I\'m calling the police', 'novel-game-plugin-sample' ),
                     'next' => 'scene_19',
                 ),
                 array(
-                    'text' => __( 'Tell me everything you know', 'novel-game-plugin' ),
+                    'text' => __( 'Tell me everything you know', 'novel-game-plugin-sample' ),
                     'next' => 'scene_19',
                 ),
             ),
@@ -828,33 +828,33 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン19: 真相の告白
         array(
-            'title'           => __( 'Shadow Detective - All the Truth', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - All the Truth', 'novel-game-plugin-sample' ),
             'background'      => $bg_construction,
             'character_left'  => '',
             'character_center' => $char_takagi,
             'character_right' => '',
             'character_left_name' => '',
-            'character_center_name' => __( 'President Takagi', 'novel-game-plugin' ),
+            'character_center_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Fine... I\'ll tell you everything.', 'novel-game-plugin' ),
-                __( 'Kurosaki discovered my fraud. So I tried to silence him...', 'novel-game-plugin' ),
-                __( 'But I didn\'t kill him. I asked Ryu-gumi to threaten him.', 'novel-game-plugin' ),
-                __( 'Kurosaki is now hiding in my villa. By his own choice.', 'novel-game-plugin' ),
+                __( 'Fine... I\'ll tell you everything.', 'novel-game-plugin-sample' ),
+                __( 'Kurosaki discovered my fraud. So I tried to silence him...', 'novel-game-plugin-sample' ),
+                __( 'But I didn\'t kill him. I asked Ryu-gumi to threaten him.', 'novel-game-plugin-sample' ),
+                __( 'Kurosaki is now hiding in my villa. By his own choice.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( 'center', 'center', 'center', 'center' ),
             'dialogue_backgrounds' => array( $bg_construction, '', '', $bg_villa ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Protect Kurosaki immediately', 'novel-game-plugin' ),
+                    'text' => __( 'Protect Kurosaki immediately', 'novel-game-plugin-sample' ),
                     'next' => 'scene_20',
                 ),
                 array(
-                    'text' => __( 'Call the police', 'novel-game-plugin' ),
+                    'text' => __( 'Call the police', 'novel-game-plugin-sample' ),
                     'next' => 'scene_20',
                 ),
                 array(
-                    'text' => __( 'Get the villa location first', 'novel-game-plugin' ),
+                    'text' => __( 'Get the villa location first', 'novel-game-plugin-sample' ),
                     'next' => 'scene_20',
                 ),
             ),
@@ -865,25 +865,25 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン20: 黒崎誠の保護（分岐点）
         array(
-            'title'           => __( 'Shadow Detective - Reunion with the Missing', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Reunion with the Missing', 'novel-game-plugin-sample' ),
             'background'      => $bg_villa,
             'character_left'  => '',
             'character_center' => $char_makoto,
             'character_right' => '',
             'character_left_name' => '',
-            'character_center_name' => __( 'Makoto Kurosaki', 'novel-game-plugin' ),
+            'character_center_name' => __( 'Makoto Kurosaki', 'novel-game-plugin-sample' ),
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'You\'re the detective...', 'novel-game-plugin' ),
-                __( 'I discovered Takagi\'s fraud and was threatened.', 'novel-game-plugin' ),
-                __( 'I was told my family would be harmed, so I had no choice but to hide.', 'novel-game-plugin' ),
-                __( 'Please... let me see my wife, Misaki.', 'novel-game-plugin' ),
+                __( 'You\'re the detective...', 'novel-game-plugin-sample' ),
+                __( 'I discovered Takagi\'s fraud and was threatened.', 'novel-game-plugin-sample' ),
+                __( 'I was told my family would be harmed, so I had no choice but to hide.', 'novel-game-plugin-sample' ),
+                __( 'Please... let me see my wife, Misaki.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( 'center', 'center', 'center', 'center' ),
             'dialogue_backgrounds' => array( $bg_villa, '', '', '' ),
             'choices'         => array(
                 array(
-                    'text' => __( 'Everything is resolved. Let\'s go back to your family', 'novel-game-plugin' ),
+                    'text' => __( 'Everything is resolved. Let\'s go back to your family', 'novel-game-plugin-sample' ),
                     'next' => 'scene_21',
                     'flagConditions' => array(
                         array( 'name' => 'Pocket Watch', 'state' => true ),
@@ -896,11 +896,11 @@ function noveltool_get_shadow_detective_game_data() {
                     'flagConditionLogic' => 'AND',
                 ),
                 array(
-                    'text' => __( 'There are still unclear points...', 'novel-game-plugin' ),
+                    'text' => __( 'There are still unclear points...', 'novel-game-plugin-sample' ),
                     'next' => 'scene_22',
                 ),
                 array(
-                    'text' => __( 'Let me confirm the evidence one more time', 'novel-game-plugin' ),
+                    'text' => __( 'Let me confirm the evidence one more time', 'novel-game-plugin-sample' ),
                     'next' => 'scene_23',
                 ),
             ),
@@ -911,31 +911,31 @@ function noveltool_get_shadow_detective_game_data() {
         
         // シーン21: エンディング - 完全解決
         array(
-            'title'           => __( 'Shadow Detective - Complete Solution', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Complete Solution', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => $char_misaki,
             'character_center' => '',
             'character_right' => $char_makoto,
-            'character_left_name' => __( 'Misaki', 'novel-game-plugin' ),
+            'character_left_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
             'character_center_name' => '',
-            'character_right_name' => __( 'Makoto', 'novel-game-plugin' ),
+            'character_right_name' => __( 'Makoto', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
-                __( 'All evidence gathered, the truth has been revealed.', 'novel-game-plugin' ),
-                __( 'Detective, thank you so much.', 'novel-game-plugin' ),
-                __( 'President Takagi was arrested, and I will cooperate with the police.', 'novel-game-plugin' ),
-                __( 'Another case solved. This is a detective\'s work.', 'novel-game-plugin' ),
+                __( 'All evidence gathered, the truth has been revealed.', 'novel-game-plugin-sample' ),
+                __( 'Detective, thank you so much.', 'novel-game-plugin-sample' ),
+                __( 'President Takagi was arrested, and I will cooperate with the police.', 'novel-game-plugin-sample' ),
+                __( 'Another case solved. This is a detective\'s work.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', 'left', 'right', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(),
             'is_ending'       => true,
-            'ending_text'     => __( 'Complete Solution - All truths have been revealed', 'novel-game-plugin' ),
+            'ending_text'     => __( 'Complete Solution - All truths have been revealed', 'novel-game-plugin-sample' ),
             'set_flags'       => array(),
         ),
         
         // シーン22: エンディング - 部分解決
         array(
-            'title'           => __( 'Shadow Detective - Partial Solution', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Partial Solution', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
             'character_center' => '',
@@ -944,22 +944,22 @@ function noveltool_get_shadow_detective_game_data() {
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Makoto Kurosaki was protected, and the case saw some resolution.', 'novel-game-plugin' ),
-                __( 'However, I couldn\'t gather all the evidence.', 'novel-game-plugin' ),
-                __( 'President Takagi\'s crimes couldn\'t be fully proven, leaving parts unresolved.', 'novel-game-plugin' ),
-                __( 'Frustrating, but this is detective work... perfect case resolution is difficult.', 'novel-game-plugin' ),
+                __( 'Makoto Kurosaki was protected, and the case saw some resolution.', 'novel-game-plugin-sample' ),
+                __( 'However, I couldn\'t gather all the evidence.', 'novel-game-plugin-sample' ),
+                __( 'President Takagi\'s crimes couldn\'t be fully proven, leaving parts unresolved.', 'novel-game-plugin-sample' ),
+                __( 'Frustrating, but this is detective work... perfect case resolution is difficult.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(),
             'is_ending'       => true,
-            'ending_text'     => __( 'Partial Solution - Some truths remain in darkness', 'novel-game-plugin' ),
+            'ending_text'     => __( 'Partial Solution - Some truths remain in darkness', 'novel-game-plugin-sample' ),
             'set_flags'       => array(),
         ),
         
         // シーン23: エンディング - 証拠不足/誤推理
         array(
-            'title'           => __( 'Shadow Detective - Insufficient Evidence', 'novel-game-plugin' ),
+            'title'           => __( 'Shadow Detective - Insufficient Evidence', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
             'character_center' => '',
@@ -968,16 +968,16 @@ function noveltool_get_shadow_detective_game_data() {
             'character_center_name' => '',
             'character_right_name' => '',
             'dialogue_texts'  => array(
-                __( 'Evidence was insufficient, couldn\'t reach the truth.', 'novel-game-plugin' ),
-                __( 'Makoto Kurosaki remains missing.', 'novel-game-plugin' ),
-                __( 'I should have been more careful and thorough in my investigation.', 'novel-game-plugin' ),
-                __( 'Let\'s start the investigation over from the beginning.', 'novel-game-plugin' ),
+                __( 'Evidence was insufficient, couldn\'t reach the truth.', 'novel-game-plugin-sample' ),
+                __( 'Makoto Kurosaki remains missing.', 'novel-game-plugin-sample' ),
+                __( 'I should have been more careful and thorough in my investigation.', 'novel-game-plugin-sample' ),
+                __( 'Let\'s start the investigation over from the beginning.', 'novel-game-plugin-sample' ),
             ),
             'dialogue_speakers' => array( '', '', '', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(),
             'is_ending'       => true,
-            'ending_text'     => __( 'Insufficient Evidence - Detective Failure', 'novel-game-plugin' ),
+            'ending_text'     => __( 'Insufficient Evidence - Detective Failure', 'novel-game-plugin-sample' ),
             'set_flags'       => array(),
         ),
     );
@@ -986,53 +986,53 @@ function noveltool_get_shadow_detective_game_data() {
     $flag_master = array(
         array(
             'id'   => 'flag_item_watch',
-            'name' => __( 'Pocket Watch', 'novel-game-plugin' ),
-            'description' => __( 'A pocket watch belonging to Makoto Kurosaki. Evidence he was at the disappearance site.', 'novel-game-plugin' ),
+            'name' => __( 'Pocket Watch', 'novel-game-plugin-sample' ),
+            'description' => __( 'A pocket watch belonging to Makoto Kurosaki. Evidence he was at the disappearance site.', 'novel-game-plugin-sample' ),
         ),
         array(
             'id'   => 'flag_item_note',
-            'name' => __( 'Missing Person\'s Diary', 'novel-game-plugin' ),
-            'description' => __( 'Kurosaki\'s diary revealing his troubles and evidence of transactions.', 'novel-game-plugin' ),
+            'name' => __( 'Missing Person\'s Diary', 'novel-game-plugin-sample' ),
+            'description' => __( 'Kurosaki\'s diary revealing his troubles and evidence of transactions.', 'novel-game-plugin-sample' ),
         ),
         array(
             'id'   => 'flag_item_photo',
-            'name' => __( 'Evidence Photo', 'novel-game-plugin' ),
-            'description' => __( 'A photo of the illicit transaction scene.', 'novel-game-plugin' ),
+            'name' => __( 'Evidence Photo', 'novel-game-plugin-sample' ),
+            'description' => __( 'A photo of the illicit transaction scene.', 'novel-game-plugin-sample' ),
         ),
         array(
             'id'   => 'flag_item_key',
-            'name' => __( 'Hidden Room Key', 'novel-game-plugin' ),
-            'description' => __( 'The key to access the hidden room.', 'novel-game-plugin' ),
+            'name' => __( 'Hidden Room Key', 'novel-game-plugin-sample' ),
+            'description' => __( 'The key to access the hidden room.', 'novel-game-plugin-sample' ),
         ),
         array(
             'id'   => 'flag_item_trade_memo',
-            'name' => __( 'Illicit Transaction Memo', 'novel-game-plugin' ),
-            'description' => __( 'Decisive evidence revealing the mastermind\'s identity.', 'novel-game-plugin' ),
+            'name' => __( 'Illicit Transaction Memo', 'novel-game-plugin-sample' ),
+            'description' => __( 'Decisive evidence revealing the mastermind\'s identity.', 'novel-game-plugin-sample' ),
         ),
         array(
             'id'   => 'flag_talked_wife',
-            'name' => __( 'Talked to Wife', 'novel-game-plugin' ),
-            'description' => __( 'Obtained testimony from Misaki.', 'novel-game-plugin' ),
+            'name' => __( 'Talked to Wife', 'novel-game-plugin-sample' ),
+            'description' => __( 'Obtained testimony from Misaki.', 'novel-game-plugin-sample' ),
         ),
         array(
             'id'   => 'flag_talked_friend',
-            'name' => __( 'Talked to Friend', 'novel-game-plugin' ),
-            'description' => __( 'Obtained testimony from friend Sato.', 'novel-game-plugin' ),
+            'name' => __( 'Talked to Friend', 'novel-game-plugin-sample' ),
+            'description' => __( 'Obtained testimony from friend Sato.', 'novel-game-plugin-sample' ),
         ),
         array(
             'id'   => 'flag_found_hidden_room',
-            'name' => __( 'Discovered Hidden Room', 'novel-game-plugin' ),
-            'description' => __( 'Found the hidden room in the study.', 'novel-game-plugin' ),
+            'name' => __( 'Discovered Hidden Room', 'novel-game-plugin-sample' ),
+            'description' => __( 'Found the hidden room in the study.', 'novel-game-plugin-sample' ),
         ),
         array(
             'id'   => 'flag_met_underworld',
-            'name' => __( 'Contacted Underworld', 'novel-game-plugin' ),
-            'description' => __( 'Made contact with Ryu-gumi.', 'novel-game-plugin' ),
+            'name' => __( 'Contacted Underworld', 'novel-game-plugin-sample' ),
+            'description' => __( 'Made contact with Ryu-gumi.', 'novel-game-plugin-sample' ),
         ),
         array(
             'id'   => 'flag_confronted_mastermind',
-            'name' => __( 'Confronted Mastermind', 'novel-game-plugin' ),
-            'description' => __( 'Confronted President Takagi.', 'novel-game-plugin' ),
+            'name' => __( 'Confronted Mastermind', 'novel-game-plugin-sample' ),
+            'description' => __( 'Confronted President Takagi.', 'novel-game-plugin-sample' ),
         ),
     );
     
@@ -1209,7 +1209,7 @@ function noveltool_install_shadow_detective_game() {
     
     // 2. machine_name が見つからない場合、タイトルベースでチェック（後方互換）
     if ( ! $existing_game ) {
-        $game_title = __( 'Shadow Detective', 'novel-game-plugin' );
+        $game_title = __( 'Shadow Detective', 'novel-game-plugin-sample' );
         $existing_game = noveltool_get_game_by_title( $game_title );
     }
     
