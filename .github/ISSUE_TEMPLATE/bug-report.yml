@@ -11,6 +11,7 @@ body:
   - type: markdown
     attributes:
       value: |
+        ## 概要
         以下のフォームに沿って、バグの詳細を日本語で記入してください。
         すべての PR は base: dev を必須とします。タイトル・概要の後追い変更は行わないでください。
   - type: textarea
@@ -46,6 +47,11 @@ body:
         - ❌ 問題のある機能（具体的にどのような問題か）
     validations:
       required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## 再現手順
+        以下のフィールドで再現手順を具体的に記入してください。テンプレートに従って、順番通りにコマンドや画面操作を記述してください。
   - type: textarea
     id: expected_behavior
     attributes:
@@ -110,21 +116,33 @@ body:
         - ファイル名2 - 役割の説明
     validations:
       required: true
-  - type: checkboxes
+
+  - type: textarea
     id: checklist
     attributes:
       label: チェックリスト
-      options:
-        - label: バグ修正実装（根本原因の解決）
-        - label: セキュリティ検証（サニタイズ・エスケープ）
-        - label: WordPress準拠確認（コーディング規約・権限チェック）
-        - label: 国際化対応（翻訳関数・テキストドメイン）
-        - label: 後方互換性テスト（既存データ）
-        - label: 回帰テスト（既存機能への影響確認）
-        - label: ブラウザ互換性テスト
-        - label: プラグインレビューガイドライン適合確認
+      description: 実施する作業のチェックリスト（概要、再現手順、影響範囲等に基づいて必要な検証項目を記載してください）
+      placeholder: |
+        ## チェックリスト
+        必要に応じて以下の観点を参考に、要件や再現手順に沿った具体的なチェック項目を記述してください。
+
+        ### 再現性
+        (例) 再現手順が常に成立するか、再現に必要な前提条件
+
+        ### 修正/検証
+        (例) 修正後に問題が解消されること、変更箇所の影響の確認
+
+        ### テスト/互換性
+        (例) ユニットテスト/回帰テスト/互換性の検証
     validations:
-      required: false
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## チェックリスト
+        - [ ]
+        
+        **注意：チェックリストの記載は必須です。要件（再現手順や影響範囲）に基づき、`- [ ]` 形式で検証項目を記載してください。**
   - type: markdown
     attributes:
       value: |

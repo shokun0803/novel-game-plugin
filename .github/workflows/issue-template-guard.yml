@@ -16,14 +16,32 @@ jobs:
         with:
           script: |
             const body = context.payload.issue.body || "";
+            const labels = (context.payload.issue.labels || []).map(l => l.name);
             const problems = [];
-            // Required top-level headings
-            const required = ["# タイトル", "## 概要", "## 要件", "## チェックリスト", "## 重要事項", "## 参考"];            
+
+            // Select required headings based on label
+            let required = [];
+            let requiredSubHeadings = [];
+
+            if (labels.includes('bug')) {
+              // Bug-specific required headings
+              required = ["# タイトル", "## 概要", "## 再現手順", "## チェックリスト", "## 重要事項", "## 参考"];
+              requiredSubHeadings = [];
+            } else if (labels.includes('enhancement') || labels.includes('feature')) {
+              // Enhancement/feature-specific required headings with detailed subheadings
+              required = ["# タイトル", "## 概要", "## 要件", "## チェックリスト", "## 重要事項", "## 参考"];
+              requiredSubHeadings = ["### 機能仕様", "### UI/文言", "### 互換性/移行", "### 実装影響範囲", "### テスト観点"];
+            } else {
+              // Default: require a minimal set and include the feature subheadings by default
+              required = ["# タイトル", "## 概要", "## チェックリスト", "## 重要事項", "## 参考"];
+              requiredSubHeadings = [];
+            }
+
+            // Validate top-level headings
             for (const h of required) {
               if (!body.includes(h)) problems.push(`必須見出しが不足: ${h}`);
             }
             // Required sub-headings under "## 要件"
-            const requiredSubHeadings = ["### 機能仕様", "### UI/文言", "### 互換性/移行", "### 実装影響範囲", "### テスト観点"];
             for (const sh of requiredSubHeadings) {
               if (!body.includes(sh)) problems.push(`要件セクションに必須サブ見出しが不足: ${sh}`);
             }
