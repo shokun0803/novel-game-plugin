@@ -182,7 +182,7 @@ Novel Game Plugin では、ゲームデータを JSON 形式でエクスポー�
 | `character_center_name` | string | 任意 | 中央キャラクター名 |
 | `character_right_name` | string | 任意 | 右側キャラクター名 |
 | `dialogue_texts` | array | 任意 | セリフテキストの配列 |
-| `dialogue_speakers` | array | 任意 | 話者の配列（"left", "center", "right", "" のいずれか） |
+| `dialogue_speakers` | array | 任意 | 話者の配列（"left", "center", "right", "" のいずれか）。空文字はナレーションを示します |
 | `dialogue_backgrounds` | array | 任意 | セリフごとの背景画像 URL 配列 |
 | `dialogue_flag_conditions` | object/array | 任意 | セリフのフラグ条件 |
 | `choices` | array | 任意 | 選択肢の配列 |
