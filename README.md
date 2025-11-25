@@ -399,6 +399,30 @@ msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-s
 - `the_content` - コンテンツフィルター
 - `template_include` - テンプレート読み込み
 
+### エクスポート/インポート
+
+ゲームデータをJSON形式でエクスポート・インポートできます。
+
+#### エクスポート
+1. 管理画面「マイゲーム」からゲームを選択
+2. 「ゲーム設定」タブを開く
+3. 「エクスポート」ボタンをクリック
+4. JSONファイルがダウンロードされます
+
+#### インポート
+1. 管理画面「マイゲーム」を開く
+2. 「インポート」タブをクリック
+3. JSONファイルを選択してインポート
+
+**詳細な仕様やトラブルシューティングについては、[JSON インポートガイド](docs/IMPORT_JSON_USER_GUIDE.md) を参照してください。**
+
+最小構成のサンプルファイルは [docs/sample-import.json](docs/sample-import.json) にあります。
+
+#### 主な制限事項
+- ファイルサイズ: 最大10MB
+- ファイル形式: JSONのみ (.json)
+- 重複タイトル: 自動でリネームされます
+
 ## 貢献・サポート
 
 ### バグレポート・機能要望
