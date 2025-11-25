@@ -1712,3 +1712,52 @@ msgstr ""
 #, php-format
 msgid "Start: %s"
 msgstr ""
+
+#: admin/export-import.php:28 includes/post-types.php:333
+#: includes/post-types.php:334
+msgid "Export/Import"
+msgstr ""
+
+#: admin/export-import.php:36
+msgid "Export Game Data"
+msgstr ""
+
+#: admin/export-import.php:37
+msgid "Select a game and export it in JSON format."
+msgstr ""
+
+#: admin/export-import.php:41
+msgid "No games available to export."
+msgstr ""
+
+#: admin/export-import.php:46
+msgid "Select game to export"
+msgstr ""
+
+#: admin/export-import.php:48
+msgid "-- Select a game --"
+msgstr ""
+
+#: admin/export-import.php:55 admin/export-import.php:206
+msgid "Export"
+msgstr ""
+
+#: admin/export-import.php:65
+msgid "Import Game Data"
+msgstr ""
+
+#: admin/export-import.php:66
+msgid "Import a JSON format game data to create a new game."
+msgstr ""
+
+#: admin/export-import.php:70
+msgid "Select JSON file"
+msgstr ""
+
+#: admin/export-import.php:92 admin/export-import.php:207
+msgid "Import"
+msgstr ""
+
+#: admin/export-import.php:214
+msgid "Please select a game to export."
+msgstr ""

@@ -51,6 +51,7 @@ require_once NOVEL_GAME_PLUGIN_PATH . 'admin/new-game.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/game-settings.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/plugin-settings.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/ad-management.php';
+require_once NOVEL_GAME_PLUGIN_PATH . 'admin/export-import.php';
 
 /**
  * プラグインの初期化

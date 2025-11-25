@@ -9,10 +9,36 @@
     'use strict';
 
     $(document).ready(function() {
+        // ゲーム選択ドロップダウンの変更処理
+        $('#noveltool-export-game-select').on('change', function() {
+            var select = $(this);
+            var exportButton = $('.noveltool-export-button');
+            
+            if (select.val()) {
+                exportButton.prop('disabled', false);
+            } else {
+                exportButton.prop('disabled', true);
+            }
+        });
+
         // エクスポートボタンのクリック処理
         $('.noveltool-export-button').on('click', function() {
             var button = $(this);
             var gameId = button.data('game-id');
+            
+            // ドロップダウンからゲームIDを取得（専用画面の場合）
+            var gameSelect = $('#noveltool-export-game-select');
+            if (gameSelect.length && gameSelect.val()) {
+                gameId = gameSelect.val();
+            }
+            
+            // ゲームIDが未選択の場合
+            if (!gameId) {
+                if (noveltoolExportImport.noGameSelected) {
+                    showNotice('error', noveltoolExportImport.noGameSelected);
+                }
+                return;
+            }
 
             // ボタンを無効化
             button.prop('disabled', true).text(noveltoolExportImport.exporting);
@@ -120,8 +146,10 @@
                         button.prop('disabled', true);
                         
                         // 数秒後にマイゲームページにリダイレクト
+                        // 専用画面の場合は同ページにリダイレクト
+                        var redirectUrl = noveltoolExportImport.exportImportUrl || noveltoolExportImport.myGamesUrl;
                         setTimeout(function() {
-                            window.location.href = noveltoolExportImport.myGamesUrl;
+                            window.location.href = redirectUrl;
                         }, 2000);
                     } else {
                         showNotice('error', response.data.message || noveltoolExportImport.importError);
@@ -148,11 +176,18 @@
             var noticeClass = type === 'success' ? 'notice-success' : 'notice-error';
             var notice = $('<div class="notice ' + noticeClass + ' is-dismissible"><p>' + message + '</p></div>');
             
-            // 既存の通知を削除
-            $('.noveltool-export-import-section .notice').remove();
+            // 既存の通知を削除（専用画面とセクション両方対応）
+            $('.noveltool-export-import-section .notice, .noveltool-export-import-container .notice').remove();
             
             // 新しい通知を追加
-            $('.noveltool-export-import-section').prepend(notice);
+            var container = $('.noveltool-export-import-container');
+            if (container.length) {
+                // 専用画面
+                container.prepend(notice);
+            } else {
+                // 旧セクション（互換性のため残す）
+                $('.noveltool-export-import-section').prepend(notice);
+            }
             
             // 数秒後に自動的に削除
             setTimeout(function() {

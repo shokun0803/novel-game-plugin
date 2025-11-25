@@ -1,0 +1,179 @@
+/**
+ * エクスポート/インポート専用画面のスタイル
+ *
+ * @package NovelGamePlugin
+ * @since 1.3.0
+ */
+
+/* コンテナ */
+.noveltool-export-import-page {
+    max-width: 1200px;
+}
+
+.noveltool-export-import-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+/* セクション */
+.noveltool-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    padding: 20px;
+    border-radius: 4px;
+}
+
+.noveltool-section h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    font-size: 1.3em;
+}
+
+.noveltool-section .description {
+    color: #646970;
+    margin-bottom: 20px;
+}
+
+/* エクスポートフォーム */
+.noveltool-export-form {
+    max-width: 500px;
+}
+
+.noveltool-export-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.noveltool-export-game-select {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 15px;
+    padding: 8px;
+}
+
+/* インポートフォーム */
+.noveltool-import-form {
+    max-width: 500px;
+}
+
+.noveltool-import-form label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.noveltool-import-file {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 10px;
+}
+
+/* ボタン */
+.noveltool-export-button,
+.noveltool-import-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.noveltool-export-button .dashicons,
+.noveltool-import-button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+}
+
+.noveltool-export-button:disabled,
+.noveltool-import-button:disabled {
+    cursor: not-allowed;
+}
+
+/* プログレスバー */
+.noveltool-import-progress {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f0f0f1;
+    border-radius: 4px;
+}
+
+.noveltool-progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.noveltool-progress-bar-inner {
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #0073aa, #00a0d2);
+    transition: width 0.3s ease;
+    animation: progress-animation 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-animation {
+    0% {
+        width: 0;
+    }
+    50% {
+        width: 70%;
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+/* ゲームなしメッセージ */
+.noveltool-no-games-message {
+    padding: 20px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #666;
+}
+
+/* 履歴テーブル */
+.noveltool-history-section .wp-list-table {
+    margin-top: 15px;
+}
+
+.noveltool-history-section .wp-list-table th,
+.noveltool-history-section .wp-list-table td {
+    padding: 12px 10px;
+}
+
+.noveltool-history-section .wp-list-table .dashicons {
+    vertical-align: middle;
+    margin-right: 5px;
+    color: #646970;
+}
+
+/* 通知メッセージ */
+.noveltool-export-import-container .notice {
+    margin: 15px 0;
+    padding: 12px;
+}
+
+/* レスポンシブ */
+@media screen and (max-width: 782px) {
+    .noveltool-export-import-container {
+        gap: 20px;
+    }
+
+    .noveltool-section {
+        padding: 15px;
+    }
+
+    .noveltool-export-game-select,
+    .noveltool-import-file {
+        max-width: 100%;
+    }
+}
