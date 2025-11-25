@@ -61,9 +61,63 @@ function noveltool_my_games_page() {
     // ゲーム一覧の取得
     $all_games = noveltool_get_all_games();
 
+    // メッセージの取得
+    $error_message = '';
+    $success_message = '';
+    
+    if ( isset( $_GET['error'] ) ) {
+        switch ( sanitize_text_field( wp_unslash( $_GET['error'] ) ) ) {
+            case 'security':
+                $error_message = __( 'Security check failed.', 'novel-game-plugin' );
+                break;
+            case 'delete_failed':
+                $error_message = __( 'Failed to delete.', 'novel-game-plugin' );
+                break;
+            case 'invalid_id':
+                $error_message = __( 'Invalid ID.', 'novel-game-plugin' );
+                break;
+        }
+    }
+    
+    if ( isset( $_GET['success'] ) ) {
+        switch ( sanitize_text_field( wp_unslash( $_GET['success'] ) ) ) {
+            case 'deleted':
+                $success_message = __( 'Game has been deleted.', 'novel-game-plugin' );
+                break;
+        }
+    }
+
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'My Games', 'novel-game-plugin' ); ?></h1>
+        
+        <?php if ( $error_message ) : ?>
+            <div class="notice notice-error is-dismissible">
+                <p><?php echo esc_html( $error_message ); ?></p>
+            </div>
+        <?php endif; ?>
+
+        <?php if ( $success_message ) : ?>
+            <div class="notice notice-success is-dismissible">
+                <p><?php echo esc_html( $success_message ); ?></p>
+            </div>
+        <?php endif; ?>
+        
+        <?php
+        // Shadow Detectiveサンプルゲームが存在するかチェック
+        $shadow_detective_exists = noveltool_get_game_by_machine_name( 'shadow_detective_v1' ) !== null;
+        
+        if ( ! $shadow_detective_exists ) :
+        ?>
+            <div class="notice notice-info">
+                <p><?php esc_html_e( 'Sample game is not installed. You can install a sample game to see how the plugin works.', 'novel-game-plugin' ); ?></p>
+                <p>
+                    <button id="noveltool-install-sample-game" class="button button-primary">
+                        <?php esc_html_e( 'Install Sample Game', 'novel-game-plugin' ); ?>
+                    </button>
+                </p>
+            </div>
+        <?php endif; ?>
         
         <?php if ( empty( $all_games ) ) : ?>
             <div class="noveltool-no-games">
@@ -120,6 +174,14 @@ function noveltool_my_games_page() {
                                 <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( '_wpnonce' => wp_create_nonce( 'select_game' ) ) ) ); ?>" class="button button-primary">
                                     <?php esc_html_e( 'Manage', 'novel-game-plugin' ); ?>
                                 </a>
+                                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;" class="noveltool-delete-game-form">
+                                    <?php wp_nonce_field( 'manage_games' ); ?>
+                                    <input type="hidden" name="action" value="noveltool_delete_game" />
+                                    <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
+                                    <button type="submit" class="button noveltool-delete-button" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete this game? This action cannot be undone.', 'novel-game-plugin' ) ); ?>');">
+                                        <?php esc_html_e( 'Delete', 'novel-game-plugin' ); ?>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -157,3 +219,50 @@ function noveltool_my_games_admin_styles( $hook ) {
     );
 }
 add_action( 'admin_enqueue_scripts', 'noveltool_my_games_admin_styles' );
+
+/**
+ * マイゲームページ用のスクリプトを読み込み
+ *
+ * @param string $hook 現在のページフック
+ * @since 1.2.0
+ */
+function noveltool_my_games_admin_scripts( $hook ) {
+    // 対象ページでのみ実行
+    if ( 'novel_game_page_novel-game-my-games' !== $hook ) {
+        return;
+    }
+
+    // インラインスクリプトでAJAX処理を追加
+    $inline_script = "
+    jQuery(document).ready(function($) {
+        $('#noveltool-install-sample-game').on('click', function(e) {
+            e.preventDefault();
+            
+            if (!confirm('" . esc_js( __( 'Install sample game?', 'novel-game-plugin' ) ) . "')) {
+                return;
+            }
+            
+            var button = $(this);
+            button.prop('disabled', true).text('" . esc_js( __( 'Installing...', 'novel-game-plugin' ) ) . "');
+            
+            $.post(ajaxurl, {
+                action: 'noveltool_install_sample_game',
+                nonce: '" . wp_create_nonce( 'noveltool_install_sample_game' ) . "'
+            }, function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.data.message || '" . esc_js( __( 'Installation failed.', 'novel-game-plugin' ) ) . "');
+                    button.prop('disabled', false).text('" . esc_js( __( 'Install Sample Game', 'novel-game-plugin' ) ) . "');
+                }
+            }).fail(function() {
+                alert('" . esc_js( __( 'Installation failed.', 'novel-game-plugin' ) ) . "');
+                button.prop('disabled', false).text('" . esc_js( __( 'Install Sample Game', 'novel-game-plugin' ) ) . "');
+            });
+        });
+    });
+    ";
+    
+    wp_add_inline_script( 'jquery', $inline_script );
+}
+add_action( 'admin_enqueue_scripts', 'noveltool_my_games_admin_scripts' );

@@ -79,7 +79,7 @@ function noveltool_handle_new_game_form() {
 
         // ゲーム情報の追加取得
         $game_description = isset( $_POST['game_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['game_description'] ) ) : '';
-        $game_title_image = isset( $_POST['game_title_image'] ) ? sanitize_url( wp_unslash( $_POST['game_title_image'] ) ) : '';
+        $game_title_image = isset( $_POST['game_title_image'] ) ? esc_url_raw( wp_unslash( $_POST['game_title_image'] ) ) : '';
         
         // ゲームを作成（ゲームエントリを追加）
         $game_data = array(

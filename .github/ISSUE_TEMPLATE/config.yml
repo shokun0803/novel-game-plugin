@@ -2,7 +2,7 @@
 # 空の Issue 作成を禁止し、テンプレート利用を促す
 blank_issues_enabled: false
 
-# 必要に応じて問い合わせリンクを追加できます（任意）
+# 問い合わせリンク（必要な場合のみ。不要ならこのままで可）
 # contact_links:
 #   - name: 運用ポリシー（ブランチ/PR）
 #     url: https://github.com/shokun0803/novel-game-plugin/blob/master/.github/copilot-instructions.md

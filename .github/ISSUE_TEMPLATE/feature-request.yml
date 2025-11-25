@@ -1,130 +1,75 @@
 name: 機能追加（テンプレート）
-description: 機能追加 Issue をこのフォームで作成します
+description: 機能追加 Issue の空テンプレート
 labels: [enhancement]
 body:
   - type: markdown
     attributes:
       value: |
-        以下のフォームに沿って、必要事項をすべて日本語で記入してください。
-        すべての PR は base: dev を必須とします。タイトル・概要の後追い変更は行わないでください。
-  - type: textarea
-    id: title_and_overview
-    attributes:
-      label: タイトルと概要
-      description: 最初にタイトルを記載し、その後に概要を具体的に記載してください
-      placeholder: |
-        タイトル: ○○機能の追加
+        ## タイトル
+        ここに Issue のタイトルを直接記載してください
 
-        概要: この機能は○○の改善を目的とし、△△の課題を解決します。管理画面/フロント側のどちらに影響するか、想定するユーザー動線、表示/保存の要件などを記述してください。
+  - type: textarea
+    id: overview
+    attributes:
+      label: 概要
+      description: 目的、背景、達成したいことを簡潔に記載
+      placeholder: |
+        目的、背景、達成したいことを記載してください
     validations:
       required: true
+
   - type: textarea
-    name: 機能追加（テンプレート）
-    description: 機能追加 Issue をこのフォームで作成します。タイトルは1行で入力、概要は必須項目です。
-    labels: [enhancement]
-    body:
-      - type: markdown
-        attributes:
-          value: |
-            以下のフォームに沿って、必要事項をすべて日本語で記入してください。
-            すべての PR は base: dev を必須とします。タイトル・概要の後追い変更は行わないでください。
+    id: requirements
+    attributes:
+      label: 要件
+      description: |
+        サブ見出し（### 見出し）と箇条書きを組み合わせて詳細化してください
+        必須小項目: 機能仕様、UI/文言、互換性/移行、実装影響範囲、テスト観点
+      placeholder: |
+        ### 機能仕様
+        挙動、フォールバック、境界ケースを箇条書きで詳細化
 
-      - type: input
-        id: title
-        attributes:
-          label: タイトル
-          description: Issue / PR の件名として表示される短いタイトルを入力してください（項目名は不要）。
-          placeholder: "例: ○○機能の追加"
-        validations:
-          required: true
+        ### UI/文言
+        配置場所、入力要素、ラベル・ヘルプ・プレースホルダー、国際化対応を詳細化
 
-      - type: textarea
-        id: overview
-        attributes:
-          label: 概要
-          description: |
-            機能の目的・影響範囲・対象ユーザー・管理画面/フロントのどちらに影響するかを明記してください。
-          placeholder: |
-            この機能は○○の改善を目的とし、△△の課題を解決します。想定されるユーザー動線、表示/保存の要件などを記述してください。
-        validations:
-          required: true
+        ### 互換性/移行
+        既存挙動の維持、設定の切替、データ構造の変更を詳細化
 
-      - type: textarea
-        id: requirements
-        attributes:
-          label: 要件（詳細）
-          description: |
-            サブ見出し（### 見出し）と箇条書きを組み合わせて詳細化してください。以下の必須小項目を含めてください：
-            - 機能仕様
-            - UI/文言
-            - 互換性/移行
-            - 実装影響範囲
-            - テスト観点
-          placeholder: |
-            ### 機能仕様
-            - **主要機能A**
-              - 条件A1: <詳細な条件>
-              - 条件A2: <詳細な条件>
-              - フォールバック: <フォールバック動作>
+        ### 実装影響範囲
+        編集が必要なファイル/層（管理画面、フロントエンド、データ構造、翻訳）を詳細化
 
-            ### UI/文言
-            - **配置場所**
-              - <管理画面/フロントのどこに配置するか>
-            - **入力要素（例）**
-              - ラベル: <表示文言>
-              - ヘルプ: <説明文>
-            - **国際化対応**
-              - すべてのラベル・説明文は __()/esc_html__ 等でラップ（テキストドメイン: novel-game-plugin）
+        ### テスト観点
+        基本動作、境界ケース、権限・セキュリティ、互換性の受け入れ基準を詳細化
+    validations:
+      required: true
 
-            ### 互換性/移行
-            - **既存挙動の維持**
-              - <既存機能への影響がないことを明記>
-            - **設定の切替**
-              - <デフォルト値の扱い>
+  - type: textarea
+    id: checklist
+    attributes:
+      label: チェックリスト
+      description: 実施する作業のチェックリスト（必要に応じて追加/削除）
+      placeholder: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: false
 
-            ### 実装影響範囲
-            - **管理画面**
-              - <該当ファイルと変更内容>
-            - **フロントエンド**
-              - <該当ファイルと変更内容>
+  - type: markdown
+    attributes:
+      value: |
+        ## 重要事項
+        以下の運用ルールを遵守してください。
+        - /.github/copilot-instructions.md の指示に基づく運用を コメントによる追加修正時でも 徹底
+        - タイトルや概要、コメントはルールに則り 日本語 で投稿
+        - 一度作成したプルリクエストのタイトルや概要の内容を追加修正に伴って変更することは 絶対に行わない
+        - report_progress ツールの prDescription パラメータはプルリクエスト初回作成時のみ使用すること
+        - プルリクエストの機能追加、バグ修正に伴って正常動作している機能を損なわないように 細心の注意 を払う
+        - PR の base は必ず dev（master 直は不可）
 
-            ### テスト観点
-            - **基本動作**
-              - <正常系の受け入れ基準>
-            - **境界ケース**
-              - <異常系・境界条件の検証項目>
-        validations:
-          required: true
-
-      - type: checkboxes
-        id: checklist
-        attributes:
-          label: チェックリスト（必要項目を選択・編集してください）
-          description: |
-            初期候補として以下を用意しています。必要に応じてチェックや文言の追加・削除を行ってください。
-          options:
-            - label: 実装（バックエンド/フロントエンド）
-            - label: 国際化対応（翻訳文字列の追加・置換）
-            - label: 既存機能の回帰がないことを確認
-            - label: ドキュメント更新（README/管理画面の説明）
-            - label: テスト/手動検証（複数条件・境界ケース）
-        validations:
-          required: false
-
-      - type: markdown
-        attributes:
-          value: |
-            ## 重要事項
-            以下の運用ルールを遵守してください。
-            - /.github/copilot-instructions.md の指示に基づく運用を コメントによる追加修正時でも 徹底
-            - タイトルや概要、コメントはルールに則り 日本語 で投稿
-            - 一度作成したプルリクエストのタイトルや概要の内容を追加修正に伴って変更することは 絶対に行わない
-            - プルリクエストの機能追加、バグ修正に伴って正常動作している機能を損なわないように 細心の注意 を払う
-            - PR の base は必ず dev（master 直は不可）
-
-      - type: markdown
-        attributes:
-          value: |
-            ## 参考
-            - ノベルゲーム仕様（「かまいたちの夜」等）
-            - リポジトリ運用規約: .github/copilot-instructions.md
+  - type: markdown
+    attributes:
+      value: |
+        ## 参考
+        - ノベルゲーム仕様（「かまいたちの夜」等）
+        - リポジトリ運用規約: .github/copilot-instructions.md

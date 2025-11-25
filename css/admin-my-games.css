@@ -96,12 +96,35 @@
     
     .game-actions {
         padding: 0 20px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
     }
     
     .game-actions .button {
         width: 100%;
         text-align: center;
         justify-content: center;
+    }
+    
+    .game-actions .noveltool-delete-game-form {
+        align-self: flex-end;
+    }
+    
+    .game-actions .noveltool-delete-button {
+        width: auto;
+        padding: 4px 8px;
+        font-size: 12px;
+        background: #dc3232;
+        color: #fff;
+        border-color: #dc3232;
+    }
+    
+    .game-actions .noveltool-delete-button:hover {
+        background: #c22a2a;
+        border-color: #c22a2a;
+        color: #fff;
     }
     
     .noveltool-add-new-game-cta {

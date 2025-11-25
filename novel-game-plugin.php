@@ -3,7 +3,7 @@
  * Plugin Name: Novel Game Plugin
  * Plugin URI: https://github.com/shokun0803/novel-game-plugin
  * Description: WordPressでノベルゲームを作成できるプラグイン。
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: shokun0803
  * Author URI: https://profiles.wordpress.org/shokun0803/
  * Text Domain: novel-game-plugin
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // プラグインの基本定数を定義
 if ( ! defined( 'NOVEL_GAME_PLUGIN_VERSION' ) ) {
     // キャッシュ更新のためバージョンを更新
-    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.2.0' );
+    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.3.0' );
 }
 if ( ! defined( 'NOVEL_GAME_PLUGIN_URL' ) ) {
     define( 'NOVEL_GAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -42,6 +42,7 @@ if ( ! defined( 'NOVEL_GAME_PLUGIN_TEXT_DOMAIN' ) ) {
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/post-types.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/blocks.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/revisions.php';
+require_once NOVEL_GAME_PLUGIN_PATH . 'includes/sample-data.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/meta-boxes.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/dashboard.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/my-games.php';
@@ -63,14 +64,27 @@ function noveltool_init() {
         false,
         dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
     );
+    
+    // サンプルデータ用言語ファイルの読み込み
+    load_plugin_textdomain(
+        'novel-game-plugin-sample',
+        false,
+        dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
+    );
 }
 add_action( 'plugins_loaded', 'noveltool_init' );
+
+// サンプルゲームインストールは init フックで実行（翻訳が確実に利用可能になった後）
+add_action( 'init', 'noveltool_check_and_install_sample_games', 20 );
 
 /**
  * プラグイン有効化時の処理
  * 
  * カスタム投稿タイプのリライトルールを登録するため、
  * flush_rewrite_rules()を実行してパーマリンク構造を更新する
+ * サンプルゲーム追加は init フックで実行されるため、ここではフラグのみ設定
+ * 
+ * ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
  *
  * @since 1.1.0
  */
@@ -80,8 +94,95 @@ function noveltool_activate_plugin() {
     
     // リライトルールを再生成
     flush_rewrite_rules();
+    
+    // サンプルゲーム追加フラグを設定（実際のインストールは init フックで実行）
+    // これにより、翻訳ファイルが確実にロードされた後にサンプルデータが追加される
+    if ( ! get_option( 'noveltool_sample_games_installed' ) ) {
+        update_option( 'noveltool_pending_sample_install', true );
+    }
 }
 register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
+
+/**
+ * サンプルゲーム追加処理の確認と実行
+ * 
+ * init フックで実行され、有効化時に設定されたフラグを確認し、
+ * 必要であればサンプルゲームをインストールする
+ * WordPress 6.7以降では、翻訳ファイルは init アクション以降でのみ完全に利用可能
+ *
+ * @since 1.3.0
+ */
+function noveltool_check_and_install_sample_games() {
+    // サンプルゲーム追加フラグをチェック
+    if ( get_option( 'noveltool_pending_sample_install' ) ) {
+        // フラグを削除（一度だけ実行されるように）
+        delete_option( 'noveltool_pending_sample_install' );
+        
+        // Shadow Detectiveゲームをインストール
+        $result = noveltool_install_shadow_detective_game();
+        
+        // インストール完了フラグを設定
+        if ( $result ) {
+            update_option( 'noveltool_sample_games_installed', true );
+        }
+    }
+}
+
+/**
+ * サンプルゲーム（Shadow Detective）インストール用のAJAXハンドラー
+ *
+ * @since 1.3.0
+ */
+function noveltool_install_sample_game_ajax() {
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'novel-game-plugin' ) ) );
+    }
+    
+    // ノンスチェック
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'noveltool_install_sample_game' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Security check failed', 'novel-game-plugin' ) ) );
+    }
+    
+    // Shadow Detectiveゲームをインストール
+    $result = noveltool_install_shadow_detective_game();
+    
+    if ( $result ) {
+        wp_send_json_success( array( 'message' => __( 'Sample game installed successfully', 'novel-game-plugin' ) ) );
+    } else {
+        // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
+        wp_send_json_error( array( 'message' => __( 'Shadow Detective is already installed. No changes were made.', 'novel-game-plugin' ) ) );
+    }
+}
+add_action( 'wp_ajax_noveltool_install_sample_game', 'noveltool_install_sample_game_ajax' );
+
+/**
+ * Shadow Detectiveゲームインストール用のAJAXハンドラー
+ *
+ * @since 1.3.0
+ */
+function noveltool_install_shadow_detective_ajax() {
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'novel-game-plugin' ) ) );
+    }
+    
+    // ノンスチェック
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'noveltool_install_shadow_detective' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Security check failed', 'novel-game-plugin' ) ) );
+    }
+    
+    // Shadow Detectiveゲームをインストール
+    $result = noveltool_install_shadow_detective_game();
+    
+    if ( $result ) {
+        wp_send_json_success( array( 'message' => __( 'Shadow Detective game installed successfully', 'novel-game-plugin' ) ) );
+    } else {
+        // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
+        wp_send_json_error( array( 'message' => __( 'Shadow Detective is already installed. No changes were made.', 'novel-game-plugin' ) ) );
+    }
+}
+add_action( 'wp_ajax_noveltool_install_shadow_detective', 'noveltool_install_shadow_detective_ajax' );
 
 /**
  * プラグイン無効化時の処理
@@ -179,6 +280,27 @@ function noveltool_get_game_by_title( $title ) {
 }
 
 /**
+ * 機械識別子（machine_name）でゲームを取得する関数
+ *
+ * @param string $machine_name 機械識別子（例: 'shadow_detective_v1'）
+ * @return array|null ゲームデータ または null
+ * @since 1.3.0
+ */
+function noveltool_get_game_by_machine_name( $machine_name ) {
+    if ( ! $machine_name ) {
+        return null;
+    }
+
+    $games = noveltool_get_all_games();
+    foreach ( $games as $game ) {
+        if ( isset( $game['machine_name'] ) && $game['machine_name'] === $machine_name ) {
+            return $game;
+        }
+    }
+    return null;
+}
+
+/**
  * ゲームを保存する関数
  *
  * @param array $game_data ゲームデータ
@@ -240,6 +362,24 @@ function noveltool_save_game( $game_data ) {
 function noveltool_delete_game( $game_id ) {
     $games = noveltool_get_all_games();
     
+    // ゲームタイトルを取得
+    $game_title = '';
+    foreach ( $games as $game ) {
+        if ( $game['id'] == $game_id ) {
+            $game_title = $game['title'];
+            break;
+        }
+    }
+    
+    // 関連するすべてのシーンを削除
+    if ( $game_title ) {
+        $scenes = noveltool_get_posts_by_game_title( $game_title );
+        foreach ( $scenes as $scene ) {
+            wp_delete_post( $scene->ID, true ); // 完全削除（ゴミ箱に入れない）
+        }
+    }
+    
+    // ゲームデータを削除
     $filtered_games = array();
     foreach ( $games as $game ) {
         if ( $game['id'] != $game_id ) {
@@ -534,10 +674,10 @@ function noveltool_filter_novel_game_content( $content ) {
         $dialogue_data[] = $dialogue_item;
     }
 
-    // 選択肢の処理（JSON形式とレガシー形式の両方に対応）
+    // 選択肢の処理（JSON形式）
     $choices = array();
     if ( $choices_raw ) {
-        // JSON形式を試行
+        // JSON形式を処理
         $json_choices = json_decode( $choices_raw, true );
         if ( json_last_error() === JSON_ERROR_NONE && is_array( $json_choices ) ) {
             // JSON形式の場合
@@ -596,22 +736,6 @@ function noveltool_filter_novel_game_content( $content ) {
                         }
                         
                         $choices[] = $choice_item;
-                    }
-                }
-            }
-        } else {
-            // レガシー形式（"テキスト | 投稿ID" の行形式）
-            foreach ( explode( "\n", $choices_raw ) as $line ) {
-                $parts = explode( '|', $line );
-                if ( count( $parts ) === 2 ) {
-                    $post_id   = intval( trim( $parts[1] ) );
-                    $permalink = get_permalink( $post_id );
-
-                    if ( $permalink ) {
-                        $choices[] = array(
-                            'text'      => trim( $parts[0] ),
-                            'nextScene' => $permalink,
-                        );
                     }
                 }
             }

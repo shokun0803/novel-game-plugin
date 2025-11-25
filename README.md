@@ -37,6 +37,7 @@ WordPressでサウンドノベル・ビジュアルノベルゲームを作成�
 - **セキュリティ** - nonce検証・権限チェック・データサニタイズ
 - **Ajax統合** - 管理画面での非同期処理
 - **データベース最適化** - 効率的なクエリとインデックス利用
+- **サンプルゲーム** - プラグイン有効化時に自動インストール（学習用）
 
 ## インストール
 
@@ -50,6 +51,14 @@ mv novel-game-plugin /path/to/wordpress/wp-content/plugins/
 
 # WordPress管理画面で有効化
 ```
+
+**📝 プラグイン有効化時の自動処理**
+- プラグインを初めて有効化すると、**2つのサンプルゲーム**が自動的にインストールされます
+  1. **Sample Novel Game**: 基本的なノベルゲームのデモ（3シーン構成）
+  2. **Shadow Detective（影の探偵）**: 本格推理ゲームのデモ（23シーン構成）
+- サンプルゲームはプラグインの使い方を学ぶための参考として活用できます
+- サンプルゲームは通常のゲームと同様に編集・削除が可能です
+- Shadow Detectiveは複数エンディング、証拠収集、フラグシステムの実例として参照できます
 
 ### 2. 必要な環境
 - WordPress 4.7 以上
@@ -272,43 +281,45 @@ __( 'Translatable string', 'novel-game-plugin' )
 #### .pot ファイルの更新
 翻訳可能文字列を追加・変更したら、以下のコマンドで .pot ファイルを更新してください：
 
+**重要**: メイン POT の生成時は `includes/sample-data.php` を除外してください（サンプルデータは別ドメイン）。
+
 ```bash
-# xgettext を使用した POT ファイル生成（PHP）
-xgettext \
-  --language=PHP \
+# メインプラグイン用 POT ファイル生成（sample-data.php を除外）
+find . -name "*.php" \
+  -not -path "./languages/*" \
+  -not -path "./node_modules/*" \
+  -not -path "./.git/*" \
+  -not -path "./includes/sample-data.php" \
+  -print0 | xargs -0 xgettext \
+  --default-domain=novel-game-plugin \
   --from-code=UTF-8 \
+  --language=PHP \
   --keyword=__ \
   --keyword=_e \
   --keyword=_x:1,2c \
+  --keyword=_n:1,2 \
+  --keyword=_nx:1,2,4c \
   --keyword=esc_html__ \
   --keyword=esc_html_e \
   --keyword=esc_attr__ \
   --keyword=esc_attr_e \
+  --add-comments=translators \
   --package-name="Novel Game Plugin" \
-  --package-version="1.1.2" \
+  --package-version="1.3.0" \
   --msgid-bugs-address="https://github.com/shokun0803/novel-game-plugin/issues" \
-  --output=languages/novel-game-plugin-php.pot \
-  $(find . -name "*.php" -not -path "./node_modules/*" -not -path "./.git/*")
-
-# JavaScript ファイルからの抽出
-xgettext \
-  --language=JavaScript \
-  --from-code=UTF-8 \
-  --keyword=__ \
-  --output=languages/novel-game-plugin-js.pot \
-  $(find . -name "*.js" -not -path "./node_modules/*" -not -path "./.git/*")
-
-# 統合
-msgcat --use-first --sort-output \
-  languages/novel-game-plugin-php.pot \
-  languages/novel-game-plugin-js.pot \
-  -o languages/novel-game-plugin.pot
+  --output=languages/novel-game-plugin.pot
 ```
 
 #### .po / .mo ファイルの更新
+
+**重要**: 翻訳ファイルを更新する前に、必ずバックアップを作成してください。
+
 ```bash
-# 既存の .po ファイルを .pot から更新
-msgmerge --update languages/novel-game-plugin-ja.po languages/novel-game-plugin.pot
+# バックアップの作成
+cp languages/novel-game-plugin-ja.po languages/novel-game-plugin-ja.po.bak
+
+# 既存の .po ファイルを .pot から更新（既存翻訳を保持しながらマージ）
+msgmerge --update --backup=none languages/novel-game-plugin-ja.po languages/novel-game-plugin.pot
 
 # .mo ファイルのコンパイル
 # WordPress環境の互換性のため、ja.mo と ja_JP.mo の両方を生成します
@@ -331,6 +342,55 @@ msginit --input=languages/novel-game-plugin.pot \
 # 翻訳後、.mo ファイルにコンパイル
 msgfmt languages/novel-game-plugin-en_US.po -o languages/novel-game-plugin-en_US.mo
 ```
+
+#### サンプルデータの翻訳ファイル
+サンプルゲーム（Shadow Detective）の翻訳は、UI翻訳とは別のテキストドメイン `novel-game-plugin-sample` に分離されています。
+
+**サンプルデータ用POTファイルの生成:**
+```bash
+# includes/sample-data.php から POT ファイルを生成
+xgettext \
+  --default-domain=novel-game-plugin-sample \
+  --from-code=UTF-8 \
+  --language=PHP \
+  --keyword=__ \
+  --keyword=_e \
+  --keyword=_x:1,2c \
+  --keyword=_n:1,2 \
+  --keyword=_nx:1,2,4c \
+  --keyword=esc_html__ \
+  --keyword=esc_html_e \
+  --keyword=esc_attr__ \
+  --keyword=esc_attr_e \
+  --add-comments=translators \
+  --package-name="Novel Game Plugin - Sample Data" \
+  --package-version="1.3.0" \
+  --msgid-bugs-address="https://github.com/shokun0803/novel-game-plugin/issues" \
+  --output=languages/novel-game-plugin-sample.pot \
+  includes/sample-data.php
+```
+
+**サンプルデータ用翻訳ファイルの更新:**
+
+**重要**: 翻訳ファイルを更新する前に、必ずバックアップを作成してください。
+
+```bash
+# バックアップの作成
+cp languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample-ja.po.bak
+
+# 既存の .po ファイルを .pot から更新（既存翻訳を保持しながらマージ）
+msgmerge --update --backup=none languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample.pot
+
+# .mo ファイルのコンパイル（ja.mo と ja_JP.mo の両方を生成）
+msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja.mo
+msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja_JP.mo
+```
+
+**注意**: 
+- サンプルデータの翻訳は `includes/sample-data.php` のみに含まれます
+- UI翻訳（`novel-game-plugin`）とサンプルデータ翻訳（`novel-game-plugin-sample`）は独立して管理されます
+- これによりサンプルデータの翻訳更新がUI翻訳に影響を与えることを防ぎます
+- `msgmerge` を使用することで、既存の翻訳を失わずに新しい文字列を追加できます
 
 ### フック・フィルター
 プラグインでは以下のWordPressフックを利用：
@@ -355,9 +415,51 @@ msgfmt languages/novel-game-plugin-en_US.po -o languages/novel-game-plugin-en_US
 このプラグインはGPLv2またはそれ以降のバージョンでライセンスされています。  
 詳細は [LICENSE](https://www.gnu.org/licenses/gpl-2.0.html) をご確認ください。
 
+## サンプルゲーム: Shadow Detective（影の探偵）
+
+### 概要
+Shadow Detective（影の探偵）は、本格推理ゲームのサンプルとして実装されています。
+実業家・黒崎誠の失踪事件を追う探偵となり、証拠を集めながら真相を解明するストーリーです。
+
+### ゲーム仕様
+- **シーン数**: 23シーン
+- **エンディング**: 3種類（完全解決・部分解決・証拠不足）
+- **証拠アイテム**: 5種類（懐中時計・手記・証拠写真・隠し部屋の鍵・闇取引メモ）
+- **調査進捗フラグ**: 5種類（妻との会話・友人との会話・隠し部屋発見・裏社会接触・黒幕対峙）
+
+### 特徴
+- **複数エンディング**: 証拠収集の度合いによってエンディングが変化
+- **フラグシステム**: 10個のフラグによる進行管理と分岐制御
+- **条件付き選択肢**: required_flags による選択肢の有効化制御
+- **国際化対応**: すべてのテキストが翻訳可能
+
+### 詳細ドキュメント
+- [シナリオ詳細設計](docs/shadow-detective-scenario.md) - 全23シーンの詳細なストーリーライン
+- [テスト手順書](docs/shadow-detective-testing.md) - 品質保証のためのテストケース
+
+### プレイ方法
+1. プラグインを有効化すると自動的にインストールされます
+2. 「ノベルゲーム管理」→「マイゲーム」から「Shadow Detective」を選択
+3. シーン一覧から最初のシーンを開いてプレイ開始
+
 ## 更新履歴
 
+### Version 1.3.0 (予定)
+- **Shadow Detective（影の探偵）ゲーム追加**
+  - 23シーン構成の本格推理ゲーム
+  - 3種類のエンディング（完全解決・部分解決・証拠不足）
+  - 10個のフラグによる証拠収集・進捗管理システム
+  - required_flags による選択肢条件分岐
+  - SVG形式のプレースホルダー画像（背景10種・キャラクター6種）
+- プラグイン有効化時に Shadow Detective を自動インストール
+- AJAX経由での Shadow Detective 手動インストール機能追加
+- 詳細なシナリオ設計ドキュメント・テスト手順書の追加
+
 ### Version 1.2.0 (予定)
+- サンプルゲーム自動インストール機能追加
+  - プラグイン有効化時に学習用サンプルゲームを自動作成
+  - 3シーン構成の分岐デモンストレーション
+  - SVG形式のプレースホルダー画像を使用
 - 「条件で内容変更」モードの仕様変更
   - 条件成立時に代替テキストを表示、条件不成立時に通常テキストを表示
   - 代替テキストが空の場合は通常テキストをフォールバック（空表示を回避）
