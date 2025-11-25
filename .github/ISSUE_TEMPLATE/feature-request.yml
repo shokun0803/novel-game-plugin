@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## タイトル
+        # タイトル
         ここに Issue のタイトルを直接記載してください
 
   - type: textarea
@@ -47,13 +47,27 @@ body:
     id: checklist
     attributes:
       label: チェックリスト
-      description: 実施する作業のチェックリスト（必要に応じて追加/削除）
+      description: 実施する作業のチェックリスト（要件ごとに具体的な検証項目を記載してください）
       placeholder: |
-        - [ ] 
-        - [ ] 
-        - [ ] 
+        ## チェックリスト（記述例）
+        ### 機能仕様
+        - 機能の境界条件や例外処理の検証項目を記載
+        ### UI/文言
+        - UI上のラベルやヘルプ文、翻訳の検証項目を記載
+        ### 互換性/移行
+        - 既存データや設定の互換性検証項目を記載
+        ### テスト観点
+        - ユニットテスト／回帰テスト／ブラウザ互換性の観点を記載
     validations:
-      required: false
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ## チェックリスト
+        - [ ]
+        
+        **注意：チェックリストの記載は必須です。要件に応じた具体的な検証項目を `- [ ]` の形式で必ず記載してください。**
 
   - type: markdown
     attributes:
