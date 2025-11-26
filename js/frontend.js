@@ -2797,13 +2797,17 @@
 							// 読み込み失敗時もデフォルトに設定してクリーンアップ
 							$charImage.attr( 'src', defaultSrc );
 							$charImage.css( 'opacity', 1 );
+							$charImage.removeClass( 'novel-character-transitioning' );
 						};
 						preloadImg.src = defaultSrc;
 						
-						// transitionend でクラスを削除
-						$charImage.one( 'transitionend', function() {
+						// transitionend でクラスを削除（タイムアウトフォールバック付き）
+						var transitionCleanup = function() {
 							$charImage.removeClass( 'novel-character-transitioning' );
-						} );
+						};
+						$charImage.one( 'transitionend', transitionCleanup );
+						// CSSトランジションが発火しない場合のフォールバック（400ms = 300ms + バッファ）
+						setTimeout( transitionCleanup, 400 );
 					}
 					return;
 				}
@@ -2816,7 +2820,7 @@
 							.addClass( 'novel-character novel-character-' + position )
 							.attr( 'alt', altStrings[ position ] )
 							.attr( 'loading', 'eager' )
-							.attr( 'data-scene-src', newImage )
+							.attr( 'data-scene-src', '' ) // 新規作成時はシーンデフォルトが無いため空
 							.css( 'opacity', 0 );
 						$container.append( $newCharImage );
 						$charImage = $newCharImage;
@@ -2849,13 +2853,17 @@
 							$charImage.attr( 'src', defaultSrc );
 						}
 						$charImage.css( 'opacity', 1 );
+						$charImage.removeClass( 'novel-character-transitioning' );
 					};
 					img.src = newImage;
 					
-					// transitionend でクラスを削除
-					$charImage.one( 'transitionend', function() {
+					// transitionend でクラスを削除（タイムアウトフォールバック付き）
+					var transitionCleanup = function() {
 						$charImage.removeClass( 'novel-character-transitioning' );
-					} );
+					};
+					$charImage.one( 'transitionend', transitionCleanup );
+					// CSSトランジションが発火しない場合のフォールバック（400ms = 300ms + バッファ）
+					setTimeout( transitionCleanup, 400 );
 				}
 			} );
 		}
