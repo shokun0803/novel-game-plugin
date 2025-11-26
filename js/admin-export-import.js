@@ -144,13 +144,6 @@
                         // ファイル入力をクリア
                         fileInput.value = '';
                         button.prop('disabled', true);
-                        
-                        // 数秒後にマイゲームページにリダイレクト
-                        // 専用画面の場合は同ページにリダイレクト
-                        var redirectUrl = noveltoolExportImport.exportImportUrl || noveltoolExportImport.myGamesUrl;
-                        setTimeout(function() {
-                            window.location.href = redirectUrl;
-                        }, 8000);
                     } else {
                         showNotice('error', response.data.message || noveltoolExportImport.importError);
                     }
@@ -191,13 +184,6 @@
 
             // アクセシビリティ向上: 通知にフォーカスを移動
             notice.attr('tabindex', -1).focus();
-            
-            // 数秒後に自動的に削除
-            setTimeout(function() {
-                notice.fadeOut(function() {
-                    $(this).remove();
-                });
-            }, 5000);
         }
     });
 
