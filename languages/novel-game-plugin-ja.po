@@ -2796,3 +2796,7 @@ msgstr "JSON形式のゲームデータをインポートして新しいゲー�
 #: admin/export-import.php:70
 msgid "Select JSON file"
 msgstr "JSONファイルを選択"
+
+#: includes/post-types.php:334 admin/export-import.php:29
+msgid "Export/Import"
+msgstr "エクスポート/インポート"
