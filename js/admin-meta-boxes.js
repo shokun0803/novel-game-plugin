@@ -42,6 +42,19 @@ jQuery( function( $ ) {
 	}
 	
 	/**
+	 * セリフデータのキャラクター設定オブジェクトを確保
+	 *
+	 * @param {number} index セリフインデックス
+	 * @return {Object} キャラクター設定オブジェクト
+	 */
+	function ensureDialogueCharacters( index ) {
+		if ( ! dialogueData[index].characters ) {
+			dialogueData[index].characters = { left: '', center: '', right: '' };
+		}
+		return dialogueData[index].characters;
+	}
+	
+	/**
 	 * セリフデータの初期化
 	 */
 	function initializeDialogueData() {
@@ -294,10 +307,7 @@ jQuery( function( $ ) {
 		var $clearButton = $( '<button type="button" class="button button-small dialogue-character-clear" style="display: ' + ( currentImage ? 'inline-block' : 'none' ) + ';">' + novelGameMeta.strings.clearImage + '</button>' );
 		$clearButton.on( 'click', function( e ) {
 			e.preventDefault();
-			if ( ! dialogueData[index].characters ) {
-				dialogueData[index].characters = { left: '', center: '', right: '' };
-			}
-			dialogueData[index].characters[position] = '';
+			ensureDialogueCharacters( index )[ position ] = '';
 			$input.val( '' );
 			$preview.attr( 'src', '' ).hide();
 			$placeholder.show();
@@ -346,10 +356,7 @@ jQuery( function( $ ) {
 			}
 			
 			// データ更新
-			if ( ! dialogueData[dialogueIndex].characters ) {
-				dialogueData[dialogueIndex].characters = { left: '', center: '', right: '' };
-			}
-			dialogueData[dialogueIndex].characters[position] = attachment.url;
+			ensureDialogueCharacters( dialogueIndex )[ position ] = attachment.url;
 			
 			// UI更新
 			var $item = $( '.novel-dialogue-item[data-index="' + dialogueIndex + '"]' );

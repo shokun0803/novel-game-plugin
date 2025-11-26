@@ -2758,8 +2758,8 @@
 			positions.forEach( function( position ) {
 				var newImage = characters[ position ];
 				
-				// 空文字列の場合はスキップ（シーン全体の設定を維持）
-				if ( ! newImage ) {
+				// 空文字列または未定義の場合はスキップ（シーン全体の設定を維持）
+				if ( ! newImage || newImage === '' ) {
 					return;
 				}
 				
@@ -2791,11 +2791,14 @@
 					img.onload = function() {
 						$charImage.attr( 'src', newImage );
 						$charImage.show();
-						// フェードインアニメーション
-						setTimeout( function() {
-							$charImage.css( 'opacity', '' );
-							$charImage.removeClass( 'novel-character-transitioning' );
-						}, 50 );
+						// ブラウザのレンダリングを待ってからフェードイン開始
+						// requestAnimationFrame を使用して次のフレームでトランジション開始
+						requestAnimationFrame( function() {
+							requestAnimationFrame( function() {
+								$charImage.css( 'opacity', '' );
+								$charImage.removeClass( 'novel-character-transitioning' );
+							} );
+						} );
 					};
 					img.onerror = function() {
 						// 画像読み込み失敗時はシーン設定にフォールバック

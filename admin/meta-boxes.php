@@ -1471,8 +1471,15 @@ function noveltool_sanitize_dialogue_characters( $dialogue_characters ) {
         // 許可されたキーのみ処理
         foreach ( array( 'left', 'center', 'right' ) as $position ) {
             if ( isset( $item[ $position ] ) && is_string( $item[ $position ] ) ) {
-                // URLをサニタイズ（空文字は許可）
-                $sanitized_item[ $position ] = esc_url_raw( $item[ $position ] );
+                // 空文字列はそのまま許可
+                if ( $item[ $position ] === '' ) {
+                    $sanitized_item[ $position ] = '';
+                } else {
+                    // HTTP/HTTPS URLのみを許可（esc_urlはHTTP/HTTPSに制限）
+                    $sanitized_url = esc_url( $item[ $position ] );
+                    // esc_url は不正なURLに対して空文字を返すので、そのまま使用
+                    $sanitized_item[ $position ] = $sanitized_url;
+                }
             }
         }
         
