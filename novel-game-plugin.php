@@ -647,6 +647,16 @@ function noveltool_filter_novel_game_content( $content ) {
         $dialogue_flag_conditions = array();
     }
     
+    // セリフごとのキャラクター設定データの取得
+    $dialogue_characters = get_post_meta( $post->ID, '_dialogue_characters', true );
+    if ( is_string( $dialogue_characters ) ) {
+        $dialogue_characters_array = json_decode( $dialogue_characters, true );
+    } elseif ( is_array( $dialogue_characters ) ) {
+        $dialogue_characters_array = $dialogue_characters;
+    } else {
+        $dialogue_characters_array = array();
+    }
+    
     // セリフと背景と話者を組み合わせた配列を作成
     $dialogue_data = array();
     foreach ( $dialogue_lines as $index => $line ) {
@@ -670,6 +680,16 @@ function noveltool_filter_novel_game_content( $content ) {
             $dialogue_item['flagConditionLogic'] = 'AND';
             $dialogue_item['displayMode'] = 'normal';
             $dialogue_item['alternativeText'] = '';
+        }
+        
+        // セリフごとのキャラクター設定がある場合は追加
+        if ( isset( $dialogue_characters_array[ $index ] ) && is_array( $dialogue_characters_array[ $index ] ) ) {
+            $char_setting = $dialogue_characters_array[ $index ];
+            $dialogue_item['characters'] = array(
+                'left'   => isset( $char_setting['left'] ) ? $char_setting['left'] : '',
+                'center' => isset( $char_setting['center'] ) ? $char_setting['center'] : '',
+                'right'  => isset( $char_setting['right'] ) ? $char_setting['right'] : '',
+            );
         }
         
         $dialogue_data[] = $dialogue_item;
@@ -800,15 +820,15 @@ function noveltool_filter_novel_game_content( $content ) {
                 
                 <!-- 3体キャラクター表示 -->
                 <?php if ( $character_left ) : ?>
-                    <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" alt="<?php echo esc_attr__( 'Left Character', 'novel-game-plugin' ); ?>" />
+                    <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" data-scene-src="<?php echo esc_attr( $character_left ); ?>" alt="<?php echo esc_attr__( 'Left Character', 'novel-game-plugin' ); ?>" />
                 <?php endif; ?>
                 
                 <?php if ( $character_center ) : ?>
-                    <img id="novel-character-center" class="novel-character novel-character-center" src="<?php echo esc_url( $character_center ); ?>" alt="<?php echo esc_attr__( 'Center Character', 'novel-game-plugin' ); ?>" />
+                    <img id="novel-character-center" class="novel-character novel-character-center" src="<?php echo esc_url( $character_center ); ?>" data-scene-src="<?php echo esc_attr( $character_center ); ?>" alt="<?php echo esc_attr__( 'Center Character', 'novel-game-plugin' ); ?>" />
                 <?php endif; ?>
                 
                 <?php if ( $character_right ) : ?>
-                    <img id="novel-character-right" class="novel-character novel-character-right" src="<?php echo esc_url( $character_right ); ?>" alt="<?php echo esc_attr__( 'Right Character', 'novel-game-plugin' ); ?>" />
+                    <img id="novel-character-right" class="novel-character novel-character-right" src="<?php echo esc_url( $character_right ); ?>" data-scene-src="<?php echo esc_attr( $character_right ); ?>" alt="<?php echo esc_attr__( 'Right Character', 'novel-game-plugin' ); ?>" />
                 <?php endif; ?>
 
                 <div id="novel-speaker-name" class="novel-speaker-name"></div>
@@ -949,6 +969,19 @@ function noveltool_enqueue_scripts() {
         array( 'jquery' ),
         NOVEL_GAME_PLUGIN_VERSION,
         true
+    );
+
+    // フロントエンド用のi18n文字列をローカライズ
+    wp_localize_script(
+        'novel-game-frontend',
+        'novelGameFront',
+        array(
+            'strings' => array(
+                'leftCharacter'   => esc_html__( 'Left Character', 'novel-game-plugin' ),
+                'centerCharacter' => esc_html__( 'Center Character', 'novel-game-plugin' ),
+                'rightCharacter'  => esc_html__( 'Right Character', 'novel-game-plugin' ),
+            )
+        )
     );
 
     wp_enqueue_style(

@@ -42,6 +42,32 @@ jQuery( function( $ ) {
 	}
 	
 	/**
+	 * セリフデータのキャラクター設定オブジェクトを確保
+	 *
+	 * @param {number} index セリフインデックス
+	 * @return {Object} キャラクター設定オブジェクト
+	 */
+	function ensureDialogueCharacters( index ) {
+		// dialogueData[index] が未定義の場合はデフォルトのオブジェクトを作成
+		if ( typeof dialogueData[index] === 'undefined' ) {
+			dialogueData[index] = {
+				text: '',
+				background: '',
+				speaker: '',
+				flagConditions: [],
+				flagConditionLogic: 'AND',
+				displayMode: 'normal',
+				alternativeText: '',
+				characters: { left: '', center: '', right: '' }
+			};
+		}
+		if ( ! dialogueData[index].characters ) {
+			dialogueData[index].characters = { left: '', center: '', right: '' };
+		}
+		return dialogueData[index].characters;
+	}
+	
+	/**
 	 * セリフデータの初期化
 	 */
 	function initializeDialogueData() {
@@ -50,6 +76,7 @@ jQuery( function( $ ) {
 		var existingBackgrounds = novelGameMeta.dialogue_backgrounds || [];
 		var existingSpeakers = novelGameMeta.dialogue_speakers || [];
 		var existingFlagConditions = novelGameMeta.dialogue_flag_conditions || [];
+		var existingCharacters = novelGameMeta.dialogue_characters || [];
 		
 		// 常に新しいデータでリセット（初期化時）
 		dialogueData = [];
@@ -57,6 +84,7 @@ jQuery( function( $ ) {
 		// 既存のセリフ行をデータ配列に変換
 		existingLines.forEach( function( line, index ) {
 			var flagConditionData = existingFlagConditions[index] || {};
+			var characterData = existingCharacters[index] || {};
 			dialogueData.push( {
 				text: line,
 				background: existingBackgrounds[index] || '',
@@ -64,7 +92,12 @@ jQuery( function( $ ) {
 				flagConditions: flagConditionData.conditions || [],
 				flagConditionLogic: flagConditionData.logic || 'AND',
 				displayMode: flagConditionData.displayMode || 'normal',
-				alternativeText: flagConditionData.alternativeText || ''
+				alternativeText: flagConditionData.alternativeText || '',
+				characters: {
+					left: characterData.left || '',
+					center: characterData.center || '',
+					right: characterData.right || ''
+				}
 			} );
 		} );
 		
@@ -77,7 +110,12 @@ jQuery( function( $ ) {
 				flagConditions: [],
 				flagConditionLogic: 'AND',
 				displayMode: 'normal',
-				alternativeText: ''
+				alternativeText: '',
+				characters: {
+					left: '',
+					center: '',
+					right: ''
+				}
 			} );
 		}
 		
@@ -147,6 +185,9 @@ jQuery( function( $ ) {
 			// フラグ制御UI
 			var $flagContainer = createDialogueFlagUI( dialogue, index );
 			
+			// セリフごとのキャラクター設定UI
+			var $characterContainer = createDialogueCharacterUI( dialogue, index );
+			
 			// 削除ボタン
 			var $deleteButton = $( '<button type="button" class="button dialogue-delete-button">' + novelGameMeta.strings.remove + '</button>' );
 			$deleteButton.on( 'click', function() {
@@ -176,11 +217,175 @@ jQuery( function( $ ) {
 			$item.append( $imageContainer );
 			$item.append( '<p><strong>' + novelGameMeta.strings.flagControl + '</strong></p>' );
 			$item.append( $flagContainer );
+			$item.append( $characterContainer );
 			$item.append( $controls );
 			$item.append( '<hr>' );
 			
 			$container.append( $item );
 		} );
+	}
+	
+	/**
+	 * セリフごとのキャラクター設定UIを作成
+	 *
+	 * @param {Object} dialogue セリフデータ
+	 * @param {number} index セリフインデックス
+	 * @return {jQuery} キャラクター設定UIコンテナ
+	 */
+	function createDialogueCharacterUI( dialogue, index ) {
+		var $container = $( '<div class="dialogue-character-container">' );
+		
+		// 折りたたみトグルボタン
+		var hasCharacterSettings = dialogue.characters && 
+			( dialogue.characters.left || dialogue.characters.center || dialogue.characters.right );
+		var toggleButtonText = hasCharacterSettings ? 
+			novelGameMeta.strings.hideCharacterSettings : novelGameMeta.strings.showCharacterSettings;
+		
+		var $toggleButton = $( '<button type="button" class="button dialogue-character-toggle">' + toggleButtonText + '</button>' );
+		
+		// 設定コンテンツ（折りたたみ可能）
+		var $content = $( '<div class="dialogue-character-content" style="display: ' + ( hasCharacterSettings ? 'block' : 'none' ) + ';">' );
+		
+		// ヘルプテキスト
+		$content.append( '<p class="description dialogue-character-help">' + novelGameMeta.strings.dialogueCharacterHelp + '</p>' );
+		
+		// キャラクター設定グリッド
+		var $grid = $( '<div class="dialogue-character-grid">' );
+		
+		// 左キャラクター
+		$grid.append( createDialogueCharacterPositionUI( dialogue, index, 'left', novelGameMeta.strings.leftCharacter ) );
+		
+		// 中央キャラクター
+		$grid.append( createDialogueCharacterPositionUI( dialogue, index, 'center', novelGameMeta.strings.centerCharacter ) );
+		
+		// 右キャラクター
+		$grid.append( createDialogueCharacterPositionUI( dialogue, index, 'right', novelGameMeta.strings.rightCharacter ) );
+		
+		$content.append( $grid );
+		
+		// トグルボタンのイベント
+		$toggleButton.on( 'click', function( e ) {
+			e.preventDefault();
+			var isVisible = $content.is( ':visible' );
+			$content.slideToggle( 200 );
+			$( this ).text( isVisible ? novelGameMeta.strings.showCharacterSettings : novelGameMeta.strings.hideCharacterSettings );
+		} );
+		
+		$container.append( $toggleButton );
+		$container.append( $content );
+		
+		return $container;
+	}
+	
+	/**
+	 * キャラクター位置ごとの設定UIを作成
+	 *
+	 * @param {Object} dialogue セリフデータ
+	 * @param {number} index セリフインデックス
+	 * @param {string} position 位置（left, center, right）
+	 * @param {string} label ラベル
+	 * @return {jQuery} 位置設定UI
+	 */
+	function createDialogueCharacterPositionUI( dialogue, index, position, label ) {
+		var $positionContainer = $( '<div class="dialogue-character-position">' );
+		var currentImage = ( dialogue.characters && dialogue.characters[position] ) ? dialogue.characters[position] : '';
+		
+		// ラベル
+		$positionContainer.append( '<label class="dialogue-character-label">' + label + '</label>' );
+		
+		// 隠しフィールド
+		var $input = $( '<input type="hidden" class="dialogue-character-input" data-position="' + position + '">' );
+		$input.val( currentImage );
+		
+		// プレビュー画像
+		var $preview = $( '<img class="dialogue-character-preview" style="max-width: 80px; height: auto; display: ' + ( currentImage ? 'block' : 'none' ) + ';">' );
+		if ( currentImage ) {
+			$preview.attr( 'src', currentImage );
+		}
+		
+		// プレースホルダー（シーン設定を使用時）
+		var $placeholder = $( '<span class="dialogue-character-placeholder" style="display: ' + ( currentImage ? 'none' : 'block' ) + ';">' + novelGameMeta.strings.useSceneDefault + '</span>' );
+		
+		// ボタンコンテナ
+		var $buttons = $( '<div class="dialogue-character-buttons">' );
+		
+		// 画像選択ボタン
+		var $selectButton = $( '<button type="button" class="button button-small dialogue-character-select">' + novelGameMeta.strings.selectCharacterImage + '</button>' );
+		$selectButton.on( 'click', function( e ) {
+			e.preventDefault();
+			selectDialogueCharacterImage( index, position );
+		} );
+		
+		// クリアボタン
+		var $clearButton = $( '<button type="button" class="button button-small dialogue-character-clear" style="display: ' + ( currentImage ? 'inline-block' : 'none' ) + ';">' + novelGameMeta.strings.clearImage + '</button>' );
+		$clearButton.on( 'click', function( e ) {
+			e.preventDefault();
+			ensureDialogueCharacters( index )[ position ] = '';
+			$input.val( '' );
+			$preview.attr( 'src', '' ).hide();
+			$placeholder.show();
+			$( this ).hide();
+			updateDialogueTextarea();
+		} );
+		
+		$buttons.append( $selectButton, $clearButton );
+		$positionContainer.append( $input, $preview, $placeholder, $buttons );
+		
+		return $positionContainer;
+	}
+	
+	/**
+	 * セリフごとのキャラクター画像を選択
+	 *
+	 * @param {number} dialogueIndex セリフインデックス
+	 * @param {string} position 位置（left, center, right）
+	 */
+	function selectDialogueCharacterImage( dialogueIndex, position ) {
+		if ( typeof wp.media === 'undefined' ) {
+			alert( novelGameMeta.strings.mediaLibraryUnavailable );
+			return;
+		}
+		
+		var frame = wp.media( {
+			title: novelGameMeta.strings.selectCharacterImage,
+			multiple: false,
+			library: {
+				type: 'image'
+			},
+			button: {
+				text: novelGameMeta.strings.useThisImage
+			}
+		} );
+		
+		frame.on( 'select', function() {
+			var selection = frame.state().get( 'selection' );
+			var attachment = selection.first().toJSON();
+			
+			// ファイルバリデーション
+			var validation = validateImageFile( attachment );
+			if ( ! validation.valid ) {
+				alert( validation.message );
+				return;
+			}
+			
+			// データ更新
+			ensureDialogueCharacters( dialogueIndex )[ position ] = attachment.url;
+			
+			// UI更新
+			var $item = $( '.novel-dialogue-item[data-index="' + dialogueIndex + '"]' );
+			var $positionContainer = $item.find( '.dialogue-character-position' ).filter( function() {
+				return $( this ).find( '.dialogue-character-input[data-position="' + position + '"]' ).length > 0;
+			} );
+			
+			$positionContainer.find( '.dialogue-character-input' ).val( attachment.url );
+			$positionContainer.find( '.dialogue-character-preview' ).attr( 'src', attachment.url ).show();
+			$positionContainer.find( '.dialogue-character-placeholder' ).hide();
+			$positionContainer.find( '.dialogue-character-clear' ).show();
+			
+			updateDialogueTextarea();
+		} );
+		
+		frame.open();
 	}
 	
 	/**
@@ -229,7 +434,12 @@ jQuery( function( $ ) {
 			flagConditions: [],
 			flagConditionLogic: 'AND',
 			displayMode: 'normal', // normal, hidden, alternative
-			alternativeText: ''
+			alternativeText: '',
+			characters: {
+				left: '',
+				center: '',
+				right: ''
+			}
 		} );
 		renderDialogueList();
 		updateDialogueTextarea();
@@ -454,6 +664,11 @@ jQuery( function( $ ) {
 			};
 		} );
 		
+		// セリフごとのキャラクター設定データの更新
+		var characters = dialogueData.map( function( dialogue ) {
+			return dialogue.characters || { left: '', center: '', right: '' };
+		} );
+		
 		// 隠しフィールドに背景データを設定
 		var $existingBackgroundInput = $( 'input[name="dialogue_backgrounds"]' );
 		if ( $existingBackgroundInput.length === 0 ) {
@@ -481,6 +696,13 @@ jQuery( function( $ ) {
 			$( '<input type="hidden" name="dialogue_flag_conditions">' ).appendTo( '#novel-dialogue-container' );
 		}
 		$( 'input[name="dialogue_flag_conditions"]' ).val( JSON.stringify( flagConditions ) );
+		
+		// 隠しフィールドにセリフごとのキャラクター設定データを設定
+		var $existingCharactersInput = $( 'input[name="dialogue_characters"]' );
+		if ( $existingCharactersInput.length === 0 ) {
+			$( '<input type="hidden" name="dialogue_characters">' ).appendTo( '#novel-dialogue-container' );
+		}
+		$( 'input[name="dialogue_characters"]' ).val( JSON.stringify( characters ) );
 	}
 
 	/**

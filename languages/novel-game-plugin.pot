@@ -904,6 +904,30 @@ msgid ""
 "\"Dialogue\" section above."
 msgstr ""
 
+#: admin/meta-boxes.php:349
+msgid "Character Settings for This Dialogue"
+msgstr ""
+
+#: admin/meta-boxes.php:350
+msgid "You can set individual character images for each dialogue. If not set, the scene's character settings will be used."
+msgstr ""
+
+#: admin/meta-boxes.php:351
+msgid "▼ Show Character Settings"
+msgstr ""
+
+#: admin/meta-boxes.php:352
+msgid "▲ Hide Character Settings"
+msgstr ""
+
+#: admin/meta-boxes.php:353
+msgid "(Use Scene Default)"
+msgstr ""
+
+#: admin/meta-boxes.php:354
+msgid "Clear"
+msgstr ""
+
 #: admin/ad-management.php:61
 msgid "Ad settings have been saved successfully."
 msgstr ""

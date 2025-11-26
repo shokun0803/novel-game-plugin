@@ -2602,7 +2602,8 @@
 						background: dialogue.background,
 						speaker: dialogue.speaker,
 						isFirstPageOfDialogue: pageIndex === 0,
-						dialogueIndex: dialogueIndex
+						dialogueIndex: dialogueIndex,
+						characters: dialogue.characters || null // セリフごとのキャラクター設定
 					} );
 				} );
 			} );
@@ -2714,6 +2715,11 @@
 				// キャラクターの状態を更新
 				updateCharacterStates( currentPage.speaker );
 				
+				// セリフごとのキャラクター設定がある場合はキャラクター画像を更新
+				if ( currentPage.isFirstPageOfDialogue && currentPage.characters ) {
+					updateDialogueCharacters( currentPage.characters );
+				}
+				
 				// 継続インジケーターの表示/非表示
 				// 次のページがある場合は常に表示
 				if ( currentPageIndex < allDialoguePages.length - 1 ) {
@@ -2735,6 +2741,161 @@
 				return true;
 			}
 			return false;
+		}
+		
+		/**
+		 * セリフごとのキャラクター画像を更新する
+		 *
+		 * @param {Object} characters キャラクター設定（left, center, right）
+		 */
+		function updateDialogueCharacters( characters ) {
+			if ( ! characters ) {
+				return;
+			}
+			
+			var positions = [ 'left', 'center', 'right' ];
+			var altStrings = {
+				'left': ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings.leftCharacter : 'Left Character',
+				'center': ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings.centerCharacter : 'Center Character',
+				'right': ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings.rightCharacter : 'Right Character'
+			};
+			
+			positions.forEach( function( position ) {
+				var newImage = characters[ position ];
+				var $charImage = $( '.novel-character-' + position );
+				
+				// シーンのデフォルト画像を取得
+				var defaultSrc = '';
+				if ( $charImage.length > 0 ) {
+					defaultSrc = $charImage.data( 'scene-src' ) || $charImage.attr( 'src' ) || '';
+				}
+				
+				// 空文字列または未定義の場合はシーンのデフォルトに戻す
+				if ( ! newImage || newImage === '' ) {
+					if ( defaultSrc && $charImage.length > 0 ) {
+						var currentSrc = $charImage.attr( 'src' );
+						// すでにデフォルトの場合はスキップ
+						if ( currentSrc === defaultSrc ) {
+							return;
+						}
+						
+						$charImage.addClass( 'novel-character-transitioning' );
+						$charImage.css( 'opacity', 0 );
+						
+						// デフォルト画像をプリロード
+						var preloadImg = new Image();
+						preloadImg.onload = function() {
+							$charImage.attr( 'src', defaultSrc );
+							$charImage.show();
+							requestAnimationFrame( function() {
+								requestAnimationFrame( function() {
+									$charImage.css( 'opacity', 1 );
+								} );
+							} );
+						};
+						preloadImg.onerror = function() {
+							// 読み込み失敗時もデフォルトに設定してクリーンアップ
+							$charImage.attr( 'src', defaultSrc );
+							$charImage.css( 'opacity', 1 );
+							$charImage.removeClass( 'novel-character-transitioning' );
+						};
+						preloadImg.src = defaultSrc;
+						
+						// transitionend でクラスを削除（タイムアウトフォールバック付き）
+						var transitionCleanup = function() {
+							$charImage.removeClass( 'novel-character-transitioning' );
+						};
+						$charImage.one( 'transitionend', transitionCleanup );
+						// CSSトランジションが発火しない場合のフォールバック（400ms = 300ms + バッファ）
+						setTimeout( transitionCleanup, 400 );
+					}
+					return;
+				}
+				
+				if ( $charImage.length === 0 ) {
+					// キャラクター要素がない場合は新規作成
+					var $container = $gameContainer;
+					if ( $container.length > 0 ) {
+						var $newCharImage = $( '<img>' )
+							.addClass( 'novel-character novel-character-' + position )
+							.attr( 'alt', altStrings[ position ] )
+							.attr( 'loading', 'eager' )
+							.attr( 'data-scene-src', '' ) // 新規作成時はシーンデフォルトが無いため空
+							.css( 'opacity', 0 );
+						$container.append( $newCharImage );
+						$charImage = $newCharImage;
+					}
+				}
+				
+				// 既存の画像と異なる場合のみ更新
+				var currentSrc = $charImage.attr( 'src' );
+				if ( currentSrc !== newImage ) {
+					// フェードアニメーションで切り替え
+					$charImage.addClass( 'novel-character-transitioning' );
+					$charImage.css( 'opacity', 0 );
+					
+					// 新しい画像をプリロード
+					var img = new Image();
+					img.onload = function() {
+						$charImage.attr( 'src', newImage );
+						$charImage.show();
+						// ブラウザのレンダリングを待ってからフェードイン開始
+						requestAnimationFrame( function() {
+							requestAnimationFrame( function() {
+								$charImage.css( 'opacity', 1 );
+							} );
+						} );
+					};
+					img.onerror = function() {
+						// 画像読み込み失敗時はシーンのデフォルトにフォールバック
+						debugLog( 'キャラクター画像の読み込みに失敗しました:', newImage );
+						if ( defaultSrc ) {
+							$charImage.attr( 'src', defaultSrc );
+						}
+						$charImage.css( 'opacity', 1 );
+						$charImage.removeClass( 'novel-character-transitioning' );
+					};
+					img.src = newImage;
+					
+					// transitionend でクラスを削除（タイムアウトフォールバック付き）
+					var transitionCleanup = function() {
+						$charImage.removeClass( 'novel-character-transitioning' );
+					};
+					$charImage.one( 'transitionend', transitionCleanup );
+					// CSSトランジションが発火しない場合のフォールバック（400ms = 300ms + バッファ）
+					setTimeout( transitionCleanup, 400 );
+				}
+			} );
+		}
+		
+		/**
+		 * セリフごとのキャラクター画像をプリロードする
+		 */
+		function preloadDialogueCharacterImages() {
+			var imagesToPreload = {};
+			
+			// すべてのセリフからキャラクター画像を収集
+			dialogueData.forEach( function( dialogue ) {
+				if ( dialogue.characters ) {
+					[ 'left', 'center', 'right' ].forEach( function( position ) {
+						var imageUrl = dialogue.characters[ position ];
+						if ( imageUrl && ! imagesToPreload[ imageUrl ] ) {
+							imagesToPreload[ imageUrl ] = true;
+						}
+					} );
+				}
+			} );
+			
+			// 画像をプリロード
+			var imageUrls = Object.keys( imagesToPreload );
+			if ( imageUrls.length > 0 ) {
+				debugLog( 'セリフごとのキャラクター画像をプリロード中:', imageUrls.length, '枚' );
+				
+				imageUrls.forEach( function( url ) {
+					var img = new Image();
+					img.src = url;
+				} );
+			}
 		}
 		
 		/**
@@ -3515,6 +3676,9 @@
 				console.log( 'Cleaned dialogue data, final length:', dialogueData.length );
 				
 				prepareDialoguePages();
+				
+				// セリフごとのキャラクター画像をプリロード
+				preloadDialogueCharacterImages();
 				
 				// 保存された進捗がある場合はその位置から開始、なければ最初から
 				if ( currentPageIndex > 0 && currentPageIndex < allDialoguePages.length ) {
