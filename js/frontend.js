@@ -2754,16 +2754,59 @@
 			}
 			
 			var positions = [ 'left', 'center', 'right' ];
+			var altStrings = {
+				'left': ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings.leftCharacter : 'Left Character',
+				'center': ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings.centerCharacter : 'Center Character',
+				'right': ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings.rightCharacter : 'Right Character'
+			};
 			
 			positions.forEach( function( position ) {
 				var newImage = characters[ position ];
+				var $charImage = $( '.novel-character-' + position );
 				
-				// 空文字列または未定義の場合はスキップ（シーン全体の設定を維持）
-				if ( ! newImage || newImage === '' ) {
-					return;
+				// シーンのデフォルト画像を取得
+				var defaultSrc = '';
+				if ( $charImage.length > 0 ) {
+					defaultSrc = $charImage.data( 'scene-src' ) || $charImage.attr( 'src' ) || '';
 				}
 				
-				var $charImage = $( '.novel-character-' + position );
+				// 空文字列または未定義の場合はシーンのデフォルトに戻す
+				if ( ! newImage || newImage === '' ) {
+					if ( defaultSrc && $charImage.length > 0 ) {
+						var currentSrc = $charImage.attr( 'src' );
+						// すでにデフォルトの場合はスキップ
+						if ( currentSrc === defaultSrc ) {
+							return;
+						}
+						
+						$charImage.addClass( 'novel-character-transitioning' );
+						$charImage.css( 'opacity', 0 );
+						
+						// デフォルト画像をプリロード
+						var preloadImg = new Image();
+						preloadImg.onload = function() {
+							$charImage.attr( 'src', defaultSrc );
+							$charImage.show();
+							requestAnimationFrame( function() {
+								requestAnimationFrame( function() {
+									$charImage.css( 'opacity', 1 );
+								} );
+							} );
+						};
+						preloadImg.onerror = function() {
+							// 読み込み失敗時もデフォルトに設定してクリーンアップ
+							$charImage.attr( 'src', defaultSrc );
+							$charImage.css( 'opacity', 1 );
+						};
+						preloadImg.src = defaultSrc;
+						
+						// transitionend でクラスを削除
+						$charImage.one( 'transitionend', function() {
+							$charImage.removeClass( 'novel-character-transitioning' );
+						} );
+					}
+					return;
+				}
 				
 				if ( $charImage.length === 0 ) {
 					// キャラクター要素がない場合は新規作成
@@ -2771,9 +2814,10 @@
 					if ( $container.length > 0 ) {
 						var $newCharImage = $( '<img>' )
 							.addClass( 'novel-character novel-character-' + position )
-							.attr( 'alt', position + ' character' )
+							.attr( 'alt', altStrings[ position ] )
 							.attr( 'loading', 'eager' )
-							.css( 'opacity', '0' );
+							.attr( 'data-scene-src', newImage )
+							.css( 'opacity', 0 );
 						$container.append( $newCharImage );
 						$charImage = $newCharImage;
 					}
@@ -2784,7 +2828,7 @@
 				if ( currentSrc !== newImage ) {
 					// フェードアニメーションで切り替え
 					$charImage.addClass( 'novel-character-transitioning' );
-					$charImage.css( 'opacity', '0' );
+					$charImage.css( 'opacity', 0 );
 					
 					// 新しい画像をプリロード
 					var img = new Image();
@@ -2792,21 +2836,26 @@
 						$charImage.attr( 'src', newImage );
 						$charImage.show();
 						// ブラウザのレンダリングを待ってからフェードイン開始
-						// requestAnimationFrame を使用して次のフレームでトランジション開始
 						requestAnimationFrame( function() {
 							requestAnimationFrame( function() {
-								$charImage.css( 'opacity', '' );
-								$charImage.removeClass( 'novel-character-transitioning' );
+								$charImage.css( 'opacity', 1 );
 							} );
 						} );
 					};
 					img.onerror = function() {
-						// 画像読み込み失敗時はシーン設定にフォールバック
+						// 画像読み込み失敗時はシーンのデフォルトにフォールバック
 						debugLog( 'キャラクター画像の読み込みに失敗しました:', newImage );
-						$charImage.removeClass( 'novel-character-transitioning' );
-						$charImage.css( 'opacity', '' );
+						if ( defaultSrc ) {
+							$charImage.attr( 'src', defaultSrc );
+						}
+						$charImage.css( 'opacity', 1 );
 					};
 					img.src = newImage;
+					
+					// transitionend でクラスを削除
+					$charImage.one( 'transitionend', function() {
+						$charImage.removeClass( 'novel-character-transitioning' );
+					} );
 				}
 			} );
 		}

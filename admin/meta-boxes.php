@@ -1203,6 +1203,7 @@ function noveltool_save_meta_box_data( $post_id ) {
     // セリフごとのキャラクター設定データの保存
     if ( isset( $_POST['dialogue_characters'] ) ) {
         $dialogue_characters = wp_unslash( $_POST['dialogue_characters'] );
+        $sanitized_characters = array();
         
         // JSON文字列の場合は妥当性をチェックして保存
         if ( is_string( $dialogue_characters ) ) {
@@ -1210,13 +1211,30 @@ function noveltool_save_meta_box_data( $post_id ) {
             if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
                 // 配列の各要素をサニタイズ
                 $sanitized_characters = noveltool_sanitize_dialogue_characters( $decoded );
-                update_post_meta( $post_id, '_dialogue_characters', $sanitized_characters );
             }
         } elseif ( is_array( $dialogue_characters ) ) {
             // 配列の場合は直接サニタイズ
             $sanitized_characters = noveltool_sanitize_dialogue_characters( $dialogue_characters );
-            update_post_meta( $post_id, '_dialogue_characters', $sanitized_characters );
         }
+        
+        // dialogue_texts の配列長と一致させる
+        $dialogue_texts_meta = get_post_meta( $post_id, '_dialogue_texts', true );
+        $dialogue_texts_array = is_string( $dialogue_texts_meta ) ? json_decode( $dialogue_texts_meta, true ) : ( is_array( $dialogue_texts_meta ) ? $dialogue_texts_meta : array() );
+        $max_count = count( (array) $dialogue_texts_array );
+        
+        if ( $max_count > 0 ) {
+            // 短い場合は空要素でパディング
+            if ( count( $sanitized_characters ) < $max_count ) {
+                for ( $i = count( $sanitized_characters ); $i < $max_count; $i++ ) {
+                    $sanitized_characters[] = array( 'left' => '', 'center' => '', 'right' => '' );
+                }
+            } elseif ( count( $sanitized_characters ) > $max_count ) {
+                // 長い場合は切り詰め
+                $sanitized_characters = array_slice( $sanitized_characters, 0, $max_count );
+            }
+        }
+        
+        update_post_meta( $post_id, '_dialogue_characters', $sanitized_characters );
     }
 
     // エンディング設定の保存処理
@@ -1475,10 +1493,13 @@ function noveltool_sanitize_dialogue_characters( $dialogue_characters ) {
                 if ( $item[ $position ] === '' ) {
                     $sanitized_item[ $position ] = '';
                 } else {
-                    // HTTP/HTTPS URLのみを許可（esc_urlはHTTP/HTTPSに制限）
-                    $sanitized_url = esc_url( $item[ $position ] );
-                    // esc_url は不正なURLに対して空文字を返すので、そのまま使用
-                    $sanitized_item[ $position ] = $sanitized_url;
+                    // データベース保存用にesc_url_rawを使用し、wp_http_validate_urlで検証
+                    $sanitized_url = esc_url_raw( $item[ $position ] );
+                    if ( ! $sanitized_url || ! wp_http_validate_url( $sanitized_url ) ) {
+                        $sanitized_item[ $position ] = '';
+                    } else {
+                        $sanitized_item[ $position ] = $sanitized_url;
+                    }
                 }
             }
         }

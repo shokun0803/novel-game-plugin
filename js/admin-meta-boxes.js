@@ -48,6 +48,19 @@ jQuery( function( $ ) {
 	 * @return {Object} キャラクター設定オブジェクト
 	 */
 	function ensureDialogueCharacters( index ) {
+		// dialogueData[index] が未定義の場合はデフォルトのオブジェクトを作成
+		if ( typeof dialogueData[index] === 'undefined' ) {
+			dialogueData[index] = {
+				text: '',
+				background: '',
+				speaker: '',
+				flagConditions: [],
+				flagConditionLogic: 'AND',
+				displayMode: 'normal',
+				alternativeText: '',
+				characters: { left: '', center: '', right: '' }
+			};
+		}
 		if ( ! dialogueData[index].characters ) {
 			dialogueData[index].characters = { left: '', center: '', right: '' };
 		}
