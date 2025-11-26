@@ -1035,6 +1035,11 @@ body #novel-game-modal-overlay #novel-game-container {
     filter: brightness(0.8);
 }
 
+/* セリフごとのキャラクター切り替えアニメーション */
+.novel-character.novel-character-transitioning {
+    transition: opacity 0.3s ease-in-out;
+}
+
 /* 後方互換性のための旧スタイル */
 #novel-character:not(.novel-character-left):not(.novel-character-center):not(.novel-character-right) {
     left: 50%;
