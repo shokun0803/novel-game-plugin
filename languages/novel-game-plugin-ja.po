@@ -2776,3 +2776,23 @@ msgstr "開始: %s"
 #~ msgid "novel"
 #~ msgstr "novel"
 
+
+#: admin/export-import.php:35
+msgid "Select a game and export it in JSON format."
+msgstr "ゲームを選択してJSON形式でエクスポートします。"
+
+#: admin/export-import.php:43
+msgid "Select game to export"
+msgstr "エクスポートするゲームを選択"
+
+#: admin/export-import.php:45
+msgid "-- Select a game --"
+msgstr "-- ゲームを選択 --"
+
+#: admin/export-import.php:66
+msgid "Import a JSON format game data to create a new game."
+msgstr "JSON形式のゲームデータをインポートして新しいゲームを作成します。"
+
+#: admin/export-import.php:70
+msgid "Select JSON file"
+msgstr "JSONファイルを選択"

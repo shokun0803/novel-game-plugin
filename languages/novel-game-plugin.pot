@@ -1761,3 +1761,23 @@ msgstr ""
 #: admin/export-import.php:214
 msgid "Please select a game to export."
 msgstr ""
+
+#: admin/export-import.php:35
+msgid "Select a game and export it in JSON format."
+msgstr ""
+
+#: admin/export-import.php:43
+msgid "Select game to export"
+msgstr ""
+
+#: admin/export-import.php:45
+msgid "-- Select a game --"
+msgstr ""
+
+#: admin/export-import.php:66
+msgid "Import a JSON format game data to create a new game."
+msgstr ""
+
+#: admin/export-import.php:70
+msgid "Select JSON file"
+msgstr ""
