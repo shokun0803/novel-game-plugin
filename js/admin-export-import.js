@@ -150,7 +150,7 @@
                         var redirectUrl = noveltoolExportImport.exportImportUrl || noveltoolExportImport.myGamesUrl;
                         setTimeout(function() {
                             window.location.href = redirectUrl;
-                        }, 2000);
+                        }, 8000);
                     } else {
                         showNotice('error', response.data.message || noveltoolExportImport.importError);
                     }
@@ -188,6 +188,9 @@
                 // 旧セクション（互換性のため残す）
                 $('.noveltool-export-import-section').prepend(notice);
             }
+
+            // アクセシビリティ向上: 通知にフォーカスを移動
+            notice.attr('tabindex', -1).focus();
             
             // 数秒後に自動的に削除
             setTimeout(function() {
