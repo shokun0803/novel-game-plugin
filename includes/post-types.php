@@ -323,3 +323,21 @@ function noveltool_add_my_games_menu() {
 }
 add_action( 'admin_menu', 'noveltool_add_my_games_menu' );
 
+/**
+ * エクスポート/インポートページをメニューに追加
+ *
+ * @since 1.3.0
+ */
+function noveltool_add_export_import_menu() {
+    add_submenu_page(
+        'edit.php?post_type=novel_game',
+        __( 'Export/Import', 'novel-game-plugin' ),
+        '📥📤 ' . __( 'Export/Import', 'novel-game-plugin' ),
+        'edit_posts',
+        'novel-game-export-import',
+        'noveltool_export_import_page',
+        2
+    );
+}
+add_action( 'admin_menu', 'noveltool_add_export_import_menu' );
+
