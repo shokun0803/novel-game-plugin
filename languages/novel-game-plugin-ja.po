@@ -939,6 +939,30 @@ msgstr ""
 "セリフのフラグ条件は、上記の「セリフ」セクションで各セリフを編集する際に設定"
 "できます。"
 
+#: admin/meta-boxes.php:349
+msgid "Character Settings for This Dialogue"
+msgstr "このセリフのキャラクター設定"
+
+#: admin/meta-boxes.php:350
+msgid "You can set individual character images for each dialogue. If not set, the scene's character settings will be used."
+msgstr "各セリフに個別のキャラクター画像を設定できます。未設定の場合は、シーン全体のキャラクター設定が使用されます。"
+
+#: admin/meta-boxes.php:351
+msgid "▼ Show Character Settings"
+msgstr "▼ キャラクター設定を表示"
+
+#: admin/meta-boxes.php:352
+msgid "▲ Hide Character Settings"
+msgstr "▲ キャラクター設定を非表示"
+
+#: admin/meta-boxes.php:353
+msgid "(Use Scene Default)"
+msgstr "（シーン設定を使用）"
+
+#: admin/meta-boxes.php:354
+msgid "Clear"
+msgstr "クリア"
+
 #: admin/ad-management.php:61
 msgid "Ad settings have been saved successfully."
 msgstr "広告設定が正常に保存されました。"
