@@ -283,15 +283,26 @@ function noveltool_meta_box_callback( $post ) {
     );
 
     // 投稿一覧を取得してJavaScriptに渡す
-    $scene_posts = get_posts(
-        array(
-            'post_type'      => 'novel_game',
-            'posts_per_page' => -1,
-            'post_status'    => 'publish',
-            'orderby'        => 'title',
-            'order'          => 'ASC',
-        )
+    $query_args = array(
+        'post_type'      => 'novel_game',
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+        'orderby'        => 'title',
+        'order'          => 'ASC',
     );
+
+    // ゲームタイトルが設定されている場合はフィルタリング
+    if ( ! empty( $game_title ) ) {
+        $query_args['meta_query'] = array(
+            array(
+                'key'     => '_game_title',
+                'value'   => $game_title,
+                'compare' => '=',
+            ),
+        );
+    }
+
+    $scene_posts = get_posts( $query_args );
 
     $scenes_data = array();
     foreach ( $scene_posts as $scene_post ) {
