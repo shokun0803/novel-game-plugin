@@ -38,13 +38,46 @@ function noveltool_get_shadow_detective_game_data() {
     $bg_villa = $plugin_url . 'assets/sample-images/bg-confrontation.png';
     
     // キャラクター画像（プラグイン同梱PNG、透過対応）
+    // 既存のキャラクター（後方互換性のため維持）
     $char_client = $plugin_url . 'assets/sample-images/char-client.png';
     $char_friend = $plugin_url . 'assets/sample-images/char-friend.png';
+    
+    // 主人公の表情差分
+    $char_protagonist_normal = $plugin_url . 'assets/sample-images/char-protagonist-normal.png';
+    $char_protagonist_thinking = $plugin_url . 'assets/sample-images/char-protagonist-thinking.png';
+    $char_protagonist_serious = $plugin_url . 'assets/sample-images/char-protagonist-serious.png';
+    $char_protagonist_determined = $plugin_url . 'assets/sample-images/char-protagonist-determined.png';
+    
+    // 美咲（Misaki）の表情差分
+    $char_misaki_normal = $plugin_url . 'assets/sample-images/char-misaki-normal.png';
+    $char_misaki_sad = $plugin_url . 'assets/sample-images/char-misaki-sad.png';
+    $char_misaki_worried = $plugin_url . 'assets/sample-images/char-misaki-worried.png';
+    $char_misaki_tense = $plugin_url . 'assets/sample-images/char-misaki-tense.png';
+    $char_misaki_smile = $plugin_url . 'assets/sample-images/char-misaki-smile.png';
+    
+    // 誠（Makoto）の表情差分
+    $char_makoto_relief = $plugin_url . 'assets/sample-images/char-makoto-relief.png';
+    $char_makoto_tired = $plugin_url . 'assets/sample-images/char-makoto-tired.png';
+    
+    // 高木（Takagi）の表情差分
+    $char_takagi_calm = $plugin_url . 'assets/sample-images/char-takagi-calm.png';
+    $char_takagi_nervous = $plugin_url . 'assets/sample-images/char-takagi-nervous.png';
+    $char_takagi_angry = $plugin_url . 'assets/sample-images/char-takagi-angry.png';
+    $char_takagi_regret = $plugin_url . 'assets/sample-images/char-takagi-regret.png';
+    
+    // 佐藤（Sato）
+    $char_sato = $plugin_url . 'assets/sample-images/char-sato.png';
+    
+    // 情報屋（Informant）
     $char_informant = $plugin_url . 'assets/sample-images/char-informant.png';
-    $char_yakuza = $plugin_url . 'assets/sample-images/char-mastermind.png';
-    $char_takagi = $plugin_url . 'assets/sample-images/char-detective.png';
-    $char_misaki = $plugin_url . 'assets/sample-images/char-wife.png';
-    $char_makoto = $plugin_url . 'assets/sample-images/char-husband.png';
+    
+    // ヤクザ（Yakuza）
+    $char_yakuza = $plugin_url . 'assets/sample-images/char-yakuza.png';
+    
+    // 後方互換性のため旧変数名も維持
+    $char_takagi = $char_takagi_calm;
+    $char_misaki = $char_misaki_normal;
+    $char_makoto = $char_makoto_relief;
     
     // Shadow Detective ゲームの基本情報
     $game_data = array(
@@ -59,23 +92,31 @@ function noveltool_get_shadow_detective_game_data() {
     // シーンデータ（全23シーン）
     $scenes = array(
         // シーン1: 依頼者来訪（探偵事務所）
+        // 主人公は左側、美咲は右側に配置（第三者視点の会話表示）
         array(
             'title'           => __( 'Shadow Detective - The Beginning', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
-            'character_left'  => '',
-            'character_center' => $char_misaki,
-            'character_right' => '',
-            'character_left_name' => '',
-            'character_center_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
-            'character_right_name' => '',
+            'character_left'  => $char_protagonist_normal,
+            'character_center' => '',
+            'character_right' => $char_misaki_worried,
+            'character_left_name' => __( 'Detective', 'novel-game-plugin-sample' ),
+            'character_center_name' => '',
+            'character_right_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
                 __( 'On an autumn evening, a woman visited my office.', 'novel-game-plugin-sample' ),
                 __( 'Detective, please help me... My husband has been missing for three days.', 'novel-game-plugin-sample' ),
                 __( 'The police say there\'s no criminal activity, but my husband would never do this...', 'novel-game-plugin-sample' ),
                 __( 'The client\'s name is Misaki Kurosaki. Her husband is businessman Makoto Kurosaki.', 'novel-game-plugin-sample' ),
             ),
-            'dialogue_speakers' => array( '', 'center', 'center', '' ),
+            'dialogue_speakers' => array( '', 'right', 'right', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
+            // 表情差分：セリフごとにキャラクター画像を切り替え
+            'dialogue_characters' => array(
+                0 => array( 'left' => $char_protagonist_normal, 'center' => '', 'right' => $char_misaki_worried ),
+                1 => array( 'left' => $char_protagonist_serious, 'center' => '', 'right' => $char_misaki_sad ),
+                2 => array( 'left' => $char_protagonist_serious, 'center' => '', 'right' => $char_misaki_worried ),
+                3 => array( 'left' => $char_protagonist_thinking, 'center' => '', 'right' => $char_misaki_worried ),
+            ),
             'choices'         => array(
                 array(
                     'text' => __( 'Please tell me the details', 'novel-game-plugin-sample' ),
@@ -96,23 +137,31 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン2: 失踪の詳細聴取
+        // 主人公は左側、美咲は右側に配置（引き続き会話シーン）
         array(
             'title'           => __( 'Shadow Detective - Details of Disappearance', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
-            'character_left'  => '',
-            'character_center' => $char_misaki,
-            'character_right' => '',
-            'character_left_name' => '',
-            'character_center_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
-            'character_right_name' => '',
+            'character_left'  => $char_protagonist_serious,
+            'character_center' => '',
+            'character_right' => $char_misaki_sad,
+            'character_left_name' => __( 'Detective', 'novel-game-plugin-sample' ),
+            'character_center_name' => '',
+            'character_right_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
                 __( 'Three days ago in the evening, my husband said "I have an important business meeting" and left.', 'novel-game-plugin-sample' ),
                 __( 'Since then, his phone hasn\'t connected, and he hasn\'t shown up at the company.', 'novel-game-plugin-sample' ),
                 __( 'Recently he seemed strange... as if he was worried about something.', 'novel-game-plugin-sample' ),
                 __( 'Strange behavior before disappearing. This might not be a simple runaway case.', 'novel-game-plugin-sample' ),
             ),
-            'dialogue_speakers' => array( 'center', 'center', 'center', '' ),
+            'dialogue_speakers' => array( 'right', 'right', 'right', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
+            // 表情差分：セリフごとにキャラクター画像を切り替え
+            'dialogue_characters' => array(
+                0 => array( 'left' => $char_protagonist_serious, 'center' => '', 'right' => $char_misaki_sad ),
+                1 => array( 'left' => $char_protagonist_serious, 'center' => '', 'right' => $char_misaki_worried ),
+                2 => array( 'left' => $char_protagonist_thinking, 'center' => '', 'right' => $char_misaki_tense ),
+                3 => array( 'left' => $char_protagonist_determined, 'center' => '', 'right' => $char_misaki_sad ),
+            ),
             'choices'         => array(
                 array(
                     'text' => __( 'First, I\'ll investigate the disappearance site', 'novel-game-plugin-sample' ),
@@ -133,11 +182,12 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン3: 失踪現場の調査（懐中時計入手）
+        // 主人公の独白シーンのため、character_center に配置し dialogue_speakers を空に設定
         array(
             'title'           => __( 'Shadow Detective - Warehouse District', 'novel-game-plugin-sample' ),
             'background'      => $bg_warehouse,
             'character_left'  => '',
-            'character_center' => '',
+            'character_center' => $char_protagonist_serious,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => '',
@@ -172,11 +222,12 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン4: 情報整理と方針決定
+        // 主人公の思案シーンのため、character_center に配置し dialogue_speakers を空に設定
         array(
             'title'           => __( 'Shadow Detective - Time to Deduce', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
-            'character_center' => '',
+            'character_center' => $char_protagonist_thinking,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => '',
@@ -219,15 +270,16 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン5: 妻への聴取
+        // 主人公は右側、美咲は左側に配置（左右を入れ替えることで場面の変化を表現）
         array(
             'title'           => __( 'Shadow Detective - Family Testimony', 'novel-game-plugin-sample' ),
             'background'      => $bg_mansion,
-            'character_left'  => $char_misaki,
+            'character_left'  => $char_misaki_sad,
             'character_center' => '',
-            'character_right' => '',
+            'character_right' => $char_protagonist_serious,
             'character_left_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
             'character_center_name' => '',
-            'character_right_name' => '',
+            'character_right_name' => __( 'Detective', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
                 __( 'Actually... my husband was recently troubled by business management issues.', 'novel-game-plugin-sample' ),
                 __( 'He seemed to have problems with business partners... but he wouldn\'t tell me details.', 'novel-game-plugin-sample' ),
@@ -262,13 +314,14 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン6: 友人の証言と証拠写真入手
+        // 主人公は左側、佐藤は右側に配置
         array(
             'title'           => __( 'Shadow Detective - Friend\'s Testimony', 'novel-game-plugin-sample' ),
             'background'      => $bg_cafe,
-            'character_left'  => '',
+            'character_left'  => $char_protagonist_normal,
             'character_center' => '',
-            'character_right' => $char_friend,
-            'character_left_name' => '',
+            'character_right' => $char_sato,
+            'character_left_name' => __( 'Detective', 'novel-game-plugin-sample' ),
             'character_center_name' => '',
             'character_right_name' => __( 'Sato', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
@@ -306,11 +359,12 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン7: 黒崎邸の書斎調査
+        // 主人公の独白・調査シーンのため、character_center に配置
         array(
             'title'           => __( 'Shadow Detective - Secret of the Study', 'novel-game-plugin-sample' ),
             'background'      => $bg_study,
             'character_left'  => '',
-            'character_center' => '',
+            'character_center' => $char_protagonist_serious,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => '',
@@ -343,11 +397,12 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン8: 隠し部屋の発見と手記入手
+        // 主人公の独白・調査シーンのため、character_center に配置
         array(
             'title'           => __( 'Shadow Detective - Hidden Truth', 'novel-game-plugin-sample' ),
             'background'      => $bg_hidden_room,
             'character_left'  => '',
-            'character_center' => '',
+            'character_center' => $char_protagonist_determined,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => '',
@@ -386,11 +441,12 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン9: 情報の分析
+        // 主人公の思案シーンのため、character_center に配置し dialogue_speakers を空に設定
         array(
             'title'           => __( 'Shadow Detective - To the Core of the Case', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
-            'character_center' => '',
+            'character_center' => $char_protagonist_thinking,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => '',
@@ -445,15 +501,16 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン10: 金庫の鍵入手
+        // 主人公は右側、美咲は左側に配置（左右が入れ替わるシーン）
         array(
             'title'           => __( 'Shadow Detective - Finding the Key', 'novel-game-plugin-sample' ),
             'background'      => $bg_mansion,
-            'character_left'  => $char_misaki,
+            'character_left'  => $char_misaki_normal,
             'character_center' => '',
-            'character_right' => '',
+            'character_right' => $char_protagonist_normal,
             'character_left_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
             'character_center_name' => '',
-            'character_right_name' => '',
+            'character_right_name' => __( 'Detective', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
                 __( 'The safe key... Oh, I think there was a spare in my husband\'s study drawer.', 'novel-game-plugin-sample' ),
                 __( 'Guided by Misaki, I find a small key deep in the drawer.', 'novel-game-plugin-sample' ),
@@ -493,13 +550,14 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン11: 裏社会への接触
+        // 主人公は左側、情報屋は右側に配置
         array(
             'title'           => __( 'Shadow Detective - Dangerous Investigation', 'novel-game-plugin-sample' ),
             'background'      => $bg_alley,
-            'character_left'  => '',
+            'character_left'  => $char_protagonist_serious,
             'character_center' => '',
             'character_right' => $char_informant,
-            'character_left_name' => '',
+            'character_left_name' => __( 'Detective', 'novel-game-plugin-sample' ),
             'character_center_name' => '',
             'character_right_name' => __( 'Informant', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
@@ -534,22 +592,23 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン12: 龍組の事務所訪問
+        // 主人公は左側、ヤクザ幹部は右側に配置（危険な対峙シーン）
         array(
             'title'           => __( 'Shadow Detective - Dragon\'s Den', 'novel-game-plugin-sample' ),
             'background'      => $bg_yakuza_office,
-            'character_left'  => '',
-            'character_center' => $char_yakuza,
-            'character_right' => '',
-            'character_left_name' => '',
-            'character_center_name' => __( 'Ryu-gumi Executive', 'novel-game-plugin-sample' ),
-            'character_right_name' => '',
+            'character_left'  => $char_protagonist_determined,
+            'character_center' => '',
+            'character_right' => $char_yakuza,
+            'character_left_name' => __( 'Detective', 'novel-game-plugin-sample' ),
+            'character_center_name' => '',
+            'character_right_name' => __( 'Ryu-gumi Executive', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
                 __( 'Makoto Kurosaki? Yeah, I know him.', 'novel-game-plugin-sample' ),
                 __( 'He ran away after defaulting on a 30 million yen debt.', 'novel-game-plugin-sample' ),
                 __( 'But we didn\'t do anything. You got no proof, right?', 'novel-game-plugin-sample' ),
                 __( 'They won\'t say anything publicly... but they seem to be hiding something.', 'novel-game-plugin-sample' ),
             ),
-            'dialogue_speakers' => array( 'center', 'center', 'center', '' ),
+            'dialogue_speakers' => array( 'right', 'right', 'right', '' ),
             'dialogue_backgrounds' => array( $bg_yakuza_office, '', '', $bg_alley ),
             'choices'         => array(
                 array(
@@ -573,11 +632,12 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン13: 隠し部屋の金庫を開ける
+        // 主人公の独白・調査シーンのため、character_center に配置
         array(
             'title'           => __( 'Shadow Detective - Decisive Evidence', 'novel-game-plugin-sample' ),
             'background'      => $bg_hidden_room,
             'character_left'  => '',
-            'character_center' => '',
+            'character_center' => $char_protagonist_determined,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => '',
@@ -629,11 +689,12 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン14: 高木建設の調査と闇取引メモ入手
+        // 主人公の独白・調査シーンのため、character_center に配置
         array(
             'title'           => __( 'Shadow Detective - Shadow of the Mastermind', 'novel-game-plugin-sample' ),
             'background'      => $bg_construction,
             'character_left'  => '',
-            'character_center' => '',
+            'character_center' => $char_protagonist_serious,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => '',
@@ -668,11 +729,12 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン15: 追加調査
+        // 主人公の思案シーンのため、character_center に配置
         array(
             'title'           => __( 'Shadow Detective - Deepening Investigation', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
-            'character_center' => '',
+            'character_center' => $char_protagonist_thinking,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => '',
@@ -709,22 +771,23 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン16: 高木社長との対峙（第一段階）
+        // 主人公は左側、高木社長は右側に配置（対峙シーン）
         array(
             'title'           => __( 'Shadow Detective - Encounter with the Mastermind', 'novel-game-plugin-sample' ),
             'background'      => $bg_construction,
-            'character_left'  => '',
-            'character_center' => $char_takagi,
-            'character_right' => '',
-            'character_left_name' => '',
-            'character_center_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
-            'character_right_name' => '',
+            'character_left'  => $char_protagonist_serious,
+            'character_center' => '',
+            'character_right' => $char_takagi_calm,
+            'character_left_name' => __( 'Detective', 'novel-game-plugin-sample' ),
+            'character_center_name' => '',
+            'character_right_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
                 __( 'Detective, what brings you here?', 'novel-game-plugin-sample' ),
                 __( 'Calm demeanor, but his eyes aren\'t smiling.', 'novel-game-plugin-sample' ),
                 __( 'Please tell me about your relationship with Makoto Kurosaki.', 'novel-game-plugin-sample' ),
                 __( 'Ah, I had a business relationship with him.', 'novel-game-plugin-sample' ),
             ),
-            'dialogue_speakers' => array( 'center', '', '', 'center' ),
+            'dialogue_speakers' => array( 'right', '', 'left', 'right' ),
             'dialogue_backgrounds' => array( $bg_construction, '', '', '' ),
             'choices'         => array(
                 array(
@@ -747,22 +810,23 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン17: 間接的な追及
+        // 主人公は左側、高木社長は右側に配置（対峙シーン継続）
         array(
             'title'           => __( 'Shadow Detective - Cautious Approach', 'novel-game-plugin-sample' ),
             'background'      => $bg_construction,
-            'character_left'  => '',
-            'character_center' => $char_takagi,
-            'character_right' => '',
-            'character_left_name' => '',
-            'character_center_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
-            'character_right_name' => '',
+            'character_left'  => $char_protagonist_serious,
+            'character_center' => '',
+            'character_right' => $char_takagi_nervous,
+            'character_left_name' => __( 'Detective', 'novel-game-plugin-sample' ),
+            'character_center_name' => '',
+            'character_right_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
                 __( 'Ryu-gumi? Ah, I\'ve heard rumors, but I have no connection with them.', 'novel-game-plugin-sample' ),
                 __( 'He skillfully evaded... Without decisive evidence, I can\'t press further.', 'novel-game-plugin-sample' ),
                 __( 'Detective, baseless defamation is libel, you know.', 'novel-game-plugin-sample' ),
                 __( 'At this rate, I can\'t reach the truth...', 'novel-game-plugin-sample' ),
             ),
-            'dialogue_speakers' => array( 'center', '', 'center', '' ),
+            'dialogue_speakers' => array( 'right', '', 'right', '' ),
             'dialogue_backgrounds' => array( '', '', '', '' ),
             'choices'         => array(
                 array(
@@ -788,23 +852,31 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン18: 黒幕との対峙（証拠提示）
+        // 主人公は左側、高木社長は右側に配置（クライマックス・表情差分あり）
         array(
             'title'           => __( 'Shadow Detective - Revealing the Truth', 'novel-game-plugin-sample' ),
             'background'      => $bg_construction,
-            'character_left'  => '',
-            'character_center' => $char_takagi,
-            'character_right' => '',
-            'character_left_name' => '',
-            'character_center_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
-            'character_right_name' => '',
+            'character_left'  => $char_protagonist_determined,
+            'character_center' => '',
+            'character_right' => $char_takagi_nervous,
+            'character_left_name' => __( 'Detective', 'novel-game-plugin-sample' ),
+            'character_center_name' => '',
+            'character_right_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
                 __( 'I place the illicit transaction memo on the desk.', 'novel-game-plugin-sample' ),
                 __( '...This is...', 'novel-game-plugin-sample' ),
                 __( 'His expression changed. Bull\'s eye.', 'novel-game-plugin-sample' ),
                 __( 'Tch... Kurosaki left evidence behind.', 'novel-game-plugin-sample' ),
             ),
-            'dialogue_speakers' => array( '', 'center', '', 'center' ),
+            'dialogue_speakers' => array( '', 'right', '', 'right' ),
             'dialogue_backgrounds' => array( $bg_construction, '', '', '' ),
+            // 表情差分：クライマックスでの表情変化
+            'dialogue_characters' => array(
+                0 => array( 'left' => $char_protagonist_determined, 'center' => '', 'right' => $char_takagi_nervous ),
+                1 => array( 'left' => $char_protagonist_determined, 'center' => '', 'right' => $char_takagi_angry ),
+                2 => array( 'left' => $char_protagonist_determined, 'center' => '', 'right' => $char_takagi_angry ),
+                3 => array( 'left' => $char_protagonist_determined, 'center' => '', 'right' => $char_takagi_regret ),
+            ),
             'choices'         => array(
                 array(
                     'text' => __( 'Where is Makoto Kurosaki?', 'novel-game-plugin-sample' ),
@@ -827,22 +899,23 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン19: 真相の告白
+        // 主人公は左側、高木社長は右側に配置（告白シーン）
         array(
             'title'           => __( 'Shadow Detective - All the Truth', 'novel-game-plugin-sample' ),
             'background'      => $bg_construction,
-            'character_left'  => '',
-            'character_center' => $char_takagi,
-            'character_right' => '',
-            'character_left_name' => '',
-            'character_center_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
-            'character_right_name' => '',
+            'character_left'  => $char_protagonist_serious,
+            'character_center' => '',
+            'character_right' => $char_takagi_regret,
+            'character_left_name' => __( 'Detective', 'novel-game-plugin-sample' ),
+            'character_center_name' => '',
+            'character_right_name' => __( 'President Takagi', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
                 __( 'Fine... I\'ll tell you everything.', 'novel-game-plugin-sample' ),
                 __( 'Kurosaki discovered my fraud. So I tried to silence him...', 'novel-game-plugin-sample' ),
                 __( 'But I didn\'t kill him. I asked Ryu-gumi to threaten him.', 'novel-game-plugin-sample' ),
                 __( 'Kurosaki is now hiding in my villa. By his own choice.', 'novel-game-plugin-sample' ),
             ),
-            'dialogue_speakers' => array( 'center', 'center', 'center', 'center' ),
+            'dialogue_speakers' => array( 'right', 'right', 'right', 'right' ),
             'dialogue_backgrounds' => array( $bg_construction, '', '', $bg_villa ),
             'choices'         => array(
                 array(
@@ -864,23 +937,31 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン20: 黒崎誠の保護（分岐点）
+        // 主人公は左側、誠は右側に配置（再会シーン）
         array(
             'title'           => __( 'Shadow Detective - Reunion with the Missing', 'novel-game-plugin-sample' ),
             'background'      => $bg_villa,
-            'character_left'  => '',
-            'character_center' => $char_makoto,
-            'character_right' => '',
-            'character_left_name' => '',
-            'character_center_name' => __( 'Makoto Kurosaki', 'novel-game-plugin-sample' ),
-            'character_right_name' => '',
+            'character_left'  => $char_protagonist_normal,
+            'character_center' => '',
+            'character_right' => $char_makoto_tired,
+            'character_left_name' => __( 'Detective', 'novel-game-plugin-sample' ),
+            'character_center_name' => '',
+            'character_right_name' => __( 'Makoto Kurosaki', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
                 __( 'You\'re the detective...', 'novel-game-plugin-sample' ),
                 __( 'I discovered Takagi\'s fraud and was threatened.', 'novel-game-plugin-sample' ),
                 __( 'I was told my family would be harmed, so I had no choice but to hide.', 'novel-game-plugin-sample' ),
                 __( 'Please... let me see my wife, Misaki.', 'novel-game-plugin-sample' ),
             ),
-            'dialogue_speakers' => array( 'center', 'center', 'center', 'center' ),
+            'dialogue_speakers' => array( 'right', 'right', 'right', 'right' ),
             'dialogue_backgrounds' => array( $bg_villa, '', '', '' ),
+            // 表情差分：再会シーンでの表情変化
+            'dialogue_characters' => array(
+                0 => array( 'left' => $char_protagonist_normal, 'center' => '', 'right' => $char_makoto_tired ),
+                1 => array( 'left' => $char_protagonist_serious, 'center' => '', 'right' => $char_makoto_tired ),
+                2 => array( 'left' => $char_protagonist_serious, 'center' => '', 'right' => $char_makoto_tired ),
+                3 => array( 'left' => $char_protagonist_normal, 'center' => '', 'right' => $char_makoto_relief ),
+            ),
             'choices'         => array(
                 array(
                     'text' => __( 'Everything is resolved. Let\'s go back to your family', 'novel-game-plugin-sample' ),
@@ -910,12 +991,13 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン21: エンディング - 完全解決
+        // 美咲は左側、誠は右側に配置（再会のエンディング）
         array(
             'title'           => __( 'Shadow Detective - Complete Solution', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
-            'character_left'  => $char_misaki,
+            'character_left'  => $char_misaki_smile,
             'character_center' => '',
-            'character_right' => $char_makoto,
+            'character_right' => $char_makoto_relief,
             'character_left_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
             'character_center_name' => '',
             'character_right_name' => __( 'Makoto', 'novel-game-plugin-sample' ),
@@ -934,11 +1016,12 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン22: エンディング - 部分解決
+        // 主人公の独白シーンのため、character_center に配置
         array(
             'title'           => __( 'Shadow Detective - Partial Solution', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
-            'character_center' => '',
+            'character_center' => $char_protagonist_thinking,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => '',
@@ -958,11 +1041,12 @@ function noveltool_get_shadow_detective_game_data() {
         ),
         
         // シーン23: エンディング - 証拠不足/誤推理
+        // 主人公の独白シーンのため、character_center に配置
         array(
             'title'           => __( 'Shadow Detective - Insufficient Evidence', 'novel-game-plugin-sample' ),
             'background'      => $bg_office,
             'character_left'  => '',
-            'character_center' => '',
+            'character_center' => $char_protagonist_thinking,
             'character_right' => '',
             'character_left_name' => '',
             'character_center_name' => '',
@@ -1113,6 +1197,15 @@ function noveltool_generate_scenes_for_game( $game_id, $target_title, $scenes_da
                 $post_id,
                 '_dialogue_flag_conditions',
                 wp_json_encode( $scene_data['dialogue_flag_conditions'], JSON_UNESCAPED_UNICODE )
+            );
+        }
+        
+        // セリフごとのキャラクター設定（表情差分）を保存
+        if ( isset( $scene_data['dialogue_characters'] ) && is_array( $scene_data['dialogue_characters'] ) ) {
+            update_post_meta(
+                $post_id,
+                '_dialogue_characters',
+                wp_json_encode( $scene_data['dialogue_characters'], JSON_UNESCAPED_UNICODE )
             );
         }
         
