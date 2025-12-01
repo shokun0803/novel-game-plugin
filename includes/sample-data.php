@@ -1170,10 +1170,17 @@ function noveltool_generate_scenes_for_game( $game_id, $target_title, $scenes_da
         
         // メタデータを保存
         update_post_meta( $post_id, '_game_title', $target_title );
-        update_post_meta( $post_id, '_background_image', esc_url_raw( $scene_data['background'] ) );
-        update_post_meta( $post_id, '_character_left', esc_url_raw( $scene_data['character_left'] ) );
-        update_post_meta( $post_id, '_character_center', esc_url_raw( $scene_data['character_center'] ) );
-        update_post_meta( $post_id, '_character_right', esc_url_raw( $scene_data['character_right'] ) );
+        
+        $bg = isset( $scene_data['background'] ) ? esc_url_raw( $scene_data['background'] ) : '';
+        update_post_meta( $post_id, '_background_image', $bg );
+        
+        $left = isset( $scene_data['character_left'] ) ? esc_url_raw( $scene_data['character_left'] ) : '';
+        $center = isset( $scene_data['character_center'] ) ? esc_url_raw( $scene_data['character_center'] ) : '';
+        $right = isset( $scene_data['character_right'] ) ? esc_url_raw( $scene_data['character_right'] ) : '';
+        update_post_meta( $post_id, '_character_left', $left );
+        update_post_meta( $post_id, '_character_center', $center );
+        update_post_meta( $post_id, '_character_right', $right );
+        
         update_post_meta( $post_id, '_character_left_name', $scene_data['character_left_name'] );
         update_post_meta( $post_id, '_character_center_name', $scene_data['character_center_name'] );
         update_post_meta( $post_id, '_character_right_name', $scene_data['character_right_name'] );
@@ -1196,8 +1203,8 @@ function noveltool_generate_scenes_for_game( $game_id, $target_title, $scenes_da
         if ( isset( $scene_data['dialogue_characters'] ) && is_array( $scene_data['dialogue_characters'] ) ) {
             // dialogue_characters内の画像URLをサニタイズ
             $sanitized_dialogue_characters = array();
-            foreach ( $scene_data['dialogue_characters'] as $index => $char_setting ) {
-                $sanitized_dialogue_characters[ $index ] = array(
+            foreach ( $scene_data['dialogue_characters'] as $idx => $char_setting ) {
+                $sanitized_dialogue_characters[ $idx ] = array(
                     'left'   => isset( $char_setting['left'] ) ? esc_url_raw( $char_setting['left'] ) : '',
                     'center' => isset( $char_setting['center'] ) ? esc_url_raw( $char_setting['center'] ) : '',
                     'right'  => isset( $char_setting['right'] ) ? esc_url_raw( $char_setting['right'] ) : '',
