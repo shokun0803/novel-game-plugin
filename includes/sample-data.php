@@ -74,12 +74,6 @@ function noveltool_get_shadow_detective_game_data() {
     // ヤクザ（Yakuza）
     $char_yakuza = $plugin_url . 'assets/sample-images/char-yakuza.png';
     
-    // 後方互換性のため旧変数名も維持
-    $char_takagi = $char_takagi_calm;
-    $char_misaki = $char_misaki_normal;
-    $char_makoto = $char_makoto_relief;
-    $char_mastermind = $char_yakuza;
-    
     // Shadow Detective ゲームの基本情報
     $game_data = array(
         'title'          => __( 'Shadow Detective', 'novel-game-plugin-sample' ),
@@ -1179,10 +1173,10 @@ function noveltool_generate_scenes_for_game( $game_id, $target_title, $scenes_da
         
         // メタデータを保存
         update_post_meta( $post_id, '_game_title', $target_title );
-        update_post_meta( $post_id, '_background_image', $scene_data['background'] );
-        update_post_meta( $post_id, '_character_left', $scene_data['character_left'] );
-        update_post_meta( $post_id, '_character_center', $scene_data['character_center'] );
-        update_post_meta( $post_id, '_character_right', $scene_data['character_right'] );
+        update_post_meta( $post_id, '_background_image', esc_url_raw( $scene_data['background'] ) );
+        update_post_meta( $post_id, '_character_left', esc_url_raw( $scene_data['character_left'] ) );
+        update_post_meta( $post_id, '_character_center', esc_url_raw( $scene_data['character_center'] ) );
+        update_post_meta( $post_id, '_character_right', esc_url_raw( $scene_data['character_right'] ) );
         update_post_meta( $post_id, '_character_left_name', $scene_data['character_left_name'] );
         update_post_meta( $post_id, '_character_center_name', $scene_data['character_center_name'] );
         update_post_meta( $post_id, '_character_right_name', $scene_data['character_right_name'] );
@@ -1203,10 +1197,19 @@ function noveltool_generate_scenes_for_game( $game_id, $target_title, $scenes_da
         
         // セリフごとのキャラクター設定（表情差分）を保存
         if ( isset( $scene_data['dialogue_characters'] ) && is_array( $scene_data['dialogue_characters'] ) ) {
+            // dialogue_characters内の画像URLをサニタイズ
+            $sanitized_dialogue_characters = array();
+            foreach ( $scene_data['dialogue_characters'] as $index => $char_setting ) {
+                $sanitized_dialogue_characters[ $index ] = array(
+                    'left'   => isset( $char_setting['left'] ) ? esc_url_raw( $char_setting['left'] ) : '',
+                    'center' => isset( $char_setting['center'] ) ? esc_url_raw( $char_setting['center'] ) : '',
+                    'right'  => isset( $char_setting['right'] ) ? esc_url_raw( $char_setting['right'] ) : '',
+                );
+            }
             update_post_meta(
                 $post_id,
                 '_dialogue_characters',
-                wp_json_encode( $scene_data['dialogue_characters'], JSON_UNESCAPED_UNICODE )
+                wp_json_encode( $sanitized_dialogue_characters, JSON_UNESCAPED_UNICODE )
             );
         }
         
