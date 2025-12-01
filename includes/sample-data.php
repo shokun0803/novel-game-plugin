@@ -38,9 +38,6 @@ function noveltool_get_shadow_detective_game_data() {
     $bg_villa = $plugin_url . 'assets/sample-images/bg-confrontation.png';
     
     // キャラクター画像（プラグイン同梱PNG、透過対応）
-    // 既存のキャラクター（後方互換性のため維持）
-    $char_client = $plugin_url . 'assets/sample-images/char-client.png';
-    $char_friend = $plugin_url . 'assets/sample-images/char-friend.png';
     
     // 主人公の表情差分
     $char_protagonist_normal = $plugin_url . 'assets/sample-images/char-protagonist-normal.png';
