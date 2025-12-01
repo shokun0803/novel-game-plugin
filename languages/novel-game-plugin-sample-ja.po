@@ -909,3 +909,8 @@ msgstr "黒幕対峙"
 #: includes/sample-data.php:1035
 msgid "Confronted President Takagi."
 msgstr "高木社長と対峙した。"
+
+
+#: includes/sample-data.php (character name)
+msgid "Detective"
+msgstr "探偵"
