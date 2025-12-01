@@ -78,6 +78,7 @@ function noveltool_get_shadow_detective_game_data() {
     $char_takagi = $char_takagi_calm;
     $char_misaki = $char_misaki_normal;
     $char_makoto = $char_makoto_relief;
+    $char_mastermind = $char_yakuza;
     
     // Shadow Detective ゲームの基本情報
     $game_data = array(
