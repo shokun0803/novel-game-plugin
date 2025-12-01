@@ -71,11 +71,14 @@ function noveltool_get_shadow_detective_game_data() {
     // ヤクザ（Yakuza）
     $char_yakuza = $plugin_url . 'assets/sample-images/char-yakuza.png';
     
+    // タイトル画面用画像
+    $title_image_file = $plugin_url . 'assets/sample-images/title-shadow-detective.png';
+    
     // Shadow Detective ゲームの基本情報
     $game_data = array(
         'title'          => __( 'Shadow Detective', 'novel-game-plugin-sample' ),
         'description'    => __( 'A full-fledged mystery game. Investigate the disappearance of businessman Makoto Kurosaki and uncover the truth. Gather evidence and make the right choices to reach the complete solution ending.', 'novel-game-plugin-sample' ),
-        'title_image'    => $bg_office,
+        'title_image'    => $title_image_file,
         'game_over_text' => __( 'Investigation Failed', 'novel-game-plugin-sample' ),
         'is_sample'      => true,
         'machine_name'   => 'shadow_detective_v1', // 機械識別子（多言語環境での重複防止）
