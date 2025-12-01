@@ -784,13 +784,13 @@
 				var lastChoiceKey = 'noveltool_last_choice_' + gameTitle;
 				var lastChoiceData = localStorage.getItem( lastChoiceKey );
 				if ( lastChoiceData ) {
-					var parsed = JSON.parse( lastChoiceData );
+					var parsedChoice = JSON.parse( lastChoiceData );
 					storageData.push( {
 						key: lastChoiceKey,
 						type: 'lastChoice',
 						label: '最後の選択肢',
-						data: parsed,
-						timestamp: parsed.timestamp || null,
+						data: parsedChoice,
+						timestamp: parsedChoice.timestamp || null,
 						size: lastChoiceData.length
 					} );
 				}
