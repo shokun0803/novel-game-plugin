@@ -12,6 +12,18 @@
 (function(global) {
     'use strict';
 
+    // debug ロード時に localized オブジェクトの debug 値を優先して読み込む
+    // wp_localize_script で渡された値を window.novelGameDebug / window.novelGameAdminDebug に反映
+    if ( typeof global.novelGameDebug === 'undefined' && typeof global.novelGameFront !== 'undefined' && typeof global.novelGameFront.debug === 'boolean' ) {
+        global.novelGameDebug = !!global.novelGameFront.debug;
+    }
+    if ( typeof global.novelGameAdminDebug === 'undefined' && typeof global.novelGameMeta !== 'undefined' && typeof global.novelGameMeta.debug === 'boolean' ) {
+        global.novelGameAdminDebug = !!global.novelGameMeta.debug;
+    }
+    if ( typeof global.novelGameAdminDebug === 'undefined' && typeof global.noveltoolExportImport !== 'undefined' && typeof global.noveltoolExportImport.debug === 'boolean' ) {
+        global.novelGameAdminDebug = !!global.noveltoolExportImport.debug;
+    }
+
     // フロント/管理でそれぞれ localize したフラグを読み込む（存在する場合）
     var enabled = false;
     if ( typeof global.novelGameDebug !== 'undefined' ) {

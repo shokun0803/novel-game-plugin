@@ -131,12 +131,32 @@ window.novelGameSetDebug( false );
 
 debugLog は **`js/debug-log.js`** に共通実装として定義されています。各 JS ファイルに重複定義する必要はありません。
 
+**グローバル実装の利点:**
+- 各ファイルでの重複定義を避け、一貫したログ出力機能を提供
+- `console[level]` がない環境でも安全に動作
+- デバッグフラグの管理を一元化
+
+**読み込み順とフラグの優先ルール:**
+1. `wp_add_inline_script` で `window.novelGameDebug` / `window.novelGameAdminDebug` を設定
+2. `debug-log.js` が localized オブジェクト（`novelGameFront.debug`, `novelGameMeta.debug`）を検出した場合、それを優先して読み込む
+3. 上記の値が undefined の場合は、`window.NOVEL_GAME_DEBUG` をフォールバックとして使用
+
+**wp_add_inline_script を使用する理由:** `debug-log.js` が読み込まれる前にデバッグフラグを設定することで、スクリプト実行時に正しいフラグ値が参照されます。
+
 #### 共通ファイル（js/debug-log.js）
 
 ```javascript
 // 安全な debugLog 実装（global）
 (function(global) {
     'use strict';
+
+    // debug ロード時に localized オブジェクトの debug 値を優先して読み込む
+    if ( typeof global.novelGameDebug === 'undefined' && typeof global.novelGameFront !== 'undefined' ) {
+        global.novelGameDebug = !!global.novelGameFront.debug;
+    }
+    if ( typeof global.novelGameAdminDebug === 'undefined' && typeof global.novelGameMeta !== 'undefined' ) {
+        global.novelGameAdminDebug = !!global.novelGameMeta.debug;
+    }
 
     // フロント/管理でそれぞれ localize したフラグを読み込む
     var enabled = false;
@@ -247,11 +267,12 @@ xgettext \
 
 ESLint の `no-console` ルールにより、`console.*` の直接使用は CI でエラーとなります。
 
+### ESLint 設定ファイル（.eslintrc.json）
+
 ```json
-// .eslintrc.json
 {
   "rules": {
-    "no-console": ["error", { "allow": [] }]
+    "no-console": "error"
   },
   "overrides": [
     {
@@ -263,6 +284,20 @@ ESLint の `no-console` ルールにより、`console.*` の直接使用は CI �
   ]
 }
 ```
+
+### ESLint 運用指針
+
+1. **`js/debug-log.js` は例外として扱う**: このファイルは `console.*` を直接呼び出す唯一の場所であり、ESLint の `overrides` で `no-console` ルールを無効化しています。
+
+2. **初期化前シムの例外**: `frontend.js` の初期化前シム（`window.novelGameSetDebug` や `window.novelGameShowFlags` の初期定義）では、`debugLog` がまだ利用できないため `console.*` を直接使用する必要があります。これらの箇所には `eslint-disable-next-line no-console` コメントを付与し、理由を明記してください。
+
+3. **コード内での例外指定方法**:
+```javascript
+// eslint-disable-next-line no-console -- 初期化前シム: debugLog がまだ利用不可のため直接 console を使用
+try { console.log( 'メッセージ' ); } catch (e) {}
+```
+
+4. **ユーザーが明示的に呼び出すデバッグユーティリティ**: `window.novelGameShowFlags()` などのユーザー向けデバッグ機能では、`/* eslint-disable no-console */` ブロックを使用できます。
 
 ## チェックリスト
 
