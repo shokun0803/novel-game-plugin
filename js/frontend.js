@@ -752,7 +752,7 @@
 		
 		/**
 		 * 現在のゲームに関連するすべてのlocalStorageデータを取得する
-		 * localStorage内のすべてのキーを走査して、関連するプレフィックスにマッチするものを動的に検出する
+		 * localStorage内のすべてのキーを走査して、現在のゲームタイトルに紐づくものだけを検出する
 		 *
 		 * @param {string} gameTitle ゲームタイトル
 		 * @return {Array} localStorageキーとデータの配列
@@ -766,6 +766,11 @@
 			var storageData = [];
 			var strings = ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings : {};
 			
+			// 現在のゲームに対応するキーを生成して検証用に使用
+			var expectedProgressKey = generateStorageKey( gameTitle );
+			var expectedFlagKey = generateFlagStorageKey( gameTitle );
+			var expectedLastChoiceKey = 'noveltool_last_choice_' + gameTitle;
+			
 			try {
 				// localStorage内のすべてのキーを走査
 				for ( var i = 0; i < localStorage.length; i++ ) {
@@ -774,11 +779,32 @@
 						continue;
 					}
 					
-					// noveltool_ または novel_flags_ または noveltool_last_choice_ で始まるキーをチェック
-					var isNovelToolKey = key.indexOf( 'noveltool_' ) === 0;
-					var isNovelFlagsKey = key.indexOf( 'novel_flags_' ) === 0;
+					// 現在のゲームに紐づくキーかどうかを厳密にチェック
+					var isCurrentGameKey = false;
+					var label = strings.gameData || 'ゲームデータ';
+					var type = 'unknown';
 					
-					if ( ! isNovelToolKey && ! isNovelFlagsKey ) {
+					// 進捗データキーのチェック（完全一致）
+					if ( key === expectedProgressKey ) {
+						isCurrentGameKey = true;
+						label = strings.progressData || '進捗データ';
+						type = 'progress';
+					}
+					// フラグデータキーのチェック（完全一致）
+					else if ( key === expectedFlagKey ) {
+						isCurrentGameKey = true;
+						label = strings.flagData || 'フラグデータ';
+						type = 'flags';
+					}
+					// 最後の選択肢キーのチェック（完全一致）
+					else if ( key === expectedLastChoiceKey ) {
+						isCurrentGameKey = true;
+						label = strings.lastChoice || '最後の選択肢';
+						type = 'lastChoice';
+					}
+					
+					// 現在のゲームに紐づかないキーはスキップ
+					if ( ! isCurrentGameKey ) {
 						continue;
 					}
 					
@@ -787,9 +813,6 @@
 						continue;
 					}
 					
-					// キーの種類を判別してラベルを設定
-					var label = strings.gameData || 'ゲームデータ';
-					var type = 'unknown';
 					var timestamp = null;
 					var parsed = null;
 					
@@ -800,18 +823,6 @@
 						}
 					} catch ( parseError ) {
 						// JSONパースに失敗した場合は無視
-					}
-					
-					// キーの種類を判別
-					if ( key.indexOf( 'noveltool_progress_' ) === 0 ) {
-						label = strings.progressData || '進捗データ';
-						type = 'progress';
-					} else if ( key.indexOf( 'noveltool_last_choice_' ) === 0 ) {
-						label = strings.lastChoice || '最後の選択肢';
-						type = 'lastChoice';
-					} else if ( isNovelFlagsKey ) {
-						label = strings.flagData || 'フラグデータ';
-						type = 'flags';
 					}
 					
 					storageData.push( {
@@ -878,10 +889,10 @@
 					delete flagsCacheTimestamp[ gameTitle ];
 				}
 				
-				console.log( 'ゲームのすべてのストレージデータをクリアしました:', gameTitle );
+				debugLog( 'ゲームのすべてのストレージデータをクリアしました:', gameTitle );
 				return true;
 			} catch ( error ) {
-				console.warn( 'ゲームストレージデータのクリアに失敗しました:', error );
+				debugLog( 'ゲームストレージデータのクリアに失敗しました:', error );
 				return false;
 			}
 		}
@@ -1005,11 +1016,14 @@
 			// モーダルをDOMに追加
 			$( 'body' ).append( modalHtml );
 			
+			// モーダル要素の参照を取得
+			var $modal = $( '#novel-settings-modal-overlay' );
+			
 			// イベントハンドラーを設定
 			setupSettingsModalEvents( gameTitle, $settingsBtn );
 			
 			// フォーカスを閉じるボタンに移動
-			$( '.novel-settings-modal-close' ).focus();
+			$modal.find( '.novel-settings-modal-close' ).focus();
 			
 			debugLog( '設定モーダルを表示しました:', gameTitle );
 		}
@@ -1057,8 +1071,8 @@
 				}
 			} );
 			
-			// ESCキーで閉じる & フォーカストラップ
-			$( document ).on( 'keydown.novel-settings', function( e ) {
+			// ESCキーで閉じる & フォーカストラップ（モーダルにスコープ付け）
+			$modal.on( 'keydown.novel-settings', function( e ) {
 				if ( e.which === 27 ) { // ESC
 					closeSettingsModal();
 					return;
@@ -1067,18 +1081,24 @@
 				// Tab キーでのフォーカストラップ
 				if ( e.which === 9 ) {
 					var $focusableElements = $modal.find( 'button:visible, [href]:visible, input:visible, select:visible, textarea:visible, [tabindex]:not([tabindex="-1"]):visible' );
+					
+					// フォーカス可能な要素がない場合はスキップ
+					if ( $focusableElements.length === 0 ) {
+						return;
+					}
+					
 					var $firstFocusable = $focusableElements.first();
 					var $lastFocusable = $focusableElements.last();
 					
 					if ( e.shiftKey ) {
 						// Shift + Tab
-						if ( document.activeElement === $firstFocusable[0] ) {
+						if ( $firstFocusable.length > 0 && document.activeElement === $firstFocusable[0] ) {
 							e.preventDefault();
 							$lastFocusable.focus();
 						}
 					} else {
 						// Tab
-						if ( document.activeElement === $lastFocusable[0] ) {
+						if ( $lastFocusable.length > 0 && document.activeElement === $lastFocusable[0] ) {
 							e.preventDefault();
 							$firstFocusable.focus();
 						}
@@ -1145,7 +1165,8 @@
 			var $modal = $( '#novel-settings-modal-overlay' );
 			var $returnFocusElement = $modal.data( 'returnFocusElement' );
 			
-			$( document ).off( 'keydown.novel-settings' );
+			// モーダルにバインドしたイベントを解除
+			$modal.off( 'keydown.novel-settings' );
 			$modal.fadeOut( 200, function() {
 				$( this ).remove();
 				
