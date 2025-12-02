@@ -1014,10 +1014,21 @@
 			modalHtml += '</div>';
 			
 			// モーダルをDOMに追加
-			$( 'body' ).append( modalHtml );
+			// ゲームオーバーレイ要素内に追加することで、同一スタッキングコンテキストに配置
+			// これによりゲームモーダルより上に設定モーダルが表示される
+			var $gameOverlay = $( '#novel-game-modal-overlay' );
+			if ( $gameOverlay.length > 0 ) {
+				// オーバーレイ要素の末尾に追加する（モーダルと同じ stacking context）
+				$gameOverlay.append( modalHtml );
+			} else {
+				// フォールバック: オーバーレイが無い場合は body に append
+				$( 'body' ).append( modalHtml );
+			}
 			
-			// モーダル要素の参照を取得
-			var $modal = $( '#novel-settings-modal-overlay' );
+			// モーダル要素の参照を取得（オーバーレイ内から検索）
+			var $modal = $gameOverlay.length > 0 
+				? $gameOverlay.find( '#novel-settings-modal-overlay' ).last() 
+				: $( '#novel-settings-modal-overlay' );
 			
 			// イベントハンドラーを設定
 			setupSettingsModalEvents( gameTitle, $settingsBtn );

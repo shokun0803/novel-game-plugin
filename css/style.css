@@ -2316,6 +2316,8 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 /* 設定モーダルオーバーレイ */
+/* ゲームモーダルオーバーレイ（#novel-game-modal-overlay）内に配置される場合、
+   同一スタッキングコンテキスト内で最前面に表示されるよう高いz-indexを設定 */
 .novel-settings-modal-overlay {
     position: fixed;
     top: 0;
@@ -2323,7 +2325,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.85);
-    z-index: 9999;
+    z-index: 2147483648;
     display: flex;
     align-items: center;
     justify-content: center;
