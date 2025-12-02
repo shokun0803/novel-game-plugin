@@ -977,9 +977,29 @@ function noveltool_enqueue_scripts() {
         'novelGameFront',
         array(
             'strings' => array(
-                'leftCharacter'   => esc_html__( 'Left Character', 'novel-game-plugin' ),
-                'centerCharacter' => esc_html__( 'Center Character', 'novel-game-plugin' ),
-                'rightCharacter'  => esc_html__( 'Right Character', 'novel-game-plugin' ),
+                'leftCharacter'          => esc_html__( 'Left Character', 'novel-game-plugin' ),
+                'centerCharacter'        => esc_html__( 'Center Character', 'novel-game-plugin' ),
+                'rightCharacter'         => esc_html__( 'Right Character', 'novel-game-plugin' ),
+                'settingsTitle'          => esc_html__( '保存済みのプレイデータ', 'novel-game-plugin' ),
+                'noData'                 => esc_html__( '保存されているデータはありません。', 'novel-game-plugin' ),
+                'deleteLabel'            => esc_html__( '削除', 'novel-game-plugin' ),
+                'clearAllLabel'          => esc_html__( 'すべてのデータをクリア', 'novel-game-plugin' ),
+                'closeLabel'             => esc_html__( '閉じる', 'novel-game-plugin' ),
+                /* translators: %s is the data label name */
+                'confirmDeleteMsg'       => esc_html__( '「%s」を削除しますか？この操作は取り消せません。', 'novel-game-plugin' ),
+                'confirmClearAllMsg'     => esc_html__( 'このゲームのすべての保存データを削除しますか？この操作は取り消せません。', 'novel-game-plugin' ),
+                'localStorageNotSupport' => esc_html__( 'お使いのブラウザはローカルストレージに対応していないため、保存データの管理ができません。', 'novel-game-plugin' ),
+                'deleteErrorMsg'         => esc_html__( 'データの削除に失敗しました。', 'novel-game-plugin' ),
+                'clearErrorMsg'          => esc_html__( 'データのクリアに失敗しました。', 'novel-game-plugin' ),
+                'savedAt'                => esc_html__( '保存日時:', 'novel-game-plugin' ),
+                'size'                   => esc_html__( 'サイズ:', 'novel-game-plugin' ),
+                'unknown'                => esc_html__( '不明', 'novel-game-plugin' ),
+                'progressData'           => esc_html__( '進捗データ', 'novel-game-plugin' ),
+                'lastChoice'             => esc_html__( '最後の選択肢', 'novel-game-plugin' ),
+                'flagData'               => esc_html__( 'フラグデータ', 'novel-game-plugin' ),
+                'gameData'               => esc_html__( 'ゲームデータ', 'novel-game-plugin' ),
+                'settingsButtonLabel'    => esc_html__( '設定', 'novel-game-plugin' ),
+                'settingsButtonTitle'    => esc_html__( '保存データの管理', 'novel-game-plugin' ),
             )
         )
     );

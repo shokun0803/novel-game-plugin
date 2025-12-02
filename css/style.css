@@ -2271,3 +2271,340 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         font-size: 1.1em;
     }
 }
+
+/* =============================================================================
+   設定ボタン・設定モーダル スタイル
+   ============================================================================= */
+
+/* タイトル画面の設定ボタン（右下に配置） */
+.novel-title-settings-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 15;
+    padding: 0;
+}
+
+.novel-title-settings-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.8);
+    color: white;
+    transform: rotate(30deg);
+}
+
+.novel-title-settings-btn:focus {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+}
+
+.novel-title-settings-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* 設定モーダルオーバーレイ */
+/* フォールバック: body に append される場合（通常ケース） */
+.novel-settings-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999; /* 過度に高い値は避ける */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+/* ゲームオーバーレイ内に append されるケース: overlay 内で前面に表示 */
+#novel-game-modal-overlay .novel-settings-modal-overlay {
+    z-index: 10001; /* overlay 内で最前面に表示するために調整 */
+}
+
+/* 設定モーダル本体 */
+.novel-settings-modal {
+    background: white;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: novel-settings-modal-appear 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes novel-settings-modal-appear {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* 設定モーダルヘッダー */
+.novel-settings-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #eee;
+    background: #f8f9fa;
+}
+
+.novel-settings-modal-title {
+    margin: 0;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #333;
+}
+
+.novel-settings-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.novel-settings-modal-close:hover {
+    background: #eee;
+    color: #333;
+}
+
+/* 設定モーダルコンテンツ */
+.novel-settings-modal-content {
+    padding: 25px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* データなしメッセージ */
+.novel-settings-no-data {
+    text-align: center;
+    color: #666;
+    padding: 30px 0;
+    font-size: 1em;
+}
+
+/* データリスト */
+.novel-settings-data-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* データ項目 */
+.novel-settings-data-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.novel-settings-data-item:last-child {
+    margin-bottom: 0;
+}
+
+.novel-settings-data-item:hover {
+    background: #f1f3f4;
+    border-color: #dee2e6;
+}
+
+/* データ情報 */
+.novel-settings-data-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.novel-settings-data-label {
+    font-weight: 600;
+    color: #333;
+    font-size: 1em;
+}
+
+.novel-settings-data-meta {
+    font-size: 0.85em;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 削除ボタン */
+.novel-settings-delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 15px;
+    flex-shrink: 0;
+}
+
+.novel-settings-delete-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+}
+
+.novel-settings-delete-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* アクションエリア */
+.novel-settings-actions {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
+/* 全データクリアボタン */
+.novel-settings-clear-all-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.novel-settings-clear-all-btn:hover {
+    background: linear-gradient(135deg, #ff5252, #d84315);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.novel-settings-clear-all-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .novel-title-settings-btn {
+        bottom: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .novel-title-settings-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .novel-settings-modal {
+        width: 95%;
+        max-height: 85vh;
+    }
+    
+    .novel-settings-modal-header {
+        padding: 15px 20px;
+    }
+    
+    .novel-settings-modal-title {
+        font-size: 1.1em;
+    }
+    
+    .novel-settings-modal-content {
+        padding: 20px;
+    }
+    
+    .novel-settings-data-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .novel-settings-delete-btn {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .novel-title-settings-btn {
+        bottom: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+    }
+    
+    .novel-title-settings-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .novel-settings-modal-header {
+        padding: 12px 15px;
+    }
+    
+    .novel-settings-modal-content {
+        padding: 15px;
+    }
+    
+    .novel-settings-data-item {
+        padding: 12px;
+    }
+    
+    .novel-settings-data-label {
+        font-size: 0.95em;
+    }
+    
+    .novel-settings-data-meta {
+        font-size: 0.8em;
+    }
+    
+    .novel-settings-clear-all-btn {
+        padding: 10px 25px;
+        font-size: 0.95em;
+    }
+}

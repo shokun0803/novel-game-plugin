@@ -734,6 +734,513 @@
 		}
 		
 		/**
+		 * localStorage がサポートされているかチェックする
+		 *
+		 * @return {boolean} localStorage がサポートされているか
+		 * @since 1.4.0
+		 */
+		function isLocalStorageSupported() {
+			try {
+				var testKey = '__noveltool_test__';
+				localStorage.setItem( testKey, 'test' );
+				localStorage.removeItem( testKey );
+				return true;
+			} catch ( error ) {
+				return false;
+			}
+		}
+		
+		/**
+		 * 現在のゲームに関連するすべてのlocalStorageデータを取得する
+		 * localStorage内のすべてのキーを走査して、現在のゲームタイトルに紐づくものだけを検出する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {Array} localStorageキーとデータの配列
+		 * @since 1.4.0
+		 */
+		function getGameStorageData( gameTitle ) {
+			if ( ! gameTitle || ! isLocalStorageSupported() ) {
+				return [];
+			}
+			
+			var storageData = [];
+			var strings = ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings : {};
+			
+			// 現在のゲームに対応するキーを生成して検証用に使用
+			var expectedProgressKey = generateStorageKey( gameTitle );
+			var expectedFlagKey = generateFlagStorageKey( gameTitle );
+			var expectedLastChoiceKey = 'noveltool_last_choice_' + gameTitle;
+			
+			try {
+				// localStorage内のすべてのキーを走査
+				for ( var i = 0; i < localStorage.length; i++ ) {
+					var key = localStorage.key( i );
+					if ( ! key ) {
+						continue;
+					}
+					
+					// 現在のゲームに紐づくキーかどうかを厳密にチェック
+					var isCurrentGameKey = false;
+					var label = strings.gameData || 'ゲームデータ';
+					var type = 'unknown';
+					
+					// 進捗データキーのチェック（完全一致）
+					if ( key === expectedProgressKey ) {
+						isCurrentGameKey = true;
+						label = strings.progressData || '進捗データ';
+						type = 'progress';
+					}
+					// フラグデータキーのチェック（完全一致）
+					else if ( key === expectedFlagKey ) {
+						isCurrentGameKey = true;
+						label = strings.flagData || 'フラグデータ';
+						type = 'flags';
+					}
+					// 最後の選択肢キーのチェック（完全一致）
+					else if ( key === expectedLastChoiceKey ) {
+						isCurrentGameKey = true;
+						label = strings.lastChoice || '最後の選択肢';
+						type = 'lastChoice';
+					}
+					
+					// 現在のゲームに紐づかないキーはスキップ
+					if ( ! isCurrentGameKey ) {
+						continue;
+					}
+					
+					var dataStr = localStorage.getItem( key );
+					if ( ! dataStr ) {
+						continue;
+					}
+					
+					var timestamp = null;
+					var parsed = null;
+					
+					try {
+						parsed = JSON.parse( dataStr );
+						if ( parsed && typeof parsed === 'object' && parsed.timestamp ) {
+							timestamp = parsed.timestamp;
+						}
+					} catch ( parseError ) {
+						// JSONパースに失敗した場合は無視
+					}
+					
+					storageData.push( {
+						key: key,
+						type: type,
+						label: label,
+						data: parsed || dataStr,
+						timestamp: timestamp,
+						size: dataStr.length
+					} );
+				}
+				
+			} catch ( error ) {
+				debugLog( 'ゲームストレージデータの取得に失敗しました:', error );
+			}
+			
+			return storageData;
+		}
+		
+		/**
+		 * 指定されたlocalStorageキーを削除する
+		 *
+		 * @param {string} key 削除するキー
+		 * @return {boolean} 削除成功の場合true
+		 * @since 1.4.0
+		 */
+		function deleteStorageKey( key ) {
+			if ( ! key || ! isLocalStorageSupported() ) {
+				return false;
+			}
+			
+			try {
+				localStorage.removeItem( key );
+				debugLog( 'ストレージキーを削除しました:', key );
+				return true;
+			} catch ( error ) {
+				debugLog( 'ストレージキーの削除に失敗しました:', error );
+				return false;
+			}
+		}
+		
+		/**
+		 * 現在のゲームのすべてのlocalStorageデータをクリアする
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {boolean} クリア成功の場合true
+		 * @since 1.4.0
+		 */
+		function clearAllGameStorageData( gameTitle ) {
+			if ( ! gameTitle || ! isLocalStorageSupported() ) {
+				return false;
+			}
+			
+			try {
+				var storageData = getGameStorageData( gameTitle );
+				
+				storageData.forEach( function( item ) {
+					localStorage.removeItem( item.key );
+				} );
+				
+				// フラグキャッシュも無効化
+				if ( flagsCache[ gameTitle ] ) {
+					delete flagsCache[ gameTitle ];
+					delete flagsCacheTimestamp[ gameTitle ];
+				}
+				
+				debugLog( 'ゲームのすべてのストレージデータをクリアしました:', gameTitle );
+				return true;
+			} catch ( error ) {
+				debugLog( 'ゲームストレージデータのクリアに失敗しました:', error );
+				return false;
+			}
+		}
+		
+		/**
+		 * タイムスタンプを読みやすい形式にフォーマットする
+		 *
+		 * @param {number} timestamp タイムスタンプ（ミリ秒）
+		 * @return {string} フォーマットされた日時文字列
+		 * @since 1.4.0
+		 */
+		function formatTimestamp( timestamp ) {
+			var strings = ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings : {};
+			
+			if ( timestamp === undefined || timestamp === null || isNaN( timestamp ) ) {
+				return strings.unknown || '不明';
+			}
+			
+			var date = new Date( timestamp );
+			var year = date.getFullYear();
+			var month = String( date.getMonth() + 1 ).padStart( 2, '0' );
+			var day = String( date.getDate() ).padStart( 2, '0' );
+			var hours = String( date.getHours() ).padStart( 2, '0' );
+			var minutes = String( date.getMinutes() ).padStart( 2, '0' );
+			
+			return year + '/' + month + '/' + day + ' ' + hours + ':' + minutes;
+		}
+		
+		/**
+		 * バイトサイズを読みやすい形式にフォーマットする
+		 *
+		 * @param {number} bytes バイト数
+		 * @return {string} フォーマットされたサイズ文字列
+		 * @since 1.4.0
+		 */
+		function noveltoolFormatBytes( bytes ) {
+			if ( bytes === undefined || bytes === null || isNaN( bytes ) ) {
+				return '0 B';
+			}
+			
+			bytes = Math.max( 0, bytes );
+			
+			if ( bytes < 1024 ) {
+				return bytes + ' B';
+			} else if ( bytes < 1024 * 1024 ) {
+				return ( bytes / 1024 ).toFixed( 1 ) + ' KB';
+			} else {
+				return ( bytes / ( 1024 * 1024 ) ).toFixed( 1 ) + ' MB';
+			}
+		}
+		
+		/**
+		 * 設定モーダルを表示する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.0
+		 */
+		function showSettingsModal( gameTitle ) {
+			var strings = ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings : {};
+			
+			if ( ! gameTitle ) {
+				debugLog( '設定モーダルを表示するにはゲームタイトルが必要です' );
+				return;
+			}
+			
+			// localStorage非対応の場合
+			if ( ! isLocalStorageSupported() ) {
+				alert( strings.localStorageNotSupport || 'お使いのブラウザはローカルストレージに対応していないため、保存データの管理ができません。' );
+				return;
+			}
+			
+			// 既存のモーダルを削除
+			$( '#novel-settings-modal-overlay' ).remove();
+			
+			// 設定ボタンの参照を保存（フォーカス戻し用）
+			var $settingsBtn = $( '#novel-title-settings-btn' );
+			
+			// ストレージデータを取得
+			var storageData = getGameStorageData( gameTitle );
+			
+			// モーダルHTMLを構築（アクセシビリティ属性付き）
+			var modalHtml = '<div id="novel-settings-modal-overlay" class="novel-settings-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="novel-settings-modal-title-text">';
+			modalHtml += '<div class="novel-settings-modal">';
+			modalHtml += '<div class="novel-settings-modal-header">';
+			modalHtml += '<h3 id="novel-settings-modal-title-text" class="novel-settings-modal-title">' + noveltoolEscapeHtml( strings.settingsTitle || '保存済みのプレイデータ' ) + '</h3>';
+			modalHtml += '<button type="button" class="novel-settings-modal-close" aria-label="' + noveltoolEscapeHtml( strings.closeLabel || '閉じる' ) + '">&times;</button>';
+			modalHtml += '</div>';
+			modalHtml += '<div class="novel-settings-modal-content">';
+			
+			if ( storageData.length === 0 ) {
+				modalHtml += '<p class="novel-settings-no-data">' + noveltoolEscapeHtml( strings.noData || '保存されているデータはありません。' ) + '</p>';
+			} else {
+				modalHtml += '<ul class="novel-settings-data-list">';
+				
+				storageData.forEach( function( item ) {
+					modalHtml += '<li class="novel-settings-data-item" data-key="' + noveltoolEscapeHtml( item.key ) + '">';
+					modalHtml += '<div class="novel-settings-data-info">';
+					modalHtml += '<span class="novel-settings-data-label">' + noveltoolEscapeHtml( item.label ) + '</span>';
+					modalHtml += '<span class="novel-settings-data-meta">';
+					if ( item.timestamp ) {
+						modalHtml += ( strings.savedAt || '保存日時:' ) + ' ' + formatTimestamp( item.timestamp );
+					}
+					modalHtml += ' / ' + ( strings.size || 'サイズ:' ) + ' ' + noveltoolFormatBytes( item.size );
+					modalHtml += '</span>';
+					modalHtml += '</div>';
+					modalHtml += '<button type="button" class="novel-settings-delete-btn" data-key="' + noveltoolEscapeHtml( item.key ) + '" data-label="' + noveltoolEscapeHtml( item.label ) + '">' + noveltoolEscapeHtml( strings.deleteLabel || '削除' ) + '</button>';
+					modalHtml += '</li>';
+				} );
+				
+				modalHtml += '</ul>';
+				
+				modalHtml += '<div class="novel-settings-actions">';
+				modalHtml += '<button type="button" class="novel-settings-clear-all-btn">' + noveltoolEscapeHtml( strings.clearAllLabel || 'すべてのデータをクリア' ) + '</button>';
+				modalHtml += '</div>';
+			}
+			
+			modalHtml += '</div>';
+			modalHtml += '</div>';
+			modalHtml += '</div>';
+			
+			// モーダルをDOMに追加
+			// ゲームオーバーレイ要素内に追加することで、同一スタッキングコンテキストに配置
+			// これによりゲームモーダルより上に設定モーダルが表示される
+			var $gameOverlay = $( '#novel-game-modal-overlay' );
+			if ( $gameOverlay.length > 0 ) {
+				// オーバーレイ要素の末尾に追加する（モーダルと同じ stacking context）
+				$gameOverlay.append( modalHtml );
+			} else {
+				// フォールバック: オーバーレイが無い場合は body に append
+				$( 'body' ).append( modalHtml );
+			}
+			
+			// モーダル要素の参照を取得（オーバーレイ内から検索）
+			var $modal = $gameOverlay.length > 0 
+				? $gameOverlay.find( '#novel-settings-modal-overlay' ).last() 
+				: $( '#novel-settings-modal-overlay' );
+			
+			// イベントハンドラーを設定
+			setupSettingsModalEvents( gameTitle, $settingsBtn );
+			
+			// フォーカスを閉じるボタンに移動
+			$modal.find( '.novel-settings-modal-close' ).focus();
+			
+			debugLog( '設定モーダルを表示しました:', gameTitle );
+		}
+		
+		/**
+		 * HTMLエスケープ関数（プラグイン固有プレフィックス付き）
+		 *
+		 * @param {string} str エスケープする文字列
+		 * @return {string} エスケープされた文字列
+		 * @since 1.4.0
+		 */
+		function noveltoolEscapeHtml( str ) {
+			if ( ! str ) return '';
+			return String( str )
+				.replace( /&/g, '&amp;' )
+				.replace( /</g, '&lt;' )
+				.replace( />/g, '&gt;' )
+				.replace( /"/g, '&quot;' )
+				.replace( /'/g, '&#039;' );
+		}
+		
+		/**
+		 * 設定モーダルのイベントハンドラーを設定する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @param {jQuery} $returnFocusElement フォーカスを戻す要素
+		 * @since 1.4.0
+		 */
+		function setupSettingsModalEvents( gameTitle, $returnFocusElement ) {
+			var $modal = $( '#novel-settings-modal-overlay' );
+			var strings = ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings : {};
+			
+			// フォーカス戻し用要素を保存
+			$modal.data( 'returnFocusElement', $returnFocusElement );
+			
+			// 閉じるボタン
+			$modal.find( '.novel-settings-modal-close' ).on( 'click', function() {
+				closeSettingsModal();
+			} );
+			
+			// オーバーレイクリックで閉じる
+			$modal.on( 'click', function( e ) {
+				if ( $( e.target ).is( '#novel-settings-modal-overlay' ) ) {
+					closeSettingsModal();
+				}
+			} );
+			
+			// ESCキーで閉じる & フォーカストラップ（モーダルにスコープ付け）
+			$modal.on( 'keydown.novel-settings', function( e ) {
+				if ( e.which === 27 ) { // ESC
+					closeSettingsModal();
+					return;
+				}
+				
+				// Tab キーでのフォーカストラップ
+				if ( e.which === 9 ) {
+					var $focusableElements = $modal.find( 'button:visible, [href]:visible, input:visible, select:visible, textarea:visible, [tabindex]:not([tabindex="-1"]):visible' );
+					
+					// フォーカス可能な要素がない場合はスキップ
+					if ( $focusableElements.length === 0 ) {
+						return;
+					}
+					
+					var $firstFocusable = $focusableElements.first();
+					var $lastFocusable = $focusableElements.last();
+					
+					if ( e.shiftKey ) {
+						// Shift + Tab
+						if ( $firstFocusable.length > 0 && document.activeElement === $firstFocusable[0] ) {
+							e.preventDefault();
+							$lastFocusable.focus();
+						}
+					} else {
+						// Tab
+						if ( $lastFocusable.length > 0 && document.activeElement === $lastFocusable[0] ) {
+							e.preventDefault();
+							$firstFocusable.focus();
+						}
+					}
+				}
+			} );
+			
+			// 個別削除ボタン
+			$modal.find( '.novel-settings-delete-btn' ).on( 'click', function() {
+				var key = $( this ).data( 'key' );
+				var label = $( this ).data( 'label' );
+				// プレースホルダー（%s）を使用した翻訳文字列に対応
+				var confirmMsgTemplate = strings.confirmDeleteMsg || '「%s」を削除しますか？この操作は取り消せません。';
+				var confirmMsg = confirmMsgTemplate.replace( '%s', label );
+				
+				if ( confirm( confirmMsg ) ) {
+					if ( deleteStorageKey( key ) ) {
+						// リストから項目を削除
+						$( this ).closest( '.novel-settings-data-item' ).fadeOut( 200, function() {
+							$( this ).remove();
+							
+							// リストが空になったらメッセージを表示
+							if ( $modal.find( '.novel-settings-data-item' ).length === 0 ) {
+								$modal.find( '.novel-settings-data-list' ).replaceWith( '<p class="novel-settings-no-data">' + noveltoolEscapeHtml( strings.noData || '保存されているデータはありません。' ) + '</p>' );
+								$modal.find( '.novel-settings-actions' ).hide();
+							}
+							
+							// 「続きから始める」ボタンの表示を更新
+							updateContinueButtonVisibility( gameTitle );
+							// 設定ボタンの表示を更新
+							updateSettingsButtonVisibility( gameTitle );
+						} );
+					} else {
+						alert( strings.deleteErrorMsg || 'データの削除に失敗しました。' );
+					}
+				}
+			} );
+			
+			// 全データクリアボタン
+			$modal.find( '.novel-settings-clear-all-btn' ).on( 'click', function() {
+				var confirmMsg = strings.confirmClearAllMsg || 'このゲームのすべての保存データを削除しますか？この操作は取り消せません。';
+				
+				if ( confirm( confirmMsg ) ) {
+					if ( clearAllGameStorageData( gameTitle ) ) {
+						// モーダルの内容を更新
+						$modal.find( '.novel-settings-data-list' ).replaceWith( '<p class="novel-settings-no-data">' + noveltoolEscapeHtml( strings.noData || '保存されているデータはありません。' ) + '</p>' );
+						$modal.find( '.novel-settings-actions' ).hide();
+						
+						// 「続きから始める」ボタンの表示を更新
+						updateContinueButtonVisibility( gameTitle );
+						// 設定ボタンの表示を更新
+						updateSettingsButtonVisibility( gameTitle );
+					} else {
+						alert( strings.clearErrorMsg || 'データのクリアに失敗しました。' );
+					}
+				}
+			} );
+		}
+		
+		/**
+		 * 設定モーダルを閉じる
+		 *
+		 * @since 1.4.0
+		 */
+		function closeSettingsModal() {
+			var $modal = $( '#novel-settings-modal-overlay' );
+			var $returnFocusElement = $modal.data( 'returnFocusElement' );
+			
+			// モーダルにバインドしたイベントを解除
+			$modal.off( 'keydown.novel-settings' );
+			$modal.fadeOut( 200, function() {
+				$( this ).remove();
+				
+				// フォーカスを元の要素に戻す
+				if ( $returnFocusElement && $returnFocusElement.length > 0 ) {
+					$returnFocusElement.focus();
+				}
+			} );
+		}
+		
+		/**
+		 * 「続きから始める」ボタンの表示を更新する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.0
+		 */
+		function updateContinueButtonVisibility( gameTitle ) {
+			var $continueBtn = $( '#novel-title-continue' );
+			
+			if ( ! gameTitle || $continueBtn.length === 0 ) {
+				return;
+			}
+			
+			var savedProgress = getSavedGameProgress( gameTitle );
+			
+			if ( savedProgress ) {
+				$continueBtn.show();
+			} else {
+				$continueBtn.hide();
+			}
+		}
+		
+		/**
+		 * 設定ボタンの表示を更新する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.0
+		 */
+		function updateSettingsButtonVisibility( gameTitle ) {
+			var $settingsBtn = $( '#novel-title-settings-btn' );
+			
+			if ( ! gameTitle || $settingsBtn.length === 0 ) {
+				return;
+			}
+			
+			// localStorage非対応の場合は非表示
+			if ( ! isLocalStorageSupported() ) {
+				$settingsBtn.hide();
+				return;
+			}
+			
+			var storageData = getGameStorageData( gameTitle );
+			
+			if ( storageData.length > 0 ) {
+				$settingsBtn.show();
+			} else {
+				$settingsBtn.hide();
+			}
+		}
+		
+		/**
 		 * 最後の選択肢シーンを保存する
 		 *
 		 * @param {string} sceneUrl シーンのURL
@@ -1255,14 +1762,17 @@
 				
 				if ( savedProgress ) {
 					$titleContinueBtn.show();
-					console.log( '保存された進捗が見つかりました。「続きから始める」ボタンを表示します。' );
+					debugLog( '保存された進捗が見つかりました。「続きから始める」ボタンを表示します。' );
 				} else {
 					$titleContinueBtn.hide();
-					console.log( '保存された進捗がありません。「続きから始める」ボタンを非表示にします。' );
+					debugLog( '保存された進捗がありません。「続きから始める」ボタンを非表示にします。' );
 				}
 			} else {
 				$titleContinueBtn.hide();
 			}
+			
+			// 設定ボタンの表示制御（localStorageにデータがある場合のみ表示）
+			setupSettingsButton( currentGameData.title );
 			
 			// タイトル画面を表示（モーダル再生成後の表示確保のため、display制御とアニメーション）
 			// 競合を避けるため、直接 opacity でアニメーション
@@ -1273,6 +1783,60 @@
 			
 			// タイトル画面では広告を非表示にする
 			hideAdvertisement();
+		}
+		
+		/**
+		 * 設定ボタンをセットアップする
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.0
+		 */
+		function setupSettingsButton( gameTitle ) {
+			var strings = ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings : {};
+			
+			// 既存の設定ボタンを削除
+			$( '#novel-title-settings-btn' ).remove();
+			
+			// localStorage非対応の場合は設定ボタンを表示しない
+			if ( ! isLocalStorageSupported() ) {
+				return;
+			}
+			
+			// ゲームタイトルがない場合は表示しない
+			if ( ! gameTitle ) {
+				return;
+			}
+			
+			// $titleScreen が存在しない場合は表示しない
+			if ( ! $titleScreen || $titleScreen.length === 0 ) {
+				return;
+			}
+			
+			// localStorageにデータがあるかチェック
+			var storageData = getGameStorageData( gameTitle );
+			if ( storageData.length === 0 ) {
+				return;
+			}
+			
+			// 設定ボタンを作成（type="button" を明示的に追加）
+			var $settingsBtn = $( '<button type="button">' )
+				.attr( 'id', 'novel-title-settings-btn' )
+				.addClass( 'novel-title-settings-btn' )
+				.attr( 'aria-label', strings.settingsButtonLabel || '設定' )
+				.attr( 'title', strings.settingsButtonTitle || '保存データの管理' )
+				.html( '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>' );
+			
+			// タイトル画面に設定ボタンを追加
+			$titleScreen.append( $settingsBtn );
+			
+			// クリックイベントを設定
+			$settingsBtn.on( 'click', function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
+				showSettingsModal( gameTitle );
+			} );
+			
+			debugLog( '設定ボタンを追加しました:', gameTitle );
 		}
 
 		/**
