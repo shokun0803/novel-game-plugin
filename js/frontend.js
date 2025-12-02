@@ -316,6 +316,24 @@
 		}
 		
 		/**
+		 * 背景変数をクリアするヘルパー関数
+		 * 前回ゲームの背景が残らないように一元管理
+		 *
+		 * @param {string} reason クリアする理由（デバッグログ用）
+		 * @since 1.4.1
+		 */
+		function clearBackgroundVars( reason ) {
+			baseBackground = '';
+			currentBackground = '';
+			// debugLog が初期化前や無効な場合でも処理を継続するため、エラーを無視
+			try {
+				debugLog( '背景変数をクリアしました:', reason );
+			} catch ( e ) {
+				// デバッグログ出力失敗は無視（本処理への影響なし）
+			}
+		}
+		
+		/**
 		 * Adsterra 広告を表示
 		 *
 		 * @since 1.4.0
@@ -552,8 +570,14 @@
 			}
 			
 			if ( baseBackgroundData ) {
-				baseBackground = JSON.parse( baseBackgroundData );
-				currentBackground = baseBackground;
+				try {
+					baseBackground = JSON.parse( baseBackgroundData );
+					currentBackground = baseBackground;
+					debugLog( '背景データを解析しました（インラインデータ）:', baseBackground );
+				} catch ( e ) {
+					clearBackgroundVars( 'インラインデータの背景解析に失敗' );
+					debugLog( 'error', '背景データの解析に失敗しました。背景変数をクリアします。', e );
+				}
 			}
 			
 			if ( charactersDataRaw ) {
@@ -1878,12 +1902,26 @@
 			// 背景画像を設定
 			if ( backgroundImage ) {
 				debugLog( 'Setting title screen background image:', backgroundImage );
-				$titleScreen.css( {
-					'background-image': 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(' + backgroundImage + ')',
-					'background-size': 'cover',
-					'background-position': 'center',
-					'background-repeat': 'no-repeat'
-				} );
+				// URLの安全性を確保：
+				// 1. http/https/相対パスのみ許可（javascript:等のプロトコルを除外）
+				// 2. 特殊文字をエンコード
+				// 3. CSS注入を防ぐため引用符・バックスラッシュを除去
+				var isValidUrl = /^(https?:\/\/|\/)/i.test( backgroundImage );
+				if ( isValidUrl ) {
+					var safeUrl = encodeURI( backgroundImage ).replace( /["'\\]/g, '' );
+					$titleScreen.css( {
+						'background-image': 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("' + safeUrl + '")',
+						'background-size': 'cover',
+						'background-position': 'center',
+						'background-repeat': 'no-repeat'
+					} );
+				} else {
+					debugLog( 'warn', '無効なURLスキームのため背景画像を設定しません:', backgroundImage );
+					$titleScreen.css( {
+						'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+						'background-image': 'none'
+					} );
+				}
 			} else {
 				debugLog( 'No background image found, using default gradient' );
 				$titleScreen.css( {
@@ -2031,20 +2069,21 @@
 							if ( backgroundDataScript.length > 0 ) {
 								var backgroundDataText = backgroundDataScript.text() || backgroundDataScript.html();
 								if ( backgroundDataText ) {
-									baseBackground = JSON.parse( backgroundDataText );
-									currentBackground = baseBackground;
-									debugLog( 'Parsed background data:', baseBackground );
+									try {
+										baseBackground = JSON.parse( backgroundDataText );
+										currentBackground = baseBackground;
+										debugLog( 'Parsed background data:', baseBackground );
+									} catch ( e ) {
+										clearBackgroundVars( 'loadGameData() - 背景データの解析に失敗' );
+										debugLog( 'error', '背景データの解析に失敗しました。背景変数をクリアします。', e );
+									}
 								} else {
 									// 背景データが空の場合はクリア（前回ゲームの背景が残らないように）
-									baseBackground = '';
-									currentBackground = '';
-									debugLog( 'Background data text is empty, clearing background variables' );
+									clearBackgroundVars( 'loadGameData() - 背景データテキストが空' );
 								}
 							} else {
 								// 背景データスクリプトが存在しない場合はクリア（前回ゲームの背景が残らないように）
-								baseBackground = '';
-								currentBackground = '';
-								debugLog( 'No background data script found, clearing background variables' );
+								clearBackgroundVars( 'loadGameData() - 背景スクリプトが存在しない' );
 							}
 							
 							// キャラクターデータを取得
@@ -2686,8 +2725,7 @@
 			if ( clearGameData ) {
 				window.currentGameSelectionData = null;
 				// 背景画像データも明示的にクリア（前回ゲームの背景が残らないように）
-				baseBackground = '';
-				currentBackground = '';
+				clearBackgroundVars( 'closeModal() - clearGameData' );
 				debugLog( 'ゲームデータをクリアしました（背景データを含む）' );
 			}
 		}
