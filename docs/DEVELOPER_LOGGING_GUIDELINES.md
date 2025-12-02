@@ -94,7 +94,7 @@ wp_localize_script( 'novel-game-admin-meta-boxes', 'novelGameMeta', array(
 ```javascript
 // JavaScript側
 alert( novelGameMeta.strings.saveFailed );
-console.log( novelGameMeta.strings.flagSettingChange, flagName, '→', newValue );
+debugLog( novelGameMeta.strings.flagSettingChange, flagName, '→', newValue );
 ```
 
 ### PHP でのデバッグログ

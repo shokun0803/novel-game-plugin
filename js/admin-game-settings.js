@@ -17,6 +17,10 @@ jQuery( function( $ ) {
      * 第1引数が 'log', 'warn', 'error' のいずれかの場合はログレベルとして扱い、
      * それ以外の場合は従来通り 'log' レベルで全引数を出力します。
      *
+     * 注意: debugLog('warn') のように単一引数でレベル名を渡した場合、
+     * それはメッセージとして扱われます（'log' レベルで 'warn' という文字列を出力）。
+     * レベル指定として認識されるには、2つ以上の引数が必要です。
+     *
      * @param {string} levelOrMessage ログレベル ('log', 'warn', 'error') またはログメッセージ
      * @param {...*} args 追加引数
      * @since 1.5.0
@@ -27,7 +31,7 @@ jQuery( function( $ ) {
             var levels = [ 'log', 'warn', 'error' ];
             var level = 'log';
 
-            // 第1引数がログレベル指定かどうかを判定
+            // 第1引数がログレベル指定かどうかを判定（2引数以上の場合のみ）
             if ( levels.indexOf( levelOrMessage ) !== -1 && args.length > 1 ) {
                 level = args.shift();
             }
