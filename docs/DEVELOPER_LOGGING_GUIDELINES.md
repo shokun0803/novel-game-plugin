@@ -43,8 +43,8 @@ debugLog( 'error', 'シーンデータの読み込みに失敗:', error );
 #### console.* の直接使用（禁止）
 `console.log` / `console.warn` / `console.error` を直接使用することは禁止されています。以下の例外を除き、すべてのログ出力には `debugLog()` を使用してください。
 
-**例外:**
-- `debugLog` 関数の内部実装
+**例外（コード内にコメントで理由を明記すること）:**
+- `js/debug-log.js` の内部実装（共通ユーティリティ）
 - 初期化前のシム（try-catch で囲まれた緊急フォールバック）
 - `window.novelGameShowFlags()` などのユーザーが明示的に呼び出すデバッグユーティリティ
 - `window.novelGameSetDebug()` の結果表示
@@ -128,45 +128,98 @@ window.novelGameSetDebug( false );
 ```
 
 ### debugLog 関数の実装
-frontend.js および管理画面 JS ファイルには以下の実装があります：
+
+debugLog は **`js/debug-log.js`** に共通実装として定義されています。各 JS ファイルに重複定義する必要はありません。
+
+#### 共通ファイル（js/debug-log.js）
 
 ```javascript
-// デバッグフラグ（本番環境でのログ出力制御）
-var novelGameDebug = typeof window.novelGameDebug !== 'undefined' ? window.novelGameDebug : false;
+// 安全な debugLog 実装（global）
+(function(global) {
+    'use strict';
 
-/**
- * デバッグログ出力（本番環境では無効化）
- *
- * 第1引数が 'log', 'warn', 'error' のいずれかの場合はログレベルとして扱い、
- * それ以外の場合は従来通り 'log' レベルで全引数を出力します。
- *
- * @param {string} levelOrMessage ログレベル ('log', 'warn', 'error') またはログメッセージ
- * @param {...*} args 追加引数
- * @since 1.2.0
- * @since 1.5.0 'warn', 'error' レベルをサポート
- */
-function debugLog( levelOrMessage ) {
-    if ( novelGameDebug ) {
-        var args = Array.prototype.slice.call( arguments );
-        var levels = [ 'log', 'warn', 'error' ];
+    // フロント/管理でそれぞれ localize したフラグを読み込む
+    var enabled = false;
+    if ( typeof global.novelGameDebug !== 'undefined' ) {
+        enabled = !!global.novelGameDebug;
+    } else if ( typeof global.novelGameAdminDebug !== 'undefined' ) {
+        enabled = !!global.novelGameAdminDebug;
+    } else if ( typeof global.NOVEL_GAME_DEBUG !== 'undefined' ) {
+        enabled = !!global.NOVEL_GAME_DEBUG;
+    }
+
+    function safeApplyConsole(level, args) {
+        try {
+            if ( typeof console !== 'undefined' && console && typeof console[level] === 'function' ) {
+                console[level].apply(console, args);
+            } else if ( typeof console !== 'undefined' && console && typeof console.log === 'function' ) {
+                console.log.apply(console, args);
+            }
+        } catch (e) {
+            // ログ呼び出しに失敗しても処理を中断させない
+        }
+    }
+
+    function debugLog() {
+        if (!enabled) {
+            return;
+        }
+        var args = Array.prototype.slice.call(arguments);
+        var levels = ['log','warn','error'];
         var level = 'log';
 
-        // 第1引数がログレベル指定かどうかを判定
-        if ( levels.indexOf( levelOrMessage ) !== -1 && args.length > 1 ) {
+        if (args.length > 1 && levels.indexOf(args[0]) !== -1) {
             level = args.shift();
         }
 
-        console[ level ].apply( console, args );
+        safeApplyConsole(level, args);
     }
-}
+
+    // グローバルに提供する
+    global.debugLog = debugLog;
+})(window);
 ```
 
+#### 引数仕様
+
+| 呼び出し方法 | ログレベル | 説明 |
+|-------------|-----------|------|
+| `debugLog('message')` | log | 単一引数はメッセージとして扱う |
+| `debugLog('message', data)` | log | 複数引数は全てログに出力 |
+| `debugLog('warn', 'message')` | warn | 第1引数が 'warn' でレベル指定 |
+| `debugLog('error', 'message', err)` | error | 第1引数が 'error' でレベル指定 |
+
+**注意:** `debugLog('warn')` のように単一引数でレベル名を渡した場合、それはメッセージとして扱われます（'log' レベルで 'warn' という文字列を出力）。レベル指定として認識されるには、2つ以上の引数が必要です。
+
 #### 管理画面 JavaScript での使用
-管理画面の JS ファイル（`admin-meta-boxes.js`, `admin-game-settings.js`）でも同様の `debugLog` 関数が実装されています。管理画面では `novelGameAdminDebug` フラグで制御されます。
+
+管理画面では `novelGameAdminDebug` フラグで制御されます。
 
 ```javascript
 // ブラウザコンソールで管理画面のデバッグモードを有効化
 window.novelGameAdminDebug = true;
+// または
+debugLog.setEnabled(true);
+```
+
+## デバッグフラグの設定
+
+デバッグフラグは PHP 側で `wp_localize_script` を使用して設定されます。デフォルトは `WP_DEBUG` の値に従います。
+
+```php
+// フロントエンド用
+wp_add_inline_script(
+    'novel-game-debug-log',
+    'window.novelGameDebug = ' . ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? 'true' : 'false' ) . ';',
+    'before'
+);
+
+// 管理画面用
+wp_add_inline_script(
+    'novel-game-debug-log',
+    'window.novelGameAdminDebug = ' . ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? 'true' : 'false' ) . ';',
+    'before'
+);
 ```
 
 ## .pot ファイルからのデバッグメッセージ除外
@@ -190,6 +243,27 @@ xgettext \
 - `console.warn()` 内の文字列
 - `console.error()` 内の文字列
 
+## ESLint による自動チェック
+
+ESLint の `no-console` ルールにより、`console.*` の直接使用は CI でエラーとなります。
+
+```json
+// .eslintrc.json
+{
+  "rules": {
+    "no-console": ["error", { "allow": [] }]
+  },
+  "overrides": [
+    {
+      "files": ["js/debug-log.js"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}
+```
+
 ## チェックリスト
 
 コードレビュー時には以下を確認してください：
@@ -201,6 +275,7 @@ xgettext \
 - [ ] alert/confirm などのユーザー向けダイアログは翻訳されているか
 - [ ] PHP側で翻訳した文字列は適切にエスケープされているか（`esc_html__`, `esc_attr__` など）
 - [ ] ログメッセージに機密情報（パスワード、トークン等）が含まれていないか
+- [ ] 各 JS ファイルに `debugLog` のローカル定義が重複していないか（`js/debug-log.js` を使用）
 
 ## 参考リンク
 

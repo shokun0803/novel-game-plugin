@@ -7,63 +7,80 @@ on:
       - master
     paths:
       - 'js/**/*.js'
+      - '.eslintrc.json'
+      - 'package.json'
   pull_request:
     branches:
       - dev
       - master
     paths:
       - 'js/**/*.js'
+      - '.eslintrc.json'
+      - 'package.json'
 
 permissions:
   contents: read
 
 jobs:
-  check-console-usage:
+  eslint-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check for forbidden console.* usage
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npx eslint 'js/**/*.js'
+
+  # バックアップ用の grep チェック（ESLint が失敗した場合の補助）
+  grep-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for forbidden console.* usage (grep fallback)
         run: |
           echo "Checking for forbidden console.* usage in JS files..."
           echo ""
 
           # Find console.* calls excluding allowed patterns
           # Allowed patterns:
-          # - debugLog function implementation (console[ level ].apply)
+          # - debugLog function implementation in debug-log.js
           # - Initialization shims with try-catch (try { console.* } catch)
           # - window.novelGameShowFlags and window.novelGameSetDebug functions
           # - Documentation/comments (* console.log)
 
           FORBIDDEN_FOUND=0
 
-          # Scan all JS files
-          for file in $(find js -name "*.js" -type f); do
+          # Scan all JS files except debug-log.js
+          for file in $(find js -name "*.js" -type f ! -name "debug-log.js"); do
             # Get line numbers with console.* calls
             while IFS= read -r match; do
               line_num=$(echo "$match" | cut -d: -f1)
               line_content=$(echo "$match" | cut -d: -f2-)
 
               # Skip allowed patterns
-              # 1. debugLog implementation (console[)
-              if echo "$line_content" | grep -q 'console\['; then
-                continue
-              fi
-
-              # 2. Try-catch initialization shims
+              # 1. Try-catch initialization shims
               if echo "$line_content" | grep -q 'try {.*console\.'; then
                 continue
               fi
 
-              # 3. Documentation comments
+              # 2. Documentation comments
               if echo "$line_content" | grep -qE '^\s*\*'; then
                 continue
               fi
 
-              # 4. novelGameShowFlags and novelGameSetDebug are allowed to use console directly
+              # 3. novelGameShowFlags and novelGameSetDebug are allowed to use console directly
               # Check if line is within these functions by looking at context
-              # We check 20 lines before for function definition
               start_line=$((line_num - 20))
               if [ $start_line -lt 1 ]; then
                 start_line=1
@@ -97,3 +114,4 @@ jobs:
           else
             echo "✅ No forbidden console.* usage found."
           fi
+

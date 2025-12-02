@@ -18,6 +18,7 @@
 		 */
 		window.novelGameSetDebug = function( enabled ) {
 			window.novelGameDebug = !!enabled;
+			// eslint-disable-next-line no-console -- 初期化前シム: debugLog がまだ利用不可のため直接 console を使用
 			try { console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。（初期化前シム）' ); } catch (e) {}
 		};
 	}
@@ -27,6 +28,7 @@
 		 * 初期化前の簡易版フラグ表示（初期化後に本実装で上書き）
 		 */
 		window.novelGameShowFlags = function() {
+			// eslint-disable-next-line no-console -- 初期化前シム: debugLog がまだ利用不可のため直接 console を使用
 			try { console.warn( 'ゲーム初期化前のため、フラグ一覧は初期化後に再度お試しください。' ); } catch (e) {}
 		};
 	}
@@ -109,8 +111,8 @@
 		var flagsCacheTimestamp = {};
 		var CACHE_DURATION = 10000; // 10秒間キャッシュ
 		
-		// デバッグフラグ（本番環境でのログ出力制御）
-		var novelGameDebug = typeof window.novelGameDebug !== 'undefined' ? window.novelGameDebug : false;
+		// debugLog は js/debug-log.js によるグローバル実装を使用
+		// デバッグフラグは window.novelGameDebug を参照（debug-log.js で読み込み済み）
 		
 		// 広告関連の変数
 		var adConfig = null;
@@ -443,35 +445,7 @@
 			debugLog( '広告を非表示にしました' );
 		}
 		
-		/**
-		 * デバッグログ出力（本番環境では無効化）
-		 *
-		 * 第1引数が 'log', 'warn', 'error' のいずれかの場合はログレベルとして扱い、
-		 * それ以外の場合は従来通り 'log' レベルで全引数を出力します。
-		 *
-		 * 注意: debugLog('warn') のように単一引数でレベル名を渡した場合、
-		 * それはメッセージとして扱われます（'log' レベルで 'warn' という文字列を出力）。
-		 * レベル指定として認識されるには、2つ以上の引数が必要です。
-		 *
-		 * @param {string} levelOrMessage ログレベル ('log', 'warn', 'error') またはログメッセージ
-		 * @param {...*} args 追加引数
-		 * @since 1.2.0
-		 * @since 1.5.0 'warn', 'error' レベルをサポート
-		 */
-		function debugLog( levelOrMessage ) {
-			if ( novelGameDebug ) {
-				var args = Array.prototype.slice.call( arguments );
-				var levels = [ 'log', 'warn', 'error' ];
-				var level = 'log';
-
-				// 第1引数がログレベル指定かどうかを判定（2引数以上の場合のみ）
-				if ( levels.indexOf( levelOrMessage ) !== -1 && args.length > 1 ) {
-					level = args.shift();
-				}
-
-				console[ level ].apply( console, args );
-			}
-		}
+		// debugLog 関数は js/debug-log.js でグローバルに定義されています（window.debugLog として利用可能）
 		
 		/**
 		 * デバッグ用：現在のフラグ状態とマスタデータを表示
@@ -479,6 +453,7 @@
 		 *
 		 * @since 1.2.0
 		 */
+		/* eslint-disable no-console -- ユーザーが明示的に呼び出すデバッグユーティリティのため直接 console を使用 */
 		window.novelGameShowFlags = function() {
 			if ( ! currentGameTitle ) {
 				console.log( '現在ゲームが読み込まれていません。' );
@@ -502,6 +477,7 @@
 				} );
 			}
 		};
+		/* eslint-enable no-console */
 		
 		/**
 		 * デバッグ用：デバッグモードを有効/無効にする
@@ -512,8 +488,12 @@
 		 */
 		window.novelGameSetDebug = function( enabled ) {
 			window.novelGameDebug = !!enabled;
-			novelGameDebug = !!enabled;
-			console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。' );
+			// グローバル debugLog のフラグも更新
+			if ( typeof debugLog !== 'undefined' && typeof debugLog.setEnabled === 'function' ) {
+				debugLog.setEnabled( enabled );
+			}
+			// eslint-disable-next-line no-console -- デバッグモード切替の確認用（ユーザーが明示的に呼び出す）
+			try { console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。' ); } catch (e) {}
 		};
 		
 		// 表示設定

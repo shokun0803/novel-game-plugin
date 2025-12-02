@@ -193,10 +193,29 @@ function noveltool_export_import_admin_scripts( $hook ) {
         return;
     }
 
+    // デバッグフラグの値を決定
+    $debug_enabled = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? true : false;
+
+    // 共通デバッグログユーティリティを読み込み
+    wp_enqueue_script(
+        'novel-game-debug-log',
+        NOVEL_GAME_PLUGIN_URL . 'js/debug-log.js',
+        array(),
+        NOVEL_GAME_PLUGIN_VERSION,
+        false
+    );
+
+    // 管理画面用デバッグフラグをグローバル変数として設定
+    wp_add_inline_script(
+        'novel-game-debug-log',
+        'window.novelGameAdminDebug = ' . ( $debug_enabled ? 'true' : 'false' ) . ';',
+        'before'
+    );
+
     wp_enqueue_script(
         'noveltool-export-import',
         NOVEL_GAME_PLUGIN_URL . 'js/admin-export-import.js',
-        array( 'jquery' ),
+        array( 'jquery', 'novel-game-debug-log' ),
         NOVEL_GAME_PLUGIN_VERSION,
         true
     );
@@ -206,6 +225,7 @@ function noveltool_export_import_admin_scripts( $hook ) {
         'noveltool-export-import',
         'noveltoolExportImport',
         array(
+            'debug'                   => $debug_enabled,
             'exportNonce'             => wp_create_nonce( 'noveltool_export_game' ),
             'importNonce'             => wp_create_nonce( 'noveltool_import_game' ),
             'myGamesUrl'              => admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ),
