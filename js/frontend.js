@@ -2034,7 +2034,17 @@
 									baseBackground = JSON.parse( backgroundDataText );
 									currentBackground = baseBackground;
 									debugLog( 'Parsed background data:', baseBackground );
+								} else {
+									// 背景データが空の場合はクリア（前回ゲームの背景が残らないように）
+									baseBackground = '';
+									currentBackground = '';
+									debugLog( 'Background data text is empty, clearing background variables' );
 								}
+							} else {
+								// 背景データスクリプトが存在しない場合はクリア（前回ゲームの背景が残らないように）
+								baseBackground = '';
+								currentBackground = '';
+								debugLog( 'No background data script found, clearing background variables' );
 							}
 							
 							// キャラクターデータを取得
@@ -2675,7 +2685,10 @@
 			// ゲームデータクリアが指定された場合のみクリア
 			if ( clearGameData ) {
 				window.currentGameSelectionData = null;
-				debugLog( 'ゲームデータをクリアしました' );
+				// 背景画像データも明示的にクリア（前回ゲームの背景が残らないように）
+				baseBackground = '';
+				currentBackground = '';
+				debugLog( 'ゲームデータをクリアしました（背景データを含む）' );
 			}
 		}
 
@@ -2697,9 +2710,13 @@
 			// 直前の選択肢シーンURLをリセット
 			lastChoiceSceneUrl = '';
 			
-			// 背景表示の状態をリセット（データは保持）
+			// 背景表示の状態をリセット
+			// baseBackgroundが存在する場合はそれをcurrentBackgroundにセット、
+			// 存在しない場合はcurrentBackgroundをクリア（前回ゲームの背景が残らないように）
 			if ( baseBackground ) {
 				currentBackground = baseBackground;
+			} else {
+				currentBackground = '';
 			}
 			
 			// DOM要素の表示をリセット
