@@ -2316,8 +2316,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 /* 設定モーダルオーバーレイ */
-/* ゲームモーダルオーバーレイ（#novel-game-modal-overlay）内に配置される場合、
-   同一スタッキングコンテキスト内で最前面に表示されるよう高いz-indexを設定 */
+/* フォールバック: body に append される場合（通常ケース） */
 .novel-settings-modal-overlay {
     position: fixed;
     top: 0;
@@ -2325,12 +2324,17 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.85);
-    z-index: 2147483648;
+    z-index: 9999; /* 過度に高い値は避ける */
     display: flex;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
+}
+
+/* ゲームオーバーレイ内に append されるケース: overlay 内で前面に表示 */
+#novel-game-modal-overlay .novel-settings-modal-overlay {
+    z-index: 10001; /* overlay 内で最前面に表示するために調整 */
 }
 
 /* 設定モーダル本体 */

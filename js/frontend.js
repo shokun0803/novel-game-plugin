@@ -1121,7 +1121,9 @@
 			$modal.find( '.novel-settings-delete-btn' ).on( 'click', function() {
 				var key = $( this ).data( 'key' );
 				var label = $( this ).data( 'label' );
-				var confirmMsg = '「' + label + '」' + ( strings.confirmDeleteMsg || 'を削除しますか？この操作は取り消せません。' );
+				// プレースホルダー（%s）を使用した翻訳文字列に対応
+				var confirmMsgTemplate = strings.confirmDeleteMsg || '「%s」を削除しますか？この操作は取り消せません。';
+				var confirmMsg = confirmMsgTemplate.replace( '%s', label );
 				
 				if ( confirm( confirmMsg ) ) {
 					if ( deleteStorageKey( key ) ) {

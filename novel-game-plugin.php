@@ -985,7 +985,8 @@ function noveltool_enqueue_scripts() {
                 'deleteLabel'            => esc_html__( '削除', 'novel-game-plugin' ),
                 'clearAllLabel'          => esc_html__( 'すべてのデータをクリア', 'novel-game-plugin' ),
                 'closeLabel'             => esc_html__( '閉じる', 'novel-game-plugin' ),
-                'confirmDeleteMsg'       => esc_html__( 'を削除しますか？この操作は取り消せません。', 'novel-game-plugin' ),
+                /* translators: %s is the data label name */
+                'confirmDeleteMsg'       => esc_html__( '「%s」を削除しますか？この操作は取り消せません。', 'novel-game-plugin' ),
                 'confirmClearAllMsg'     => esc_html__( 'このゲームのすべての保存データを削除しますか？この操作は取り消せません。', 'novel-game-plugin' ),
                 'localStorageNotSupport' => esc_html__( 'お使いのブラウザはローカルストレージに対応していないため、保存データの管理ができません。', 'novel-game-plugin' ),
                 'deleteErrorMsg'         => esc_html__( 'データの削除に失敗しました。', 'novel-game-plugin' ),
