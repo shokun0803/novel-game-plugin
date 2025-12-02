@@ -8,6 +8,34 @@
 jQuery( function( $ ) {
 	'use strict';
 
+	// デバッグフラグ（本番環境でのログ出力制御）
+	var novelGameAdminDebug = typeof window.novelGameAdminDebug !== 'undefined' ? window.novelGameAdminDebug : false;
+
+	/**
+	 * デバッグログ出力（本番環境では無効化）
+	 *
+	 * 第1引数が 'log', 'warn', 'error' のいずれかの場合はログレベルとして扱い、
+	 * それ以外の場合は従来通り 'log' レベルで全引数を出力します。
+	 *
+	 * @param {string} levelOrMessage ログレベル ('log', 'warn', 'error') またはログメッセージ
+	 * @param {...*} args 追加引数
+	 * @since 1.5.0
+	 */
+	function debugLog( levelOrMessage ) {
+		if ( novelGameAdminDebug ) {
+			var args = Array.prototype.slice.call( arguments );
+			var levels = [ 'log', 'warn', 'error' ];
+			var level = 'log';
+
+			// 第1引数がログレベル指定かどうかを判定
+			if ( levels.indexOf( levelOrMessage ) !== -1 && args.length > 1 ) {
+				level = args.shift();
+			}
+
+			console[ level ].apply( console, args );
+		}
+	}
+
 	// 投稿一覧を保持する変数
 	var scenes = [];
 	
@@ -880,7 +908,7 @@ jQuery( function( $ ) {
 					$flagSelect.on( 'change', function() {
 						var flagName = $( this ).data( 'flag-name' );
 						var newValue = $( this ).val();
-						console.log( novelGameMeta.strings.flagSettingChange, flagName, '→', newValue );
+						debugLog( novelGameMeta.strings.flagSettingChange, flagName, '→', newValue );
 						// 選択肢データの自動更新をトリガー
 						setTimeout( updateChoicesHidden, 10 );
 					} );
@@ -1275,7 +1303,7 @@ jQuery( function( $ ) {
 				// 削除後のテーブルが空になった場合の処理
 				if ( $( '#novel-choices-table tbody tr' ).length === 0 ) {
 					// 空のメッセージを表示（オプション）
-					console.log( novelGameMeta.strings.allChoicesDeleted );
+					debugLog( novelGameMeta.strings.allChoicesDeleted );
 				}
 			}
 		} );

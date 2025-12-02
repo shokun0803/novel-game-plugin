@@ -8,6 +8,34 @@
 jQuery( function( $ ) {
     'use strict';
 
+    // デバッグフラグ（本番環境でのログ出力制御）
+    var novelGameAdminDebug = typeof window.novelGameAdminDebug !== 'undefined' ? window.novelGameAdminDebug : false;
+
+    /**
+     * デバッグログ出力（本番環境では無効化）
+     *
+     * 第1引数が 'log', 'warn', 'error' のいずれかの場合はログレベルとして扱い、
+     * それ以外の場合は従来通り 'log' レベルで全引数を出力します。
+     *
+     * @param {string} levelOrMessage ログレベル ('log', 'warn', 'error') またはログメッセージ
+     * @param {...*} args 追加引数
+     * @since 1.5.0
+     */
+    function debugLog( levelOrMessage ) {
+        if ( novelGameAdminDebug ) {
+            var args = Array.prototype.slice.call( arguments );
+            var levels = [ 'log', 'warn', 'error' ];
+            var level = 'log';
+
+            // 第1引数がログレベル指定かどうかを判定
+            if ( levels.indexOf( levelOrMessage ) !== -1 && args.length > 1 ) {
+                level = args.shift();
+            }
+
+            console[ level ].apply( console, args );
+        }
+    }
+
     /**
      * 画像ファイルのバリデーション
      *
@@ -139,7 +167,7 @@ jQuery( function( $ ) {
                 navigator.clipboard.writeText( shortcode ).then( function() {
                     showCopySuccess( button );
                 } ).catch( function( err ) {
-                    console.error( 'クリップボードへのコピーに失敗しました:', err );
+                    debugLog( 'error', 'クリップボードへのコピーに失敗しました:', err );
                     fallbackCopyText( shortcode, button );
                 } );
             } else {
@@ -190,7 +218,7 @@ jQuery( function( $ ) {
                 alert( 'ショートコードのコピーに失敗しました。手動でコピーしてください。' );
             }
         } catch ( err ) {
-            console.error( 'フォールバックコピーに失敗しました:', err );
+            debugLog( 'error', 'フォールバックコピーに失敗しました:', err );
             alert( 'ショートコードのコピーに失敗しました。手動でコピーしてください。' );
         } finally {
             document.body.removeChild( textArea );
