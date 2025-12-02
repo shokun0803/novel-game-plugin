@@ -1773,6 +1773,11 @@
 				return;
 			}
 			
+			// $titleScreen が存在しない場合は表示しない
+			if ( ! $titleScreen || $titleScreen.length === 0 ) {
+				return;
+			}
+			
 			// localStorageにデータがあるかチェック
 			var storageData = getGameStorageData( gameTitle );
 			if ( storageData.length === 0 ) {
