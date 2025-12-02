@@ -105,11 +105,30 @@ function noveltool_admin_enqueue_scripts( $hook ) {
         return;
     }
 
+    // デバッグフラグの値を決定（WP_DEBUG をデフォルトとする）
+    $debug_enabled = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? true : false;
+
+    // 共通デバッグログユーティリティを読み込み
+    wp_enqueue_script(
+        'novel-game-debug-log',
+        NOVEL_GAME_PLUGIN_URL . 'js/debug-log.js',
+        array(),
+        NOVEL_GAME_PLUGIN_VERSION,
+        false
+    );
+
+    // 管理画面用デバッグフラグをグローバル変数として設定
+    wp_add_inline_script(
+        'novel-game-debug-log',
+        'window.novelGameAdminDebug = ' . ( $debug_enabled ? 'true' : 'false' ) . ';',
+        'before'
+    );
+
     // 管理画面用スクリプトの読み込み
     wp_enqueue_script(
         'novel-game-admin',
         NOVEL_GAME_PLUGIN_URL . 'js/admin.js',
-        array( 'jquery' ),
+        array( 'jquery', 'novel-game-debug-log' ),
         NOVEL_GAME_PLUGIN_VERSION,
         true
     );
@@ -118,7 +137,7 @@ function noveltool_admin_enqueue_scripts( $hook ) {
     wp_enqueue_script(
         'novel-game-admin-meta-boxes',
         NOVEL_GAME_PLUGIN_URL . 'js/admin-meta-boxes.js',
-        array( 'jquery', 'jquery-ui-sortable' ),
+        array( 'jquery', 'jquery-ui-sortable', 'novel-game-debug-log' ),
         NOVEL_GAME_PLUGIN_VERSION,
         true
     );
@@ -373,6 +392,9 @@ function noveltool_meta_box_callback( $post ) {
         'clearImage'                => esc_html__( 'Clear', 'novel-game-plugin' ),
     );
 
+    // デバッグフラグの値を決定
+    $debug_enabled = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? true : false;
+
     // データをJavaScriptに渡す
     wp_localize_script( 'novel-game-admin-meta-boxes', 'novelGameScenes', $scenes_data );
     wp_localize_script(
@@ -383,6 +405,7 @@ function noveltool_meta_box_callback( $post ) {
             'ajaxurl'       => admin_url( 'admin-ajax.php' ),
             'admin_url'     => admin_url(),
             'current_post_id' => $post->ID,
+            'debug'         => $debug_enabled,
             'strings'       => $js_strings,
             'dialogue_lines' => $dialogue_lines,
             'dialogue_backgrounds' => $dialogue_backgrounds,

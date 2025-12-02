@@ -8,6 +8,9 @@
 jQuery( function( $ ) {
     'use strict';
 
+    // debugLog は js/debug-log.js によるグローバル実装（window.debugLog）を使用
+    // デバッグフラグは window.novelGameAdminDebug を参照（debug-log.js で読み込み済み）
+
     /**
      * 画像ファイルのバリデーション
      *
@@ -139,7 +142,7 @@ jQuery( function( $ ) {
                 navigator.clipboard.writeText( shortcode ).then( function() {
                     showCopySuccess( button );
                 } ).catch( function( err ) {
-                    console.error( 'クリップボードへのコピーに失敗しました:', err );
+                    debugLog( 'error', 'クリップボードへのコピーに失敗しました:', err );
                     fallbackCopyText( shortcode, button );
                 } );
             } else {
@@ -190,7 +193,7 @@ jQuery( function( $ ) {
                 alert( 'ショートコードのコピーに失敗しました。手動でコピーしてください。' );
             }
         } catch ( err ) {
-            console.error( 'フォールバックコピーに失敗しました:', err );
+            debugLog( 'error', 'フォールバックコピーに失敗しました:', err );
             alert( 'ショートコードのコピーに失敗しました。手動でコピーしてください。' );
         } finally {
             document.body.removeChild( textArea );

@@ -8,6 +8,9 @@
 jQuery( function( $ ) {
 	'use strict';
 
+	// debugLog は js/debug-log.js によるグローバル実装（window.debugLog）を使用
+	// デバッグフラグは window.novelGameAdminDebug を参照（debug-log.js で読み込み済み）
+
 	// 投稿一覧を保持する変数
 	var scenes = [];
 	
@@ -880,7 +883,7 @@ jQuery( function( $ ) {
 					$flagSelect.on( 'change', function() {
 						var flagName = $( this ).data( 'flag-name' );
 						var newValue = $( this ).val();
-						console.log( novelGameMeta.strings.flagSettingChange, flagName, '→', newValue );
+						debugLog( novelGameMeta.strings.flagSettingChange, flagName, '→', newValue );
 						// 選択肢データの自動更新をトリガー
 						setTimeout( updateChoicesHidden, 10 );
 					} );
@@ -1275,7 +1278,7 @@ jQuery( function( $ ) {
 				// 削除後のテーブルが空になった場合の処理
 				if ( $( '#novel-choices-table tbody tr' ).length === 0 ) {
 					// 空のメッセージを表示（オプション）
-					console.log( novelGameMeta.strings.allChoicesDeleted );
+					debugLog( novelGameMeta.strings.allChoicesDeleted );
 				}
 			}
 		} );

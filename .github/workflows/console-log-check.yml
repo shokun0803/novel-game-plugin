@@ -1,0 +1,117 @@
+name: Console log check
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+    paths:
+      - 'js/**/*.js'
+      - '.eslintrc.json'
+      - 'package.json'
+  pull_request:
+    branches:
+      - dev
+      - master
+    paths:
+      - 'js/**/*.js'
+      - '.eslintrc.json'
+      - 'package.json'
+
+permissions:
+  contents: read
+
+jobs:
+  eslint-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npx eslint 'js/**/*.js'
+
+  # バックアップ用の grep チェック（ESLint が失敗した場合の補助）
+  grep-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for forbidden console.* usage (grep fallback)
+        run: |
+          echo "Checking for forbidden console.* usage in JS files..."
+          echo ""
+
+          # Find console.* calls excluding allowed patterns
+          # Allowed patterns:
+          # - debugLog function implementation in debug-log.js
+          # - Initialization shims with try-catch (try { console.* } catch)
+          # - window.novelGameShowFlags and window.novelGameSetDebug functions
+          # - Documentation/comments (* console.log)
+
+          FORBIDDEN_FOUND=0
+
+          # Scan all JS files except debug-log.js
+          for file in $(find js -name "*.js" -type f ! -name "debug-log.js"); do
+            # Get line numbers with console.* calls
+            while IFS= read -r match; do
+              line_num=$(echo "$match" | cut -d: -f1)
+              line_content=$(echo "$match" | cut -d: -f2-)
+
+              # Skip allowed patterns
+              # 1. Try-catch initialization shims
+              if echo "$line_content" | grep -q 'try {.*console\.'; then
+                continue
+              fi
+
+              # 2. Documentation comments
+              if echo "$line_content" | grep -qE '^\s*\*'; then
+                continue
+              fi
+
+              # 3. novelGameShowFlags and novelGameSetDebug are allowed to use console directly
+              # Check if line is within these functions by looking at context
+              start_line=$((line_num - 20))
+              if [ $start_line -lt 1 ]; then
+                start_line=1
+              fi
+              context=$(sed -n "${start_line},${line_num}p" "$file")
+              if echo "$context" | grep -qE 'window\.novelGameShowFlags\s*=\s*function|window\.novelGameSetDebug\s*=\s*function'; then
+                continue
+              fi
+
+              # If we reach here, it's a forbidden usage
+              echo "❌ Forbidden console usage found in $file:$line_num"
+              echo "   $line_content"
+              FORBIDDEN_FOUND=1
+
+            done < <(grep -n 'console\.\(log\|warn\|error\)' "$file" 2>/dev/null || true)
+          done
+
+          echo ""
+          if [ $FORBIDDEN_FOUND -eq 1 ]; then
+            echo "=========================================="
+            echo "ERROR: Forbidden console.* usage detected!"
+            echo ""
+            echo "Please use debugLog() instead:"
+            echo "  - debugLog( 'message' )         for log level"
+            echo "  - debugLog( 'warn', 'message' ) for warn level"
+            echo "  - debugLog( 'error', 'message' ) for error level"
+            echo ""
+            echo "See docs/DEVELOPER_LOGGING_GUIDELINES.md for details."
+            echo "=========================================="
+            exit 1
+          else
+            echo "✅ No forbidden console.* usage found."
+          fi
+

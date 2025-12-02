@@ -963,10 +963,29 @@ add_filter( 'the_content', 'noveltool_filter_novel_game_content', 20 );
  * @since 1.0.0
  */
 function noveltool_enqueue_scripts() {
+    // デバッグフラグの値を決定（WP_DEBUG をデフォルトとする）
+    $debug_enabled = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? true : false;
+
+    // 共通デバッグログユーティリティを読み込み
+    wp_enqueue_script(
+        'novel-game-debug-log',
+        NOVEL_GAME_PLUGIN_URL . 'js/debug-log.js',
+        array(),
+        NOVEL_GAME_PLUGIN_VERSION,
+        false // <head> セクションで読み込み（依存スクリプトより先にグローバル関数を定義）
+    );
+
+    // デバッグフラグをグローバル変数として設定
+    wp_add_inline_script(
+        'novel-game-debug-log',
+        'window.novelGameDebug = ' . ( $debug_enabled ? 'true' : 'false' ) . ';',
+        'before'
+    );
+
     wp_enqueue_script(
         'novel-game-frontend',
         NOVEL_GAME_PLUGIN_URL . 'js/frontend.js',
-        array( 'jquery' ),
+        array( 'jquery', 'novel-game-debug-log' ),
         NOVEL_GAME_PLUGIN_VERSION,
         true
     );
@@ -976,6 +995,7 @@ function noveltool_enqueue_scripts() {
         'novel-game-frontend',
         'novelGameFront',
         array(
+            'debug'   => $debug_enabled,
             'strings' => array(
                 'leftCharacter'          => esc_html__( 'Left Character', 'novel-game-plugin' ),
                 'centerCharacter'        => esc_html__( 'Center Character', 'novel-game-plugin' ),
