@@ -19,7 +19,9 @@
 		window.novelGameSetDebug = function( enabled ) {
 			window.novelGameDebug = !!enabled;
 			// 許可: 初期化前シムのため debugLog がまだ利用不可（直接 console を使用）
-			try { console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。（初期化前シム）' ); } catch (e) {}
+			if ( typeof console !== 'undefined' && typeof console.log === 'function' ) {
+				console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。（初期化前シム）' );
+			}
 		};
 	}
 
@@ -29,7 +31,9 @@
 		 */
 		window.novelGameShowFlags = function() {
 			// 許可: 初期化前シムのため debugLog がまだ利用不可（直接 console を使用）
-			try { console.warn( 'ゲーム初期化前のため、フラグ一覧は初期化後に再度お試しください。' ); } catch (e) {}
+			if ( typeof console !== 'undefined' && typeof console.warn === 'function' ) {
+				console.warn( 'ゲーム初期化前のため、フラグ一覧は初期化後に再度お試しください。' );
+			}
 		};
 	}
 
@@ -510,7 +514,9 @@
 				debugLog.setEnabled( enabled );
 			}
 			// 許可: ユーザーが明示的に呼び出すデバッグモード切替の確認用
-			try { console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。' ); } catch (e) {}
+			if ( typeof console !== 'undefined' && typeof console.log === 'function' ) {
+				console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。' );
+			}
 		};
 		
 		// 表示設定

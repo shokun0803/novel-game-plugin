@@ -294,35 +294,47 @@ JavaScript の静的チェックは CI 上で grep ベースの検査を使用�
 
 ### ローカルでのチェック方法
 
-CI と同じチェックをローカルで実行する例：
+CI と同じチェックをローカルで実行する例。専用スクリプトを使用するか、個別に grep で確認できます：
 
 ```bash
+# 専用スクリプトで全パターンをチェック（推奨）
+bash scripts/check-js-patterns.sh
+
+# または個別にチェック（PCRE パターンを使用するため -P オプションが必要）
 # console.* の使用をチェック（debug-log.js 以外）
 find js -name "*.js" -type f ! -name "debug-log.js" -print0 | \
-  xargs -0 grep -n 'console\.\(log\|warn\|error\|info\|debug\)'
+  xargs -0 grep -nP 'console\.(log|warn|error|info|debug)\b'
 
 # eval() の使用をチェック
 find js -name "*.js" -type f -print0 | \
-  xargs -0 grep -n '\beval\s*('
+  xargs -0 grep -nP '\beval\s*\('
 
 # new Function() の使用をチェック
 find js -name "*.js" -type f -print0 | \
-  xargs -0 grep -n '\bnew\s\+Function\s*('
+  xargs -0 grep -nP '\bnew\s+Function\s*\('
 
 # setTimeout/setInterval での文字列評価をチェック
 find js -name "*.js" -type f -print0 | \
-  xargs -0 grep -nE 'set(Timeout|Interval)\s*\(\s*["'"'"'\`]'
+  xargs -0 grep -nP -E 'set(Timeout|Interval)\s*\(\s*["'"'"'`]'
+
+# innerHTML の使用をチェック（警告）
+find js -name "*.js" -type f -print0 | \
+  xargs -0 grep -nP -E '\.innerHTML\s*(\+?=)'
 ```
+
+**注意**: `-P` オプションは PCRE (Perl互換正規表現) を使用します。`\b`（単語境界）や `\s`（空白文字）などのパターンに必要です。
 
 ### console.* の許可される使用例
 
 以下のコンテキストでは `console.*` の使用が許可されます：
 
 1. **`js/debug-log.js`**: debugLog 実装のため
-2. **try-catch ブロック内**: 初期化前シムなど
+2. **明示的な console チェック**: 初期化前シムなど
    ```javascript
    // 許可: 初期化前シムのため debugLog がまだ利用不可
-   try { console.log( 'メッセージ' ); } catch (e) {}
+   if ( typeof console !== 'undefined' && typeof console.log === 'function' ) {
+     console.log( 'メッセージ' );
+   }
    ```
 3. **デバッグユーティリティ関数内**: `novelGameShowFlags`、`novelGameSetDebug`
    ```javascript

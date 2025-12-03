@@ -293,21 +293,31 @@ JavaScript コードの品質チェックは、CI（GitHub Actions）で自動�
 
 #### ローカルでのチェック方法（任意）
 
-CI と同じチェックをローカルで実行できます：
+CI と同じチェックをローカルで実行できます。専用スクリプトを使用するか、個別に grep で確認できます：
 
 ```bash
+# 専用スクリプトで全パターンをチェック（推奨）
+bash scripts/check-js-patterns.sh
+
+# または個別にチェック（PCRE パターンを使用するため -P オプションが必要）
 # console.* の使用をチェック（debug-log.js 以外）
 find js -name "*.js" -type f ! -name "debug-log.js" -print0 | \
-  xargs -0 grep -n 'console\.\(log\|warn\|error\|info\|debug\)'
+  xargs -0 grep -nP 'console\.(log|warn|error|info|debug)\b'
 
 # eval() の使用をチェック
-find js -name "*.js" -type f -print0 | xargs -0 grep -n '\beval\s*('
+find js -name "*.js" -type f -print0 | xargs -0 grep -nP '\beval\s*\('
 
 # new Function() の使用をチェック
-find js -name "*.js" -type f -print0 | xargs -0 grep -n '\bnew\s\+Function\s*('
+find js -name "*.js" -type f -print0 | xargs -0 grep -nP '\bnew\s+Function\s*\('
+
+# innerHTML の使用をチェック（警告）
+find js -name "*.js" -type f -print0 | xargs -0 grep -nP -E '\.innerHTML\s*(\+?=)'
 ```
 
-詳細は [開発者向けログメッセージガイドライン](docs/DEVELOPER_LOGGING_GUIDELINES.md) を参照してください。
+**注意**: `-P` オプションは PCRE (Perl互換正規表現) を使用します。`\b`（単語境界）や `\s`（空白文字）などのパターンに必要です。
+
+詳細は [開発者向けログメッセージガイドライン](docs/DEVELOPER_LOGGING_GUIDELINES.md) を参照してください.
+
 
 ### コードレビュー
 
