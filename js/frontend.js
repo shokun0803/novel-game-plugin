@@ -316,6 +316,24 @@
 		}
 		
 		/**
+		 * 背景変数をクリアするヘルパー関数
+		 * 前回ゲームの背景が残らないように一元管理
+		 *
+		 * @param {string} reason クリアする理由（デバッグログ用）
+		 * @since 1.4.1
+		 */
+		function clearBackgroundVars( reason ) {
+			baseBackground = '';
+			currentBackground = '';
+			// debugLog が初期化前や無効な場合でも処理を継続するため、エラーを無視
+			try {
+				debugLog( '背景変数をクリアしました:', reason );
+			} catch ( e ) {
+				// デバッグログ出力失敗は無視（本処理への影響なし）
+			}
+		}
+		
+		/**
 		 * Adsterra 広告を表示
 		 *
 		 * @since 1.4.0
@@ -552,8 +570,14 @@
 			}
 			
 			if ( baseBackgroundData ) {
-				baseBackground = JSON.parse( baseBackgroundData );
-				currentBackground = baseBackground;
+				try {
+					baseBackground = JSON.parse( baseBackgroundData );
+					currentBackground = baseBackground;
+					debugLog( '背景データを解析しました（インラインデータ）:', baseBackground );
+				} catch ( e ) {
+					clearBackgroundVars( 'インラインデータの背景解析に失敗' );
+					debugLog( 'error', '背景データの解析に失敗しました。背景変数をクリアします。', e );
+				}
 			}
 			
 			if ( charactersDataRaw ) {
@@ -1746,6 +1770,21 @@
 			
 			// タイトル画面の内容を設定
 			$titleMain.text( currentGameData.title || '' );
+			
+			// DOM のタイトルと内部データの再同期チェック（UI と内部データのずれ防止）
+			setTimeout( function() {
+				try {
+					var uiTitle = $titleMain.text() || '';
+					var dataTitle = currentGameData.title || '';
+					if ( uiTitle !== dataTitle ) {
+						$titleMain.text( dataTitle );
+						debugLog( 'showTitleScreen: DOM のタイトルと内部データが不一致だったため再設定しました', { uiTitle: uiTitle, dataTitle: dataTitle } );
+					}
+				} catch ( e ) {
+					debugLog( 'warn', 'タイトル再同期チェックでエラーが発生しました:', e );
+				}
+			}, 50 );
+			
 			$titleSubtitle.text( currentGameData.subtitle || '' ).toggle( !!currentGameData.subtitle );
 			$titleDescription.text( currentGameData.description || '' ).toggle( !!currentGameData.description );
 			
@@ -1878,12 +1917,26 @@
 			// 背景画像を設定
 			if ( backgroundImage ) {
 				debugLog( 'Setting title screen background image:', backgroundImage );
-				$titleScreen.css( {
-					'background-image': 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(' + backgroundImage + ')',
-					'background-size': 'cover',
-					'background-position': 'center',
-					'background-repeat': 'no-repeat'
-				} );
+				// URLの安全性を確保：
+				// 1. http/https/相対パスのみ許可（javascript:等のプロトコルを除外）
+				// 2. 特殊文字をエンコード
+				// 3. CSS注入を防ぐため引用符・バックスラッシュを除去
+				var isValidUrl = /^(https?:\/\/|\/)/i.test( backgroundImage );
+				if ( isValidUrl ) {
+					var safeUrl = encodeURI( backgroundImage ).replace( /["'\\]/g, '' );
+					$titleScreen.css( {
+						'background-image': 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("' + safeUrl + '")',
+						'background-size': 'cover',
+						'background-position': 'center',
+						'background-repeat': 'no-repeat'
+					} );
+				} else {
+					debugLog( 'warn', '無効なURLスキームのため背景画像を設定しません:', backgroundImage );
+					$titleScreen.css( {
+						'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+						'background-image': 'none'
+					} );
+				}
 			} else {
 				debugLog( 'No background image found, using default gradient' );
 				$titleScreen.css( {
@@ -2031,10 +2084,21 @@
 							if ( backgroundDataScript.length > 0 ) {
 								var backgroundDataText = backgroundDataScript.text() || backgroundDataScript.html();
 								if ( backgroundDataText ) {
-									baseBackground = JSON.parse( backgroundDataText );
-									currentBackground = baseBackground;
-									debugLog( 'Parsed background data:', baseBackground );
+									try {
+										baseBackground = JSON.parse( backgroundDataText );
+										currentBackground = baseBackground;
+										debugLog( 'Parsed background data:', baseBackground );
+									} catch ( e ) {
+										clearBackgroundVars( 'loadGameData() - 背景データの解析に失敗' );
+										debugLog( 'error', '背景データの解析に失敗しました。背景変数をクリアします。', e );
+									}
+								} else {
+									// 背景データが空の場合はクリア（前回ゲームの背景が残らないように）
+									clearBackgroundVars( 'loadGameData() - 背景データテキストが空' );
 								}
+							} else {
+								// 背景データスクリプトが存在しない場合はクリア（前回ゲームの背景が残らないように）
+								clearBackgroundVars( 'loadGameData() - 背景スクリプトが存在しない' );
 							}
 							
 							// キャラクターデータを取得
@@ -2335,9 +2399,12 @@
 				loadGameData( gameUrlOrData.url ).then( function() {
 					debugLog( 'Game data loaded successfully, showing title screen' );
 					
-					// タイトル画面を表示
+					// currentGameSelectionData を優先してタイトル描画
+					var dataForTitle = window.currentGameSelectionData || gameUrlOrData;
+					
+					// タイトル画面を表示（参照コピーで渡す）
 					setTimeout( function() {
-						showTitleScreen( gameUrlOrData );
+						showTitleScreen( Object.assign( {}, dataForTitle ) );
 					}, 300 );
 				} ).catch( function( error ) {
 					debugLog( 'error', 'ゲームの読み込みに失敗しました:', error );
@@ -2349,6 +2416,14 @@
 				debugLog( 'Loading game data from URL:', gameUrlOrData );
 				loadGameData( gameUrlOrData ).then( function() {
 					debugLog( 'Game data loaded successfully' );
+					
+					// タイトル画面を必ず更新して UI と内部データを同期する
+					if ( window.currentGameSelectionData ) {
+						showTitleScreen( Object.assign( {}, window.currentGameSelectionData ) );
+					} else {
+						// フォールバック：createFallbackGameData を使用
+						showTitleScreen( Object.assign( {}, createFallbackGameData( window.currentGameSelectionData ) ) );
+					}
 					
 					// 保存された進捗をチェック
 					checkAndOfferResumeOption().then( function() {
@@ -2675,7 +2750,9 @@
 			// ゲームデータクリアが指定された場合のみクリア
 			if ( clearGameData ) {
 				window.currentGameSelectionData = null;
-				debugLog( 'ゲームデータをクリアしました' );
+				// 背景画像データも明示的にクリア（前回ゲームの背景が残らないように）
+				clearBackgroundVars( 'closeModal() - clearGameData' );
+				debugLog( 'ゲームデータをクリアしました（背景データを含む）' );
 			}
 		}
 
@@ -2697,9 +2774,13 @@
 			// 直前の選択肢シーンURLをリセット
 			lastChoiceSceneUrl = '';
 			
-			// 背景表示の状態をリセット（データは保持）
+			// 背景表示の状態をリセット
+			// baseBackgroundが存在する場合はそれをcurrentBackgroundにセット、
+			// 存在しない場合はcurrentBackgroundをクリア（前回ゲームの背景が残らないように）
 			if ( baseBackground ) {
 				currentBackground = baseBackground;
+			} else {
+				currentBackground = '';
 			}
 			
 			// DOM要素の表示をリセット
@@ -2963,11 +3044,15 @@
 				e.stopPropagation();
 				
 				var $target = $( this );
-				var gameUrl = $target.attr( 'data-game-url' ) || $target.closest( '[data-game-url]' ).attr( 'data-game-url' );
-				var gameTitle = $target.attr( 'data-game-title' ) || $target.closest( '[data-game-title]' ).attr( 'data-game-title' );
-				var gameDescription = $target.attr( 'data-game-description' ) || $target.closest( '[data-game-description]' ).attr( 'data-game-description' ) || '';
-				var gameSubtitle = $target.attr( 'data-game-subtitle' ) || $target.closest( '[data-game-subtitle]' ).attr( 'data-game-subtitle' ) || '';
-				var gameImage = $target.attr( 'data-game-image' ) || $target.closest( '[data-game-image]' ).attr( 'data-game-image' ) || '';
+				// 厳密な DOM 取得（data-* の誤取得防止）
+				var $card = $target.closest( '.noveltool-game-item' );
+				
+				// 優先順位: 1) $target の data-*, 2) $card の data-*, 3) フォールバック
+				var gameUrl = $target.attr( 'data-game-url' ) || ( $card.length ? $card.attr( 'data-game-url' ) : '' );
+				var gameTitle = $target.attr( 'data-game-title' ) || ( $card.length ? $card.attr( 'data-game-title' ) : '' );
+				var gameDescription = $target.attr( 'data-game-description' ) || ( $card.length ? $card.attr( 'data-game-description' ) : '' ) || '';
+				var gameSubtitle = $target.attr( 'data-game-subtitle' ) || ( $card.length ? $card.attr( 'data-game-subtitle' ) : '' ) || '';
+				var gameImage = $target.attr( 'data-game-image' ) || ( $card.length ? $card.attr( 'data-game-image' ) : '' ) || '';
 				
 				debugLog( 'Game item clicked:', { gameUrl: gameUrl, gameTitle: gameTitle, gameDescription: gameDescription, gameImage: gameImage } );
 				
@@ -4044,7 +4129,7 @@
 			
 			// タイトル画面を表示
 			setTimeout( function() {
-				showTitleScreen( currentGameData );
+				showTitleScreen( Object.assign( {}, currentGameData ) );
 			}, 100 );
 		}
 		
