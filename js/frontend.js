@@ -2422,7 +2422,7 @@
 						showTitleScreen( Object.assign( {}, window.currentGameSelectionData ) );
 					} else {
 						// フォールバック：createFallbackGameData を使用
-						showTitleScreen( createFallbackGameData( null ) );
+						showTitleScreen( Object.assign( {}, createFallbackGameData( window.currentGameSelectionData ) ) );
 					}
 					
 					// 保存された進捗をチェック
@@ -4129,7 +4129,7 @@
 			
 			// タイトル画面を表示
 			setTimeout( function() {
-				showTitleScreen( currentGameData );
+				showTitleScreen( Object.assign( {}, currentGameData ) );
 			}, 100 );
 		}
 		
