@@ -104,7 +104,7 @@ jobs:
           # 3. Check for innerHTML usage (potential XSS)
           # ========================================
           echo ""
-          echo "3. Checking for innerHTML usage..."
+          echo "3. Checking for innerHTML usage (WARNING ONLY)..."
           
           for file in $(find js -name "*.js" -type f); do
             while IFS= read -r match; do
@@ -116,8 +116,7 @@ jobs:
                 continue
               fi
 
-              # Check if using textContent or proper escaping - if so, allow
-              # This is a warning, not an error
+              # This is a warning, not an error - innerHTML can be safe with proper escaping
               echo "⚠️  innerHTML usage found in $file:$line_num (verify proper escaping)"
               echo "   $line_content"
 
