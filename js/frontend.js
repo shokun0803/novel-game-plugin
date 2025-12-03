@@ -1770,6 +1770,21 @@
 			
 			// タイトル画面の内容を設定
 			$titleMain.text( currentGameData.title || '' );
+			
+			// DOM のタイトルと内部データの再同期チェック（UI と内部データのずれ防止）
+			setTimeout( function() {
+				try {
+					var uiTitle = $titleMain.text() || '';
+					var dataTitle = currentGameData.title || '';
+					if ( uiTitle !== dataTitle ) {
+						$titleMain.text( dataTitle );
+						debugLog( 'showTitleScreen: DOM のタイトルと内部データが不一致だったため再設定しました', { uiTitle: uiTitle, dataTitle: dataTitle } );
+					}
+				} catch ( e ) {
+					debugLog( 'warn', 'タイトル再同期チェックでエラーが発生しました:', e );
+				}
+			}, 50 );
+			
 			$titleSubtitle.text( currentGameData.subtitle || '' ).toggle( !!currentGameData.subtitle );
 			$titleDescription.text( currentGameData.description || '' ).toggle( !!currentGameData.description );
 			
@@ -2384,9 +2399,12 @@
 				loadGameData( gameUrlOrData.url ).then( function() {
 					debugLog( 'Game data loaded successfully, showing title screen' );
 					
-					// タイトル画面を表示
+					// currentGameSelectionData を優先してタイトル描画
+					var dataForTitle = window.currentGameSelectionData || gameUrlOrData;
+					
+					// タイトル画面を表示（参照コピーで渡す）
 					setTimeout( function() {
-						showTitleScreen( gameUrlOrData );
+						showTitleScreen( Object.assign( {}, dataForTitle ) );
 					}, 300 );
 				} ).catch( function( error ) {
 					debugLog( 'error', 'ゲームの読み込みに失敗しました:', error );
@@ -2398,6 +2416,14 @@
 				debugLog( 'Loading game data from URL:', gameUrlOrData );
 				loadGameData( gameUrlOrData ).then( function() {
 					debugLog( 'Game data loaded successfully' );
+					
+					// タイトル画面を必ず更新して UI と内部データを同期する
+					if ( window.currentGameSelectionData ) {
+						showTitleScreen( Object.assign( {}, window.currentGameSelectionData ) );
+					} else {
+						// フォールバック：createFallbackGameData を使用
+						showTitleScreen( createFallbackGameData( null ) );
+					}
 					
 					// 保存された進捗をチェック
 					checkAndOfferResumeOption().then( function() {
@@ -3018,11 +3044,15 @@
 				e.stopPropagation();
 				
 				var $target = $( this );
-				var gameUrl = $target.attr( 'data-game-url' ) || $target.closest( '[data-game-url]' ).attr( 'data-game-url' );
-				var gameTitle = $target.attr( 'data-game-title' ) || $target.closest( '[data-game-title]' ).attr( 'data-game-title' );
-				var gameDescription = $target.attr( 'data-game-description' ) || $target.closest( '[data-game-description]' ).attr( 'data-game-description' ) || '';
-				var gameSubtitle = $target.attr( 'data-game-subtitle' ) || $target.closest( '[data-game-subtitle]' ).attr( 'data-game-subtitle' ) || '';
-				var gameImage = $target.attr( 'data-game-image' ) || $target.closest( '[data-game-image]' ).attr( 'data-game-image' ) || '';
+				// 厳密な DOM 取得（data-* の誤取得防止）
+				var $card = $target.closest( '.noveltool-game-item' );
+				
+				// 優先順位: 1) $target の data-*, 2) $card の data-*, 3) フォールバック
+				var gameUrl = $target.attr( 'data-game-url' ) || ( $card.length ? $card.attr( 'data-game-url' ) : '' );
+				var gameTitle = $target.attr( 'data-game-title' ) || ( $card.length ? $card.attr( 'data-game-title' ) : '' );
+				var gameDescription = $target.attr( 'data-game-description' ) || ( $card.length ? $card.attr( 'data-game-description' ) : '' ) || '';
+				var gameSubtitle = $target.attr( 'data-game-subtitle' ) || ( $card.length ? $card.attr( 'data-game-subtitle' ) : '' ) || '';
+				var gameImage = $target.attr( 'data-game-image' ) || ( $card.length ? $card.attr( 'data-game-image' ) : '' ) || '';
 				
 				debugLog( 'Game item clicked:', { gameUrl: gameUrl, gameTitle: gameTitle, gameDescription: gameDescription, gameImage: gameImage } );
 				
