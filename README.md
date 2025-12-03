@@ -277,16 +277,37 @@ git checkout -b feature/new-feature
 
 ### JavaScript コードチェック
 
-JavaScript コードの品質チェックは、CI（GitHub Actions）で自動的に実行される grep ベースのチェックによって行われます。以下のパターンが検出されるとエラーになります：
+JavaScript コードの品質チェックは、CI（GitHub Actions）で自動的に実行される grep ベースのチェックによって行われます。
+
+#### エラーとなるパターン
 
 - **禁止された console.* の使用**: `debugLog()` 関数を使用してください
 - **eval() の使用**: セキュリティリスクのため使用禁止
+- **new Function() の使用**: セキュリティリスクのため使用禁止
+- **setTimeout/setInterval での文字列評価**: セキュリティリスクのため使用禁止
 
-以下のパターンは警告として表示されますが、ビルドは失敗しません：
+#### 警告のみのパターン（ビルドは失敗しません）
 
 - **innerHTML の使用**: XSS 脆弱性のリスクがあるため警告表示（適切なエスケープ処理を確認してください）
+- **insertAdjacentHTML の使用**: XSS 脆弱性のリスクがあるため警告表示（適切なエスケープ処理を確認してください）
 
-ローカルでのコードチェックは任意です。WordPress のコーディング規約に従っていれば、CI でチェックされます。
+#### ローカルでのチェック方法（任意）
+
+CI と同じチェックをローカルで実行できます：
+
+```bash
+# console.* の使用をチェック（debug-log.js 以外）
+find js -name "*.js" -type f ! -name "debug-log.js" -print0 | \
+  xargs -0 grep -n 'console\.\(log\|warn\|error\|info\|debug\)'
+
+# eval() の使用をチェック
+find js -name "*.js" -type f -print0 | xargs -0 grep -n '\beval\s*('
+
+# new Function() の使用をチェック
+find js -name "*.js" -type f -print0 | xargs -0 grep -n '\bnew\s\+Function\s*('
+```
+
+詳細は [開発者向けログメッセージガイドライン](docs/DEVELOPER_LOGGING_GUIDELINES.md) を参照してください。
 
 ### コードレビュー
 
