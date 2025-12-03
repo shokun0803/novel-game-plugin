@@ -264,6 +264,9 @@ cd novel-game-plugin
 git checkout -b feature/new-feature
 ```
 
+**Node.js/npm は不要です**  
+このプラグインは WordPress プラグインとして、Node.js や npm を必要としない運用方針を採用しています。JavaScript の静的チェックは CI 上で grep ベースのチェックを使用しており、ローカル開発環境に Node.js をインストールする必要はありません。
+
 ### コーディング規約
 - WordPress公式コーディング規約に準拠
 - 全ての関数・クラスに `noveltool_` プレフィックス
@@ -271,6 +274,16 @@ git checkout -b feature/new-feature
 - セキュリティ対策の実装必須
 
 詳細な命名規約については、[命名規約ガイドライン](docs/NAMING_CONVENTIONS.md) を参照してください。
+
+### JavaScript コードチェック
+
+JavaScript コードの品質チェックは、CI（GitHub Actions）で自動的に実行される grep ベースのチェックによって行われます。以下のパターンが検出されるとエラーになります：
+
+- **禁止された console.* の使用**: `debugLog()` 関数を使用してください
+- **eval() の使用**: セキュリティリスクのため使用禁止
+- **innerHTML の使用**: XSS 脆弱性のリスクがあるため警告表示（適切なエスケープ処理を確認）
+
+ローカルでのコードチェックは任意です。WordPress のコーディング規約に従っていれば、CI でチェックされます。
 
 ### コードレビュー
 
@@ -282,7 +295,7 @@ git checkout -b feature/new-feature
 
 **重要なポイント:**
 - ユーザー向けメッセージは必ず翻訳関数（`__()`, `_e()` など）を使用
-- 開発者向けデバッグログは `debugLog()` または `console.log()` を使用（翻訳不要）
+- 開発者向けデバッグログは `debugLog()` 関数を使用（翻訳不要）
 - フロントエンドでは `debugLog()` 関数を使用することで、本番環境でのログ出力を制御可能
 
 ### 翻訳ファイルの更新手順
