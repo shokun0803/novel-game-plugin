@@ -28,11 +28,6 @@ cd novel-game-plugin
 git checkout -b feature/new-feature
 ```
 
-### 必要な環境
-
-**Node.js/npm は不要です**  
-このプラグインは WordPress プラグインとして、Node.js や npm を必要としない運用方針を採用しています。JavaScript の静的チェックは CI 上で grep ベースのチェックを使用しており、ローカル開発環境に Node.js をインストールする必要はありません。
-
 ### 開発に必要なツール
 
 - WordPress 4.7 以上

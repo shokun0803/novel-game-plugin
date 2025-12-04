@@ -13,7 +13,7 @@ WordPressでサウンドノベル・ビジュアルノベルゲームを作成�
 - [主な機能](#主な機能)
 - [インストール](#インストール)
 - [使い方](#使い方)
-  - [管理画面の使い方](#管理画面の使い方v120以降)
+  - [管理画面の使い方](#管理画面の使い方)
   - [基本的なワークフロー](#基本的なワークフロー)
   - [条件付きセリフ表示機能](#条件付きセリフ表示機能)
   - [セリフごとのキャラクター立ち絵差し替え機能](#セリフごとのキャラクター立ち絵差し替え機能)
@@ -84,7 +84,7 @@ mv novel-game-plugin /path/to/wordpress/wp-content/plugins/
 
 ## 使い方
 
-### 管理画面の使い方（v1.2.0以降）
+### 管理画面の使い方
 
 本プラグインは、ゲーム中心型の直感的なメニュー構造を採用しています。
 
@@ -288,78 +288,9 @@ A5. はい。プラグインは国際化（i18n）に完全対応しており、
 
 ## 開発者向け情報
 
-プラグインの開発に参加する開発者向けの詳細な情報は、以下のドキュメントを参照してください：
+このリポジトリの開発者向けの詳しい情報（開発環境、コーディング規約、翻訳の更新手順、CI のチェック方法など）は docs/DEVELOPER_GUIDE.md にまとめています。開発に参加する方はそちらを参照してください。
 
-- **[開発者向けガイド](docs/DEVELOPER_GUIDE.md)** - 開発環境セットアップ、コーディング規約、翻訳ファイルの更新手順など
-- **[命名規約ガイドライン](docs/NAMING_CONVENTIONS.md)** - PHP/JavaScript/CSS の詳細な命名規約
-- **[コードレビューチェックリスト](docs/CODE_REVIEW_CHECKLIST.md)** - プルリクエストレビュー時のチェック項目
-- **[開発者向けログメッセージガイドライン](docs/DEVELOPER_LOGGING_GUIDELINES.md)** - ログとデバッグ機能の使い方
-
-### ディレクトリ構成
-
-```
-novel-game-plugin/
-├── novel-game-plugin.php      # メインプラグインファイル
-├── admin/                     # 管理画面関連
-│   ├── meta-boxes.php         # メタボックス・Ajax処理
-│   ├── new-game.php           # 新規ゲーム作成
-│   └── game-settings.php      # ゲーム基本情報設定
-├── includes/                  # コア機能
-│   └── post-types.php         # カスタム投稿タイプ
-├── templates/                 # テンプレート
-│   └── archive-novel_game.php # アーカイブページ
-├── css/                       # スタイルシート
-│   └── style.css              # フロントエンドスタイル
-├── js/                        # JavaScript
-│   ├── frontend.js            # フロントエンド機能
-│   ├── admin.js               # 管理画面基本機能
-│   ├── admin-game-settings.js # ゲーム設定画面
-│   └── admin-meta-boxes.js    # メタボックス機能
-├── docs/                      # ドキュメント
-│   ├── DEVELOPER_GUIDE.md     # 開発者向けガイド
-│   ├── NAMING_CONVENTIONS.md  # 命名規約
-│   └── CODE_REVIEW_CHECKLIST.md # コードレビューチェックリスト
-└── languages/                 # 多言語対応
-    └── (翻訳ファイル)
-```
-
-## エクスポート/インポート
-
-ゲームデータをJSON形式でエクスポート・インポートできます。
-
-### エクスポート
-1. 管理画面「マイゲーム」からゲームを選択
-2. 「ゲーム設定」タブを開く
-3. 「エクスポート」ボタンをクリック
-4. JSONファイルがダウンロードされます
-
-### インポート
-1. 管理画面「マイゲーム」を開く
-2. 「インポート」タブをクリック
-3. JSONファイルを選択してインポート
-
-**詳細な仕様やトラブルシューティングについては、[JSON インポートガイド](docs/IMPORT_JSON_USER_GUIDE.md) を参照してください。**
-
-最小構成のサンプルファイルは [docs/sample-import.json](docs/sample-import.json) にあります。
-
-### 主な制限事項
-- ファイルサイズ: 最大10MB
-- ファイル形式: JSONのみ (.json)
-- 重複タイトル: 自動でリネームされます
-
-## よくある質問（FAQ）
-
-### バグレポート・機能要望
-- [GitHubのIssue](https://github.com/shokun0803/novel-game-plugin/issues) でご報告ください
-- 再現手順を詳しく記載してください
-- 使用環境（WordPress バージョン、PHP バージョンなど）も併せてお知らせください
-
-### 開発への貢献
-プラグインの開発に参加される方は、[開発者向けガイド](docs/DEVELOPER_GUIDE.md) を参照してください。
-
-### ライセンス
-このプラグインはGPLv2またはそれ以降のバージョンでライセンスされています。  
-詳細は [LICENSE](https://www.gnu.org/licenses/gpl-2.0.html) をご確認ください。
+- docs/DEVELOPER_GUIDE.md
 
 ## サンプルゲーム: Shadow Detective（影の探偵）
 
@@ -426,6 +357,20 @@ Shadow Detective（影の探偵）は、本格推理ゲームのサンプルと�
 - 基本的なノベルゲーム機能
 - カスタム投稿タイプ
 - フロントエンド表示機能
+
+## サポート・貢献
+
+### バグレポート・機能要望
+- [GitHubのIssue](https://github.com/shokun0803/novel-game-plugin/issues) でご報告ください
+- 再現手順を詳しく記載してください
+- 使用環境（WordPress バージョン、PHP バージョンなど）も併せてお知らせください
+
+### 開発への貢献
+プラグインの開発に参加される方は、[開発者向けガイド](docs/DEVELOPER_GUIDE.md) を参照してください。
+
+### ライセンス
+このプラグインはGPLv2またはそれ以降のバージョンでライセンスされています。  
+詳細は [LICENSE](https://www.gnu.org/licenses/gpl-2.0.html) をご確認ください。
 
 ---
 
