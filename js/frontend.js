@@ -18,8 +18,10 @@
 		 */
 		window.novelGameSetDebug = function( enabled ) {
 			window.novelGameDebug = !!enabled;
-			// eslint-disable-next-line no-console -- 初期化前シム: debugLog がまだ利用不可のため直接 console を使用
-			try { console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。（初期化前シム）' ); } catch (e) {}
+			// 許可: 初期化前シムのため debugLog がまだ利用不可（直接 console を使用）
+			if ( typeof console !== 'undefined' && typeof console.log === 'function' ) {
+				console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。（初期化前シム）' );
+			}
 		};
 	}
 
@@ -28,8 +30,10 @@
 		 * 初期化前の簡易版フラグ表示（初期化後に本実装で上書き）
 		 */
 		window.novelGameShowFlags = function() {
-			// eslint-disable-next-line no-console -- 初期化前シム: debugLog がまだ利用不可のため直接 console を使用
-			try { console.warn( 'ゲーム初期化前のため、フラグ一覧は初期化後に再度お試しください。' ); } catch (e) {}
+			// 許可: 初期化前シムのため debugLog がまだ利用不可（直接 console を使用）
+			if ( typeof console !== 'undefined' && typeof console.warn === 'function' ) {
+				console.warn( 'ゲーム初期化前のため、フラグ一覧は初期化後に再度お試しください。' );
+			}
 		};
 	}
 
@@ -471,7 +475,7 @@
 		 *
 		 * @since 1.2.0
 		 */
-		/* eslint-disable no-console -- ユーザーが明示的に呼び出すデバッグユーティリティのため直接 console を使用 */
+		// 許可: ユーザーが明示的に呼び出すデバッグユーティリティのため直接 console を使用
 		window.novelGameShowFlags = function() {
 			if ( ! currentGameTitle ) {
 				console.log( '現在ゲームが読み込まれていません。' );
@@ -495,7 +499,6 @@
 				} );
 			}
 		};
-		/* eslint-enable no-console */
 		
 		/**
 		 * デバッグ用：デバッグモードを有効/無効にする
@@ -510,8 +513,10 @@
 			if ( typeof debugLog !== 'undefined' && typeof debugLog.setEnabled === 'function' ) {
 				debugLog.setEnabled( enabled );
 			}
-			// eslint-disable-next-line no-console -- デバッグモード切替の確認用（ユーザーが明示的に呼び出す）
-			try { console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。' ); } catch (e) {}
+			// 許可: ユーザーが明示的に呼び出すデバッグモード切替の確認用
+			if ( typeof console !== 'undefined' && typeof console.log === 'function' ) {
+				console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。' );
+			}
 		};
 		
 		// 表示設定

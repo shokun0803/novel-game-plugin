@@ -263,41 +263,86 @@ xgettext \
 - `console.warn()` 内の文字列
 - `console.error()` 内の文字列
 
-## ESLint による自動チェック
+## JavaScript の静的チェック（CI）
 
-ESLint の `no-console` ルールにより、`console.*` の直接使用は CI でエラーとなります。
+JavaScript の静的チェックは CI 上で grep ベースの検査を使用しています。以下のパターンを検出します：
 
-### ESLint 設定ファイル（.eslintrc.json）
+### エラーとなるパターン
 
-```json
-{
-  "rules": {
-    "no-console": "error"
-  },
-  "overrides": [
-    {
-      "files": ["js/debug-log.js"],
-      "rules": {
-        "no-console": "off"
-      }
-    }
-  ]
-}
+1. **禁止された console.* の使用**: `debugLog()` 関数を使用してください
+   - 検出パターン: `console\.\(log\|warn\|error\|info\|debug\)`
+   - 例外: `js/debug-log.js`、try-catch ブロック内、`novelGameShowFlags`/`novelGameSetDebug` 関数内
+
+2. **eval() の使用**: セキュリティリスクのため使用禁止
+   - 検出パターン: `\beval\s*\(`
+
+3. **new Function() の使用**: セキュリティリスクのため使用禁止
+   - 検出パターン: `\bnew\s+Function\s*\(`
+
+4. **setTimeout/setInterval での文字列評価**: セキュリティリスクのため使用禁止
+   - 検出パターン: `setTimeout\s*\(\s*["'\`]`
+
+### 警告のみのパターン（ビルドは失敗しない）
+
+1. **innerHTML の使用**: XSS 脆弱性のリスクがあるため警告表示
+   - 検出パターン: `\.innerHTML\s*[+=]`
+   - 推奨: `textContent` を使用するか、適切なエスケープ処理を確認
+
+2. **insertAdjacentHTML の使用**: XSS 脆弱性のリスクがあるため警告表示
+   - 検出パターン: `insertAdjacentHTML\s*\(`
+   - 推奨: 適切なエスケープ処理を確認
+
+### ローカルでのチェック方法
+
+CI と同じチェックをローカルで実行する例。専用スクリプトを使用するか、個別に grep で確認できます：
+
+```bash
+# 専用スクリプトで全パターンをチェック（推奨）
+bash scripts/check-js-patterns.sh
+
+# または個別にチェック（PCRE パターンを使用するため -P オプションが必要）
+# console.* の使用をチェック（debug-log.js 以外）
+find js -name "*.js" -type f ! -name "debug-log.js" -print0 | \
+  xargs -0 grep -nP 'console\.(log|warn|error|info|debug)\b'
+
+# eval() の使用をチェック
+find js -name "*.js" -type f -print0 | \
+  xargs -0 grep -nP '\beval\s*\('
+
+# new Function() の使用をチェック
+find js -name "*.js" -type f -print0 | \
+  xargs -0 grep -nP '\bnew\s+Function\s*\('
+
+# setTimeout/setInterval での文字列評価をチェック
+find js -name "*.js" -type f -print0 | \
+  xargs -0 grep -nP -E 'set(Timeout|Interval)\s*\(\s*["'"'"'`]'
+
+# innerHTML の使用をチェック（警告）
+find js -name "*.js" -type f -print0 | \
+  xargs -0 grep -nP -E '\.innerHTML\s*(\+?=)'
 ```
 
-### ESLint 運用指針
+**注意**: `-P` オプションは PCRE (Perl互換正規表現) を使用します。`\b`（単語境界）や `\s`（空白文字）などのパターンに必要です。
 
-1. **`js/debug-log.js` は例外として扱う**: このファイルは `console.*` を直接呼び出す唯一の場所であり、ESLint の `overrides` で `no-console` ルールを無効化しています。
+### console.* の許可される使用例
 
-2. **初期化前シムの例外**: `frontend.js` の初期化前シム（`window.novelGameSetDebug` や `window.novelGameShowFlags` の初期定義）では、`debugLog` がまだ利用できないため `console.*` を直接使用する必要があります。これらの箇所には `eslint-disable-next-line no-console` コメントを付与し、理由を明記してください。
+以下のコンテキストでは `console.*` の使用が許可されます：
 
-3. **コード内での例外指定方法**:
-```javascript
-// eslint-disable-next-line no-console -- 初期化前シム: debugLog がまだ利用不可のため直接 console を使用
-try { console.log( 'メッセージ' ); } catch (e) {}
-```
-
-4. **ユーザーが明示的に呼び出すデバッグユーティリティ**: `window.novelGameShowFlags()` などのユーザー向けデバッグ機能では、`/* eslint-disable no-console */` ブロックを使用できます。
+1. **`js/debug-log.js`**: debugLog 実装のため
+2. **明示的な console チェック**: 初期化前シムなど
+   ```javascript
+   // 許可: 初期化前シムのため debugLog がまだ利用不可
+   if ( typeof console !== 'undefined' && typeof console.log === 'function' ) {
+     console.log( 'メッセージ' );
+   }
+   ```
+3. **デバッグユーティリティ関数内**: `novelGameShowFlags`、`novelGameSetDebug`
+   ```javascript
+   // 許可: ユーザーが明示的に呼び出すデバッグユーティリティ
+   window.novelGameShowFlags = function() {
+     console.log( 'デバッグ情報' );
+   };
+   ```
 
 ## チェックリスト
 
@@ -311,6 +356,8 @@ try { console.log( 'メッセージ' ); } catch (e) {}
 - [ ] PHP側で翻訳した文字列は適切にエスケープされているか（`esc_html__`, `esc_attr__` など）
 - [ ] ログメッセージに機密情報（パスワード、トークン等）が含まれていないか
 - [ ] 各 JS ファイルに `debugLog` のローカル定義が重複していないか（`js/debug-log.js` を使用）
+- [ ] eval()、new Function()、文字列評価の setTimeout/setInterval を使用していないか
+- [ ] innerHTML/insertAdjacentHTML を使用する場合は適切なエスケープ処理を実施しているか
 
 ## 参考リンク
 

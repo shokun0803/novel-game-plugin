@@ -264,6 +264,9 @@ cd novel-game-plugin
 git checkout -b feature/new-feature
 ```
 
+**Node.js/npm は不要です**  
+このプラグインは WordPress プラグインとして、Node.js や npm を必要としない運用方針を採用しています。JavaScript の静的チェックは CI 上で grep ベースのチェックを使用しており、ローカル開発環境に Node.js をインストールする必要はありません。
+
 ### コーディング規約
 - WordPress公式コーディング規約に準拠
 - 全ての関数・クラスに `noveltool_` プレフィックス
@@ -271,6 +274,50 @@ git checkout -b feature/new-feature
 - セキュリティ対策の実装必須
 
 詳細な命名規約については、[命名規約ガイドライン](docs/NAMING_CONVENTIONS.md) を参照してください。
+
+### JavaScript コードチェック
+
+JavaScript コードの品質チェックは、CI（GitHub Actions）で自動的に実行される grep ベースのチェックによって行われます。
+
+#### エラーとなるパターン
+
+- **禁止された console.* の使用**: `debugLog()` 関数を使用してください
+- **eval() の使用**: セキュリティリスクのため使用禁止
+- **new Function() の使用**: セキュリティリスクのため使用禁止
+- **setTimeout/setInterval での文字列評価**: セキュリティリスクのため使用禁止
+
+#### 警告のみのパターン（ビルドは失敗しません）
+
+- **innerHTML の使用**: XSS 脆弱性のリスクがあるため警告表示（適切なエスケープ処理を確認してください）
+- **insertAdjacentHTML の使用**: XSS 脆弱性のリスクがあるため警告表示（適切なエスケープ処理を確認してください）
+
+#### ローカルでのチェック方法（任意）
+
+CI と同じチェックをローカルで実行できます。専用スクリプトを使用するか、個別に grep で確認できます：
+
+```bash
+# 専用スクリプトで全パターンをチェック（推奨）
+bash scripts/check-js-patterns.sh
+
+# または個別にチェック（PCRE パターンを使用するため -P オプションが必要）
+# console.* の使用をチェック（debug-log.js 以外）
+find js -name "*.js" -type f ! -name "debug-log.js" -print0 | \
+  xargs -0 grep -nP 'console\.(log|warn|error|info|debug)\b'
+
+# eval() の使用をチェック
+find js -name "*.js" -type f -print0 | xargs -0 grep -nP '\beval\s*\('
+
+# new Function() の使用をチェック
+find js -name "*.js" -type f -print0 | xargs -0 grep -nP '\bnew\s+Function\s*\('
+
+# innerHTML の使用をチェック（警告）
+find js -name "*.js" -type f -print0 | xargs -0 grep -nP -E '\.innerHTML\s*(\+?=)'
+```
+
+**注意**: `-P` オプションは PCRE (Perl互換正規表現) を使用します。`\b`（単語境界）や `\s`（空白文字）などのパターンに必要です。
+
+詳細は [開発者向けログメッセージガイドライン](docs/DEVELOPER_LOGGING_GUIDELINES.md) を参照してください.
+
 
 ### コードレビュー
 
@@ -282,7 +329,7 @@ git checkout -b feature/new-feature
 
 **重要なポイント:**
 - ユーザー向けメッセージは必ず翻訳関数（`__()`, `_e()` など）を使用
-- 開発者向けデバッグログは `debugLog()` または `console.log()` を使用（翻訳不要）
+- 開発者向けデバッグログは `debugLog()` 関数を使用（翻訳不要）
 - フロントエンドでは `debugLog()` 関数を使用することで、本番環境でのログ出力を制御可能
 
 ### 翻訳ファイルの更新手順
