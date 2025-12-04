@@ -8,6 +8,23 @@
 
 WordPressでサウンドノベル・ビジュアルノベルゲームを作成・公開できる包括的なプラグインです。「弟切草」や「かまいたちの夜」のような分岐型ノベルゲームを簡単に作成できます。
 
+## 目次
+
+- [主な機能](#主な機能)
+- [インストール](#インストール)
+- [使い方](#使い方)
+  - [管理画面の使い方](#管理画面の使い方v120以降)
+  - [基本的なワークフロー](#基本的なワークフロー)
+  - [条件付きセリフ表示機能](#条件付きセリフ表示機能)
+  - [セリフごとのキャラクター立ち絵差し替え機能](#セリフごとのキャラクター立ち絵差し替え機能)
+  - [ショートコード使用例](#ショートコード使用例)
+- [エクスポート/インポート](#エクスポートインポート)
+- [よくある質問（FAQ）](#よくある質問faq)
+- [開発者向け情報](#開発者向け情報)
+- [サンプルゲーム: Shadow Detective](#サンプルゲーム-shadow-detective影の探偵)
+- [更新履歴](#更新履歴)
+- [サポート・貢献](#サポート貢献)
+
 ## 主な機能
 
 ### 🎮 ゲーム作成機能
@@ -228,7 +245,57 @@ $dialogue_characters = array(
 - `show_title` - ゲームタイトル表示（true/false）
 - `show_date` - 日付表示（true/false）
 
-## ディレクトリ構成
+## エクスポート/インポート
+
+ゲームデータをJSON形式でエクスポート・インポートできます。
+
+### エクスポート
+1. 管理画面「マイゲーム」からゲームを選択
+2. 「ゲーム設定」タブを開く
+3. 「エクスポート」ボタンをクリック
+4. JSONファイルがダウンロードされます
+
+### インポート
+1. 管理画面「マイゲーム」を開く
+2. 「インポート」タブをクリック
+3. JSONファイルを選択してインポート
+
+**詳細な仕様やトラブルシューティングについては、[JSON インポートガイド](docs/IMPORT_JSON_USER_GUIDE.md) を参照してください。**
+
+最小構成のサンプルファイルは [docs/sample-import.json](docs/sample-import.json) にあります。
+
+### 主な制限事項
+- ファイルサイズ: 最大10MB
+- ファイル形式: JSONのみ (.json)
+- 重複タイトル: 自動でリネームされます
+
+## よくある質問（FAQ）
+
+### Q1. プラグインを有効化すると何が起こりますか？
+A1. プラグインを初めて有効化すると、学習用のサンプルゲーム（Sample Novel Game と Shadow Detective）が自動的にインストールされます。これらは通常のゲームと同様に編集・削除が可能です。
+
+### Q2. サンプルゲームは削除できますか？
+A2. はい、通常のゲームと同様に削除できます。「マイゲーム」から各ゲームを選択し、「ゲーム設定」タブから削除してください。
+
+### Q3. ゲームを公開するにはどうすればいいですか？
+A3. シーンを作成後、そのシーンの「プレビュー」リンクからゲーム画面にアクセスできます。また、ショートコード `[novel_game_posts game_title="ゲーム名"]` を使用して任意の固定ページや投稿に埋め込むこともできます。
+
+### Q4. 複数のエンディングを作成できますか？
+A4. はい。選択肢機能を使用して、プレイヤーの選択に応じた複雑な分岐ストーリーを作成できます。Shadow Detective サンプルゲームが参考になります。
+
+### Q5. 翻訳に対応していますか？
+A5. はい。プラグインは国際化（i18n）に完全対応しており、複数言語でのゲーム制作が可能です。
+
+## 開発者向け情報
+
+プラグインの開発に参加する開発者向けの詳細な情報は、以下のドキュメントを参照してください：
+
+- **[開発者向けガイド](docs/DEVELOPER_GUIDE.md)** - 開発環境セットアップ、コーディング規約、翻訳ファイルの更新手順など
+- **[命名規約ガイドライン](docs/NAMING_CONVENTIONS.md)** - PHP/JavaScript/CSS の詳細な命名規約
+- **[コードレビューチェックリスト](docs/CODE_REVIEW_CHECKLIST.md)** - プルリクエストレビュー時のチェック項目
+- **[開発者向けログメッセージガイドライン](docs/DEVELOPER_LOGGING_GUIDELINES.md)** - ログとデバッグ機能の使い方
+
+### ディレクトリ構成
 
 ```
 novel-game-plugin/
@@ -248,244 +315,25 @@ novel-game-plugin/
 │   ├── admin.js               # 管理画面基本機能
 │   ├── admin-game-settings.js # ゲーム設定画面
 │   └── admin-meta-boxes.js    # メタボックス機能
+├── docs/                      # ドキュメント
+│   ├── DEVELOPER_GUIDE.md     # 開発者向けガイド
+│   ├── NAMING_CONVENTIONS.md  # 命名規約
+│   └── CODE_REVIEW_CHECKLIST.md # コードレビューチェックリスト
 └── languages/                 # 多言語対応
     └── (翻訳ファイル)
 ```
 
-## 開発者向け情報
-
-### 開発環境セットアップ
-```bash
-# 開発版の取得
-git clone https://github.com/shokun0803/novel-game-plugin.git
-cd novel-game-plugin
-
-# 開発ブランチで作業
-git checkout -b feature/new-feature
-```
-
-**Node.js/npm は不要です**  
-このプラグインは WordPress プラグインとして、Node.js や npm を必要としない運用方針を採用しています。JavaScript の静的チェックは CI 上で grep ベースのチェックを使用しており、ローカル開発環境に Node.js をインストールする必要はありません。
-
-### コーディング規約
-- WordPress公式コーディング規約に準拠
-- 全ての関数・クラスに `noveltool_` プレフィックス
-- PHPDocコメントの記述必須
-- セキュリティ対策の実装必須
-
-詳細な命名規約については、[命名規約ガイドライン](docs/NAMING_CONVENTIONS.md) を参照してください。
-
-### JavaScript コードチェック
-
-JavaScript コードの品質チェックは、CI（GitHub Actions）で自動的に実行される grep ベースのチェックによって行われます。
-
-#### エラーとなるパターン
-
-- **禁止された console.* の使用**: `debugLog()` 関数を使用してください
-- **eval() の使用**: セキュリティリスクのため使用禁止
-- **new Function() の使用**: セキュリティリスクのため使用禁止
-- **setTimeout/setInterval での文字列評価**: セキュリティリスクのため使用禁止
-
-#### 警告のみのパターン（ビルドは失敗しません）
-
-- **innerHTML の使用**: XSS 脆弱性のリスクがあるため警告表示（適切なエスケープ処理を確認してください）
-- **insertAdjacentHTML の使用**: XSS 脆弱性のリスクがあるため警告表示（適切なエスケープ処理を確認してください）
-
-#### ローカルでのチェック方法（任意）
-
-CI と同じチェックをローカルで実行できます。専用スクリプトを使用するか、個別に grep で確認できます：
-
-```bash
-# 専用スクリプトで全パターンをチェック（推奨）
-bash scripts/check-js-patterns.sh
-
-# または個別にチェック（PCRE パターンを使用するため -P オプションが必要）
-# console.* の使用をチェック（debug-log.js 以外）
-find js -name "*.js" -type f ! -name "debug-log.js" -print0 | \
-  xargs -0 grep -nP 'console\.(log|warn|error|info|debug)\b'
-
-# eval() の使用をチェック
-find js -name "*.js" -type f -print0 | xargs -0 grep -nP '\beval\s*\('
-
-# new Function() の使用をチェック
-find js -name "*.js" -type f -print0 | xargs -0 grep -nP '\bnew\s+Function\s*\('
-
-# innerHTML の使用をチェック（警告）
-find js -name "*.js" -type f -print0 | xargs -0 grep -nP -E '\.innerHTML\s*(\+?=)'
-```
-
-**注意**: `-P` オプションは PCRE (Perl互換正規表現) を使用します。`\b`（単語境界）や `\s`（空白文字）などのパターンに必要です。
-
-詳細は [開発者向けログメッセージガイドライン](docs/DEVELOPER_LOGGING_GUIDELINES.md) を参照してください.
-
-
-### コードレビュー
-
-プルリクエストのレビュー時には、[コードレビューチェックリスト](docs/CODE_REVIEW_CHECKLIST.md) を活用してください。
-
-### 開発者向けログメッセージとデバッグ機能
-
-開発者向けログメッセージとユーザー向け翻訳文字列の適切な使い分けについては、[開発者向けログメッセージガイドライン](docs/DEVELOPER_LOGGING_GUIDELINES.md) を参照してください。
-
-**重要なポイント:**
-- ユーザー向けメッセージは必ず翻訳関数（`__()`, `_e()` など）を使用
-- 開発者向けデバッグログは `debugLog()` 関数を使用（翻訳不要）
-- フロントエンドでは `debugLog()` 関数を使用することで、本番環境でのログ出力を制御可能
-
-### 翻訳ファイルの更新手順
-
-このプラグインは国際化（i18n）に対応しており、textdomain `novel-game-plugin` を使用しています。
-
-#### 翻訳可能文字列の追加
-新しい翻訳可能文字列を追加する際は、必ず `novel-game-plugin` を textdomain として指定してください：
-
-**重要: WordPress.org 標準準拠のため、ソースコードの文字列は英語で記述してください。**
-
-```php
-// PHP での例（英語で記述）
-__( 'Translatable string', 'novel-game-plugin' )
-_e( 'Translatable string', 'novel-game-plugin' )
-esc_html__( 'Translatable string', 'novel-game-plugin' )
-esc_attr__( 'Translatable string', 'novel-game-plugin' )
-```
-
-```javascript
-// JavaScript (wp.i18n) での例（英語で記述）
-__( 'Translatable string', 'novel-game-plugin' )
-```
-
-#### .pot ファイルの更新
-翻訳可能文字列を追加・変更したら、以下のコマンドで .pot ファイルを更新してください：
-
-**重要**: メイン POT の生成時は `includes/sample-data.php` を除外してください（サンプルデータは別ドメイン）。
-
-```bash
-# メインプラグイン用 POT ファイル生成（sample-data.php を除外）
-find . -name "*.php" \
-  -not -path "./languages/*" \
-  -not -path "./node_modules/*" \
-  -not -path "./.git/*" \
-  -not -path "./includes/sample-data.php" \
-  -print0 | xargs -0 xgettext \
-  --default-domain=novel-game-plugin \
-  --from-code=UTF-8 \
-  --language=PHP \
-  --keyword=__ \
-  --keyword=_e \
-  --keyword=_x:1,2c \
-  --keyword=_n:1,2 \
-  --keyword=_nx:1,2,4c \
-  --keyword=esc_html__ \
-  --keyword=esc_html_e \
-  --keyword=esc_attr__ \
-  --keyword=esc_attr_e \
-  --add-comments=translators \
-  --package-name="Novel Game Plugin" \
-  --package-version="1.3.0" \
-  --msgid-bugs-address="https://github.com/shokun0803/novel-game-plugin/issues" \
-  --output=languages/novel-game-plugin.pot
-```
-
-#### .po / .mo ファイルの更新
-
-**重要**: 翻訳ファイルを更新する前に、必ずバックアップを作成してください。
-
-```bash
-# バックアップの作成
-cp languages/novel-game-plugin-ja.po languages/novel-game-plugin-ja.po.bak
-
-# 既存の .po ファイルを .pot から更新（既存翻訳を保持しながらマージ）
-msgmerge --update --backup=none languages/novel-game-plugin-ja.po languages/novel-game-plugin.pot
-
-# .mo ファイルのコンパイル
-# WordPress環境の互換性のため、ja.mo と ja_JP.mo の両方を生成します
-msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja.mo
-msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja_JP.mo
-```
-
-**注意**: 日本語翻訳ファイルについて
-- WordPress環境によっては `ja.mo` または `ja_JP.mo` のいずれかのみが読み込まれる場合があります
-- 互換性を確保するため、両方のファイルを生成・同梱することを推奨します
-- これにより、異なるWordPress環境での翻訳表示が確実になります
-
-#### 新しい言語の追加
-```bash
-# 新しい言語の .po ファイルを作成（例: 英語）
-msginit --input=languages/novel-game-plugin.pot \
-  --locale=en_US \
-  --output=languages/novel-game-plugin-en_US.po
-
-# 翻訳後、.mo ファイルにコンパイル
-msgfmt languages/novel-game-plugin-en_US.po -o languages/novel-game-plugin-en_US.mo
-```
-
-#### サンプルデータの翻訳ファイル
-サンプルゲーム（Shadow Detective）の翻訳は、UI翻訳とは別のテキストドメイン `novel-game-plugin-sample` に分離されています。
-
-**サンプルデータ用POTファイルの生成:**
-```bash
-# includes/sample-data.php から POT ファイルを生成
-xgettext \
-  --default-domain=novel-game-plugin-sample \
-  --from-code=UTF-8 \
-  --language=PHP \
-  --keyword=__ \
-  --keyword=_e \
-  --keyword=_x:1,2c \
-  --keyword=_n:1,2 \
-  --keyword=_nx:1,2,4c \
-  --keyword=esc_html__ \
-  --keyword=esc_html_e \
-  --keyword=esc_attr__ \
-  --keyword=esc_attr_e \
-  --add-comments=translators \
-  --package-name="Novel Game Plugin - Sample Data" \
-  --package-version="1.3.0" \
-  --msgid-bugs-address="https://github.com/shokun0803/novel-game-plugin/issues" \
-  --output=languages/novel-game-plugin-sample.pot \
-  includes/sample-data.php
-```
-
-**サンプルデータ用翻訳ファイルの更新:**
-
-**重要**: 翻訳ファイルを更新する前に、必ずバックアップを作成してください。
-
-```bash
-# バックアップの作成
-cp languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample-ja.po.bak
-
-# 既存の .po ファイルを .pot から更新（既存翻訳を保持しながらマージ）
-msgmerge --update --backup=none languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample.pot
-
-# .mo ファイルのコンパイル（ja.mo と ja_JP.mo の両方を生成）
-msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja.mo
-msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja_JP.mo
-```
-
-**注意**: 
-- サンプルデータの翻訳は `includes/sample-data.php` のみに含まれます
-- UI翻訳（`novel-game-plugin`）とサンプルデータ翻訳（`novel-game-plugin-sample`）は独立して管理されます
-- これによりサンプルデータの翻訳更新がUI翻訳に影響を与えることを防ぎます
-- `msgmerge` を使用することで、既存の翻訳を失わずに新しい文字列を追加できます
-
-### フック・フィルター
-プラグインでは以下のWordPressフックを利用：
-- `init` - 投稿タイプ登録
-- `admin_menu` - 管理画面メニュー
-- `the_content` - コンテンツフィルター
-- `template_include` - テンプレート読み込み
-
-### エクスポート/インポート
+## エクスポート/インポート
 
 ゲームデータをJSON形式でエクスポート・インポートできます。
 
-#### エクスポート
+### エクスポート
 1. 管理画面「マイゲーム」からゲームを選択
 2. 「ゲーム設定」タブを開く
 3. 「エクスポート」ボタンをクリック
 4. JSONファイルがダウンロードされます
 
-#### インポート
+### インポート
 1. 管理画面「マイゲーム」を開く
 2. 「インポート」タブをクリック
 3. JSONファイルを選択してインポート
@@ -494,22 +342,20 @@ msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-s
 
 最小構成のサンプルファイルは [docs/sample-import.json](docs/sample-import.json) にあります。
 
-#### 主な制限事項
+### 主な制限事項
 - ファイルサイズ: 最大10MB
 - ファイル形式: JSONのみ (.json)
 - 重複タイトル: 自動でリネームされます
 
-## 貢献・サポート
+## よくある質問（FAQ）
 
 ### バグレポート・機能要望
-- GitHubのIssueでご報告ください
+- [GitHubのIssue](https://github.com/shokun0803/novel-game-plugin/issues) でご報告ください
 - 再現手順を詳しく記載してください
+- 使用環境（WordPress バージョン、PHP バージョンなど）も併せてお知らせください
 
 ### 開発への貢献
-1. リポジトリをフォーク
-2. 機能ブランチを作成
-3. 変更をコミット
-4. プルリクエストを作成
+プラグインの開発に参加される方は、[開発者向けガイド](docs/DEVELOPER_GUIDE.md) を参照してください。
 
 ### ライセンス
 このプラグインはGPLv2またはそれ以降のバージョンでライセンスされています。  
