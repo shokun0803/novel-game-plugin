@@ -581,7 +581,7 @@ function noveltool_game_manager_admin_styles( $hook ) {
     // カラーピッカーのスタイルとスクリプトを読み込み
     wp_enqueue_style( 'wp-color-picker' );
     wp_enqueue_script(
-        'noveltool-game-manager-admin',
+        'noveltool-game-manager-admin-script',
         NOVEL_GAME_PLUGIN_URL . 'js/admin-game-manager.js',
         array( 'jquery', 'wp-color-picker' ),
         NOVEL_GAME_PLUGIN_VERSION,
