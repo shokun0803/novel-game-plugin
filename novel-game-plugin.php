@@ -1345,17 +1345,22 @@ function noveltool_game_posts_shortcode( $atts ) {
         $game_title_image = ! empty( $game['title_image'] ) ? $game['title_image'] : '';
     }
     
-    // タイトル表示設定を取得
-    $show_title_overlay = get_post_meta( $game['id'], 'noveltool_show_title_overlay', true );
-    // デフォルトはオン（既存の動作を維持）
-    if ( $show_title_overlay === '' ) {
-        $show_title_overlay = '1';
-    }
+    // タイトル表示設定を取得（ゲームが存在する場合のみ）
+    $show_title_overlay = '1'; // デフォルトはオン
+    $title_text_color = '#ffffff'; // デフォルトは白
     
-    // タイトル文字色を取得
-    $title_text_color = get_post_meta( $game['id'], 'noveltool_title_text_color', true );
-    if ( empty( $title_text_color ) ) {
-        $title_text_color = '#ffffff';
+    if ( $game && isset( $game['id'] ) ) {
+        $show_title_overlay = get_post_meta( $game['id'], 'noveltool_show_title_overlay', true );
+        // デフォルトはオン（既存の動作を維持）
+        if ( $show_title_overlay === '' ) {
+            $show_title_overlay = '1';
+        }
+        
+        // タイトル文字色を取得
+        $title_text_color = get_post_meta( $game['id'], 'noveltool_title_text_color', true );
+        if ( empty( $title_text_color ) ) {
+            $title_text_color = '#ffffff';
+        }
     }
     
     // 表示用の画像を決定：タイトル画像を優先、なければ最初のシーンの背景画像
@@ -1783,7 +1788,6 @@ function noveltool_shortcode_styles() {
         color: white;
         /* 強力な縁取りと影で可読性を確保（画像を覆わない） */
         -webkit-text-stroke: 2px rgba(0, 0, 0, 0.9);
-        text-stroke: 2px rgba(0, 0, 0, 0.9);
         text-shadow:
             3px 3px 6px rgba(0, 0, 0, 0.9),
             -1px -1px 4px rgba(0, 0, 0, 0.8),
@@ -1794,7 +1798,7 @@ function noveltool_shortcode_styles() {
     }
     
     /* Webkit非対応ブラウザ向けフォールバック */
-    @supports not ((-webkit-text-stroke: 2px black) or (text-stroke: 2px black)) {
+    @supports not (-webkit-text-stroke: 2px black) {
         .noveltool-game-hero-title {
             text-shadow:
                 0 0 8px rgba(0, 0, 0, 0.9),
