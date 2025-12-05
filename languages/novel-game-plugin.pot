@@ -1737,6 +1737,26 @@ msgstr ""
 msgid "Start: %s"
 msgstr ""
 
+#: admin/game-manager.php:370
+msgid "Title Display on Image"
+msgstr ""
+
+#: admin/game-manager.php:386
+msgid "Display title overlaid on title image"
+msgstr ""
+
+#: admin/game-manager.php:388
+msgid "Uncheck this if your title image already includes the game title to avoid duplication."
+msgstr ""
+
+#: admin/game-manager.php:394
+msgid "Title Text Color"
+msgstr ""
+
+#: admin/game-manager.php:409
+msgid "Choose the color for the title text. Automatic contrast enhancement (text stroke and shadow) will be applied for readability."
+msgstr ""
+
 #: admin/export-import.php:28 includes/post-types.php:333
 #: includes/post-types.php:334
 msgid "Export/Import"

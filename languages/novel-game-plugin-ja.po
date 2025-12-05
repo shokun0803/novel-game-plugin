@@ -1807,6 +1807,26 @@ msgstr "画像なし"
 msgid "Start: %s"
 msgstr "開始: %s"
 
+#: admin/game-manager.php:370
+msgid "Title Display on Image"
+msgstr "画像上のタイトル表示"
+
+#: admin/game-manager.php:386
+msgid "Display title overlaid on title image"
+msgstr "タイトル画像にタイトルを重ねて表示する"
+
+#: admin/game-manager.php:388
+msgid "Uncheck this if your title image already includes the game title to avoid duplication."
+msgstr "タイトル画像に既にゲームタイトルが含まれている場合は、重複を避けるためチェックを外してください。"
+
+#: admin/game-manager.php:394
+msgid "Title Text Color"
+msgstr "タイトル文字の色"
+
+#: admin/game-manager.php:409
+msgid "Choose the color for the title text. Automatic contrast enhancement (text stroke and shadow) will be applied for readability."
+msgstr "タイトル文字の色を選択してください。可読性向上のため、自動的にコントラスト強調（縁取りと影）が適用されます。"
+
 #~ msgid ""
 #~ "\"I can't repay the debt to them. I don't want to trouble my family.\""
 #~ msgstr "「彼らからの借金を返せない。家族に迷惑をかけたくない。」"
