@@ -148,6 +148,18 @@ function noveltool_admin_post_update_game() {
     
     // post metaに保存
     update_post_meta( $game_id, 'noveltool_ad_provider', $ad_provider );
+    
+    // タイトル表示設定の保存
+    $show_title_overlay = isset( $_POST['show_title_overlay'] ) ? '1' : '0';
+    update_post_meta( $game_id, 'noveltool_show_title_overlay', $show_title_overlay );
+    
+    // タイトル文字色の保存
+    $title_text_color = isset( $_POST['title_text_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['title_text_color'] ) ) : '#ffffff';
+    // 色コードのバリデーション（無効な場合は白をデフォルトにする）
+    if ( empty( $title_text_color ) ) {
+        $title_text_color = '#ffffff';
+    }
+    update_post_meta( $game_id, 'noveltool_title_text_color', $title_text_color );
 
     if ( $result ) {
         // タイトルが変更された場合は、既存のシーンのゲームタイトルも更新
