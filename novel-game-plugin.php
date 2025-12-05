@@ -1345,6 +1345,24 @@ function noveltool_game_posts_shortcode( $atts ) {
         $game_title_image = ! empty( $game['title_image'] ) ? $game['title_image'] : '';
     }
     
+    // タイトル表示設定を取得（ゲームが存在する場合のみ）
+    $show_title_overlay = '1'; // デフォルトはオン
+    $title_text_color = '#ffffff'; // デフォルトは白
+    
+    if ( $game && isset( $game['id'] ) ) {
+        $show_title_overlay = get_post_meta( $game['id'], 'noveltool_show_title_overlay', true );
+        // デフォルトはオン（既存の動作を維持）
+        if ( $show_title_overlay === '' ) {
+            $show_title_overlay = '1';
+        }
+        
+        // タイトル文字色を取得
+        $title_text_color = get_post_meta( $game['id'], 'noveltool_title_text_color', true );
+        if ( empty( $title_text_color ) ) {
+            $title_text_color = '#ffffff';
+        }
+    }
+    
     // 表示用の画像を決定：タイトル画像を優先、なければ最初のシーンの背景画像
     $display_image = ! empty( $game_title_image ) ? $game_title_image : $background;
     
@@ -1355,9 +1373,10 @@ function noveltool_game_posts_shortcode( $atts ) {
     
     // 背景画像とタイトルのオーバーレイ表示
     if ( $display_image ) {
-        echo '<div class="noveltool-game-hero" style="background-image: url(\'' . esc_url( $display_image ) . '\');">';
+        echo '<div class="noveltool-game-hero" style="background-image: url(\'' . esc_url( $display_image ) . '\'); --noveltool-title-color: ' . esc_attr( $title_text_color ) . ';">';
         echo '<div class="noveltool-game-hero-overlay">';
-        if ( $show_title ) {
+        // タイトルオーバーレイ設定がオンで、かつshow_titleもtrueの場合のみ表示
+        if ( $show_title && $show_title_overlay === '1' ) {
             echo '<h1 class="noveltool-game-hero-title">' . esc_html( $game_title ) . '</h1>';
         }
         echo '</div>'; // .noveltool-game-hero-overlay
@@ -1757,7 +1776,6 @@ function noveltool_shortcode_styles() {
         bottom: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
         padding: 40px 30px 30px;
         color: white;
     }
@@ -1766,8 +1784,34 @@ function noveltool_shortcode_styles() {
         margin: 0;
         font-size: 2.5em;
         font-weight: bold;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
         line-height: 1.2;
+        /* CSS カスタムプロパティで色を設定（デフォルトは白） */
+        color: var(--noveltool-title-color, #ffffff);
+        /* 強力な縁取りと影で可読性を確保（画像を覆わない） */
+        -webkit-text-stroke: 2px rgba(0, 0, 0, 0.9);
+        /* paint-order: stroke fill はブラウザサポートが限定的だが、対応ブラウザでは縁取りを背後に配置 */
+        paint-order: stroke fill;
+        text-shadow:
+            3px 3px 6px rgba(0, 0, 0, 0.9),
+            -1px -1px 4px rgba(0, 0, 0, 0.8),
+            1px -1px 4px rgba(0, 0, 0, 0.8),
+            -1px 1px 4px rgba(0, 0, 0, 0.8),
+            1px 1px 4px rgba(0, 0, 0, 0.8);
+    }
+    
+    /* Webkit非対応ブラウザ向けフォールバック：多重text-shadowで擬似縁取りを実現 */
+    @supports not (-webkit-text-stroke: 2px black) {
+        .noveltool-game-hero-title {
+            /* 縁取り効果のための多重text-shadow */
+            text-shadow:
+                0 0 6px rgba(0, 0, 0, 0.9),
+                0 0 6px rgba(0, 0, 0, 0.9),
+                2px 2px 4px rgba(0, 0, 0, 0.9),
+                -2px -2px 4px rgba(0, 0, 0, 0.9),
+                2px -2px 4px rgba(0, 0, 0, 0.9),
+                -2px 2px 4px rgba(0, 0, 0, 0.9),
+                3px 3px 6px rgba(0, 0, 0, 0.9);
+        }
     }
     
     .noveltool-game-title-fallback {
@@ -1839,6 +1883,8 @@ function noveltool_shortcode_styles() {
         
         .noveltool-game-hero-title {
             font-size: 1.8em;
+            /* タブレット・モバイルでは縁取りを少し細く */
+            -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.9);
         }
         
         .noveltool-game-title-fallback {
@@ -1869,6 +1915,8 @@ function noveltool_shortcode_styles() {
         
         .noveltool-game-hero-title {
             font-size: 1.5em;
+            /* 小画面では縁取りをさらに細く */
+            -webkit-text-stroke: 1px rgba(0, 0, 0, 0.9);
         }
         
         .noveltool-game-hero-overlay {

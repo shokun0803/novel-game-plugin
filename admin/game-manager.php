@@ -364,6 +364,51 @@ function noveltool_render_game_settings_tab( $game ) {
                         <p class="description"><?php esc_html_e( 'Text displayed when there are no choices or next scenes in a non-ending. Default is "Game Over".', 'novel-game-plugin' ); ?></p>
                     </td>
                 </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="show_title_overlay"><?php esc_html_e( 'Title Display on Image', 'novel-game-plugin' ); ?></label>
+                    </th>
+                    <td>
+                        <?php
+                        $show_title_overlay = get_post_meta( $editing_game['id'], 'noveltool_show_title_overlay', true );
+                        // デフォルトはオン（既存の動作を維持）
+                        if ( $show_title_overlay === '' ) {
+                            $show_title_overlay = '1';
+                        }
+                        ?>
+                        <label>
+                            <input type="checkbox" 
+                                   id="show_title_overlay" 
+                                   name="show_title_overlay" 
+                                   value="1" 
+                                   <?php checked( $show_title_overlay, '1' ); ?> />
+                            <?php esc_html_e( 'Display title overlaid on title image', 'novel-game-plugin' ); ?>
+                        </label>
+                        <p class="description"><?php esc_html_e( 'Uncheck this if your title image already includes the game title to avoid duplication.', 'novel-game-plugin' ); ?></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="title_text_color"><?php esc_html_e( 'Title Text Color', 'novel-game-plugin' ); ?></label>
+                    </th>
+                    <td>
+                        <?php
+                        $title_text_color = get_post_meta( $editing_game['id'], 'noveltool_title_text_color', true );
+                        // デフォルトは白色
+                        if ( empty( $title_text_color ) ) {
+                            $title_text_color = '#ffffff';
+                        }
+                        ?>
+                        <input type="text" 
+                               id="title_text_color" 
+                               name="title_text_color" 
+                               value="<?php echo esc_attr( $title_text_color ); ?>" 
+                               class="noveltool-color-picker" />
+                        <p class="description"><?php esc_html_e( 'Choose the color for the title text. Automatic contrast enhancement (text stroke and shadow) will be applied for readability.', 'novel-game-plugin' ); ?></p>
+                    </td>
+                </tr>
             </table>
 
             <h3><?php esc_html_e( 'Ad Settings', 'novel-game-plugin' ); ?></h3>
@@ -531,6 +576,16 @@ function noveltool_game_manager_admin_styles( $hook ) {
         NOVEL_GAME_PLUGIN_URL . 'css/admin-game-manager.css',
         array(),
         NOVEL_GAME_PLUGIN_VERSION
+    );
+    
+    // カラーピッカーのスタイルとスクリプトを読み込み
+    wp_enqueue_style( 'wp-color-picker' );
+    wp_enqueue_script(
+        'noveltool-game-manager-admin-script',
+        NOVEL_GAME_PLUGIN_URL . 'js/admin-game-manager.js',
+        array( 'jquery', 'wp-color-picker' ),
+        NOVEL_GAME_PLUGIN_VERSION,
+        true
     );
 }
 add_action( 'admin_enqueue_scripts', 'noveltool_game_manager_admin_styles' );

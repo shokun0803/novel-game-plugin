@@ -135,8 +135,6 @@ function noveltool_admin_post_update_game() {
         'game_over_text' => $game_over_text,
     );
 
-    $result = noveltool_save_game( $game_data );
-
     // 広告プロバイダーの取得とバリデーション
     $ad_provider = isset( $_POST['ad_provider'] ) ? sanitize_text_field( wp_unslash( $_POST['ad_provider'] ) ) : '';
     
@@ -146,8 +144,24 @@ function noveltool_admin_post_update_game() {
         $ad_provider = 'none';
     }
     
-    // post metaに保存
-    update_post_meta( $game_id, 'noveltool_ad_provider', $ad_provider );
+    // タイトル表示設定の取得
+    $show_title_overlay = isset( $_POST['show_title_overlay'] ) ? '1' : '0';
+    
+    // タイトル文字色の取得とバリデーション
+    $title_text_color = isset( $_POST['title_text_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['title_text_color'] ) ) : '#ffffff';
+    // 色コードのバリデーション（無効な場合は白をデフォルトにする）
+    if ( empty( $title_text_color ) ) {
+        $title_text_color = '#ffffff';
+    }
+    
+    $result = noveltool_save_game( $game_data );
+
+    // ゲーム保存が成功した場合のみ、post metaを更新
+    if ( $game_id && $result ) {
+        update_post_meta( $game_id, 'noveltool_ad_provider', $ad_provider );
+        update_post_meta( $game_id, 'noveltool_show_title_overlay', $show_title_overlay );
+        update_post_meta( $game_id, 'noveltool_title_text_color', $title_text_color );
+    }
 
     if ( $result ) {
         // タイトルが変更された場合は、既存のシーンのゲームタイトルも更新

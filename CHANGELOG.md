@@ -2,6 +2,18 @@
 
 All notable changes to Novel Game Plugin will be documented in this file.
 
+## [Unreleased]
+
+### Added (追加機能)
+
+- **タイトル画像上の文字可読性向上**
+  - タイトル文字に自動的に縁取り（text-stroke）と影（text-shadow）を適用
+  - どんな画像背景でもタイトルが読みやすくなる可読性強化
+  - 管理画面で「タイトルを画像上に重ねて表示」のオン/オフ切り替え機能
+  - 管理画面でタイトル文字色のカスタマイズ（カラーピッカー）
+  - Webkit非対応ブラウザ向けのフォールバック対応
+  - 既存の表示動作を維持（デフォルトでオン）
+
 ## [1.2.0] - Unreleased
 
 ### 🎯 メニュー改善第一段階：ゲーム中心型統合メニューへの刷新
