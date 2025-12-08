@@ -103,10 +103,13 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                 $error_message = __( 'Security check failed.', 'novel-game-plugin' );
                 break;
             case 'delete_failed':
-                $error_message = __( 'Failed to delete.', 'novel-game-plugin' );
+                $error_message = __( 'Failed to move scene to trash.', 'novel-game-plugin' );
                 break;
             case 'invalid_id':
                 $error_message = __( 'Invalid ID.', 'novel-game-plugin' );
+                break;
+            case 'no_permission':
+                $error_message = __( 'You do not have permission to delete this scene.', 'novel-game-plugin' );
                 break;
         }
     }
@@ -114,7 +117,8 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
     if ( isset( $_GET['success'] ) ) {
         switch ( sanitize_text_field( wp_unslash( $_GET['success'] ) ) ) {
             case 'scene_deleted':
-                $success_message = __( 'Scene has been deleted.', 'novel-game-plugin' );
+            case 'scene_trashed':
+                $success_message = __( 'Scene has been moved to trash. You can restore it from the trash if needed.', 'novel-game-plugin' );
                 break;
         }
     }
@@ -191,8 +195,8 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                                     <input type="hidden" name="action" value="noveltool_delete_scene" />
                                     <input type="hidden" name="scene_id" value="<?php echo esc_attr( $scene->ID ); ?>" />
                                     <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
-                                    <button type="submit" class="button button-small noveltool-delete-button" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete this scene? This action cannot be undone.', 'novel-game-plugin' ) ); ?>');">
-                                        <?php esc_html_e( 'Delete', 'novel-game-plugin' ); ?>
+                                    <button type="submit" class="button button-small noveltool-delete-button" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to move this scene to the Trash? You can restore it later from the Trash.', 'novel-game-plugin' ) ); ?>');">
+                                        <?php esc_html_e( 'Move to Trash', 'novel-game-plugin' ); ?>
                                     </button>
                                 </form>
                             </td>

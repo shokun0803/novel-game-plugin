@@ -356,6 +356,9 @@ function noveltool_save_game( $game_data ) {
 /**
  * ゲームを削除する関数
  *
+ * 管理画面からの削除時は関連シーンをゴミ箱へ移動します。
+ * アンインストール時など完全削除が必要な場合は $force_delete を true にしてください。
+ *
  * @param int  $game_id      ゲームID
  * @param bool $force_delete trueの場合は完全削除、falseの場合はゴミ箱へ移動（デフォルト: false）
  * @return bool 削除成功の場合true
@@ -374,15 +377,36 @@ function noveltool_delete_game( $game_id, $force_delete = false ) {
     }
     
     // 関連するすべてのシーンを削除
+    $failed_scenes = array();
     if ( $game_title ) {
         $scenes = noveltool_get_posts_by_game_title( $game_title );
         foreach ( $scenes as $scene ) {
+            // 各シーンに対する削除権限チェック
+            if ( ! current_user_can( 'delete_post', $scene->ID ) ) {
+                $failed_scenes[] = $scene->ID;
+                error_log( sprintf( '[NovelGamePlugin] User does not have permission to delete scene ID: %d (game: %s)', $scene->ID, $game_title ) );
+                continue;
+            }
+
             if ( $force_delete ) {
-                wp_delete_post( $scene->ID, true ); // 完全削除（ゴミ箱に入れない）
+                $result = wp_delete_post( $scene->ID, true ); // 完全削除（ゴミ箱に入れない）
+                if ( ! $result ) {
+                    $failed_scenes[] = $scene->ID;
+                    error_log( sprintf( '[NovelGamePlugin] Failed to force delete scene ID: %d (game: %s)', $scene->ID, $game_title ) );
+                }
             } else {
-                wp_trash_post( $scene->ID ); // ゴミ箱へ移動
+                $result = wp_trash_post( $scene->ID ); // ゴミ箱へ移動
+                if ( ! $result ) {
+                    $failed_scenes[] = $scene->ID;
+                    error_log( sprintf( '[NovelGamePlugin] Failed to trash scene ID: %d (game: %s)', $scene->ID, $game_title ) );
+                }
             }
         }
+    }
+    
+    // シーン削除に失敗があった場合はログに記録
+    if ( ! empty( $failed_scenes ) ) {
+        error_log( sprintf( '[NovelGamePlugin] Failed to delete %d scene(s) for game ID: %d', count( $failed_scenes ), $game_id ) );
     }
     
     // ゲームデータを削除

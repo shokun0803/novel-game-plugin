@@ -227,10 +227,12 @@ add_action( 'admin_post_noveltool_delete_game', 'noveltool_admin_post_delete_gam
 /**
  * admin-post ハンドラー: シーン削除
  *
+ * シーンをゴミ箱へ移動します。ゴミ箱から復元または完全削除が可能です。
+ *
  * @since 1.2.0
  */
 function noveltool_admin_post_delete_scene() {
-    // 権限チェック
+    // 基本権限チェック
     if ( ! current_user_can( 'edit_posts' ) ) {
         wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
@@ -249,13 +251,25 @@ function noveltool_admin_post_delete_scene() {
     $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
 
     if ( $scene_id ) {
-        $result = wp_trash_post( $scene_id ); // ゴミ箱へ移動
+        // 個別の投稿に対する削除権限チェック
+        if ( ! current_user_can( 'delete_post', $scene_id ) ) {
+            error_log( sprintf( '[NovelGamePlugin] User does not have permission to delete scene ID: %d', $scene_id ) );
+            $redirect_url = $game_id 
+                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'error' => 'no_permission' ) )
+                : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        // シーンをゴミ箱へ移動
+        $result = wp_trash_post( $scene_id );
 
         if ( $result ) {
             $redirect_url = $game_id 
-                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'success' => 'scene_deleted' ) )
+                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'success' => 'scene_trashed' ) )
                 : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
         } else {
+            error_log( sprintf( '[NovelGamePlugin] Failed to trash scene ID: %d', $scene_id ) );
             $redirect_url = $game_id 
                 ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'error' => 'delete_failed' ) )
                 : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
