@@ -82,7 +82,7 @@ function noveltool_my_games_page() {
     if ( isset( $_GET['success'] ) ) {
         switch ( sanitize_text_field( wp_unslash( $_GET['success'] ) ) ) {
             case 'deleted':
-                $success_message = __( 'Game has been deleted. Scenes have been moved to trash.', 'novel-game-plugin' );
+                $success_message = __( 'Game has been deleted.', 'novel-game-plugin' );
                 break;
         }
     }
@@ -178,8 +178,8 @@ function noveltool_my_games_page() {
                                     <?php wp_nonce_field( 'manage_games' ); ?>
                                     <input type="hidden" name="action" value="noveltool_delete_game" />
                                     <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
-                                    <button type="submit" class="button noveltool-delete-button" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete this game? Scenes will be moved to the Trash, but game settings (flags, etc.) will be permanently deleted. This action cannot be undone.', 'novel-game-plugin' ) ); ?>');">
-                                        <?php esc_html_e( 'Delete Game', 'novel-game-plugin' ); ?>
+                                    <button type="submit" class="button noveltool-delete-button" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete this game? This action cannot be undone.', 'novel-game-plugin' ) ); ?>');">
+                                        <?php esc_html_e( 'Delete', 'novel-game-plugin' ); ?>
                                     </button>
                                 </form>
                             </div>
