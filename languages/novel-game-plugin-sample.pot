@@ -911,3 +911,11 @@ msgstr ""
 #: includes/sample-data.php:1035
 msgid "Confronted President Takagi."
 msgstr ""
+
+#: includes/sample-data.php (character name)
+msgid "Detective"
+msgstr ""
+
+#: includes/sample-data.php (character name)
+msgid "Sato"
+msgstr ""

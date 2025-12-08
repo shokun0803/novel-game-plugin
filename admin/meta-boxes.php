@@ -105,11 +105,30 @@ function noveltool_admin_enqueue_scripts( $hook ) {
         return;
     }
 
+    // デバッグフラグの値を決定（WP_DEBUG をデフォルトとする）
+    $debug_enabled = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? true : false;
+
+    // 共通デバッグログユーティリティを読み込み
+    wp_enqueue_script(
+        'novel-game-debug-log',
+        NOVEL_GAME_PLUGIN_URL . 'js/debug-log.js',
+        array(),
+        NOVEL_GAME_PLUGIN_VERSION,
+        false
+    );
+
+    // 管理画面用デバッグフラグをグローバル変数として設定
+    wp_add_inline_script(
+        'novel-game-debug-log',
+        'window.novelGameAdminDebug = ' . ( $debug_enabled ? 'true' : 'false' ) . ';',
+        'before'
+    );
+
     // 管理画面用スクリプトの読み込み
     wp_enqueue_script(
         'novel-game-admin',
         NOVEL_GAME_PLUGIN_URL . 'js/admin.js',
-        array( 'jquery' ),
+        array( 'jquery', 'novel-game-debug-log' ),
         NOVEL_GAME_PLUGIN_VERSION,
         true
     );
@@ -118,7 +137,7 @@ function noveltool_admin_enqueue_scripts( $hook ) {
     wp_enqueue_script(
         'novel-game-admin-meta-boxes',
         NOVEL_GAME_PLUGIN_URL . 'js/admin-meta-boxes.js',
-        array( 'jquery', 'jquery-ui-sortable' ),
+        array( 'jquery', 'jquery-ui-sortable', 'novel-game-debug-log' ),
         NOVEL_GAME_PLUGIN_VERSION,
         true
     );
@@ -201,6 +220,15 @@ function noveltool_meta_box_callback( $post ) {
         $dialogue_flag_conditions = array();
     }
     
+    // セリフごとのキャラクター設定データの取得
+    $dialogue_characters = get_post_meta( $post->ID, '_dialogue_characters', true );
+    if ( is_string( $dialogue_characters ) ) {
+        $dialogue_characters = json_decode( $dialogue_characters, true );
+    }
+    if ( ! is_array( $dialogue_characters ) ) {
+        $dialogue_characters = array();
+    }
+    
     // 対話背景データの処理
     if ( is_string( $dialogue_backgrounds ) ) {
         $dialogue_backgrounds = json_decode( $dialogue_backgrounds, true );
@@ -274,15 +302,26 @@ function noveltool_meta_box_callback( $post ) {
     );
 
     // 投稿一覧を取得してJavaScriptに渡す
-    $scene_posts = get_posts(
-        array(
-            'post_type'      => 'novel_game',
-            'posts_per_page' => -1,
-            'post_status'    => 'publish',
-            'orderby'        => 'title',
-            'order'          => 'ASC',
-        )
+    $query_args = array(
+        'post_type'      => 'novel_game',
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+        'orderby'        => 'title',
+        'order'          => 'ASC',
     );
+
+    // ゲームタイトルが設定されている場合はフィルタリング
+    if ( ! empty( $game_title ) ) {
+        $query_args['meta_query'] = array(
+            array(
+                'key'     => '_game_title',
+                'value'   => $game_title,
+                'compare' => '=',
+            ),
+        );
+    }
+
+    $scene_posts = get_posts( $query_args );
 
     $scenes_data = array();
     foreach ( $scene_posts as $scene_post ) {
@@ -344,7 +383,17 @@ function noveltool_meta_box_callback( $post ) {
         'unsupportedFileExtension' => esc_html__( 'Unsupported file format. Only jpg, jpeg, png, gif, and webp files can be uploaded.', 'novel-game-plugin' ),
         'unsupportedMimeType'      => esc_html__( 'Unsupported file format. Only image files can be uploaded.', 'novel-game-plugin' ),
         'fileSizeExceeded'         => esc_html__( 'File size is too large. Please upload a file smaller than 5MB.', 'novel-game-plugin' ),
+        // セリフごとのキャラクター設定用文言
+        'dialogueCharacterSettings' => esc_html__( 'Character Settings for This Dialogue', 'novel-game-plugin' ),
+        'dialogueCharacterHelp'     => esc_html__( 'You can set individual character images for each dialogue. If not set, the scene\'s character settings will be used.', 'novel-game-plugin' ),
+        'showCharacterSettings'     => esc_html__( '▼ Show Character Settings', 'novel-game-plugin' ),
+        'hideCharacterSettings'     => esc_html__( '▲ Hide Character Settings', 'novel-game-plugin' ),
+        'useSceneDefault'           => esc_html__( '(Use Scene Default)', 'novel-game-plugin' ),
+        'clearImage'                => esc_html__( 'Clear', 'novel-game-plugin' ),
     );
+
+    // デバッグフラグの値を決定
+    $debug_enabled = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? true : false;
 
     // データをJavaScriptに渡す
     wp_localize_script( 'novel-game-admin-meta-boxes', 'novelGameScenes', $scenes_data );
@@ -356,6 +405,7 @@ function noveltool_meta_box_callback( $post ) {
             'ajaxurl'       => admin_url( 'admin-ajax.php' ),
             'admin_url'     => admin_url(),
             'current_post_id' => $post->ID,
+            'debug'         => $debug_enabled,
             'strings'       => $js_strings,
             'dialogue_lines' => $dialogue_lines,
             'dialogue_backgrounds' => $dialogue_backgrounds,
@@ -368,6 +418,7 @@ function noveltool_meta_box_callback( $post ) {
             'character_right_name' => $character_right_name,
             'is_ending' => (bool) $is_ending,
             'dialogue_flag_conditions' => $dialogue_flag_conditions,
+            'dialogue_characters' => $dialogue_characters,
         )
     );
 
@@ -489,6 +540,82 @@ function noveltool_meta_box_callback( $post ) {
     .dialogue-delete-button:hover {
         background: #c62d2d;
         border-color: #c62d2d;
+    }
+    
+    /* セリフごとのキャラクター設定 */
+    .dialogue-character-container {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px dashed #ccd0d4;
+    }
+    
+    .dialogue-character-toggle {
+        font-size: 12px;
+        color: #0073aa;
+    }
+    
+    .dialogue-character-content {
+        margin-top: 10px;
+        padding: 15px;
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .dialogue-character-help {
+        margin: 0 0 10px 0;
+        font-size: 12px;
+    }
+    
+    .dialogue-character-grid {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .dialogue-character-position {
+        flex: 1;
+        min-width: 150px;
+        background: #fff;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-align: center;
+    }
+    
+    .dialogue-character-label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        font-size: 12px;
+        color: #333;
+    }
+    
+    .dialogue-character-preview {
+        margin: 5px auto;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        max-height: 80px;
+    }
+    
+    .dialogue-character-placeholder {
+        display: block;
+        font-size: 11px;
+        color: #888;
+        padding: 10px 0;
+        font-style: italic;
+    }
+    
+    .dialogue-character-buttons {
+        margin-top: 8px;
+        display: flex;
+        gap: 5px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .dialogue-character-buttons .button {
+        font-size: 11px;
+        padding: 3px 8px;
     }
     
     /* 選択肢テーブルのスタイル */
@@ -1107,6 +1234,43 @@ function noveltool_save_meta_box_data( $post_id ) {
         }
     }
 
+    // セリフごとのキャラクター設定データの保存
+    if ( isset( $_POST['dialogue_characters'] ) ) {
+        $dialogue_characters = wp_unslash( $_POST['dialogue_characters'] );
+        $sanitized_characters = array();
+        
+        // JSON文字列の場合は妥当性をチェックして保存
+        if ( is_string( $dialogue_characters ) ) {
+            $decoded = json_decode( $dialogue_characters, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+                // 配列の各要素をサニタイズ
+                $sanitized_characters = noveltool_sanitize_dialogue_characters( $decoded );
+            }
+        } elseif ( is_array( $dialogue_characters ) ) {
+            // 配列の場合は直接サニタイズ
+            $sanitized_characters = noveltool_sanitize_dialogue_characters( $dialogue_characters );
+        }
+        
+        // dialogue_texts の配列長と一致させる
+        $dialogue_texts_meta = get_post_meta( $post_id, '_dialogue_texts', true );
+        $dialogue_texts_array = is_string( $dialogue_texts_meta ) ? json_decode( $dialogue_texts_meta, true ) : ( is_array( $dialogue_texts_meta ) ? $dialogue_texts_meta : array() );
+        $max_count = count( (array) $dialogue_texts_array );
+        
+        if ( $max_count > 0 ) {
+            // 短い場合は空要素でパディング
+            if ( count( $sanitized_characters ) < $max_count ) {
+                for ( $i = count( $sanitized_characters ); $i < $max_count; $i++ ) {
+                    $sanitized_characters[] = array( 'left' => '', 'center' => '', 'right' => '' );
+                }
+            } elseif ( count( $sanitized_characters ) > $max_count ) {
+                // 長い場合は切り詰め
+                $sanitized_characters = array_slice( $sanitized_characters, 0, $max_count );
+            }
+        }
+        
+        update_post_meta( $post_id, '_dialogue_characters', $sanitized_characters );
+    }
+
     // エンディング設定の保存処理
     if ( isset( $_POST['is_ending'] ) && '1' === $_POST['is_ending'] ) {
         // チェックされている場合はtrueで保存
@@ -1324,3 +1488,58 @@ function noveltool_save_meta_box_data( $post_id ) {
     }
 }
 add_action( 'save_post', 'noveltool_save_meta_box_data' );
+
+/**
+ * セリフごとのキャラクター設定をサニタイズ
+ *
+ * @param array $dialogue_characters キャラクター設定配列
+ * @return array サニタイズ済み配列
+ * @since 1.4.0
+ */
+function noveltool_sanitize_dialogue_characters( $dialogue_characters ) {
+    if ( ! is_array( $dialogue_characters ) ) {
+        return array();
+    }
+    
+    $sanitized = array();
+    
+    foreach ( $dialogue_characters as $item ) {
+        if ( ! is_array( $item ) ) {
+            // 配列でない場合は空の配列を追加
+            $sanitized[] = array(
+                'left'   => '',
+                'center' => '',
+                'right'  => '',
+            );
+            continue;
+        }
+        
+        $sanitized_item = array(
+            'left'   => '',
+            'center' => '',
+            'right'  => '',
+        );
+        
+        // 許可されたキーのみ処理
+        foreach ( array( 'left', 'center', 'right' ) as $position ) {
+            if ( isset( $item[ $position ] ) && is_string( $item[ $position ] ) ) {
+                // 空文字列はそのまま許可
+                if ( $item[ $position ] === '' ) {
+                    $sanitized_item[ $position ] = '';
+                } else {
+                    // データベース保存用にesc_url_rawを使用し、wp_http_validate_urlで検証
+                    $sanitized_url = esc_url_raw( $item[ $position ] );
+                    if ( ! $sanitized_url || ! wp_http_validate_url( $sanitized_url ) ) {
+                        $sanitized_item[ $position ] = '';
+                    } else {
+                        $sanitized_item[ $position ] = $sanitized_url;
+                    }
+                }
+            }
+        }
+        
+        $sanitized[] = $sanitized_item;
+    }
+    
+    return $sanitized;
+}

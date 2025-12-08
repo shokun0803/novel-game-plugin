@@ -1,12 +1,32 @@
 # Novel Game Plugin
 
-**Version:** 1.1.0  
+**Version:** 1.3.0  
 **License:** GPLv2 or later  
 **Author:** shokun0803  
 **Requires:** WordPress 4.7+  
 **Tested up to:** WordPress 6.0+  
 
 WordPressでサウンドノベル・ビジュアルノベルゲームを作成・公開できる包括的なプラグインです。「弟切草」や「かまいたちの夜」のような分岐型ノベルゲームを簡単に作成できます。
+
+## 目次
+
+- [主な機能](#主な機能)
+- [インストール](#インストール)
+- [使い方](#使い方)
+  - [管理画面の使い方](#管理画面の使い方)
+  - [基本的なワークフロー](#基本的なワークフロー)
+  - [条件付きセリフ表示機能](#条件付きセリフ表示機能)
+  - [セリフごとのキャラクター立ち絵差し替え機能](#セリフごとのキャラクター立ち絵差し替え機能)
+  - [ショートコード使用例](#ショートコード使用例)
+- [エクスポート/インポート](#エクスポートインポート)
+- [広告管理](#広告管理)
+- [アンインストール設定](#アンインストール設定)
+- [ゲーム・シーンの削除](#ゲームシーンの削除)
+- [よくある質問（FAQ）](#よくある質問faq)
+- [開発者向け情報](#開発者向け情報)
+- [サンプルゲーム: Shadow Detective](#サンプルゲーム-shadow-detective影の探偵)
+- [更新履歴](#更新履歴)
+- [サポート・貢献](#サポート貢献)
 
 ## 主な機能
 
@@ -16,6 +36,7 @@ WordPressでサウンドノベル・ビジュアルノベルゲームを作成�
 - **分岐システム** - 選択肢による複雑なストーリー分岐をサポート
 - **メディア統合** - WordPressメディアライブラリから画像を簡単選択
 - **ゲーム基本情報設定** - タイトル・説明・タイトル画像の一元管理
+- **広告管理** - Google AdSense / Adsterra 対応（ゲーム毎に設定可能）
 
 ### 🖥️ 管理画面機能
 - **新規ゲーム作成** - ゲームタイトルから自動的に最初のシーンを生成
@@ -23,6 +44,10 @@ WordPressでサウンドノベル・ビジュアルノベルゲームを作成�
 - **ゲーム基本情報** - ゲーム全体の設定を一元管理
 - **シーン管理** - ゲームごとのシーン管理・編集
 - **高度なフィルタリング** - ゲームタイトルでの絞り込み検索
+- **広告管理** - プラグインレベルでの広告プロバイダーID設定（Google AdSense / Adsterra）
+- **エクスポート/インポート** - ゲームデータのJSON形式でのバックアップ・復元・移行
+- **ゲーム・シーン削除** - 不要なゲーム・シーンの完全削除機能
+- **アンインストール設定** - プラグイン削除時のデータ保持/削除オプション
 
 ### 🌐 フロントエンド機能
 - **レスポンシブデザイン** - あらゆるデバイスで快適なプレイ体験
@@ -53,12 +78,10 @@ mv novel-game-plugin /path/to/wordpress/wp-content/plugins/
 ```
 
 **📝 プラグイン有効化時の自動処理**
-- プラグインを初めて有効化すると、**2つのサンプルゲーム**が自動的にインストールされます
-  1. **Sample Novel Game**: 基本的なノベルゲームのデモ（3シーン構成）
-  2. **Shadow Detective（影の探偵）**: 本格推理ゲームのデモ（23シーン構成）
+- プラグインを初めて有効化すると、**Shadow Detective（影の探偵）** サンプルゲームが自動的にインストールされます
 - サンプルゲームはプラグインの使い方を学ぶための参考として活用できます
 - サンプルゲームは通常のゲームと同様に編集・削除が可能です
-- Shadow Detectiveは複数エンディング、証拠収集、フラグシステムの実例として参照できます
+- サンプルを削除した場合は、ダッシュボードから再インストール可能です
 
 ### 2. 必要な環境
 - WordPress 4.7 以上
@@ -67,7 +90,7 @@ mv novel-game-plugin /path/to/wordpress/wp-content/plugins/
 
 ## 使い方
 
-### 管理画面の使い方（v1.2.0以降）
+### 管理画面の使い方
 
 本プラグインは、ゲーム中心型の直感的なメニュー構造を採用しています。
 
@@ -97,6 +120,21 @@ mv novel-game-plugin /path/to/wordpress/wp-content/plugins/
 - **ショートコード一覧** - 使用可能なショートコードとオプション
 - **ワンクリックコピー** - ショートコードを簡単にコピー
 - **プラグイン情報** - バージョン情報など
+- **アンインストール設定** - プラグイン削除時のデータ保持/削除オプション
+
+#### 📢 広告管理
+広告プロバイダーの設定を管理できます。
+- **Google AdSense Publisher ID** - AdSense パブリッシャーIDの登録
+- **Adsterra Publisher ID** - Adsterra パブリッシャーIDの登録
+- **公式サイトリンク** - 各プロバイダーの公式サイトへのアクセス
+- **注意事項** - 広告利用時の責任と規約順守に関する重要な注意書き
+
+#### 📦 エクスポート/インポート（独立メニュー）
+ゲームデータのバックアップ・復元・移行を行えます。
+- **エクスポート** - ゲームを選択してJSON形式でダウンロード
+- **インポート** - JSONファイルから新規ゲーム作成
+- **画像ダウンロードオプション** - インポート時に画像をメディアライブラリに自動ダウンロード
+- **詳細仕様** - [JSON インポートガイド](docs/IMPORT_JSON_USER_GUIDE.md) を参照
 
 ### ゲーム個別管理画面
 
@@ -105,8 +143,8 @@ mv novel-game-plugin /path/to/wordpress/wp-content/plugins/
 #### 📝 シーン一覧タブ
 - **シーン一覧** - 選択したゲームのシーンのみを表示
 - **編集リンク** - 各シーンの編集画面へ直接アクセス
-- **プレビューリンク** - 実際のゲーム画面を確認
 - **新規シーン作成** - このタブから直接シーンを追加可能
+- **シーン削除** - 不要なシーンを完全削除（⚠️ ゴミ箱に入らず即座に削除、復元不可）
 
 #### ➕ 新規シーン作成タブ
 - **ゲームタイトル自動設定** - 選択中のゲームに自動的に紐付け
@@ -114,8 +152,13 @@ mv novel-game-plugin /path/to/wordpress/wp-content/plugins/
 
 #### ⚙️ ゲーム設定タブ
 - **ゲーム基本情報の編集** - タイトル、概要、画像などを更新
+- **広告プロバイダー選択** - ゲーム毎に広告表示設定（none / adsense / adsterra）
+- **タイトル表示設定** - タイトル画像上へのタイトル重ね表示のオン/オフ
+- **タイトル文字色設定** - タイトル文字の色をカスタマイズ（可読性は自動補正）
 - **フラグマスタの管理** - ゲーム用のフラグを追加・削除
 - **フラグの説明** - 各フラグの用途を記録
+- **エクスポート** - このゲームをJSON形式でエクスポート
+- **ゲーム削除** - ゲームとすべてのシーンを完全削除（⚠️ 復元不可）
 
 ### 基本的なワークフロー
 
@@ -177,267 +220,217 @@ mv novel-game-plugin /path/to/wordpress/wp-content/plugins/
 - **条件成立時**: 代替テキストを表示（空の場合は通常テキストをフォールバック）
 - **条件不成立時**: 通常テキストを表示
 
+### セリフごとのキャラクター立ち絵差し替え機能
+
+各セリフに個別のキャラクター画像を設定できる機能です。シーン内で表情変化などの演出が可能になります。
+
+#### 機能概要
+- **セリフごとに立ち絵を変更**: 同一シーン内で、セリフの内容に合わせてキャラクターの表情を切り替えられます
+- **3ポジション対応**: 左・中央・右の各位置で個別に設定可能
+- **フェードアニメーション**: 立ち絵の切り替えは滑らかなフェードエフェクトで表示
+- **画像プリロード**: シーン開始時に全ての立ち絵画像を事前読み込みし、切り替え時のちらつきを防止
+
+#### 設定方法
+1. シーン編集画面の「セリフ」セクションで、各セリフの下にある「▼ キャラクター設定を表示」ボタンをクリック
+2. 左・中央・右のキャラクター画像を個別に設定
+3. 未設定の場合は、シーン全体のキャラクター設定が継承されます
+
 ### ショートコード使用例
 
 ```php
-// 特定のゲームの投稿一覧を表示
-[novel_game_posts game_title="マイゲーム"]
-
-// 全ゲーム一覧を表示
-[novel_game_posts]
+// ゲーム一覧を表示（推奨）
+[novel_game_list]
 
 // 表示オプション付き
-[novel_game_posts game_title="マイゲーム" limit="5" show_date="false"]
+[novel_game_list columns="2" show_description="true"]
+
+// 特定のゲームをタイトルで表示
+[novel_game_posts game_title="マイゲーム"]
+
+// 特定のゲームをIDで表示
+[novel_game_posts game_id="1"]
 ```
 
 ### 利用可能なショートコード属性
 
-- `game_title` - 特定のゲームタイトル
-- `limit` - 表示する投稿数（デフォルト: -1 = 全て）
-- `orderby` - 並び順（date, title等）
-- `order` - 昇順/降順（ASC/DESC）
-- `show_title` - ゲームタイトル表示（true/false）
-- `show_date` - 日付表示（true/false）
+#### `[novel_game_list]` - ゲーム一覧表示（推奨）
 
-## ディレクトリ構成
+美しいカード形式で全ゲームを表示します。
 
-```
-novel-game-plugin/
-├── novel-game-plugin.php      # メインプラグインファイル
-├── admin/                     # 管理画面関連
-│   ├── meta-boxes.php         # メタボックス・Ajax処理
-│   ├── new-game.php           # 新規ゲーム作成
-│   └── game-settings.php      # ゲーム基本情報設定
-├── includes/                  # コア機能
-│   └── post-types.php         # カスタム投稿タイプ
-├── templates/                 # テンプレート
-│   └── archive-novel_game.php # アーカイブページ
-├── css/                       # スタイルシート
-│   └── style.css              # フロントエンドスタイル
-├── js/                        # JavaScript
-│   ├── frontend.js            # フロントエンド機能
-│   ├── admin.js               # 管理画面基本機能
-│   ├── admin-game-settings.js # ゲーム設定画面
-│   └── admin-meta-boxes.js    # メタボックス機能
-└── languages/                 # 多言語対応
-    └── (翻訳ファイル)
-```
+- `columns` - 表示カラム数（1-6、デフォルト: 3）
+- `show_description` - ゲーム説明を表示（true/false、デフォルト: false）
+- `show_count` - シーン数を表示（true/false、デフォルト: true）
+- `orderby` - 並び順（title など、デフォルト: title）
+- `order` - 昇順/降順（ASC/DESC、デフォルト: ASC）
 
-## 開発者向け情報
+#### `[novel_game_posts]` - 特定ゲーム表示
 
-### 開発環境セットアップ
-```bash
-# 開発版の取得
-git clone https://github.com/shokun0803/novel-game-plugin.git
-cd novel-game-plugin
+特定のゲームをヒーロー画像とプレイボタン付きで表示します。
 
-# 開発ブランチで作業
-git checkout -b feature/new-feature
-```
+- `game_title` - 表示するゲームタイトル（game_id との排他）
+- `game_id` - 表示するゲームID（game_title との排他）
 
-### コーディング規約
-- WordPress公式コーディング規約に準拠
-- 全ての関数・クラスに `noveltool_` プレフィックス
-- PHPDocコメントの記述必須
-- セキュリティ対策の実装必須
+#### ブロックエディタ
 
-詳細な命名規約については、[命名規約ガイドライン](docs/NAMING_CONVENTIONS.md) を参照してください。
+Gutenberg ブロックエディタでは、「Novel Game List」ブロックで直感的にゲーム一覧や個別ゲームを挿入できます。
 
-### コードレビュー
-
-プルリクエストのレビュー時には、[コードレビューチェックリスト](docs/CODE_REVIEW_CHECKLIST.md) を活用してください。
-
-### 開発者向けログメッセージとデバッグ機能
-
-開発者向けログメッセージとユーザー向け翻訳文字列の適切な使い分けについては、[開発者向けログメッセージガイドライン](docs/DEVELOPER_LOGGING_GUIDELINES.md) を参照してください。
-
-**重要なポイント:**
-- ユーザー向けメッセージは必ず翻訳関数（`__()`, `_e()` など）を使用
-- 開発者向けデバッグログは `debugLog()` または `console.log()` を使用（翻訳不要）
-- フロントエンドでは `debugLog()` 関数を使用することで、本番環境でのログ出力を制御可能
-
-### 翻訳ファイルの更新手順
-
-このプラグインは国際化（i18n）に対応しており、textdomain `novel-game-plugin` を使用しています。
-
-#### 翻訳可能文字列の追加
-新しい翻訳可能文字列を追加する際は、必ず `novel-game-plugin` を textdomain として指定してください：
-
-**重要: WordPress.org 標準準拠のため、ソースコードの文字列は英語で記述してください。**
-
-```php
-// PHP での例（英語で記述）
-__( 'Translatable string', 'novel-game-plugin' )
-_e( 'Translatable string', 'novel-game-plugin' )
-esc_html__( 'Translatable string', 'novel-game-plugin' )
-esc_attr__( 'Translatable string', 'novel-game-plugin' )
-```
-
-```javascript
-// JavaScript (wp.i18n) での例（英語で記述）
-__( 'Translatable string', 'novel-game-plugin' )
-```
-
-#### .pot ファイルの更新
-翻訳可能文字列を追加・変更したら、以下のコマンドで .pot ファイルを更新してください：
-
-**重要**: メイン POT の生成時は `includes/sample-data.php` を除外してください（サンプルデータは別ドメイン）。
-
-```bash
-# メインプラグイン用 POT ファイル生成（sample-data.php を除外）
-find . -name "*.php" \
-  -not -path "./languages/*" \
-  -not -path "./node_modules/*" \
-  -not -path "./.git/*" \
-  -not -path "./includes/sample-data.php" \
-  -print0 | xargs -0 xgettext \
-  --default-domain=novel-game-plugin \
-  --from-code=UTF-8 \
-  --language=PHP \
-  --keyword=__ \
-  --keyword=_e \
-  --keyword=_x:1,2c \
-  --keyword=_n:1,2 \
-  --keyword=_nx:1,2,4c \
-  --keyword=esc_html__ \
-  --keyword=esc_html_e \
-  --keyword=esc_attr__ \
-  --keyword=esc_attr_e \
-  --add-comments=translators \
-  --package-name="Novel Game Plugin" \
-  --package-version="1.3.0" \
-  --msgid-bugs-address="https://github.com/shokun0803/novel-game-plugin/issues" \
-  --output=languages/novel-game-plugin.pot
-```
-
-#### .po / .mo ファイルの更新
-
-**重要**: 翻訳ファイルを更新する前に、必ずバックアップを作成してください。
-
-```bash
-# バックアップの作成
-cp languages/novel-game-plugin-ja.po languages/novel-game-plugin-ja.po.bak
-
-# 既存の .po ファイルを .pot から更新（既存翻訳を保持しながらマージ）
-msgmerge --update --backup=none languages/novel-game-plugin-ja.po languages/novel-game-plugin.pot
-
-# .mo ファイルのコンパイル
-# WordPress環境の互換性のため、ja.mo と ja_JP.mo の両方を生成します
-msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja.mo
-msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja_JP.mo
-```
-
-**注意**: 日本語翻訳ファイルについて
-- WordPress環境によっては `ja.mo` または `ja_JP.mo` のいずれかのみが読み込まれる場合があります
-- 互換性を確保するため、両方のファイルを生成・同梱することを推奨します
-- これにより、異なるWordPress環境での翻訳表示が確実になります
-
-#### 新しい言語の追加
-```bash
-# 新しい言語の .po ファイルを作成（例: 英語）
-msginit --input=languages/novel-game-plugin.pot \
-  --locale=en_US \
-  --output=languages/novel-game-plugin-en_US.po
-
-# 翻訳後、.mo ファイルにコンパイル
-msgfmt languages/novel-game-plugin-en_US.po -o languages/novel-game-plugin-en_US.mo
-```
-
-#### サンプルデータの翻訳ファイル
-サンプルゲーム（Shadow Detective）の翻訳は、UI翻訳とは別のテキストドメイン `novel-game-plugin-sample` に分離されています。
-
-**サンプルデータ用POTファイルの生成:**
-```bash
-# includes/sample-data.php から POT ファイルを生成
-xgettext \
-  --default-domain=novel-game-plugin-sample \
-  --from-code=UTF-8 \
-  --language=PHP \
-  --keyword=__ \
-  --keyword=_e \
-  --keyword=_x:1,2c \
-  --keyword=_n:1,2 \
-  --keyword=_nx:1,2,4c \
-  --keyword=esc_html__ \
-  --keyword=esc_html_e \
-  --keyword=esc_attr__ \
-  --keyword=esc_attr_e \
-  --add-comments=translators \
-  --package-name="Novel Game Plugin - Sample Data" \
-  --package-version="1.3.0" \
-  --msgid-bugs-address="https://github.com/shokun0803/novel-game-plugin/issues" \
-  --output=languages/novel-game-plugin-sample.pot \
-  includes/sample-data.php
-```
-
-**サンプルデータ用翻訳ファイルの更新:**
-
-**重要**: 翻訳ファイルを更新する前に、必ずバックアップを作成してください。
-
-```bash
-# バックアップの作成
-cp languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample-ja.po.bak
-
-# 既存の .po ファイルを .pot から更新（既存翻訳を保持しながらマージ）
-msgmerge --update --backup=none languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample.pot
-
-# .mo ファイルのコンパイル（ja.mo と ja_JP.mo の両方を生成）
-msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja.mo
-msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja_JP.mo
-```
-
-**注意**: 
-- サンプルデータの翻訳は `includes/sample-data.php` のみに含まれます
-- UI翻訳（`novel-game-plugin`）とサンプルデータ翻訳（`novel-game-plugin-sample`）は独立して管理されます
-- これによりサンプルデータの翻訳更新がUI翻訳に影響を与えることを防ぎます
-- `msgmerge` を使用することで、既存の翻訳を失わずに新しい文字列を追加できます
-
-### フック・フィルター
-プラグインでは以下のWordPressフックを利用：
-- `init` - 投稿タイプ登録
-- `admin_menu` - 管理画面メニュー
-- `the_content` - コンテンツフィルター
-- `template_include` - テンプレート読み込み
-
-### エクスポート/インポート
+## エクスポート/インポート
 
 ゲームデータをJSON形式でエクスポート・インポートできます。
 
-#### エクスポート
-1. 管理画面「マイゲーム」からゲームを選択
-2. 「ゲーム設定」タブを開く
+### エクスポート
+1. 管理画面「ノベルゲーム管理」→「📦 エクスポート/インポート」を開く
+2. エクスポートセクションでゲームを選択
 3. 「エクスポート」ボタンをクリック
 4. JSONファイルがダウンロードされます
 
-#### インポート
-1. 管理画面「マイゲーム」を開く
-2. 「インポート」タブをクリック
-3. JSONファイルを選択してインポート
+### インポート
+1. 管理画面「ノベルゲーム管理」→「📦 エクスポート/インポート」を開く
+2. インポートセクションでJSONファイルを選択
+3. **画像ダウンロードオプション**（任意）
+   - 有効にすると、JSON内の画像URLから自動的にメディアライブラリへダウンロード
+   - 無効の場合は元のURLをそのまま参照
+4. 「インポート」ボタンをクリック
+
+### JSON インポート仕様
 
 **詳細な仕様やトラブルシューティングについては、[JSON インポートガイド](docs/IMPORT_JSON_USER_GUIDE.md) を参照してください。**
 
 最小構成のサンプルファイルは [docs/sample-import.json](docs/sample-import.json) にあります。
 
-#### 主な制限事項
-- ファイルサイズ: 最大10MB
-- ファイル形式: JSONのみ (.json)
-- 重複タイトル: 自動でリネームされます
+### 主な制限事項と注意点
+- **ファイルサイズ**: 最大10MB
+- **ファイル形式**: JSONのみ (.json)
+- **重複タイトル**: 自動でリネームされます（例: "ゲーム名" → "ゲーム名 (1)"）
+- **シーンIDの自動調整**: インポート時に選択肢の遷移先が新しいシーンIDに自動更新されます
+- **画像の扱い**:
+  - 画像ダウンロードオプション有効: 外部URLから自動ダウンロード（時間がかかる場合があります）
+  - 画像ダウンロードオプション無効: 元のURLをそのまま参照（推奨: 同じメディアライブラリを使用する場合）
 
-## 貢献・サポート
+## 広告管理
 
-### バグレポート・機能要望
-- GitHubのIssueでご報告ください
-- 再現手順を詳しく記載してください
+プラグインは Google AdSense と Adsterra による広告表示機能をサポートしています。
 
-### 開発への貢献
-1. リポジトリをフォーク
-2. 機能ブランチを作成
-3. 変更をコミット
-4. プルリクエストを作成
+### 広告プロバイダーID の設定
 
-### ライセンス
-このプラグインはGPLv2またはそれ以降のバージョンでライセンスされています。  
-詳細は [LICENSE](https://www.gnu.org/licenses/gpl-2.0.html) をご確認ください。
+1. 管理画面「ノベルゲーム管理」→「📢 広告管理」を開く
+2. 使用する広告プロバイダーのパブリッシャーIDを入力
+   - **AdSense Publisher ID**: `ca-pub-XXXXXXXXXXXXXXXX` 形式
+   - **Adsterra Publisher ID**: 数値形式
+3. 「広告設定を保存」ボタンをクリック
+
+### ゲーム毎の広告設定
+
+各ゲームで広告の表示/非表示を個別に制御できます。
+
+1. 「マイゲーム」からゲームを選択
+2. 「ゲーム設定」タブを開く
+3. 「広告プロバイダー」セクションで選択
+   - **なし**: 広告を表示しない（デフォルト）
+   - **Google AdSense**: AdSense 広告を表示
+   - **Adsterra**: Adsterra 広告を表示
+4. 「ゲーム設定を更新」ボタンをクリック
+
+### ⚠️ 重要な注意事項
+
+- **広告IDと設定はユーザーの責任で管理してください**
+- プラグインは入力されたIDの有効性や規約準拠を検証しません
+- 各広告プロバイダーの利用規約を必ず遵守してください
+- 広告機能の利用による問題について、プラグイン開発者は責任を負いません
+- 広告プロバイダーへの登録とアカウント承認が必要です
+
+### 公式サイト
+
+- [Google AdSense](https://www.google.com/adsense/)
+- [Adsterra](https://adsterra.com/)
+
+## アンインストール設定
+
+プラグインをアンインストール（削除）する際のデータ処理を設定できます。
+
+### データ削除オプションの設定
+
+1. 管理画面「ノベルゲーム管理」→「⚙️ 設定」を開く
+2. 「アンインストール設定」セクションを確認
+3. 「Delete all data on uninstall」チェックボックス
+   - **チェックなし（デフォルト）**: プラグイン削除後もゲームデータを保持
+   - **チェックあり**: プラグイン削除時にすべてのゲームデータを完全削除
+4. 「設定を保存」ボタンをクリック
+
+### ⚠️ データ削除に関する重要な注意
+
+- **デフォルトは「データ保持」**: プラグインを削除してもゲームデータは残ります
+- **削除は不可逆**: チェックを有効にしてプラグインをアンインストールすると、すべてのゲーム、シーン、設定が**永久に削除**されます
+- **復元不可**: 削除されたデータは復元できません
+- **事前バックアップ推奨**: 削除前に必ずエクスポート機能でバックアップを取得してください
+- **確認ダイアログ**: チェックボックスを有効にする際、確認ダイアログが表示されます
+
+### 削除されるデータ
+
+「Delete all data on uninstall」を有効にしてプラグインをアンインストールすると、以下がすべて削除されます：
+
+- すべてのゲーム（noveltool_games オプション）
+- すべてのシーン（novel_game カスタム投稿タイプ）
+- すべてのフラグマスタ定義
+- プラグイン設定（広告ID、アンインストール設定など）
+- ユーザーメタデータ（選択中のゲームなど）
+
+## ゲーム・シーンの削除
+
+ゲームやシーンを個別に削除できます。
+
+### ゲームの削除
+
+1. 「マイゲーム」からゲームを選択
+2. 「ゲーム設定」タブを開く
+3. 「ゲームを削除」ボタンをクリック
+4. 確認ダイアログで「OK」をクリック
+
+**⚠️ 注意**: ゲームを削除すると、そのゲームに含まれるすべてのシーンも完全削除されます。復元はできません。
+
+### シーンの削除
+
+1. 「マイゲーム」からゲームを選択
+2. 「シーン一覧」タブを開く
+3. 削除したいシーンの「削除」ボタンをクリック
+4. 確認ダイアログで「OK」をクリック
+
+**⚠️ 注意**: シーンは**完全削除**されます（ゴミ箱に入りません）。復元はできません。
+
+## よくある質問（FAQ）
+
+### Q1. プラグインを有効化すると何が起こりますか？
+A1. プラグインを初めて有効化すると、Shadow Detective（影の探偵）サンプルゲームが自動的にインストールされます。サンプルを削除した場合はダッシュボードから再インストール可能です。
+
+### Q2. サンプルゲームは削除できますか？
+A2. はい、通常のゲームと同様に削除できます。「マイゲーム」から各ゲームを選択し、「ゲーム設定」タブ内の「ゲームを削除」ボタンをクリックしてください。削除すると復元できませんのでご注意ください。
+
+### Q3. Shadow Detective を手動で再インストールできますか？
+A3. はい。サンプルゲームを削除した後でも、管理画面「ダッシュボード」から「Shadow Detective をインストール」ボタンをクリックすることで、AJAX経由で再インストールできます。
+
+### Q4. ゲームを公開するにはどうすればいいですか？
+A4. シーンを作成後、そのシーンの「プレビュー」リンクからゲーム画面にアクセスできます。また、ショートコード `[novel_game_list]` や `[novel_game_posts game_title="ゲーム名"]` を使用して任意の固定ページや投稿に埋め込むこともできます。
+
+### Q5. 複数のエンディングを作成できますか？
+A5. はい。選択肢機能を使用して、プレイヤーの選択に応じた複雑な分岐ストーリーを作成できます。Shadow Detective サンプルゲームが参考になります。
+
+### Q6. 翻訳に対応していますか？
+A6. はい。プラグインは国際化（i18n）に対応しており、翻訳ファイルを使用して管理画面やメッセージを翻訳できます。ゲーム自体を複数の言語で公開する場合は、WordPressのマルチリンガルプラグインやサイトの言語設定をご利用ください。
+
+### Q7. ゲームデータをバックアップするにはどうすればいいですか？
+A7. 「エクスポート/インポート」メニューから各ゲームをJSON形式でエクスポートできます。エクスポートしたファイルは別のWordPressサイトにインポートすることも可能です。
+
+### Q8. プラグインを削除するとゲームデータはどうなりますか？
+A8. デフォルトでは、プラグインを削除してもゲームデータは保持されます。完全に削除したい場合は、「設定」→「アンインストール設定」で「Delete all data on uninstall」を有効にしてからプラグインを削除してください。ただし、この操作は不可逆的で復元できませんので、事前にエクスポートでバックアップを取ることを強く推奨します。
+
+### Q9. 広告を表示するには何が必要ですか？
+A9. Google AdSense または Adsterra のアカウントが必要です。各プロバイダーに登録してパブリッシャーIDを取得後、「広告管理」メニューでIDを設定し、各ゲームの「ゲーム設定」で広告プロバイダーを選択してください。
+
+## 開発者向け情報
+
+このリポジトリの開発者向けの詳しい情報（開発環境、コーディング規約、翻訳の更新手順、CI のチェック方法など）は docs/DEVELOPER_GUIDE.md にまとめています。開発に参加する方はそちらを参照してください。
+
+- docs/DEVELOPER_GUIDE.md
 
 ## サンプルゲーム: Shadow Detective（影の探偵）
 
@@ -459,27 +452,61 @@ Shadow Detective（影の探偵）は、本格推理ゲームのサンプルと�
 
 ### 詳細ドキュメント
 - [シナリオ詳細設計](docs/shadow-detective-scenario.md) - 全23シーンの詳細なストーリーライン
-- [テスト手順書](docs/shadow-detective-testing.md) - 品質保証のためのテストケース
 
 ### プレイ方法
 1. プラグインを有効化すると自動的にインストールされます
 2. 「ノベルゲーム管理」→「マイゲーム」から「Shadow Detective」を選択
 3. シーン一覧から最初のシーンを開いてプレイ開始
 
+**再インストール方法:**  
+サンプルゲームを削除した場合は、「ノベルゲーム管理」→「🏠 ダッシュボード」から「Shadow Detective をインストール」ボタンで再インストール可能（AJAX経由）
+
+### インストール仕様
+- **自動インストール**: プラグイン有効化時に `noveltool_pending_sample_install` フラグによる判定で1回のみ実行
+- **手動インストール**: ダッシュボードの「Shadow Detective をインストール」ボタンからAJAX経由で再インストール可能
+- **重複チェック**: `machine_name` フィールド（`shadow_detective_v1`）により同一ゲームの重複インストールを防止
+
 ## 更新履歴
 
-### Version 1.3.0 (予定)
+### Version 1.3.0 (Current)
 - **Shadow Detective（影の探偵）ゲーム追加**
   - 23シーン構成の本格推理ゲーム
   - 3種類のエンディング（完全解決・部分解決・証拠不足）
   - 10個のフラグによる証拠収集・進捗管理システム
   - required_flags による選択肢条件分岐
   - SVG形式のプレースホルダー画像（背景10種・キャラクター6種）
-- プラグイン有効化時に Shadow Detective を自動インストール
-- AJAX経由での Shadow Detective 手動インストール機能追加
-- 詳細なシナリオ設計ドキュメント・テスト手順書の追加
+- **プラグイン有効化時の自動インストール**
+  - Shadow Detective を自動インストール
+  - `noveltool_pending_sample_install` フラグによる1回限りの自動インストール制御
+- **AJAX経由での Shadow Detective 手動インストール機能追加**
+  - ダッシュボードから「Shadow Detective をインストール」ボタンで再インストール可能
+  - `machine_name` フィールドによる重複インストール防止
+- **広告管理機能追加**
+  - Google AdSense / Adsterra 対応
+  - プラグインレベルでの広告プロバイダーID管理（「広告管理」メニュー）
+  - ゲーム毎の広告プロバイダー選択（none / adsense / adsterra）
+  - 責任と規約順守に関する注意事項の明示
+- **エクスポート/インポート機能の拡張**
+  - 「エクスポート/インポート」専用メニューの追加
+  - JSON形式でのゲームデータのバックアップ・復元・移行
+  - 画像ダウンロードオプション（インポート時に外部URLから自動ダウンロード）
+  - ファイルサイズ制限（最大10MB）
+  - シーンIDの自動調整機能
+  - 重複タイトルの自動リネーム
+  - 詳細なユーザーガイド（docs/IMPORT_JSON_USER_GUIDE.md）とサンプルファイル
+- **ゲーム・シーン削除機能追加**
+  - ゲーム設定タブからゲーム全体を削除
+  - シーン一覧タブから個別シーンを削除
+  - 完全削除（ゴミ箱に入らない）
+  - 削除の不可逆性に関する明確な注意喚起
+- **アンインストール時のデータ削除オプション**
+  - 「設定」メニューに「Delete all data on uninstall」オプション追加
+  - デフォルトは false（データ保護）
+  - 有効時はプラグイン削除時にすべてのゲームデータを完全削除
+  - 不可逆性と事前バックアップの重要性を明示
+- **詳細なシナリオ設計ドキュメントの追加**
 
-### Version 1.2.0 (予定)
+### Version 1.2.0
 - サンプルゲーム自動インストール機能追加
   - プラグイン有効化時に学習用サンプルゲームを自動作成
   - 3シーン構成の分岐デモンストレーション
@@ -504,6 +531,20 @@ Shadow Detective（影の探偵）は、本格推理ゲームのサンプルと�
 - 基本的なノベルゲーム機能
 - カスタム投稿タイプ
 - フロントエンド表示機能
+
+## サポート・貢献
+
+### バグレポート・機能要望
+- [GitHubのIssue](https://github.com/shokun0803/novel-game-plugin/issues) でご報告ください
+- 再現手順を詳しく記載してください
+- 使用環境（WordPress バージョン、PHP バージョンなど）も併せてお知らせください
+
+### 開発への貢献
+プラグインの開発に参加される方は、[開発者向けガイド](docs/DEVELOPER_GUIDE.md) を参照してください。
+
+### ライセンス
+このプラグインはGPLv2またはそれ以降のバージョンでライセンスされています。  
+詳細は [LICENSE](https://www.gnu.org/licenses/gpl-2.0.html) をご確認ください。
 
 ---
 

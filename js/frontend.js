@@ -18,7 +18,10 @@
 		 */
 		window.novelGameSetDebug = function( enabled ) {
 			window.novelGameDebug = !!enabled;
-			try { console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。（初期化前シム）' ); } catch (e) {}
+			// 許可: 初期化前シムのため debugLog がまだ利用不可（直接 console を使用）
+			if ( typeof console !== 'undefined' && typeof console.log === 'function' ) {
+				console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。（初期化前シム）' );
+			}
 		};
 	}
 
@@ -27,7 +30,10 @@
 		 * 初期化前の簡易版フラグ表示（初期化後に本実装で上書き）
 		 */
 		window.novelGameShowFlags = function() {
-			try { console.warn( 'ゲーム初期化前のため、フラグ一覧は初期化後に再度お試しください。' ); } catch (e) {}
+			// 許可: 初期化前シムのため debugLog がまだ利用不可（直接 console を使用）
+			if ( typeof console !== 'undefined' && typeof console.warn === 'function' ) {
+				console.warn( 'ゲーム初期化前のため、フラグ一覧は初期化後に再度お試しください。' );
+			}
 		};
 	}
 
@@ -109,8 +115,8 @@
 		var flagsCacheTimestamp = {};
 		var CACHE_DURATION = 10000; // 10秒間キャッシュ
 		
-		// デバッグフラグ（本番環境でのログ出力制御）
-		var novelGameDebug = typeof window.novelGameDebug !== 'undefined' ? window.novelGameDebug : false;
+		// debugLog は js/debug-log.js によるグローバル実装を使用
+		// デバッグフラグは window.novelGameDebug を参照（debug-log.js で読み込み済み）
 		
 		// 広告関連の変数
 		var adConfig = null;
@@ -142,7 +148,7 @@
 					debugLog( '広告設定を読み込みました:', adConfig );
 				}
 			} catch ( error ) {
-				console.error( '広告設定の解析に失敗しました:', error );
+				debugLog( 'error', '広告設定の解析に失敗しました:', error );
 			}
 		}
 		
@@ -176,7 +182,7 @@
 			// Publisher IDをサニタイズ
 			var sanitizedPublisherId = sanitizePublisherId( adConfig.publisherId );
 			if ( ! sanitizedPublisherId ) {
-				console.error( 'AdSense Publisher ID が無効です' );
+				debugLog( 'error', 'AdSense Publisher ID が無効です' );
 				return;
 			}
 			
@@ -187,7 +193,7 @@
 			            encodeURIComponent( sanitizedPublisherId );
 			script.crossOrigin = 'anonymous';
 			script.onerror = function() {
-				console.warn( 'AdSense スクリプトの読み込みに失敗しました' );
+				debugLog( 'warn', 'AdSense スクリプトの読み込みに失敗しました' );
 				// エラー時に状態をリセット（再実行時の強行描画を防止）
 				window.noveltoolAdState.scriptLoaded.adsense = false;
 				// adConfig.enabled や adInitialized はリセットしない（設定は保持）
@@ -254,7 +260,7 @@
 					debugLog( 'AdSense 広告を初期化しました' );
 				}
 			} catch ( error ) {
-				console.error( 'AdSense 広告の初期化に失敗しました:', error );
+				debugLog( 'error', 'AdSense 広告の初期化に失敗しました:', error );
 			}
 		}
 		
@@ -314,6 +320,24 @@
 		}
 		
 		/**
+		 * 背景変数をクリアするヘルパー関数
+		 * 前回ゲームの背景が残らないように一元管理
+		 *
+		 * @param {string} reason クリアする理由（デバッグログ用）
+		 * @since 1.4.1
+		 */
+		function clearBackgroundVars( reason ) {
+			baseBackground = '';
+			currentBackground = '';
+			// debugLog が初期化前や無効な場合でも処理を継続するため、エラーを無視
+			try {
+				debugLog( '背景変数をクリアしました:', reason );
+			} catch ( e ) {
+				// デバッグログ出力失敗は無視（本処理への影響なし）
+			}
+		}
+		
+		/**
 		 * Adsterra 広告を表示
 		 *
 		 * @since 1.4.0
@@ -340,7 +364,7 @@
 			// Publisher IDをサニタイズ
 			var sanitizedPublisherId = sanitizePublisherId( adConfig.publisherId );
 			if ( ! sanitizedPublisherId ) {
-				console.error( 'Adsterra Publisher ID が無効です' );
+				debugLog( 'error', 'Adsterra Publisher ID が無効です' );
 				return;
 			}
 			
@@ -367,7 +391,7 @@
 			// エラーハンドリングとロード完了ハンドリングを追加
 			if ( $adLoader.length > 0 ) {
 				$adLoader[0].onerror = function() {
-					console.warn( 'Adsterra スクリプトの読み込みに失敗しました' );
+					debugLog( 'warn', 'Adsterra スクリプトの読み込みに失敗しました' );
 					// エラー時に状態をリセット（再実行時の強行描画を防止）
 					window.noveltoolAdState.scriptLoaded.adsterra = false;
 					// adConfig.enabled や adInitialized はリセットしない（設定は保持）
@@ -443,19 +467,7 @@
 			debugLog( '広告を非表示にしました' );
 		}
 		
-		/**
-		 * デバッグログ出力（本番環境では無効化）
-		 *
-		 * @param {string} message ログメッセージ
-		 * @param {...*} args 追加引数
-		 * @since 1.2.0
-		 */
-		function debugLog( message ) {
-			if ( novelGameDebug ) {
-				var args = Array.prototype.slice.call( arguments );
-				console.log.apply( console, args );
-			}
-		}
+		// debugLog 関数は js/debug-log.js でグローバルに定義されています（window.debugLog として利用可能）
 		
 		/**
 		 * デバッグ用：現在のフラグ状態とマスタデータを表示
@@ -463,6 +475,7 @@
 		 *
 		 * @since 1.2.0
 		 */
+		// 許可: ユーザーが明示的に呼び出すデバッグユーティリティのため直接 console を使用
 		window.novelGameShowFlags = function() {
 			if ( ! currentGameTitle ) {
 				console.log( '現在ゲームが読み込まれていません。' );
@@ -496,8 +509,14 @@
 		 */
 		window.novelGameSetDebug = function( enabled ) {
 			window.novelGameDebug = !!enabled;
-			novelGameDebug = !!enabled;
-			console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。' );
+			// グローバル debugLog のフラグも更新
+			if ( typeof debugLog !== 'undefined' && typeof debugLog.setEnabled === 'function' ) {
+				debugLog.setEnabled( enabled );
+			}
+			// 許可: ユーザーが明示的に呼び出すデバッグモード切替の確認用
+			if ( typeof console !== 'undefined' && typeof console.log === 'function' ) {
+				console.log( 'デバッグモードを' + (enabled ? '有効' : '無効') + 'にしました。' );
+			}
 		};
 		
 		// 表示設定
@@ -556,8 +575,14 @@
 			}
 			
 			if ( baseBackgroundData ) {
-				baseBackground = JSON.parse( baseBackgroundData );
-				currentBackground = baseBackground;
+				try {
+					baseBackground = JSON.parse( baseBackgroundData );
+					currentBackground = baseBackground;
+					debugLog( '背景データを解析しました（インラインデータ）:', baseBackground );
+				} catch ( e ) {
+					clearBackgroundVars( 'インラインデータの背景解析に失敗' );
+					debugLog( 'error', '背景データの解析に失敗しました。背景変数をクリアします。', e );
+				}
 			}
 			
 			if ( charactersDataRaw ) {
@@ -599,7 +624,7 @@
 			// 広告設定データを読み込み
 			loadAdConfig();
 		} catch ( error ) {
-			console.error( 'ノベルゲームデータの解析に失敗しました:', error );
+			debugLog( 'error', 'ノベルゲームデータの解析に失敗しました:', error );
 			return;
 		}
 
@@ -626,9 +651,9 @@
 				var storageKey = generateStorageKey( currentGameTitle );
 				localStorage.setItem( storageKey, JSON.stringify( progressData ) );
 				
-				console.log( 'ゲーム進捗を自動保存しました:', progressData );
+				debugLog( 'ゲーム進捗を自動保存しました:', progressData );
 			} catch ( error ) {
-				console.warn( 'ゲーム進捗の保存に失敗しました:', error );
+				debugLog( 'warn', 'ゲーム進捗の保存に失敗しました:', error );
 			}
 		}
 		
@@ -667,7 +692,7 @@
 				
 				return storageKey;
 			} catch ( error ) {
-				console.warn( 'ストレージキーの生成に失敗しました:', error );
+				debugLog( 'warn', 'ストレージキーの生成に失敗しました:', error );
 				// フォールバック：従来の方式
 				return 'noveltool_progress_' + btoa( gameTitle ).replace( /[^a-zA-Z0-9]/g, '' );
 			}
@@ -698,16 +723,16 @@
 					var maxAge = 30 * 24 * 60 * 60 * 1000; // 30日（ミリ秒）
 					
 					if ( currentTime - savedTime > maxAge ) {
-						console.log( '保存されたゲーム進捗が古いため削除します' );
+						debugLog( '保存されたゲーム進捗が古いため削除します' );
 						localStorage.removeItem( storageKey );
 						return null;
 					}
 					
-					console.log( '保存されたゲーム進捗を取得しました:', progressData );
+					debugLog( '保存されたゲーム進捗を取得しました:', progressData );
 					return progressData;
 				}
 			} catch ( error ) {
-				console.warn( 'ゲーム進捗の取得に失敗しました:', error );
+				debugLog( 'warn', 'ゲーム進捗の取得に失敗しました:', error );
 			}
 			
 			return null;
@@ -727,9 +752,516 @@
 			try {
 				var storageKey = generateStorageKey( gameTitle );
 				localStorage.removeItem( storageKey );
-				console.log( 'ゲーム進捗をクリアしました:', gameTitle );
+				debugLog( 'ゲーム進捗をクリアしました:', gameTitle );
 			} catch ( error ) {
-				console.warn( 'ゲーム進捗のクリアに失敗しました:', error );
+				debugLog( 'warn', 'ゲーム進捗のクリアに失敗しました:', error );
+			}
+		}
+		
+		/**
+		 * localStorage がサポートされているかチェックする
+		 *
+		 * @return {boolean} localStorage がサポートされているか
+		 * @since 1.4.0
+		 */
+		function isLocalStorageSupported() {
+			try {
+				var testKey = '__noveltool_test__';
+				localStorage.setItem( testKey, 'test' );
+				localStorage.removeItem( testKey );
+				return true;
+			} catch ( error ) {
+				return false;
+			}
+		}
+		
+		/**
+		 * 現在のゲームに関連するすべてのlocalStorageデータを取得する
+		 * localStorage内のすべてのキーを走査して、現在のゲームタイトルに紐づくものだけを検出する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {Array} localStorageキーとデータの配列
+		 * @since 1.4.0
+		 */
+		function getGameStorageData( gameTitle ) {
+			if ( ! gameTitle || ! isLocalStorageSupported() ) {
+				return [];
+			}
+			
+			var storageData = [];
+			var strings = ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings : {};
+			
+			// 現在のゲームに対応するキーを生成して検証用に使用
+			var expectedProgressKey = generateStorageKey( gameTitle );
+			var expectedFlagKey = generateFlagStorageKey( gameTitle );
+			var expectedLastChoiceKey = 'noveltool_last_choice_' + gameTitle;
+			
+			try {
+				// localStorage内のすべてのキーを走査
+				for ( var i = 0; i < localStorage.length; i++ ) {
+					var key = localStorage.key( i );
+					if ( ! key ) {
+						continue;
+					}
+					
+					// 現在のゲームに紐づくキーかどうかを厳密にチェック
+					var isCurrentGameKey = false;
+					var label = strings.gameData || 'ゲームデータ';
+					var type = 'unknown';
+					
+					// 進捗データキーのチェック（完全一致）
+					if ( key === expectedProgressKey ) {
+						isCurrentGameKey = true;
+						label = strings.progressData || '進捗データ';
+						type = 'progress';
+					}
+					// フラグデータキーのチェック（完全一致）
+					else if ( key === expectedFlagKey ) {
+						isCurrentGameKey = true;
+						label = strings.flagData || 'フラグデータ';
+						type = 'flags';
+					}
+					// 最後の選択肢キーのチェック（完全一致）
+					else if ( key === expectedLastChoiceKey ) {
+						isCurrentGameKey = true;
+						label = strings.lastChoice || '最後の選択肢';
+						type = 'lastChoice';
+					}
+					
+					// 現在のゲームに紐づかないキーはスキップ
+					if ( ! isCurrentGameKey ) {
+						continue;
+					}
+					
+					var dataStr = localStorage.getItem( key );
+					if ( ! dataStr ) {
+						continue;
+					}
+					
+					var timestamp = null;
+					var parsed = null;
+					
+					try {
+						parsed = JSON.parse( dataStr );
+						if ( parsed && typeof parsed === 'object' && parsed.timestamp ) {
+							timestamp = parsed.timestamp;
+						}
+					} catch ( parseError ) {
+						// JSONパースに失敗した場合は無視
+					}
+					
+					storageData.push( {
+						key: key,
+						type: type,
+						label: label,
+						data: parsed || dataStr,
+						timestamp: timestamp,
+						size: dataStr.length
+					} );
+				}
+				
+			} catch ( error ) {
+				debugLog( 'ゲームストレージデータの取得に失敗しました:', error );
+			}
+			
+			return storageData;
+		}
+		
+		/**
+		 * 指定されたlocalStorageキーを削除する
+		 *
+		 * @param {string} key 削除するキー
+		 * @return {boolean} 削除成功の場合true
+		 * @since 1.4.0
+		 */
+		function deleteStorageKey( key ) {
+			if ( ! key || ! isLocalStorageSupported() ) {
+				return false;
+			}
+			
+			try {
+				localStorage.removeItem( key );
+				debugLog( 'ストレージキーを削除しました:', key );
+				return true;
+			} catch ( error ) {
+				debugLog( 'ストレージキーの削除に失敗しました:', error );
+				return false;
+			}
+		}
+		
+		/**
+		 * 現在のゲームのすべてのlocalStorageデータをクリアする
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @return {boolean} クリア成功の場合true
+		 * @since 1.4.0
+		 */
+		function clearAllGameStorageData( gameTitle ) {
+			if ( ! gameTitle || ! isLocalStorageSupported() ) {
+				return false;
+			}
+			
+			try {
+				var storageData = getGameStorageData( gameTitle );
+				
+				storageData.forEach( function( item ) {
+					localStorage.removeItem( item.key );
+				} );
+				
+				// フラグキャッシュも無効化
+				if ( flagsCache[ gameTitle ] ) {
+					delete flagsCache[ gameTitle ];
+					delete flagsCacheTimestamp[ gameTitle ];
+				}
+				
+				debugLog( 'ゲームのすべてのストレージデータをクリアしました:', gameTitle );
+				return true;
+			} catch ( error ) {
+				debugLog( 'ゲームストレージデータのクリアに失敗しました:', error );
+				return false;
+			}
+		}
+		
+		/**
+		 * タイムスタンプを読みやすい形式にフォーマットする
+		 *
+		 * @param {number} timestamp タイムスタンプ（ミリ秒）
+		 * @return {string} フォーマットされた日時文字列
+		 * @since 1.4.0
+		 */
+		function formatTimestamp( timestamp ) {
+			var strings = ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings : {};
+			
+			if ( timestamp === undefined || timestamp === null || isNaN( timestamp ) ) {
+				return strings.unknown || '不明';
+			}
+			
+			var date = new Date( timestamp );
+			var year = date.getFullYear();
+			var month = String( date.getMonth() + 1 ).padStart( 2, '0' );
+			var day = String( date.getDate() ).padStart( 2, '0' );
+			var hours = String( date.getHours() ).padStart( 2, '0' );
+			var minutes = String( date.getMinutes() ).padStart( 2, '0' );
+			
+			return year + '/' + month + '/' + day + ' ' + hours + ':' + minutes;
+		}
+		
+		/**
+		 * バイトサイズを読みやすい形式にフォーマットする
+		 *
+		 * @param {number} bytes バイト数
+		 * @return {string} フォーマットされたサイズ文字列
+		 * @since 1.4.0
+		 */
+		function noveltoolFormatBytes( bytes ) {
+			if ( bytes === undefined || bytes === null || isNaN( bytes ) ) {
+				return '0 B';
+			}
+			
+			bytes = Math.max( 0, bytes );
+			
+			if ( bytes < 1024 ) {
+				return bytes + ' B';
+			} else if ( bytes < 1024 * 1024 ) {
+				return ( bytes / 1024 ).toFixed( 1 ) + ' KB';
+			} else {
+				return ( bytes / ( 1024 * 1024 ) ).toFixed( 1 ) + ' MB';
+			}
+		}
+		
+		/**
+		 * 設定モーダルを表示する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.0
+		 */
+		function showSettingsModal( gameTitle ) {
+			var strings = ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings : {};
+			
+			if ( ! gameTitle ) {
+				debugLog( '設定モーダルを表示するにはゲームタイトルが必要です' );
+				return;
+			}
+			
+			// localStorage非対応の場合
+			if ( ! isLocalStorageSupported() ) {
+				alert( strings.localStorageNotSupport || 'お使いのブラウザはローカルストレージに対応していないため、保存データの管理ができません。' );
+				return;
+			}
+			
+			// 既存のモーダルを削除
+			$( '#novel-settings-modal-overlay' ).remove();
+			
+			// 設定ボタンの参照を保存（フォーカス戻し用）
+			var $settingsBtn = $( '#novel-title-settings-btn' );
+			
+			// ストレージデータを取得
+			var storageData = getGameStorageData( gameTitle );
+			
+			// モーダルHTMLを構築（アクセシビリティ属性付き）
+			var modalHtml = '<div id="novel-settings-modal-overlay" class="novel-settings-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="novel-settings-modal-title-text">';
+			modalHtml += '<div class="novel-settings-modal">';
+			modalHtml += '<div class="novel-settings-modal-header">';
+			modalHtml += '<h3 id="novel-settings-modal-title-text" class="novel-settings-modal-title">' + noveltoolEscapeHtml( strings.settingsTitle || '保存済みのプレイデータ' ) + '</h3>';
+			modalHtml += '<button type="button" class="novel-settings-modal-close" aria-label="' + noveltoolEscapeHtml( strings.closeLabel || '閉じる' ) + '">&times;</button>';
+			modalHtml += '</div>';
+			modalHtml += '<div class="novel-settings-modal-content">';
+			
+			if ( storageData.length === 0 ) {
+				modalHtml += '<p class="novel-settings-no-data">' + noveltoolEscapeHtml( strings.noData || '保存されているデータはありません。' ) + '</p>';
+			} else {
+				modalHtml += '<ul class="novel-settings-data-list">';
+				
+				storageData.forEach( function( item ) {
+					modalHtml += '<li class="novel-settings-data-item" data-key="' + noveltoolEscapeHtml( item.key ) + '">';
+					modalHtml += '<div class="novel-settings-data-info">';
+					modalHtml += '<span class="novel-settings-data-label">' + noveltoolEscapeHtml( item.label ) + '</span>';
+					modalHtml += '<span class="novel-settings-data-meta">';
+					if ( item.timestamp ) {
+						modalHtml += ( strings.savedAt || '保存日時:' ) + ' ' + formatTimestamp( item.timestamp );
+					}
+					modalHtml += ' / ' + ( strings.size || 'サイズ:' ) + ' ' + noveltoolFormatBytes( item.size );
+					modalHtml += '</span>';
+					modalHtml += '</div>';
+					modalHtml += '<button type="button" class="novel-settings-delete-btn" data-key="' + noveltoolEscapeHtml( item.key ) + '" data-label="' + noveltoolEscapeHtml( item.label ) + '">' + noveltoolEscapeHtml( strings.deleteLabel || '削除' ) + '</button>';
+					modalHtml += '</li>';
+				} );
+				
+				modalHtml += '</ul>';
+				
+				modalHtml += '<div class="novel-settings-actions">';
+				modalHtml += '<button type="button" class="novel-settings-clear-all-btn">' + noveltoolEscapeHtml( strings.clearAllLabel || 'すべてのデータをクリア' ) + '</button>';
+				modalHtml += '</div>';
+			}
+			
+			modalHtml += '</div>';
+			modalHtml += '</div>';
+			modalHtml += '</div>';
+			
+			// モーダルをDOMに追加
+			// ゲームオーバーレイ要素内に追加することで、同一スタッキングコンテキストに配置
+			// これによりゲームモーダルより上に設定モーダルが表示される
+			var $gameOverlay = $( '#novel-game-modal-overlay' );
+			if ( $gameOverlay.length > 0 ) {
+				// オーバーレイ要素の末尾に追加する（モーダルと同じ stacking context）
+				$gameOverlay.append( modalHtml );
+			} else {
+				// フォールバック: オーバーレイが無い場合は body に append
+				$( 'body' ).append( modalHtml );
+			}
+			
+			// モーダル要素の参照を取得（オーバーレイ内から検索）
+			var $modal = $gameOverlay.length > 0 
+				? $gameOverlay.find( '#novel-settings-modal-overlay' ).last() 
+				: $( '#novel-settings-modal-overlay' );
+			
+			// イベントハンドラーを設定
+			setupSettingsModalEvents( gameTitle, $settingsBtn );
+			
+			// フォーカスを閉じるボタンに移動
+			$modal.find( '.novel-settings-modal-close' ).focus();
+			
+			debugLog( '設定モーダルを表示しました:', gameTitle );
+		}
+		
+		/**
+		 * HTMLエスケープ関数（プラグイン固有プレフィックス付き）
+		 *
+		 * @param {string} str エスケープする文字列
+		 * @return {string} エスケープされた文字列
+		 * @since 1.4.0
+		 */
+		function noveltoolEscapeHtml( str ) {
+			if ( ! str ) return '';
+			return String( str )
+				.replace( /&/g, '&amp;' )
+				.replace( /</g, '&lt;' )
+				.replace( />/g, '&gt;' )
+				.replace( /"/g, '&quot;' )
+				.replace( /'/g, '&#039;' );
+		}
+		
+		/**
+		 * 設定モーダルのイベントハンドラーを設定する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @param {jQuery} $returnFocusElement フォーカスを戻す要素
+		 * @since 1.4.0
+		 */
+		function setupSettingsModalEvents( gameTitle, $returnFocusElement ) {
+			var $modal = $( '#novel-settings-modal-overlay' );
+			var strings = ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings : {};
+			
+			// フォーカス戻し用要素を保存
+			$modal.data( 'returnFocusElement', $returnFocusElement );
+			
+			// 閉じるボタン
+			$modal.find( '.novel-settings-modal-close' ).on( 'click', function() {
+				closeSettingsModal();
+			} );
+			
+			// オーバーレイクリックで閉じる
+			$modal.on( 'click', function( e ) {
+				if ( $( e.target ).is( '#novel-settings-modal-overlay' ) ) {
+					closeSettingsModal();
+				}
+			} );
+			
+			// ESCキーで閉じる & フォーカストラップ（モーダルにスコープ付け）
+			$modal.on( 'keydown.novel-settings', function( e ) {
+				if ( e.which === 27 ) { // ESC
+					closeSettingsModal();
+					return;
+				}
+				
+				// Tab キーでのフォーカストラップ
+				if ( e.which === 9 ) {
+					var $focusableElements = $modal.find( 'button:visible, [href]:visible, input:visible, select:visible, textarea:visible, [tabindex]:not([tabindex="-1"]):visible' );
+					
+					// フォーカス可能な要素がない場合はスキップ
+					if ( $focusableElements.length === 0 ) {
+						return;
+					}
+					
+					var $firstFocusable = $focusableElements.first();
+					var $lastFocusable = $focusableElements.last();
+					
+					if ( e.shiftKey ) {
+						// Shift + Tab
+						if ( $firstFocusable.length > 0 && document.activeElement === $firstFocusable[0] ) {
+							e.preventDefault();
+							$lastFocusable.focus();
+						}
+					} else {
+						// Tab
+						if ( $lastFocusable.length > 0 && document.activeElement === $lastFocusable[0] ) {
+							e.preventDefault();
+							$firstFocusable.focus();
+						}
+					}
+				}
+			} );
+			
+			// 個別削除ボタン
+			$modal.find( '.novel-settings-delete-btn' ).on( 'click', function() {
+				var key = $( this ).data( 'key' );
+				var label = $( this ).data( 'label' );
+				// プレースホルダー（%s）を使用した翻訳文字列に対応
+				var confirmMsgTemplate = strings.confirmDeleteMsg || '「%s」を削除しますか？この操作は取り消せません。';
+				var confirmMsg = confirmMsgTemplate.replace( '%s', label );
+				
+				if ( confirm( confirmMsg ) ) {
+					if ( deleteStorageKey( key ) ) {
+						// リストから項目を削除
+						$( this ).closest( '.novel-settings-data-item' ).fadeOut( 200, function() {
+							$( this ).remove();
+							
+							// リストが空になったらメッセージを表示
+							if ( $modal.find( '.novel-settings-data-item' ).length === 0 ) {
+								$modal.find( '.novel-settings-data-list' ).replaceWith( '<p class="novel-settings-no-data">' + noveltoolEscapeHtml( strings.noData || '保存されているデータはありません。' ) + '</p>' );
+								$modal.find( '.novel-settings-actions' ).hide();
+							}
+							
+							// 「続きから始める」ボタンの表示を更新
+							updateContinueButtonVisibility( gameTitle );
+							// 設定ボタンの表示を更新
+							updateSettingsButtonVisibility( gameTitle );
+						} );
+					} else {
+						alert( strings.deleteErrorMsg || 'データの削除に失敗しました。' );
+					}
+				}
+			} );
+			
+			// 全データクリアボタン
+			$modal.find( '.novel-settings-clear-all-btn' ).on( 'click', function() {
+				var confirmMsg = strings.confirmClearAllMsg || 'このゲームのすべての保存データを削除しますか？この操作は取り消せません。';
+				
+				if ( confirm( confirmMsg ) ) {
+					if ( clearAllGameStorageData( gameTitle ) ) {
+						// モーダルの内容を更新
+						$modal.find( '.novel-settings-data-list' ).replaceWith( '<p class="novel-settings-no-data">' + noveltoolEscapeHtml( strings.noData || '保存されているデータはありません。' ) + '</p>' );
+						$modal.find( '.novel-settings-actions' ).hide();
+						
+						// 「続きから始める」ボタンの表示を更新
+						updateContinueButtonVisibility( gameTitle );
+						// 設定ボタンの表示を更新
+						updateSettingsButtonVisibility( gameTitle );
+					} else {
+						alert( strings.clearErrorMsg || 'データのクリアに失敗しました。' );
+					}
+				}
+			} );
+		}
+		
+		/**
+		 * 設定モーダルを閉じる
+		 *
+		 * @since 1.4.0
+		 */
+		function closeSettingsModal() {
+			var $modal = $( '#novel-settings-modal-overlay' );
+			var $returnFocusElement = $modal.data( 'returnFocusElement' );
+			
+			// モーダルにバインドしたイベントを解除
+			$modal.off( 'keydown.novel-settings' );
+			$modal.fadeOut( 200, function() {
+				$( this ).remove();
+				
+				// フォーカスを元の要素に戻す
+				if ( $returnFocusElement && $returnFocusElement.length > 0 ) {
+					$returnFocusElement.focus();
+				}
+			} );
+		}
+		
+		/**
+		 * 「続きから始める」ボタンの表示を更新する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.0
+		 */
+		function updateContinueButtonVisibility( gameTitle ) {
+			var $continueBtn = $( '#novel-title-continue' );
+			
+			if ( ! gameTitle || $continueBtn.length === 0 ) {
+				return;
+			}
+			
+			var savedProgress = getSavedGameProgress( gameTitle );
+			
+			if ( savedProgress ) {
+				$continueBtn.show();
+			} else {
+				$continueBtn.hide();
+			}
+		}
+		
+		/**
+		 * 設定ボタンの表示を更新する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.0
+		 */
+		function updateSettingsButtonVisibility( gameTitle ) {
+			var $settingsBtn = $( '#novel-title-settings-btn' );
+			
+			if ( ! gameTitle || $settingsBtn.length === 0 ) {
+				return;
+			}
+			
+			// localStorage非対応の場合は非表示
+			if ( ! isLocalStorageSupported() ) {
+				$settingsBtn.hide();
+				return;
+			}
+			
+			var storageData = getGameStorageData( gameTitle );
+			
+			if ( storageData.length > 0 ) {
+				$settingsBtn.show();
+			} else {
+				$settingsBtn.hide();
 			}
 		}
 		
@@ -751,9 +1283,9 @@
 					timestamp: new Date().getTime()
 				};
 				localStorage.setItem( storageKey, JSON.stringify( choiceData ) );
-				console.log( '最後の選択肢シーンを保存しました:', sceneUrl );
+				debugLog( '最後の選択肢シーンを保存しました:', sceneUrl );
 			} catch ( error ) {
-				console.warn( '最後の選択肢シーンの保存に失敗しました:', error );
+				debugLog( 'warn', '最後の選択肢シーンの保存に失敗しました:', error );
 			}
 		}
 		
@@ -781,16 +1313,16 @@
 					var currentTime = new Date().getTime();
 					
 					if ( currentTime - choiceData.timestamp > maxAge ) {
-						console.log( '最後の選択肢シーンの記録が古いため削除します' );
+						debugLog( '最後の選択肢シーンの記録が古いため削除します' );
 						localStorage.removeItem( storageKey );
 						return null;
 					}
 					
-					console.log( '最後の選択肢シーンを取得しました:', choiceData.url );
+					debugLog( '最後の選択肢シーンを取得しました:', choiceData.url );
 					return choiceData.url;
 				}
 			} catch ( error ) {
-				console.warn( '最後の選択肢シーンの取得に失敗しました:', error );
+				debugLog( 'warn', '最後の選択肢シーンの取得に失敗しました:', error );
 			}
 			
 			return null;
@@ -824,7 +1356,7 @@
 				
 				return 'novel_flags_' + encodedSiteId + '_' + encodedTitle;
 			} catch ( error ) {
-				console.warn( 'フラグストレージキーの生成に失敗しました:', error );
+				debugLog( 'warn', 'フラグストレージキーの生成に失敗しました:', error );
 				return 'novel_flags_' + gameTitle.replace( /[^a-zA-Z0-9]/g, '' );
 			}
 		}
@@ -848,7 +1380,7 @@
 				// フラグマスタデータを取得（WordPress側から）
 				var flagMaster = getGameFlagMaster( gameTitle );
 				if ( ! flagMaster || ! Array.isArray( flagMaster ) ) {
-					console.warn( 'フラグマスタデータが見つかりません:', gameTitle );
+					debugLog( 'warn', 'フラグマスタデータが見つかりません:', gameTitle );
 					return;
 				}
 				
@@ -868,7 +1400,7 @@
 				
 				debugLog( 'フラグを設定しました:', flags, 'ゲーム:', gameTitle );
 			} catch ( error ) {
-				console.warn( 'フラグの設定に失敗しました:', error );
+				debugLog( 'warn', 'フラグの設定に失敗しました:', error );
 			}
 		}
 
@@ -900,7 +1432,7 @@
 				// フラグマスタデータを取得
 				var flagMaster = getGameFlagMaster( gameTitle );
 				if ( ! flagMaster || ! Array.isArray( flagMaster ) ) {
-					console.warn( 'フラグマスタデータが見つかりません:', gameTitle );
+					debugLog( 'warn', 'フラグマスタデータが見つかりません:', gameTitle );
 					return true; // マスタデータがない場合は表示
 				}
 				debugLog( 'フラグマスタデータ:', flagMaster );
@@ -952,7 +1484,7 @@
 				debugLog( 'フラグ条件最終結果:', finalResult );
 				return finalResult;
 			} catch ( error ) {
-				console.warn( 'フラグ条件のチェックに失敗しました:', error );
+				debugLog( 'warn', 'フラグ条件のチェックに失敗しました:', error );
 				return true; // エラー時は表示
 			}
 		}
@@ -997,7 +1529,7 @@
 				
 				return flags;
 			} catch ( error ) {
-				console.warn( 'フラグの取得に失敗しました:', error );
+				debugLog( 'warn', 'フラグの取得に失敗しました:', error );
 			}
 			
 			return {};
@@ -1045,7 +1577,7 @@
 				
 				debugLog( 'フラグを保存しました:', flagStr, 'ゲーム:', gameTitle );
 			} catch ( error ) {
-				console.warn( 'フラグの保存に失敗しました:', error );
+				debugLog( 'warn', 'フラグの保存に失敗しました:', error );
 			}
 		}
 
@@ -1104,7 +1636,7 @@
 			currentGameTitle = gameTitle || '';
 			currentSceneUrl = sceneUrl || window.location.href;
 			
-			console.log( '現在のゲーム情報を設定:', { gameTitle: currentGameTitle, sceneUrl: currentSceneUrl } );
+			debugLog( '現在のゲーム情報を設定:', { gameTitle: currentGameTitle, sceneUrl: currentSceneUrl } );
 		}
 		
 		/**
@@ -1148,7 +1680,7 @@
 				fallbackData.image = baseBackground;
 			}
 			
-			console.log( 'フォールバックゲームデータを作成しました:', fallbackData );
+			debugLog( 'フォールバックゲームデータを作成しました:', fallbackData );
 			return fallbackData;
 		}
 
@@ -1195,9 +1727,9 @@
 					}
 				}
 				
-				console.log( 'ページからゲームタイトルを抽出:', gameTitle );
+				debugLog( 'ページからゲームタイトルを抽出:', gameTitle );
 			} catch ( error ) {
-				console.warn( 'ゲームタイトルの抽出に失敗しました:', error );
+				debugLog( 'warn', 'ゲームタイトルの抽出に失敗しました:', error );
 			}
 			
 			return gameTitle;
@@ -1209,12 +1741,12 @@
 		 * @param {object} gameData ゲームデータ（title, description, subtitle, url等）
 		 */
 		function showTitleScreen( gameData ) {
-			console.log( 'showTitleScreen called with:', gameData );
+			debugLog( 'showTitleScreen called with:', gameData );
 			
 			// ゲームデータが不完全な場合はフォールバック処理を実行
 			var currentGameData = gameData;
 			if ( !currentGameData || !currentGameData.title || !currentGameData.url ) {
-				console.warn( 'ゲームデータが不完全です。フォールバック処理を実行します。', currentGameData );
+				debugLog( 'warn', 'ゲームデータが不完全です。フォールバック処理を実行します。', currentGameData );
 				currentGameData = createFallbackGameData( currentGameData );
 			}
 			
@@ -1235,7 +1767,7 @@
 			}
 			
 			if ( isTitleScreenVisible ) {
-				console.log( 'Title screen already visible, ignoring' );
+				debugLog( 'Title screen already visible, ignoring' );
 				return;
 			}
 			
@@ -1243,6 +1775,21 @@
 			
 			// タイトル画面の内容を設定
 			$titleMain.text( currentGameData.title || '' );
+			
+			// DOM のタイトルと内部データの再同期チェック（UI と内部データのずれ防止）
+			setTimeout( function() {
+				try {
+					var uiTitle = $titleMain.text() || '';
+					var dataTitle = currentGameData.title || '';
+					if ( uiTitle !== dataTitle ) {
+						$titleMain.text( dataTitle );
+						debugLog( 'showTitleScreen: DOM のタイトルと内部データが不一致だったため再設定しました', { uiTitle: uiTitle, dataTitle: dataTitle } );
+					}
+				} catch ( e ) {
+					debugLog( 'warn', 'タイトル再同期チェックでエラーが発生しました:', e );
+				}
+			}, 50 );
+			
 			$titleSubtitle.text( currentGameData.subtitle || '' ).toggle( !!currentGameData.subtitle );
 			$titleDescription.text( currentGameData.description || '' ).toggle( !!currentGameData.description );
 			
@@ -1255,14 +1802,17 @@
 				
 				if ( savedProgress ) {
 					$titleContinueBtn.show();
-					console.log( '保存された進捗が見つかりました。「続きから始める」ボタンを表示します。' );
+					debugLog( '保存された進捗が見つかりました。「続きから始める」ボタンを表示します。' );
 				} else {
 					$titleContinueBtn.hide();
-					console.log( '保存された進捗がありません。「続きから始める」ボタンを非表示にします。' );
+					debugLog( '保存された進捗がありません。「続きから始める」ボタンを非表示にします。' );
 				}
 			} else {
 				$titleContinueBtn.hide();
 			}
+			
+			// 設定ボタンの表示制御（localStorageにデータがある場合のみ表示）
+			setupSettingsButton( currentGameData.title );
 			
 			// タイトル画面を表示（モーダル再生成後の表示確保のため、display制御とアニメーション）
 			// 競合を避けるため、直接 opacity でアニメーション
@@ -1274,6 +1824,60 @@
 			// タイトル画面では広告を非表示にする
 			hideAdvertisement();
 		}
+		
+		/**
+		 * 設定ボタンをセットアップする
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.0
+		 */
+		function setupSettingsButton( gameTitle ) {
+			var strings = ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings : {};
+			
+			// 既存の設定ボタンを削除
+			$( '#novel-title-settings-btn' ).remove();
+			
+			// localStorage非対応の場合は設定ボタンを表示しない
+			if ( ! isLocalStorageSupported() ) {
+				return;
+			}
+			
+			// ゲームタイトルがない場合は表示しない
+			if ( ! gameTitle ) {
+				return;
+			}
+			
+			// $titleScreen が存在しない場合は表示しない
+			if ( ! $titleScreen || $titleScreen.length === 0 ) {
+				return;
+			}
+			
+			// localStorageにデータがあるかチェック
+			var storageData = getGameStorageData( gameTitle );
+			if ( storageData.length === 0 ) {
+				return;
+			}
+			
+			// 設定ボタンを作成（type="button" を明示的に追加）
+			var $settingsBtn = $( '<button type="button">' )
+				.attr( 'id', 'novel-title-settings-btn' )
+				.addClass( 'novel-title-settings-btn' )
+				.attr( 'aria-label', strings.settingsButtonLabel || '設定' )
+				.attr( 'title', strings.settingsButtonTitle || '保存データの管理' )
+				.html( '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>' );
+			
+			// タイトル画面に設定ボタンを追加
+			$titleScreen.append( $settingsBtn );
+			
+			// クリックイベントを設定
+			$settingsBtn.on( 'click', function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
+				showSettingsModal( gameTitle );
+			} );
+			
+			debugLog( '設定ボタンを追加しました:', gameTitle );
+		}
 
 		/**
 		 * タイトル画面の背景画像を設定する
@@ -1282,7 +1886,7 @@
 		 */
 		function setTitleScreenBackground( gameData ) {
 			if ( ! gameData || ! gameData.url ) {
-				console.log( 'No game data or URL provided for background image' );
+				debugLog( 'No game data or URL provided for background image' );
 				return;
 			}
 			
@@ -1292,40 +1896,54 @@
 			// 1. ゲーム固有のタイトル用画像（最優先）
 			if ( gameData.image && gameData.image.trim() ) {
 				backgroundImage = gameData.image;
-				console.log( 'Using game-specific title image:', backgroundImage );
+				debugLog( 'Using game-specific title image:', backgroundImage );
 			}
 			// 2. 現在読み込まれたベース背景画像
 			else if ( baseBackground ) {
 				backgroundImage = baseBackground;
-				console.log( 'Using base background from loaded data:', backgroundImage );
+				debugLog( 'Using base background from loaded data:', backgroundImage );
 			}
 			// 3. 現在の背景画像
 			else if ( currentBackground ) {
 				backgroundImage = currentBackground;
-				console.log( 'Using current background:', backgroundImage );
+				debugLog( 'Using current background:', backgroundImage );
 			}
 			// 4. セリフデータの最初の背景画像
 			else if ( dialogueData && dialogueData.length > 0 && dialogueData[0].background_image ) {
 				backgroundImage = dialogueData[0].background_image;
-				console.log( 'Using background from first dialogue:', backgroundImage );
+				debugLog( 'Using background from first dialogue:', backgroundImage );
 			}
 			// 5. セリフデータの最初のbackgroundプロパティ
 			else if ( dialogueData && dialogueData.length > 0 && dialogueData[0].background ) {
 				backgroundImage = dialogueData[0].background;
-				console.log( 'Using background from first dialogue (legacy):', backgroundImage );
+				debugLog( 'Using background from first dialogue (legacy):', backgroundImage );
 			}
 			
 			// 背景画像を設定
 			if ( backgroundImage ) {
-				console.log( 'Setting title screen background image:', backgroundImage );
-				$titleScreen.css( {
-					'background-image': 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(' + backgroundImage + ')',
-					'background-size': 'cover',
-					'background-position': 'center',
-					'background-repeat': 'no-repeat'
-				} );
+				debugLog( 'Setting title screen background image:', backgroundImage );
+				// URLの安全性を確保：
+				// 1. http/https/相対パスのみ許可（javascript:等のプロトコルを除外）
+				// 2. 特殊文字をエンコード
+				// 3. CSS注入を防ぐため引用符・バックスラッシュを除去
+				var isValidUrl = /^(https?:\/\/|\/)/i.test( backgroundImage );
+				if ( isValidUrl ) {
+					var safeUrl = encodeURI( backgroundImage ).replace( /["'\\]/g, '' );
+					$titleScreen.css( {
+						'background-image': 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("' + safeUrl + '")',
+						'background-size': 'cover',
+						'background-position': 'center',
+						'background-repeat': 'no-repeat'
+					} );
+				} else {
+					debugLog( 'warn', '無効なURLスキームのため背景画像を設定しません:', backgroundImage );
+					$titleScreen.css( {
+						'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+						'background-image': 'none'
+					} );
+				}
 			} else {
-				console.log( 'No background image found, using default gradient' );
+				debugLog( 'No background image found, using default gradient' );
 				$titleScreen.css( {
 					'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
 					'background-image': 'none'
@@ -1339,13 +1957,13 @@
 		 * @param {boolean} clearData ゲームデータをクリアするかどうか（デフォルト: false）
 		 */
 		function hideTitleScreen( clearData ) {
-			console.log( 'hideTitleScreen called, clearData:', clearData );
+			debugLog( 'hideTitleScreen called, clearData:', clearData );
 			
 			// モーダル再生成後のDOM参照漏れを防ぐため、必ず最新のDOM要素を取得
 			$titleScreen = $( '#novel-title-screen' );
 			
 			if ( ! isTitleScreenVisible ) {
-				console.log( 'Title screen already hidden, ignoring' );
+				debugLog( 'Title screen already hidden, ignoring' );
 				return;
 			}
 			
@@ -1364,7 +1982,7 @@
 			// clearDataが明示的にtrueの場合のみゲームデータをクリア
 			if ( clearData === true ) {
 				window.currentGameSelectionData = null;
-				console.log( 'ゲームデータをクリアしました' );
+				debugLog( 'ゲームデータをクリアしました' );
 			}
 		}
 
@@ -1378,22 +1996,22 @@
 			try {
 				var normalizedUrl = ensureShortcodeParam( gameUrl );
 				if ( normalizedUrl !== gameUrl ) {
-					console.log( 'Normalized game URL with shortcode=1:', normalizedUrl );
+					debugLog( 'Normalized game URL with shortcode=1:', normalizedUrl );
 				}
 				gameUrl = normalizedUrl;
 			} catch (e) {}
-			console.log( 'loadGameData called with URL:', gameUrl );
+			debugLog( 'loadGameData called with URL:', gameUrl );
 			
 			return new Promise( function( resolve, reject ) {
 				$.ajax( {
 					url: gameUrl,
 					type: 'GET',
 					success: function( response ) {
-						console.log( 'AJAX response received, response length:', response.length );
+						debugLog( 'AJAX response received, response length:', response.length );
 						try {
 							// レスポンスからゲームデータを抽出
 							var $response = $( response );
-							console.log( 'Response parsed as jQuery object, elements count:', $response.length );
+							debugLog( 'Response parsed as jQuery object, elements count:', $response.length );
 							
 							// ゲームタイトルを抽出
 							var extractedGameTitle = '';
@@ -1412,7 +2030,7 @@
 							if ( dialogueDataScript.length === 0 ) {
 								dialogueDataScript = $response.find( '#novel-dialogue-data' );
 							}
-							console.log( 'Dialogue data script found:', dialogueDataScript.length );
+							debugLog( 'Dialogue data script found:', dialogueDataScript.length );
 
 							// 期待するゲームデータスクリプトが1つも見つからない場合は、リダイレクト等で誤ったHTMLを取得した可能性が高いので中断
 							// （例：shortcode=1 未付与でトップページが返却されたケース）
@@ -1420,10 +2038,10 @@
 							
 							if ( dialogueDataScript.length > 0 ) {
 								var dialogueDataText = dialogueDataScript.text() || dialogueDataScript.html();
-								console.log( 'Dialogue data text length:', dialogueDataText ? dialogueDataText.length : 0 );
+								debugLog( 'Dialogue data text length:', dialogueDataText ? dialogueDataText.length : 0 );
 								if ( dialogueDataText ) {
 									dialogueData = JSON.parse( dialogueDataText );
-									console.log( 'Parsed dialogue data:', dialogueData.length );
+									debugLog( 'Parsed dialogue data:', dialogueData.length );
 									
 									// 後方互換性のため、文字列配列の場合は変換
 									if ( dialogueData.length > 0 && typeof dialogueData[0] === 'string' ) {
@@ -1436,7 +2054,7 @@
 									dialogues = dialogueData.map( function( item ) {
 										return item.text;
 									} );
-									console.log( 'Dialogues array updated, length:', dialogues.length );
+									debugLog( 'Dialogues array updated, length:', dialogues.length );
 								}
 							}
 							
@@ -1445,10 +2063,10 @@
 							if ( choicesDataScript.length === 0 ) {
 								choicesDataScript = $response.find( '#novel-choices-data' );
 							}
-							console.log( 'Choices data script found:', choicesDataScript.length );
+							debugLog( 'Choices data script found:', choicesDataScript.length );
 
 							if ( earlyMissingAllGameData && choicesDataScript.length === 0 ) {
-								console.error( 'Game data scripts missing (dialogue & choices). Rejecting to trigger fallback.' );
+								debugLog( 'error', 'Game data scripts missing (dialogue & choices). Rejecting to trigger fallback.' );
 								reject( new Error( 'Missing game data scripts' ) );
 								return;
 							}
@@ -1457,7 +2075,7 @@
 								var choicesDataText = choicesDataScript.text() || choicesDataScript.html();
 								if ( choicesDataText ) {
 									choices = JSON.parse( choicesDataText );
-									console.log( 'Parsed choices data:', choices.length );
+									debugLog( 'Parsed choices data:', choices.length );
 								}
 							}
 							
@@ -1466,15 +2084,26 @@
 							if ( backgroundDataScript.length === 0 ) {
 								backgroundDataScript = $response.find( '#novel-base-background' );
 							}
-							console.log( 'Background data script found:', backgroundDataScript.length );
+							debugLog( 'Background data script found:', backgroundDataScript.length );
 							
 							if ( backgroundDataScript.length > 0 ) {
 								var backgroundDataText = backgroundDataScript.text() || backgroundDataScript.html();
 								if ( backgroundDataText ) {
-									baseBackground = JSON.parse( backgroundDataText );
-									currentBackground = baseBackground;
-									console.log( 'Parsed background data:', baseBackground );
+									try {
+										baseBackground = JSON.parse( backgroundDataText );
+										currentBackground = baseBackground;
+										debugLog( 'Parsed background data:', baseBackground );
+									} catch ( e ) {
+										clearBackgroundVars( 'loadGameData() - 背景データの解析に失敗' );
+										debugLog( 'error', '背景データの解析に失敗しました。背景変数をクリアします。', e );
+									}
+								} else {
+									// 背景データが空の場合はクリア（前回ゲームの背景が残らないように）
+									clearBackgroundVars( 'loadGameData() - 背景データテキストが空' );
 								}
+							} else {
+								// 背景データスクリプトが存在しない場合はクリア（前回ゲームの背景が残らないように）
+								clearBackgroundVars( 'loadGameData() - 背景スクリプトが存在しない' );
 							}
 							
 							// キャラクターデータを取得
@@ -1482,13 +2111,13 @@
 							if ( charactersDataScript.length === 0 ) {
 								charactersDataScript = $response.find( '#novel-characters-data' );
 							}
-							console.log( 'Characters data script found:', charactersDataScript.length );
+							debugLog( 'Characters data script found:', charactersDataScript.length );
 							
 							if ( charactersDataScript.length > 0 ) {
 								var charactersDataText = charactersDataScript.text() || charactersDataScript.html();
 								if ( charactersDataText ) {
 									charactersData = JSON.parse( charactersDataText );
-									console.log( 'Parsed characters data:', charactersData );
+									debugLog( 'Parsed characters data:', charactersData );
 								}
 							}
 							
@@ -1497,13 +2126,13 @@
 							if ( endingDataScript.length === 0 ) {
 								endingDataScript = $response.find( '#novel-ending-data' );
 							}
-							console.log( 'Ending data script found:', endingDataScript.length );
+							debugLog( 'Ending data script found:', endingDataScript.length );
 							
 							if ( endingDataScript.length > 0 ) {
 								var endingDataText = endingDataScript.text() || endingDataScript.html();
 								if ( endingDataText ) {
 									isEnding = JSON.parse( endingDataText );
-									console.log( 'Parsed ending data:', isEnding );
+									debugLog( 'Parsed ending data:', isEnding );
 								}
 							}
 							
@@ -1516,7 +2145,7 @@
 								var endingTextData = endingTextScript.text() || endingTextScript.html();
 								if ( endingTextData ) {
 									endingText = JSON.parse( endingTextData );
-									console.log( 'Parsed ending text:', endingText );
+									debugLog( 'Parsed ending text:', endingText );
 								}
 							}
 							
@@ -1529,7 +2158,7 @@
 								var gameOverTextData = gameOverTextScript.text() || gameOverTextScript.html();
 								if ( gameOverTextData ) {
 									gameOverText = JSON.parse( gameOverTextData );
-									console.log( 'Parsed game over text:', gameOverText );
+									debugLog( 'Parsed game over text:', gameOverText );
 								}
 							}
 							
@@ -1539,45 +2168,45 @@
 							
 							// まず、モーダル以外のゲームコンテナを探す
 							var $allGameContainers = $response.find( '#novel-game-container' );
-							console.log( 'Found game containers:', $allGameContainers.length );
+							debugLog( 'Found game containers:', $allGameContainers.length );
 							$allGameContainers.each( function( index ) {
 								var $container = $( this );
 								var containerHtml = $container.html();
-								console.log( 'Container ' + index + ' HTML length:', containerHtml ? containerHtml.length : 0 );
-								console.log( 'Container ' + index + ' is in modal:', $container.closest( '.novel-game-modal-overlay' ).length > 0 );
-								console.log( 'Container ' + index + ' content preview:', containerHtml ? containerHtml.substring( 0, 100 ) : 'empty' );
+								debugLog( 'Container ' + index + ' HTML length:', containerHtml ? containerHtml.length : 0 );
+								debugLog( 'Container ' + index + ' is in modal:', $container.closest( '.novel-game-modal-overlay' ).length > 0 );
+								debugLog( 'Container ' + index + ' content preview:', containerHtml ? containerHtml.substring( 0, 100 ) : 'empty' );
 								
 								// モーダル内のコンテナ（空の場合）は除外
 								if ( $container.closest( '.novel-game-modal-overlay' ).length === 0 && 
 									 containerHtml && containerHtml.trim() !== '' && 
 									 containerHtml.indexOf( 'ゲーム内容は動的に読み込まれます' ) === -1 ) {
 									$gameContentElement = $container;
-									console.log( 'Selected container ' + index + ' as game content' );
+									debugLog( 'Selected container ' + index + ' as game content' );
 									return false; // break
 								}
 							} );
 							
 							// 見つからない場合は、フィルタで直接探す
 							if ( ! $gameContentElement || $gameContentElement.length === 0 ) {
-								console.log( 'No valid container found in find, trying filter' );
+								debugLog( 'No valid container found in find, trying filter' );
 								$gameContentElement = $response.filter( '#novel-game-container' ).first();
 								// それでも見つからない場合は、最初に見つかったものを使用
 								if ( $gameContentElement.length === 0 ) {
-									console.log( 'No container found in filter, using first found' );
+									debugLog( 'No container found in filter, using first found' );
 									$gameContentElement = $response.find( '#novel-game-container' ).first();
 								}
 							}
 							
 							if ( $gameContentElement && $gameContentElement.length > 0 ) {
-								console.log( 'Found game content element, updating container' );
+								debugLog( 'Found game content element, updating container' );
 								var newContent = $gameContentElement.html();
-								console.log( 'New content length:', newContent ? newContent.length : 0 );
+								debugLog( 'New content length:', newContent ? newContent.length : 0 );
 								$gameContainer.html( newContent );
 								
 								// 背景画像を設定
 								if ( baseBackground ) {
 									$gameContainer.css( 'background-image', 'url("' + baseBackground + '")' );
-									console.log( 'Background image set:', baseBackground );
+									debugLog( 'Background image set:', baseBackground );
 								}
 								
 								// 必要なDOM要素を再取得
@@ -1587,9 +2216,9 @@
 								$dialogueContinue = $( '#novel-dialogue-continue' );
 								$choicesContainer = $( '#novel-choices' );
 								
-								console.log( 'Game content loaded successfully' );
+								debugLog( 'Game content loaded successfully' );
 							} else {
-								console.error( 'No valid game content found in response' );
+								debugLog( 'error', 'No valid game content found in response' );
 							}
 							
 							// フラグマスタデータの処理（動的読み込み時にも必要）
@@ -1617,12 +2246,12 @@
 							
 							resolve();
 						} catch ( error ) {
-							console.error( 'ゲームデータの解析に失敗しました:', error );
+							debugLog( 'error', 'ゲームデータの解析に失敗しました:', error );
 							reject( error );
 						}
 					},
 					error: function( xhr, status, error ) {
-						console.error( 'ゲームデータの読み込みに失敗しました:', error );
+						debugLog( 'error', 'ゲームデータの読み込みに失敗しました:', error );
 						reject( error );
 					}
 				} );
@@ -1658,7 +2287,7 @@
 					}
 				}
 			} catch ( error ) {
-				console.warn( 'シーン到達時フラグの処理に失敗しました:', error );
+				debugLog( 'warn', 'シーン到達時フラグの処理に失敗しました:', error );
 			}
 		}
 		
@@ -1694,7 +2323,7 @@
 					}
 				}
 			} catch ( error ) {
-				console.warn( 'フラグマスタデータの処理に失敗しました:', error );
+				debugLog( 'warn', 'フラグマスタデータの処理に失敗しました:', error );
 			}
 		}
 		
@@ -1704,7 +2333,7 @@
 		 * @param {string|object} gameUrlOrData ゲームのURLまたはゲームデータオブジェクト
 		 */
 		function openModal( gameUrlOrData ) {
-			console.log( 'openModal called with:', gameUrlOrData );
+			debugLog( 'openModal called with:', gameUrlOrData );
 			
 			// モーダル再生成後のDOM参照漏れを防ぐため、必ず最新のDOM要素を取得
 			$modalOverlay = $( '#novel-game-modal-overlay' );
@@ -1714,17 +2343,17 @@
 				$modalOverlay.css( 'display', 'flex' ).addClass( 'show' );
 			}
 			
-			console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
-			console.log( 'isModalOpen:', isModalOpen );
+			debugLog( 'Modal overlay exists:', $modalOverlay.length > 0 );
+			debugLog( 'isModalOpen:', isModalOpen );
 			
 			if ( isModalOpen ) {
-				console.log( 'Modal already open, ignoring' );
+				debugLog( 'Modal already open, ignoring' );
 				return;
 			}
 			
 			// モーダル要素が存在しない場合はページ遷移
 			if ( $modalOverlay.length === 0 ) {
-				console.log( 'Modal overlay not found, redirecting to:', gameUrlOrData );
+				debugLog( 'Modal overlay not found, redirecting to:', gameUrlOrData );
 				if ( typeof gameUrlOrData === 'string' ) {
 					navigateWithShortcodeParam( gameUrlOrData );
 				} else if ( gameUrlOrData && gameUrlOrData.url ) {
@@ -1765,30 +2394,41 @@
 				$modalOverlay.addClass( 'show' );
 			} );
 			
-			console.log( 'Modal overlay display set to flex' );
+			debugLog( 'Modal overlay display set to flex' );
 			
 			// ゲームデータがオブジェクトとして渡された場合（ゲームリストから）
 			if ( typeof gameUrlOrData === 'object' && gameUrlOrData !== null ) {
-				console.log( 'Opening with game data (from game list), showing title screen' );
+				debugLog( 'Opening with game data (from game list), showing title screen' );
 				
 				// ゲームデータを読み込んでからタイトル画面を表示
 				loadGameData( gameUrlOrData.url ).then( function() {
-					console.log( 'Game data loaded successfully, showing title screen' );
+					debugLog( 'Game data loaded successfully, showing title screen' );
 					
-					// タイトル画面を表示
+					// currentGameSelectionData を優先してタイトル描画
+					var dataForTitle = window.currentGameSelectionData || gameUrlOrData;
+					
+					// タイトル画面を表示（参照コピーで渡す）
 					setTimeout( function() {
-						showTitleScreen( gameUrlOrData );
+						showTitleScreen( Object.assign( {}, dataForTitle ) );
 					}, 300 );
 				} ).catch( function( error ) {
-					console.error( 'ゲームの読み込みに失敗しました:', error );
+					debugLog( 'error', 'ゲームの読み込みに失敗しました:', error );
 					closeModal( true );
 				} );
 			}
 			// URLが文字列として指定された場合（URLから直接または従来の方法）
 			else if ( typeof gameUrlOrData === 'string' ) {
-				console.log( 'Loading game data from URL:', gameUrlOrData );
+				debugLog( 'Loading game data from URL:', gameUrlOrData );
 				loadGameData( gameUrlOrData ).then( function() {
-					console.log( 'Game data loaded successfully' );
+					debugLog( 'Game data loaded successfully' );
+					
+					// タイトル画面を必ず更新して UI と内部データを同期する
+					if ( window.currentGameSelectionData ) {
+						showTitleScreen( Object.assign( {}, window.currentGameSelectionData ) );
+					} else {
+						// フォールバック：createFallbackGameData を使用
+						showTitleScreen( Object.assign( {}, createFallbackGameData( window.currentGameSelectionData ) ) );
+					}
 					
 					// 保存された進捗をチェック
 					checkAndOfferResumeOption().then( function() {
@@ -1798,11 +2438,11 @@
 						}, 100 );
 					} );
 				} ).catch( function( error ) {
-					console.error( 'ゲームの読み込みに失敗しました:', error );
+					debugLog( 'error', 'ゲームの読み込みに失敗しました:', error );
 					closeModal( true );
 				} );
 			} else {
-				console.log( 'No game URL provided, initializing existing content' );
+				debugLog( 'No game URL provided, initializing existing content' );
 				
 				// 現在のゲーム情報を設定
 				var gameTitle = extractGameTitleFromPage();
@@ -1822,7 +2462,7 @@
 			// ESCキーでモーダルを閉じる
 			$( document ).on( 'keydown.modal', function( e ) {
 				if ( e.which === 27 ) { // ESC key
-					console.log( 'ESC key pressed, closing modal' );
+					debugLog( 'ESC key pressed, closing modal' );
 					closeModal( true );
 				}
 			} );
@@ -1837,38 +2477,38 @@
 		function checkAndOfferResumeOption() {
 			return new Promise( function( resolve ) {
 				if ( ! currentGameTitle ) {
-					console.log( 'ゲームタイトルが設定されていないため、進捗チェックをスキップします' );
+					debugLog( 'ゲームタイトルが設定されていないため、進捗チェックをスキップします' );
 					resolve();
 					return;
 				}
 				
 				var savedProgress = getSavedGameProgress( currentGameTitle );
 				if ( ! savedProgress ) {
-					console.log( '保存された進捗が見つかりません' );
+					debugLog( '保存された進捗が見つかりません' );
 					resolve();
 					return;
 				}
 				
-				console.log( '保存された進捗が見つかりました:', savedProgress );
+				debugLog( '保存された進捗が見つかりました:', savedProgress );
 				
 				// 進捗確認ダイアログを表示
 				showResumeDialog( savedProgress ).then( function( shouldResume ) {
 					if ( shouldResume ) {
-						console.log( '進捗から再開します' );
+						debugLog( '進捗から再開します' );
 						resumeFromSavedProgress( savedProgress ).then( function() {
 							resolve();
 						} ).catch( function() {
 							// 復元に失敗した場合は最初から開始
-							console.log( '進捗復元に失敗したため、最初から開始します' );
+							debugLog( '進捗復元に失敗したため、最初から開始します' );
 							resolve();
 						} );
 					} else {
-						console.log( '最初から開始します' );
+						debugLog( '最初から開始します' );
 						// 保存された進捗をクリア
 						clearGameProgress( currentGameTitle );
 						// 全ての状態とデータを完全にリセット（最初から開始のため）
 						resetGameDataAndState();
-						console.log( 'ダイアログでの最初から開始選択で全ての状態をリセットしました' );
+						debugLog( 'ダイアログでの最初から開始選択で全ての状態をリセットしました' );
 						resolve();
 					}
 				} );
@@ -2009,12 +2649,12 @@
 		 */
 		function resumeFromSavedProgress( savedProgress ) {
 			return new Promise( function( resolve, reject ) {
-				console.log( '保存された進捗から復元中:', savedProgress );
+				debugLog( '保存された進捗から復元中:', savedProgress );
 				
 				try {
 					// 異なるシーンから再開する場合は、そのシーンを読み込む
 					if ( savedProgress.sceneUrl && savedProgress.sceneUrl !== currentSceneUrl ) {
-						console.log( '別のシーンから再開:', savedProgress.sceneUrl );
+						debugLog( '別のシーンから再開:', savedProgress.sceneUrl );
 						
 						loadGameData( savedProgress.sceneUrl ).then( function() {
 							// データ読み込み後に進捗を復元
@@ -2025,7 +2665,7 @@
 								resolve();
 							}, 100 );
 						} ).catch( function( error ) {
-							console.error( 'シーンデータの読み込みに失敗:', error );
+							debugLog( 'error', 'シーンデータの読み込みに失敗:', error );
 							reject( error );
 						} );
 					} else {
@@ -2038,7 +2678,7 @@
 						}, 100 );
 					}
 				} catch ( error ) {
-					console.error( '進捗復元中にエラーが発生:', error );
+					debugLog( 'error', '進捗復元中にエラーが発生:', error );
 					reject( error );
 				}
 			} );
@@ -2051,7 +2691,7 @@
 		 * @since 1.2.0
 		 */
 		function restoreProgressState( savedProgress ) {
-			console.log( '進捗状態を復元:', savedProgress );
+			debugLog( '進捗状態を復元:', savedProgress );
 			
 			// 進捗インデックスを復元
 			if ( typeof savedProgress.currentPageIndex === 'number' && savedProgress.currentPageIndex >= 0 ) {
@@ -2063,7 +2703,7 @@
 				dialogueIndex = savedProgress.currentDialogueIndex; // 後方互換性
 			}
 			
-			console.log( '復元された進捗位置:', {
+			debugLog( '復元された進捗位置:', {
 				currentPageIndex: currentPageIndex,
 				currentDialogueIndex: currentDialogueIndex
 			} );
@@ -2075,7 +2715,7 @@
 		 * @param {boolean} clearGameData ゲームデータをクリアするかどうか（デフォルト: true）
 		 */
 		function closeModal( clearGameData ) {
-			console.log( 'closeModal called, isModalOpen:', isModalOpen, 'clearGameData:', clearGameData );
+			debugLog( 'closeModal called, isModalOpen:', isModalOpen, 'clearGameData:', clearGameData );
 			
 			// デフォルトではゲームデータをクリア
 			if ( clearGameData === undefined ) {
@@ -2086,7 +2726,7 @@
 			$modalOverlay = $( '#novel-game-modal-overlay' );
 			
 			if ( ! isModalOpen ) {
-				console.log( 'Modal already closed, ignoring' );
+				debugLog( 'Modal already closed, ignoring' );
 				return;
 			}
 			
@@ -2102,7 +2742,7 @@
 				} );
 			}
 			
-			console.log( 'Modal overlay hidden' );
+			debugLog( 'Modal overlay hidden' );
 			
 			// イベントリスナーをクリーンアップ
 			$( document ).off( 'keydown.modal' );
@@ -2115,7 +2755,9 @@
 			// ゲームデータクリアが指定された場合のみクリア
 			if ( clearGameData ) {
 				window.currentGameSelectionData = null;
-				console.log( 'ゲームデータをクリアしました' );
+				// 背景画像データも明示的にクリア（前回ゲームの背景が残らないように）
+				clearBackgroundVars( 'closeModal() - clearGameData' );
+				debugLog( 'ゲームデータをクリアしました（背景データを含む）' );
 			}
 		}
 
@@ -2123,7 +2765,7 @@
 		 * ゲーム状態をリセット（表示状態のみ、データはクリアしない）
 		 */
 		function resetGameState() {
-			console.log( 'Resetting game display state...' );
+			debugLog( 'Resetting game display state...' );
 			
 			// セリフ関連の表示状態をリセット
 			currentDialogueIndex = 0;
@@ -2137,9 +2779,13 @@
 			// 直前の選択肢シーンURLをリセット
 			lastChoiceSceneUrl = '';
 			
-			// 背景表示の状態をリセット（データは保持）
+			// 背景表示の状態をリセット
+			// baseBackgroundが存在する場合はそれをcurrentBackgroundにセット、
+			// 存在しない場合はcurrentBackgroundをクリア（前回ゲームの背景が残らないように）
 			if ( baseBackground ) {
 				currentBackground = baseBackground;
+			} else {
+				currentBackground = '';
 			}
 			
 			// DOM要素の表示をリセット
@@ -2165,7 +2811,7 @@
 			// イベントハンドラーをクリーンアップ（選択肢以外）
 			$( document ).off( 'keydown.novel-dialogue keydown.novel-end' );
 			
-			console.log( 'Game display state reset completed' );
+			debugLog( 'Game display state reset completed' );
 		}
 
 		/**
@@ -2174,7 +2820,7 @@
 		 * @since 1.2.1
 		 */
 		function resetGameDataAndState() {
-			console.log( 'Resetting all game data and state completely...' );
+			debugLog( 'Resetting all game data and state completely...' );
 			
 			// セリフ関連のデータを完全にクリア
 			dialogueData = [];
@@ -2230,34 +2876,34 @@
 			// イベントハンドラーをクリーンアップ
 			$( document ).off( 'keydown.novel-dialogue keydown.novel-end keydown.novel-choices' );
 			
-			console.log( 'Complete game data and state reset completed' );
+			debugLog( 'Complete game data and state reset completed' );
 		}
 
 		/**
 		 * モーダルイベントハンドラーの設定
 		 */
 		function setupModalEvents() {
-			console.log( 'Setting up modal events' );
-			console.log( 'Start button exists:', $startButton.length > 0 );
-			console.log( 'Clear progress button exists:', $clearProgressButton.length > 0 );
-			console.log( 'Close button exists:', $closeButton.length > 0 );
-			console.log( 'Title screen exists:', $titleScreen.length > 0 );
+			debugLog( 'Setting up modal events' );
+			debugLog( 'Start button exists:', $startButton.length > 0 );
+			debugLog( 'Clear progress button exists:', $clearProgressButton.length > 0 );
+			debugLog( 'Close button exists:', $closeButton.length > 0 );
+			debugLog( 'Title screen exists:', $titleScreen.length > 0 );
 			
 			// 開始ボタンクリックイベント
 			$startButton.on( 'click', function( e ) {
 				e.preventDefault();
-				console.log( 'Start button clicked' );
+				debugLog( 'Start button clicked' );
 				
 				// 現在のゲームデータを取得
 				var currentGameData = window.currentGameSelectionData;
 				
 				// gameData が存在する場合は明示的に渡す
 				if ( currentGameData && currentGameData.title && currentGameData.url ) {
-					console.log( '開始ボタン：現在のゲームデータを使用', currentGameData );
+					debugLog( '開始ボタン：現在のゲームデータを使用', currentGameData );
 					openModal( currentGameData );
 				} else {
 					// フォールバック：データが不完全な場合は createFallbackGameData を使用
-					console.log( '開始ボタン：ゲームデータが不明のためフォールバック処理を実行' );
+					debugLog( '開始ボタン：ゲームデータが不明のためフォールバック処理を実行' );
 					currentGameData = createFallbackGameData( currentGameData );
 					openModal( currentGameData );
 				}
@@ -2266,7 +2912,7 @@
 			// 進捗クリアボタンクリックイベント
 			$clearProgressButton.on( 'click', function( e ) {
 				e.preventDefault();
-				console.log( 'Clear progress button clicked' );
+				debugLog( 'Clear progress button clicked' );
 				
 				var gameTitle = extractGameTitleFromPage();
 				if ( gameTitle ) {
@@ -2281,21 +2927,21 @@
 			// 閉じるボタンクリックイベント
 			$closeButton.on( 'click', function( e ) {
 				e.preventDefault();
-				console.log( 'Close button clicked' );
+				debugLog( 'Close button clicked' );
 				closeModal( true );
 			} );
 			
 			// モーダル内のクローズボタンイベントも設定（動的生成対応）
 			$( document ).on( 'click', '.novel-game-close-btn', function( e ) {
 				e.preventDefault();
-				console.log( 'Dynamic close button clicked' );
+				debugLog( 'Dynamic close button clicked' );
 				closeModal( true );
 			} );
 			
 			// タイトル画面：最初から開始ボタン（委譲イベント）
 			$( document ).on( 'click', '#novel-title-start-new', function( e ) {
 				e.preventDefault();
-				console.log( 'Title screen start button clicked' );
+				debugLog( 'Title screen start button clicked' );
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
 					var gameTitle = window.currentGameSelectionData.title;
@@ -2303,12 +2949,12 @@
 					// 保存された進捗があれば削除（最初から開始のため）
 					if ( gameTitle ) {
 						clearGameProgress( gameTitle );
-						console.log( '「最初から開始」のため、保存済み進捗を削除しました' );
+						debugLog( '「最初から開始」のため、保存済み進捗を削除しました' );
 					}
 					
 					// 全ての状態とデータを完全にリセット（最初から開始のため）
 					resetGameDataAndState();
-					console.log( '「最初から開始」のため、全ての状態とデータをリセットしました' );
+					debugLog( '「最初から開始」のため、全ての状態とデータをリセットしました' );
 					
 					// タイトル画面を非表示にしてゲーム開始（データは保持）
 					hideTitleScreen( false );
@@ -2316,11 +2962,11 @@
 						// ゲームデータを再読み込みしてからゲームを初期化
 						if ( window.currentGameSelectionData.url ) {
 							loadGameData( window.currentGameSelectionData.url ).then( function() {
-								console.log( '「最初から開始」用にゲームデータを再読み込みしました' );
+								debugLog( '「最初から開始」用にゲームデータを再読み込みしました' );
 								// タイトル画面経由での開始のため、進捗チェックをスキップして直接初期化
 								initializeGameContent();
 							} ).catch( function( error ) {
-								console.error( 'ゲームデータの再読み込みに失敗しました:', error );
+								debugLog( 'error', 'ゲームデータの再読み込みに失敗しました:', error );
 								// フォールバック：現在のデータで初期化を試行
 								initializeGameContent();
 							} );
@@ -2335,14 +2981,14 @@
 			// タイトル画面：続きから始めるボタン（委譲イベント）
 			$( document ).on( 'click', '#novel-title-continue', function( e ) {
 				e.preventDefault();
-				console.log( 'Title screen continue button clicked' );
+				debugLog( 'Title screen continue button clicked' );
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
 					var gameTitle = window.currentGameSelectionData.title;
 					var savedProgress = getSavedGameProgress( gameTitle );
 					
 					if ( savedProgress ) {
-						console.log( '保存された進捗から再開します' );
+						debugLog( '保存された進捗から再開します' );
 						
 						// 保存された進捗がGame Overになる可能性をチェック
 						// 最後の選択肢シーンがある場合はそこから再開
@@ -2351,7 +2997,7 @@
 						
 						// 保存された進捗の検証（簡易的にチェック）
 						if ( lastChoiceUrl && lastChoiceUrl !== savedProgress.sceneUrl ) {
-							console.log( '最後の選択肢シーンが見つかりました:', lastChoiceUrl );
+							debugLog( '最後の選択肢シーンが見つかりました:', lastChoiceUrl );
 							useLastChoice = true;
 						}
 						
@@ -2360,14 +3006,14 @@
 						setTimeout( function() {
 							if ( useLastChoice ) {
 								// 最後の選択肢シーンから再開
-								console.log( '最後の選択肢シーンから再開します:', lastChoiceUrl );
+								debugLog( '最後の選択肢シーンから再開します:', lastChoiceUrl );
 								loadGameData( lastChoiceUrl ).then( function() {
 									initializeGameContent();
 								} ).catch( function( error ) {
-									console.error( '最後の選択肢シーンの読み込みに失敗:', error );
+									debugLog( 'error', '最後の選択肢シーンの読み込みに失敗:', error );
 									// フォールバック：保存された進捗から再開
 									resumeFromSavedProgress( savedProgress ).catch( function( error ) {
-										console.error( '進捗復元に失敗しました:', error );
+										debugLog( 'error', '進捗復元に失敗しました:', error );
 										resetGameDataAndState();
 										initializeGameContent();
 									} );
@@ -2375,22 +3021,22 @@
 							} else {
 								// 通常の保存された進捗から再開
 								resumeFromSavedProgress( savedProgress ).catch( function( error ) {
-									console.error( '進捗復元に失敗しました:', error );
+									debugLog( 'error', '進捗復元に失敗しました:', error );
 									// フォールバック：最初から開始
 									resetGameDataAndState();
-									console.log( 'フォールバック処理で全ての状態とデータをリセットしました' );
+									debugLog( 'フォールバック処理で全ての状態とデータをリセットしました' );
 									initializeGameContent();
 								} );
 							}
 						}, 300 );
 					} else {
-						console.log( '保存された進捗が見つかりません。最初から開始します。' );
+						debugLog( '保存された進捗が見つかりません。最初から開始します。' );
 						// 進捗がない場合は最初から開始（タイトル画面経由のため進捗チェックはスキップ）
 						hideTitleScreen( false );
 						setTimeout( function() {
 							// 全ての状態とデータを完全にリセット（最初から開始のため）
 							resetGameDataAndState();
-							console.log( '進捗なしのため全ての状態とデータをリセットしました' );
+							debugLog( '進捗なしのため全ての状態とデータをリセットしました' );
 							initializeGameContent();
 						}, 300 );
 					}
@@ -2403,13 +3049,17 @@
 				e.stopPropagation();
 				
 				var $target = $( this );
-				var gameUrl = $target.attr( 'data-game-url' ) || $target.closest( '[data-game-url]' ).attr( 'data-game-url' );
-				var gameTitle = $target.attr( 'data-game-title' ) || $target.closest( '[data-game-title]' ).attr( 'data-game-title' );
-				var gameDescription = $target.attr( 'data-game-description' ) || $target.closest( '[data-game-description]' ).attr( 'data-game-description' ) || '';
-				var gameSubtitle = $target.attr( 'data-game-subtitle' ) || $target.closest( '[data-game-subtitle]' ).attr( 'data-game-subtitle' ) || '';
-				var gameImage = $target.attr( 'data-game-image' ) || $target.closest( '[data-game-image]' ).attr( 'data-game-image' ) || '';
+				// 厳密な DOM 取得（data-* の誤取得防止）
+				var $card = $target.closest( '.noveltool-game-item' );
 				
-				console.log( 'Game item clicked:', { gameUrl: gameUrl, gameTitle: gameTitle, gameDescription: gameDescription, gameImage: gameImage } );
+				// 優先順位: 1) $target の data-*, 2) $card の data-*, 3) フォールバック
+				var gameUrl = $target.attr( 'data-game-url' ) || ( $card.length ? $card.attr( 'data-game-url' ) : '' );
+				var gameTitle = $target.attr( 'data-game-title' ) || ( $card.length ? $card.attr( 'data-game-title' ) : '' );
+				var gameDescription = $target.attr( 'data-game-description' ) || ( $card.length ? $card.attr( 'data-game-description' ) : '' ) || '';
+				var gameSubtitle = $target.attr( 'data-game-subtitle' ) || ( $card.length ? $card.attr( 'data-game-subtitle' ) : '' ) || '';
+				var gameImage = $target.attr( 'data-game-image' ) || ( $card.length ? $card.attr( 'data-game-image' ) : '' ) || '';
+				
+				debugLog( 'Game item clicked:', { gameUrl: gameUrl, gameTitle: gameTitle, gameDescription: gameDescription, gameImage: gameImage } );
 				
 				if ( gameUrl && gameTitle ) {
 					// ゲームデータオブジェクトを作成し、タイトル画面表示モードでモーダルを開く
@@ -2423,7 +3073,7 @@
 					
 					openModal( gameData );
 				} else {
-					console.error( 'ゲームデータが不足しています:', { gameUrl: gameUrl, gameTitle: gameTitle } );
+					debugLog( 'error', 'ゲームデータが不足しています:', { gameUrl: gameUrl, gameTitle: gameTitle } );
 				}
 			} );
 
@@ -2602,7 +3252,8 @@
 						background: dialogue.background,
 						speaker: dialogue.speaker,
 						isFirstPageOfDialogue: pageIndex === 0,
-						dialogueIndex: dialogueIndex
+						dialogueIndex: dialogueIndex,
+						characters: dialogue.characters || null // セリフごとのキャラクター設定
 					} );
 				} );
 			} );
@@ -2714,6 +3365,11 @@
 				// キャラクターの状態を更新
 				updateCharacterStates( currentPage.speaker );
 				
+				// セリフごとのキャラクター設定がある場合はキャラクター画像を更新
+				if ( currentPage.isFirstPageOfDialogue && currentPage.characters ) {
+					updateDialogueCharacters( currentPage.characters );
+				}
+				
 				// 継続インジケーターの表示/非表示
 				// 次のページがある場合は常に表示
 				if ( currentPageIndex < allDialoguePages.length - 1 ) {
@@ -2735,6 +3391,161 @@
 				return true;
 			}
 			return false;
+		}
+		
+		/**
+		 * セリフごとのキャラクター画像を更新する
+		 *
+		 * @param {Object} characters キャラクター設定（left, center, right）
+		 */
+		function updateDialogueCharacters( characters ) {
+			if ( ! characters ) {
+				return;
+			}
+			
+			var positions = [ 'left', 'center', 'right' ];
+			var altStrings = {
+				'left': ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings.leftCharacter : 'Left Character',
+				'center': ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings.centerCharacter : 'Center Character',
+				'right': ( typeof novelGameFront !== 'undefined' && novelGameFront.strings ) ? novelGameFront.strings.rightCharacter : 'Right Character'
+			};
+			
+			positions.forEach( function( position ) {
+				var newImage = characters[ position ];
+				var $charImage = $( '.novel-character-' + position );
+				
+				// シーンのデフォルト画像を取得
+				var defaultSrc = '';
+				if ( $charImage.length > 0 ) {
+					defaultSrc = $charImage.data( 'scene-src' ) || $charImage.attr( 'src' ) || '';
+				}
+				
+				// 空文字列または未定義の場合はシーンのデフォルトに戻す
+				if ( ! newImage || newImage === '' ) {
+					if ( defaultSrc && $charImage.length > 0 ) {
+						var currentSrc = $charImage.attr( 'src' );
+						// すでにデフォルトの場合はスキップ
+						if ( currentSrc === defaultSrc ) {
+							return;
+						}
+						
+						$charImage.addClass( 'novel-character-transitioning' );
+						$charImage.css( 'opacity', 0 );
+						
+						// デフォルト画像をプリロード
+						var preloadImg = new Image();
+						preloadImg.onload = function() {
+							$charImage.attr( 'src', defaultSrc );
+							$charImage.show();
+							requestAnimationFrame( function() {
+								requestAnimationFrame( function() {
+									$charImage.css( 'opacity', 1 );
+								} );
+							} );
+						};
+						preloadImg.onerror = function() {
+							// 読み込み失敗時もデフォルトに設定してクリーンアップ
+							$charImage.attr( 'src', defaultSrc );
+							$charImage.css( 'opacity', 1 );
+							$charImage.removeClass( 'novel-character-transitioning' );
+						};
+						preloadImg.src = defaultSrc;
+						
+						// transitionend でクラスを削除（タイムアウトフォールバック付き）
+						var transitionCleanup = function() {
+							$charImage.removeClass( 'novel-character-transitioning' );
+						};
+						$charImage.one( 'transitionend', transitionCleanup );
+						// CSSトランジションが発火しない場合のフォールバック（400ms = 300ms + バッファ）
+						setTimeout( transitionCleanup, 400 );
+					}
+					return;
+				}
+				
+				if ( $charImage.length === 0 ) {
+					// キャラクター要素がない場合は新規作成
+					var $container = $gameContainer;
+					if ( $container.length > 0 ) {
+						var $newCharImage = $( '<img>' )
+							.addClass( 'novel-character novel-character-' + position )
+							.attr( 'alt', altStrings[ position ] )
+							.attr( 'loading', 'eager' )
+							.attr( 'data-scene-src', '' ) // 新規作成時はシーンデフォルトが無いため空
+							.css( 'opacity', 0 );
+						$container.append( $newCharImage );
+						$charImage = $newCharImage;
+					}
+				}
+				
+				// 既存の画像と異なる場合のみ更新
+				var currentSrc = $charImage.attr( 'src' );
+				if ( currentSrc !== newImage ) {
+					// フェードアニメーションで切り替え
+					$charImage.addClass( 'novel-character-transitioning' );
+					$charImage.css( 'opacity', 0 );
+					
+					// 新しい画像をプリロード
+					var img = new Image();
+					img.onload = function() {
+						$charImage.attr( 'src', newImage );
+						$charImage.show();
+						// ブラウザのレンダリングを待ってからフェードイン開始
+						requestAnimationFrame( function() {
+							requestAnimationFrame( function() {
+								$charImage.css( 'opacity', 1 );
+							} );
+						} );
+					};
+					img.onerror = function() {
+						// 画像読み込み失敗時はシーンのデフォルトにフォールバック
+						debugLog( 'キャラクター画像の読み込みに失敗しました:', newImage );
+						if ( defaultSrc ) {
+							$charImage.attr( 'src', defaultSrc );
+						}
+						$charImage.css( 'opacity', 1 );
+						$charImage.removeClass( 'novel-character-transitioning' );
+					};
+					img.src = newImage;
+					
+					// transitionend でクラスを削除（タイムアウトフォールバック付き）
+					var transitionCleanup = function() {
+						$charImage.removeClass( 'novel-character-transitioning' );
+					};
+					$charImage.one( 'transitionend', transitionCleanup );
+					// CSSトランジションが発火しない場合のフォールバック（400ms = 300ms + バッファ）
+					setTimeout( transitionCleanup, 400 );
+				}
+			} );
+		}
+		
+		/**
+		 * セリフごとのキャラクター画像をプリロードする
+		 */
+		function preloadDialogueCharacterImages() {
+			var imagesToPreload = {};
+			
+			// すべてのセリフからキャラクター画像を収集
+			dialogueData.forEach( function( dialogue ) {
+				if ( dialogue.characters ) {
+					[ 'left', 'center', 'right' ].forEach( function( position ) {
+						var imageUrl = dialogue.characters[ position ];
+						if ( imageUrl && ! imagesToPreload[ imageUrl ] ) {
+							imagesToPreload[ imageUrl ] = true;
+						}
+					} );
+				}
+			} );
+			
+			// 画像をプリロード
+			var imageUrls = Object.keys( imagesToPreload );
+			if ( imageUrls.length > 0 ) {
+				debugLog( 'セリフごとのキャラクター画像をプリロード中:', imageUrls.length, '枚' );
+				
+				imageUrls.forEach( function( url ) {
+					var img = new Image();
+					img.src = url;
+				} );
+			}
 		}
 		
 		/**
@@ -2960,13 +3771,13 @@
 						if ( dialogueData && dialogueData.length > 0 ) {
 							autoSaveGameProgress();
 						} else {
-							console.warn( 'Skipping autosave due to empty dialogueData after scene load' );
+							debugLog( 'warn', 'Skipping autosave due to empty dialogueData after scene load' );
 						}
 						
 						// 5. ゲームコンテンツを初期化
 						initializeGameContent();
 					} ).catch( function( error ) {
-						console.error( '次のシーンの読み込みに失敗しました:', error );
+						debugLog( 'error', '次のシーンの読み込みに失敗しました:', error );
 						// フォールバック：ページ遷移（ショートコードパラメータを保持）
 						navigateWithShortcodeParam( nextScene );
 					} );
@@ -3048,7 +3859,7 @@
 				// 通常のゲーム完了：進捗をクリア
 				if ( currentGameTitle ) {
 					clearGameProgress( currentGameTitle );
-					console.log( 'ゲーム完了により進捗をクリアしました:', currentGameTitle );
+					debugLog( 'ゲーム完了により進捗をクリアしました:', currentGameTitle );
 				}
 			}
 			
@@ -3230,7 +4041,7 @@
 				$clearProgressButton.hide();
 			}
 			
-			console.log( 'Clear progress button visibility updated:', hasSavedProgress ? 'visible' : 'hidden' );
+			debugLog( 'Clear progress button visibility updated:', hasSavedProgress ? 'visible' : 'hidden' );
 		}
 
 		/**
@@ -3309,12 +4120,12 @@
 		 * タイトル画面に戻る
 		 */
 		function returnToTitle() {
-			console.log( 'returnToTitle called' );
+			debugLog( 'returnToTitle called' );
 			
 			// 現在のゲームデータを確保
 			var currentGameData = window.currentGameSelectionData;
 			if ( !currentGameData || !currentGameData.title || !currentGameData.url ) {
-				console.log( 'currentGameSelectionDataが不完全、フォールバック処理を実行' );
+				debugLog( 'currentGameSelectionDataが不完全、フォールバック処理を実行' );
 				currentGameData = createFallbackGameData( currentGameData );
 			}
 			
@@ -3323,7 +4134,7 @@
 			
 			// タイトル画面を表示
 			setTimeout( function() {
-				showTitleScreen( currentGameData );
+				showTitleScreen( Object.assign( {}, currentGameData ) );
 			}, 100 );
 		}
 		
@@ -3449,14 +4260,14 @@
 		 * ゲームコンテンツの初期化処理（モーダル内で実行）
 		 */
 		function initializeGameContent() {
-			console.log( 'initializeGameContent called' );
-			console.log( 'Game container exists:', $gameContainer.length > 0 );
-			console.log( 'Dialogue data length:', dialogueData.length );
-			console.log( 'Dialogues length:', dialogues.length );
+			debugLog( 'initializeGameContent called' );
+			debugLog( 'Game container exists:', $gameContainer.length > 0 );
+			debugLog( 'Dialogue data length:', dialogueData.length );
+			debugLog( 'Dialogues length:', dialogues.length );
 			
 			// ゲームコンテナが存在しない場合は処理を中断
 			if ( $gameContainer.length === 0 ) {
-				console.error( 'Game container not found' );
+				debugLog( 'error', 'Game container not found' );
 				return;
 			}
 			
@@ -3468,7 +4279,7 @@
 			$choicesContainer = $( '#novel-choices' );
 			$adContainer = $( '#novel-ad-container' );
 			
-			console.log( 'Dialogue elements found:', {
+			debugLog( 'Dialogue elements found:', {
 				text: $dialogueText.length,
 				box: $dialogueBox.length,
 				speaker: $speakerName.length,
@@ -3491,7 +4302,7 @@
 
 			// セリフデータがある場合は分割処理を実行
 			if ( dialogues.length > 0 || dialogueData.length > 0 ) {
-				console.log( 'Preparing dialogue pages' );
+				debugLog( 'Preparing dialogue pages' );
 				
 				// データの検証とクリーンアップ
 				if ( dialogueData.length === 0 && dialogues.length > 0 ) {
@@ -3499,7 +4310,7 @@
 					dialogueData = dialogues.map( function( text ) {
 						return { text: text, background: '', speaker: '' };
 					} );
-					console.log( 'Rebuilt dialogueData from legacy dialogues array' );
+					debugLog( 'Rebuilt dialogueData from legacy dialogues array' );
 				}
 				
 				// 空のセリフをフィルタリング
@@ -3512,16 +4323,19 @@
 					return item.text;
 				} );
 				
-				console.log( 'Cleaned dialogue data, final length:', dialogueData.length );
+				debugLog( 'Cleaned dialogue data, final length:', dialogueData.length );
 				
 				prepareDialoguePages();
 				
+				// セリフごとのキャラクター画像をプリロード
+				preloadDialogueCharacterImages();
+				
 				// 保存された進捗がある場合はその位置から開始、なければ最初から
 				if ( currentPageIndex > 0 && currentPageIndex < allDialoguePages.length ) {
-					console.log( '保存された位置から再開:', currentPageIndex );
+					debugLog( '保存された位置から再開:', currentPageIndex );
 					displayCurrentPage();
 				} else {
-					console.log( '最初から開始' );
+					debugLog( '最初から開始' );
 					currentPageIndex = 0;
 					currentDialogueIndex = 0;
 					displayCurrentPage();
@@ -3542,12 +4356,12 @@
 				showAdvertisement();
 			} else {
 				// デバッグ用：セリフデータがない場合のメッセージ
-				console.log( 'No dialogue data found' );
+				debugLog( 'No dialogue data found' );
 				
 				// ゲームコンテナに何かコンテンツがあるかチェック
 				var containerContent = $gameContainer.html();
-				console.log( 'Game container content length:', containerContent ? containerContent.length : 0 );
-				console.log( 'Game container content (first 200 chars):', containerContent ? containerContent.substring( 0, 200 ) : 'empty' );
+				debugLog( 'Game container content length:', containerContent ? containerContent.length : 0 );
+				debugLog( 'Game container content (first 200 chars):', containerContent ? containerContent.substring( 0, 200 ) : 'empty' );
 			}
 			
 			// ゲーム開始時に広告を表示（条件に関係なく）
@@ -3558,12 +4372,12 @@
 		 * 初期化処理
 		 */
 		function initializeGame() {
-			console.log( 'Initializing game...' );
-			console.log( 'Modal overlay found:', $modalOverlay.length > 0 );
-			console.log( 'Title screen found:', $titleScreen.length > 0 );
-			console.log( 'Start button found:', $startButton.length > 0 );
-			console.log( 'Clear progress button found:', $clearProgressButton.length > 0 );
-			console.log( 'Close button found:', $closeButton.length > 0 );
+			debugLog( 'Initializing game...' );
+			debugLog( 'Modal overlay found:', $modalOverlay.length > 0 );
+			debugLog( 'Title screen found:', $titleScreen.length > 0 );
+			debugLog( 'Start button found:', $startButton.length > 0 );
+			debugLog( 'Clear progress button found:', $clearProgressButton.length > 0 );
+			debugLog( 'Close button found:', $closeButton.length > 0 );
 			
 			// モーダル要素が存在する場合のみモーダルイベントを設定
 			if ( $modalOverlay.length > 0 ) {
@@ -3574,9 +4388,9 @@
 				$modalOverlay.hide();
 				$titleScreen.hide();
 				
-				console.log( 'Modal events set up successfully' );
+				debugLog( 'Modal events set up successfully' );
 			} else {
-				console.log( 'No modal overlay found, skipping modal setup' );
+				debugLog( 'No modal overlay found, skipping modal setup' );
 			}
 			
 			// 進捗クリアボタンの表示状態を初期化
@@ -3593,12 +4407,12 @@
 		// archive-novel_game.phpからの呼び出しに対応するため
 		window.novelGameModal = {
 			open: function( gameUrl ) {
-				console.log( 'novelGameModal.open called with URL:', gameUrl );
-				console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
+				debugLog( 'novelGameModal.open called with URL:', gameUrl );
+				debugLog( 'Modal overlay exists:', $modalOverlay.length > 0 );
 				
 				// モーダル要素が存在しない場合はページ遷移
 				if ( $modalOverlay.length === 0 ) {
-					console.log( 'Modal overlay not found, redirecting to:', gameUrl );
+					debugLog( 'Modal overlay not found, redirecting to:', gameUrl );
 					if ( gameUrl ) {
 						navigateWithShortcodeParam( gameUrl );
 					}
@@ -3607,12 +4421,12 @@
 				openModal( gameUrl );
 			},
 			openSelection: function( gameData ) {
-				console.log( 'novelGameModal.openSelection called with data:', gameData );
-				console.log( 'Modal overlay exists:', $modalOverlay.length > 0 );
+				debugLog( 'novelGameModal.openSelection called with data:', gameData );
+				debugLog( 'Modal overlay exists:', $modalOverlay.length > 0 );
 				
 				// モーダル要素が存在しない場合は直接ゲームを開始
 				if ( $modalOverlay.length === 0 ) {
-					console.log( 'Modal overlay not found, opening game directly' );
+					debugLog( 'Modal overlay not found, opening game directly' );
 					if ( gameData && gameData.url ) {
 						navigateWithShortcodeParam( gameData.url );
 					}
@@ -3621,7 +4435,7 @@
 				openModal( gameData );
 			},
 			close: function() {
-				console.log( 'novelGameModal.close called' );
+				debugLog( 'novelGameModal.close called' );
 				// タイトル画面が表示されている場合は非表示にする
 				if ( isTitleScreenVisible ) {
 					hideTitleScreen( true );
@@ -3637,7 +4451,7 @@
 		};
 		
 		// デバッグ情報を出力
-		console.log( 'Novel Game Modal initialized. Modal overlay found:', $modalOverlay.length > 0 );
+		debugLog( 'Novel Game Modal initialized. Modal overlay found:', $modalOverlay.length > 0 );
 
 		/**
 		 * モーダルDOM再生成ユーティリティ
@@ -3684,11 +4498,11 @@
 				var waitForAnimations = options.waitForAnimations !== false;
 
 				return new Promise( function( resolve, reject ) {
-					console.log( 'modalUtil.recreate開始:', { preserveState: preserveState, waitForAnimations: waitForAnimations } );
+					debugLog( 'modalUtil.recreate開始:', { preserveState: preserveState, waitForAnimations: waitForAnimations } );
 
 					// 既に再生成中の場合は待機
 					if ( self.isRecreating ) {
-						console.log( 'モーダル再生成が既に実行中です' );
+						debugLog( 'モーダル再生成が既に実行中です' );
 						setTimeout( function() {
 							self.recreate( options ).then( resolve ).catch( reject );
 						}, 100 );
@@ -3717,7 +4531,7 @@
 							// 6. モーダル再生成に伴い状態フラグをリセット
 							// 新しいモーダルが生成されたので、isModalOpen は false にリセットする
 							isModalOpen = false;
-							console.log( 'モーダル再生成により isModalOpen を false にリセット' );
+							debugLog( 'モーダル再生成により isModalOpen を false にリセット' );
 
 							// 7. DOM参照を再取得
 							self._refreshDOMReferences();
@@ -3731,18 +4545,18 @@
 							}
 
 							self.isRecreating = false;
-							console.log( 'modalUtil.recreate完了' );
+							debugLog( 'modalUtil.recreate完了' );
 							resolve();
 
 						} ).catch( function( error ) {
 							self.isRecreating = false;
-							console.error( 'modalUtil.recreate失敗:', error );
+							debugLog( 'error', 'modalUtil.recreate失敗:', error );
 							reject( error );
 						} );
 
 					} catch ( error ) {
 						self.isRecreating = false;
-						console.error( 'modalUtil.recreate例外:', error );
+						debugLog( 'error', 'modalUtil.recreate例外:', error );
 						reject( error );
 					}
 				} );
@@ -3758,7 +4572,7 @@
 				return new Promise( function( resolve ) {
 					// モーダルのフェードアニメーション検知
 					if ( $modalOverlay.length > 0 && $modalOverlay.is( ':animated' ) ) {
-						console.log( 'モーダルアニメーション完了を待機中...' );
+						debugLog( 'モーダルアニメーション完了を待機中...' );
 						$modalOverlay.queue( function() {
 							$( this ).dequeue();
 							resolve();
@@ -3803,11 +4617,11 @@
 						state.gameContainerStyle = $gameContainer.attr( 'style' );
 					}
 
-					console.log( '状態保存完了:', state );
+					debugLog( '状態保存完了:', state );
 					return state;
 
 				} catch ( error ) {
-					console.warn( '状態保存中にエラーが発生:', error );
+					debugLog( 'warn', '状態保存中にエラーが発生:', error );
 					return {};
 				}
 			},
@@ -3816,7 +4630,7 @@
 			 * イベントハンドラーのクリーンアップ
 			 */
 			_cleanupEventHandlers: function() {
-				console.log( 'イベントハンドラーのクリーンアップ開始' );
+				debugLog( 'イベントハンドラーのクリーンアップ開始' );
 
 				try {
 					// モーダル関連のイベントをクリーンアップ
@@ -3836,10 +4650,10 @@
 					// 動的に追加されたイベントもクリーンアップ
 					$( document ).off( 'click.novel-game-dynamic' );
 
-					console.log( 'イベントハンドラーのクリーンアップ完了' );
+					debugLog( 'イベントハンドラーのクリーンアップ完了' );
 
 				} catch ( error ) {
-					console.warn( 'イベントハンドラークリーンアップ中にエラーが発生:', error );
+					debugLog( 'warn', 'イベントハンドラークリーンアップ中にエラーが発生:', error );
 				}
 			},
 
@@ -3847,16 +4661,16 @@
 			 * 古いモーダルを削除
 			 */
 			_removeOldModal: function() {
-				console.log( '古いモーダルの削除開始' );
+				debugLog( '古いモーダルの削除開始' );
 
 				try {
 					if ( $modalOverlay.length > 0 ) {
 						$modalOverlay.remove();
 					}
-					console.log( '古いモーダルの削除完了' );
+					debugLog( '古いモーダルの削除完了' );
 
 				} catch ( error ) {
-					console.warn( '古いモーダル削除中にエラーが発生:', error );
+					debugLog( 'warn', '古いモーダル削除中にエラーが発生:', error );
 				}
 			},
 
@@ -3864,7 +4678,7 @@
 			 * 新しいモーダルを生成
 			 */
 			_createNewModal: function() {
-				console.log( '新しいモーダルの生成開始' );
+				debugLog( '新しいモーダルの生成開始' );
 
 				try {
 					// モーダル構造を構築
@@ -3883,10 +4697,10 @@
 					// DOMに追加
 					$( 'body' ).append( $newOverlay );
 
-					console.log( '新しいモーダルの生成完了' );
+					debugLog( '新しいモーダルの生成完了' );
 
 				} catch ( error ) {
-					console.error( '新しいモーダル生成中にエラーが発生:', error );
+					debugLog( 'error', '新しいモーダル生成中にエラーが発生:', error );
 					throw error;
 				}
 			},
@@ -3895,7 +4709,7 @@
 			 * DOM参照を再取得
 			 */
 			_refreshDOMReferences: function() {
-				console.log( 'DOM参照の再取得開始' );
+				debugLog( 'DOM参照の再取得開始' );
 
 				try {
 					// グローバル変数の再取得
@@ -3916,7 +4730,7 @@
 					$dialogueContinue = $( '#novel-dialogue-continue' );
 					$choicesContainer = $( '#novel-choices' );
 
-					console.log( 'DOM参照の再取得完了:', {
+					debugLog( 'DOM参照の再取得完了:', {
 						modalOverlay: $modalOverlay.length,
 						closeButton: $closeButton.length,
 						titleScreen: $titleScreen.length,
@@ -3924,7 +4738,7 @@
 					} );
 
 				} catch ( error ) {
-					console.error( 'DOM参照再取得中にエラーが発生:', error );
+					debugLog( 'error', 'DOM参照再取得中にエラーが発生:', error );
 					throw error;
 				}
 			},
@@ -3933,7 +4747,7 @@
 			 * イベントハンドラーを再設定
 			 */
 			_rebindEventHandlers: function() {
-				console.log( 'イベントハンドラーの再設定開始' );
+				debugLog( 'イベントハンドラーの再設定開始' );
 
 				try {
 					// モーダルイベントを再設定
@@ -3941,10 +4755,10 @@
 						setupModalEvents();
 					}
 
-					console.log( 'イベントハンドラーの再設定完了' );
+					debugLog( 'イベントハンドラーの再設定完了' );
 
 				} catch ( error ) {
-					console.error( 'イベントハンドラー再設定中にエラーが発生:', error );
+					debugLog( 'error', 'イベントハンドラー再設定中にエラーが発生:', error );
 					throw error;
 				}
 			},
@@ -3955,7 +4769,7 @@
 			 * @param {object} savedState 保存された状態
 			 */
 			_restoreState: function( savedState ) {
-				console.log( '状態の復元開始:', savedState );
+				debugLog( '状態の復元開始:', savedState );
 
 				try {
 					if ( ! savedState ) {
@@ -4008,10 +4822,10 @@
 						}
 					}
 
-					console.log( '状態の復元完了' );
+					debugLog( '状態の復元完了' );
 
 				} catch ( error ) {
-					console.warn( '状態復元中にエラーが発生:', error );
+					debugLog( 'warn', '状態復元中にエラーが発生:', error );
 				}
 			},
 
@@ -4067,7 +4881,7 @@
 		 * }
 		 */
 
-		console.log( 'モーダルDOM再生成ユーティリティが初期化されました' );
+		debugLog( 'モーダルDOM再生成ユーティリティが初期化されました' );
 	} );
 
 } )( jQuery );

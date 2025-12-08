@@ -647,6 +647,16 @@ function noveltool_filter_novel_game_content( $content ) {
         $dialogue_flag_conditions = array();
     }
     
+    // セリフごとのキャラクター設定データの取得
+    $dialogue_characters = get_post_meta( $post->ID, '_dialogue_characters', true );
+    if ( is_string( $dialogue_characters ) ) {
+        $dialogue_characters_array = json_decode( $dialogue_characters, true );
+    } elseif ( is_array( $dialogue_characters ) ) {
+        $dialogue_characters_array = $dialogue_characters;
+    } else {
+        $dialogue_characters_array = array();
+    }
+    
     // セリフと背景と話者を組み合わせた配列を作成
     $dialogue_data = array();
     foreach ( $dialogue_lines as $index => $line ) {
@@ -670,6 +680,16 @@ function noveltool_filter_novel_game_content( $content ) {
             $dialogue_item['flagConditionLogic'] = 'AND';
             $dialogue_item['displayMode'] = 'normal';
             $dialogue_item['alternativeText'] = '';
+        }
+        
+        // セリフごとのキャラクター設定がある場合は追加
+        if ( isset( $dialogue_characters_array[ $index ] ) && is_array( $dialogue_characters_array[ $index ] ) ) {
+            $char_setting = $dialogue_characters_array[ $index ];
+            $dialogue_item['characters'] = array(
+                'left'   => isset( $char_setting['left'] ) ? $char_setting['left'] : '',
+                'center' => isset( $char_setting['center'] ) ? $char_setting['center'] : '',
+                'right'  => isset( $char_setting['right'] ) ? $char_setting['right'] : '',
+            );
         }
         
         $dialogue_data[] = $dialogue_item;
@@ -800,15 +820,15 @@ function noveltool_filter_novel_game_content( $content ) {
                 
                 <!-- 3体キャラクター表示 -->
                 <?php if ( $character_left ) : ?>
-                    <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" alt="<?php echo esc_attr__( 'Left Character', 'novel-game-plugin' ); ?>" />
+                    <img id="novel-character-left" class="novel-character novel-character-left" src="<?php echo esc_url( $character_left ); ?>" data-scene-src="<?php echo esc_attr( $character_left ); ?>" alt="<?php echo esc_attr__( 'Left Character', 'novel-game-plugin' ); ?>" />
                 <?php endif; ?>
                 
                 <?php if ( $character_center ) : ?>
-                    <img id="novel-character-center" class="novel-character novel-character-center" src="<?php echo esc_url( $character_center ); ?>" alt="<?php echo esc_attr__( 'Center Character', 'novel-game-plugin' ); ?>" />
+                    <img id="novel-character-center" class="novel-character novel-character-center" src="<?php echo esc_url( $character_center ); ?>" data-scene-src="<?php echo esc_attr( $character_center ); ?>" alt="<?php echo esc_attr__( 'Center Character', 'novel-game-plugin' ); ?>" />
                 <?php endif; ?>
                 
                 <?php if ( $character_right ) : ?>
-                    <img id="novel-character-right" class="novel-character novel-character-right" src="<?php echo esc_url( $character_right ); ?>" alt="<?php echo esc_attr__( 'Right Character', 'novel-game-plugin' ); ?>" />
+                    <img id="novel-character-right" class="novel-character novel-character-right" src="<?php echo esc_url( $character_right ); ?>" data-scene-src="<?php echo esc_attr( $character_right ); ?>" alt="<?php echo esc_attr__( 'Right Character', 'novel-game-plugin' ); ?>" />
                 <?php endif; ?>
 
                 <div id="novel-speaker-name" class="novel-speaker-name"></div>
@@ -943,12 +963,65 @@ add_filter( 'the_content', 'noveltool_filter_novel_game_content', 20 );
  * @since 1.0.0
  */
 function noveltool_enqueue_scripts() {
+    // デバッグフラグの値を決定（WP_DEBUG をデフォルトとする）
+    $debug_enabled = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? true : false;
+
+    // 共通デバッグログユーティリティを読み込み
+    wp_enqueue_script(
+        'novel-game-debug-log',
+        NOVEL_GAME_PLUGIN_URL . 'js/debug-log.js',
+        array(),
+        NOVEL_GAME_PLUGIN_VERSION,
+        false // <head> セクションで読み込み（依存スクリプトより先にグローバル関数を定義）
+    );
+
+    // デバッグフラグをグローバル変数として設定
+    wp_add_inline_script(
+        'novel-game-debug-log',
+        'window.novelGameDebug = ' . ( $debug_enabled ? 'true' : 'false' ) . ';',
+        'before'
+    );
+
     wp_enqueue_script(
         'novel-game-frontend',
         NOVEL_GAME_PLUGIN_URL . 'js/frontend.js',
-        array( 'jquery' ),
+        array( 'jquery', 'novel-game-debug-log' ),
         NOVEL_GAME_PLUGIN_VERSION,
         true
+    );
+
+    // フロントエンド用のi18n文字列をローカライズ
+    wp_localize_script(
+        'novel-game-frontend',
+        'novelGameFront',
+        array(
+            'debug'   => $debug_enabled,
+            'strings' => array(
+                'leftCharacter'          => esc_html__( 'Left Character', 'novel-game-plugin' ),
+                'centerCharacter'        => esc_html__( 'Center Character', 'novel-game-plugin' ),
+                'rightCharacter'         => esc_html__( 'Right Character', 'novel-game-plugin' ),
+                'settingsTitle'          => esc_html__( '保存済みのプレイデータ', 'novel-game-plugin' ),
+                'noData'                 => esc_html__( '保存されているデータはありません。', 'novel-game-plugin' ),
+                'deleteLabel'            => esc_html__( '削除', 'novel-game-plugin' ),
+                'clearAllLabel'          => esc_html__( 'すべてのデータをクリア', 'novel-game-plugin' ),
+                'closeLabel'             => esc_html__( '閉じる', 'novel-game-plugin' ),
+                /* translators: %s is the data label name */
+                'confirmDeleteMsg'       => esc_html__( '「%s」を削除しますか？この操作は取り消せません。', 'novel-game-plugin' ),
+                'confirmClearAllMsg'     => esc_html__( 'このゲームのすべての保存データを削除しますか？この操作は取り消せません。', 'novel-game-plugin' ),
+                'localStorageNotSupport' => esc_html__( 'お使いのブラウザはローカルストレージに対応していないため、保存データの管理ができません。', 'novel-game-plugin' ),
+                'deleteErrorMsg'         => esc_html__( 'データの削除に失敗しました。', 'novel-game-plugin' ),
+                'clearErrorMsg'          => esc_html__( 'データのクリアに失敗しました。', 'novel-game-plugin' ),
+                'savedAt'                => esc_html__( '保存日時:', 'novel-game-plugin' ),
+                'size'                   => esc_html__( 'サイズ:', 'novel-game-plugin' ),
+                'unknown'                => esc_html__( '不明', 'novel-game-plugin' ),
+                'progressData'           => esc_html__( '進捗データ', 'novel-game-plugin' ),
+                'lastChoice'             => esc_html__( '最後の選択肢', 'novel-game-plugin' ),
+                'flagData'               => esc_html__( 'フラグデータ', 'novel-game-plugin' ),
+                'gameData'               => esc_html__( 'ゲームデータ', 'novel-game-plugin' ),
+                'settingsButtonLabel'    => esc_html__( '設定', 'novel-game-plugin' ),
+                'settingsButtonTitle'    => esc_html__( '保存データの管理', 'novel-game-plugin' ),
+            )
+        )
     );
 
     wp_enqueue_style(
@@ -1272,6 +1345,24 @@ function noveltool_game_posts_shortcode( $atts ) {
         $game_title_image = ! empty( $game['title_image'] ) ? $game['title_image'] : '';
     }
     
+    // タイトル表示設定を取得（ゲームが存在する場合のみ）
+    $show_title_overlay = '1'; // デフォルトはオン
+    $title_text_color = '#ffffff'; // デフォルトは白
+    
+    if ( $game && isset( $game['id'] ) ) {
+        $show_title_overlay = get_post_meta( $game['id'], 'noveltool_show_title_overlay', true );
+        // デフォルトはオン（既存の動作を維持）
+        if ( $show_title_overlay === '' ) {
+            $show_title_overlay = '1';
+        }
+        
+        // タイトル文字色を取得
+        $title_text_color = get_post_meta( $game['id'], 'noveltool_title_text_color', true );
+        if ( empty( $title_text_color ) ) {
+            $title_text_color = '#ffffff';
+        }
+    }
+    
     // 表示用の画像を決定：タイトル画像を優先、なければ最初のシーンの背景画像
     $display_image = ! empty( $game_title_image ) ? $game_title_image : $background;
     
@@ -1282,9 +1373,10 @@ function noveltool_game_posts_shortcode( $atts ) {
     
     // 背景画像とタイトルのオーバーレイ表示
     if ( $display_image ) {
-        echo '<div class="noveltool-game-hero" style="background-image: url(\'' . esc_url( $display_image ) . '\');">';
+        echo '<div class="noveltool-game-hero" style="background-image: url(\'' . esc_url( $display_image ) . '\'); --noveltool-title-color: ' . esc_attr( $title_text_color ) . ';">';
         echo '<div class="noveltool-game-hero-overlay">';
-        if ( $show_title ) {
+        // タイトルオーバーレイ設定がオンで、かつshow_titleもtrueの場合のみ表示
+        if ( $show_title && $show_title_overlay === '1' ) {
             echo '<h1 class="noveltool-game-hero-title">' . esc_html( $game_title ) . '</h1>';
         }
         echo '</div>'; // .noveltool-game-hero-overlay
@@ -1684,7 +1776,6 @@ function noveltool_shortcode_styles() {
         bottom: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
         padding: 40px 30px 30px;
         color: white;
     }
@@ -1693,8 +1784,34 @@ function noveltool_shortcode_styles() {
         margin: 0;
         font-size: 2.5em;
         font-weight: bold;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
         line-height: 1.2;
+        /* CSS カスタムプロパティで色を設定（デフォルトは白） */
+        color: var(--noveltool-title-color, #ffffff);
+        /* 強力な縁取りと影で可読性を確保（画像を覆わない） */
+        -webkit-text-stroke: 2px rgba(0, 0, 0, 0.9);
+        /* paint-order: stroke fill はブラウザサポートが限定的だが、対応ブラウザでは縁取りを背後に配置 */
+        paint-order: stroke fill;
+        text-shadow:
+            3px 3px 6px rgba(0, 0, 0, 0.9),
+            -1px -1px 4px rgba(0, 0, 0, 0.8),
+            1px -1px 4px rgba(0, 0, 0, 0.8),
+            -1px 1px 4px rgba(0, 0, 0, 0.8),
+            1px 1px 4px rgba(0, 0, 0, 0.8);
+    }
+    
+    /* Webkit非対応ブラウザ向けフォールバック：多重text-shadowで擬似縁取りを実現 */
+    @supports not (-webkit-text-stroke: 2px black) {
+        .noveltool-game-hero-title {
+            /* 縁取り効果のための多重text-shadow */
+            text-shadow:
+                0 0 6px rgba(0, 0, 0, 0.9),
+                0 0 6px rgba(0, 0, 0, 0.9),
+                2px 2px 4px rgba(0, 0, 0, 0.9),
+                -2px -2px 4px rgba(0, 0, 0, 0.9),
+                2px -2px 4px rgba(0, 0, 0, 0.9),
+                -2px 2px 4px rgba(0, 0, 0, 0.9),
+                3px 3px 6px rgba(0, 0, 0, 0.9);
+        }
     }
     
     .noveltool-game-title-fallback {
@@ -1766,6 +1883,8 @@ function noveltool_shortcode_styles() {
         
         .noveltool-game-hero-title {
             font-size: 1.8em;
+            /* タブレット・モバイルでは縁取りを少し細く */
+            -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.9);
         }
         
         .noveltool-game-title-fallback {
@@ -1796,6 +1915,8 @@ function noveltool_shortcode_styles() {
         
         .noveltool-game-hero-title {
             font-size: 1.5em;
+            /* 小画面では縁取りをさらに細く */
+            -webkit-text-stroke: 1px rgba(0, 0, 0, 0.9);
         }
         
         .noveltool-game-hero-overlay {

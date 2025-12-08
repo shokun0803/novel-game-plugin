@@ -1,0 +1,35 @@
+name: Console log check
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+    paths:
+      - 'js/**/*.js'
+  pull_request:
+    branches:
+      - dev
+      - master
+    paths:
+      - 'js/**/*.js'
+
+permissions:
+  contents: read
+
+jobs:
+  # JavaScript コードの静的チェック（grep ベース）
+  grep-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for forbidden patterns in JS files
+        run: |
+          # スクリプト実行前に堅牢化オプションを設定
+          set -euo pipefail
+          
+          # スクリプトを呼び出して検査実行
+          bash scripts/check-js-patterns.sh
+
