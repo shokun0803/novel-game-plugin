@@ -82,7 +82,7 @@ function noveltool_my_games_page() {
     if ( isset( $_GET['success'] ) ) {
         switch ( sanitize_text_field( wp_unslash( $_GET['success'] ) ) ) {
             case 'deleted':
-                $success_message = __( 'Game has been deleted.', 'novel-game-plugin' );
+                $success_message = __( 'Game and all associated scenes have been permanently deleted.', 'novel-game-plugin' );
                 break;
         }
     }
