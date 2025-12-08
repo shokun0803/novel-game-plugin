@@ -116,7 +116,7 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
     
     if ( isset( $_GET['success'] ) ) {
         switch ( sanitize_text_field( wp_unslash( $_GET['success'] ) ) ) {
-            case 'scene_deleted':
+            case 'scene_deleted': // 後方互換性のため維持
             case 'scene_trashed':
                 $success_message = __( 'Scene has been moved to trash. You can restore it from the trash if needed.', 'novel-game-plugin' );
                 break;
