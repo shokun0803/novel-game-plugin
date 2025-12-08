@@ -249,7 +249,7 @@ function noveltool_admin_post_delete_scene() {
     $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
 
     if ( $scene_id ) {
-        $result = wp_delete_post( $scene_id, true ); // 完全削除（ゴミ箱に入れない）
+        $result = wp_trash_post( $scene_id ); // ゴミ箱へ移動
 
         if ( $result ) {
             $redirect_url = $game_id 

@@ -356,11 +356,12 @@ function noveltool_save_game( $game_data ) {
 /**
  * ゲームを削除する関数
  *
- * @param int $game_id ゲームID
+ * @param int  $game_id      ゲームID
+ * @param bool $force_delete trueの場合は完全削除、falseの場合はゴミ箱へ移動（デフォルト: false）
  * @return bool 削除成功の場合true
  * @since 1.1.0
  */
-function noveltool_delete_game( $game_id ) {
+function noveltool_delete_game( $game_id, $force_delete = false ) {
     $games = noveltool_get_all_games();
     
     // ゲームタイトルを取得
@@ -376,7 +377,11 @@ function noveltool_delete_game( $game_id ) {
     if ( $game_title ) {
         $scenes = noveltool_get_posts_by_game_title( $game_title );
         foreach ( $scenes as $scene ) {
-            wp_delete_post( $scene->ID, true ); // 完全削除（ゴミ箱に入れない）
+            if ( $force_delete ) {
+                wp_delete_post( $scene->ID, true ); // 完全削除（ゴミ箱に入れない）
+            } else {
+                wp_trash_post( $scene->ID ); // ゴミ箱へ移動
+            }
         }
     }
     
