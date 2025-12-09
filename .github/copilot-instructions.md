@@ -139,6 +139,34 @@ git push --force-with-lease origin dev  # ❌ 明示指示なしでは絶対禁�
  - PR テンプレートには「重要事項」セクションを重複掲載しない（内容は中央集約し本ファイルで参照）。
  - 進捗/報告専用の新規ドキュメントをPR目的だけで作成しない。READMEや既存仕様/ルール変更がある場合のみ必要最小限更新。
 
+### コメント主導レビューポリシー（Comment-driven Review Policy）
+
+このリポジトリでは、レビュー対象や確認対象の範囲を明確にするため、以下の『コメント主導レビューポリシー』を適用します。
+
+1. まず、リモートの最新のコメントとコミットを必ず取得して状況を把握してください（`git fetch origin` / `gh pr view <番号> --comments` 等で最新情報を取得）。
+2. ユーザー（またはオーナー）による最新のコメント（以下「anchor コメント」）を基準にレビュー対象を決定します。anchor コメントに対する最新の 'reply'（返答コメント）を取得してください。
+3. 返信コメント内にコミットハッシュ（7 文字以上）が明記されている場合、**そのコミットすべて**を直接レビュー対象として扱います。
+4. 返信コメント内に明示的なコミットハッシュがない場合は、anchor コメントの作成日時（`createdAt`）から reply コメントの作成日時までの間に PR ブランチ上でコミットされた差分（`git log --since=.. --until=`）を対象としてください。
+5. 1 つの reply が複数のコミットを含む場合、それらすべてをレビューしてください（コミット単位の差分で問題が無いかを確認します）。
+6. 翻訳のみ（`.pot` / `.po` / `.mo` / ローカライズファイル）に関するコミットの場合、原則として翻訳ファイルと UI 文言の整合性（`__()` 等の i18n 関数が適切に使われているか、POT に抽出されているか）だけをチェックします。既にレビュー済みのロジック（コード本体）が変更されていない限り、重複してコードロジックを再レビューしないでください。
+7. 編集・コミット・push（リモート操作）は**必ず**ユーザーの明示的許可がある場合にのみ行ってください。ローカルでの検証やブランチ作成は許可されていますが、リモートへ push する操作は行わないでください（`dev` へ push しない）。
+8. 例外: セキュリティやデータ削除に関わる重大な挙動が差分に見られる場合、anchor 範囲内に限り追加で関連ファイル（権限、DB、アンインストール処理など）を確認し、問題あれば即座にユーザーへ報告します。これは **差分の最小限確認** に限定すること。
+
+実行例（注: 読み取りのみ）:
+```bash
+# anchor コメントを取得し、reply を選択
+ANCHOR_ID="IC_kwDOPI23ec7YYK4S"
+ANCHOR_CREATED=$(gh pr view 206 --repo shokun0803/novel-game-plugin --comments --json comments --jq ".comments | map(select(.id == \"$ANCHOR_ID\")) | .[0].createdAt")
+REPLY_JSON=$(gh pr view 206 --repo shokun0803/novel-game-plugin --comments --json comments --jq ".comments | map(select(.inReplyToId == \"$ANCHOR_ID\")) | sort_by(.createdAt) | .[-1]")
+REPLY_CREATED=$(echo "$REPLY_JSON" | jq -r '.createdAt')
+
+# 明示ハッシュがない場合: anchor~reply のコミットを抽出
+git log --pretty=format:'%cI %h %s' origin/pr-206 --since="$ANCHOR_CREATED" --until="$REPLY_CREATED"
+```
+
+注: 上記操作は**読み取り専用**の確認であり、編集や push は行いません。必要であればパッチ作成は別途指示してください。
+
+
 #### ファイル操作の基本方針
 
 - **明示的な指示がない限り、ファイルの作成・編集・削除は実行しない**
