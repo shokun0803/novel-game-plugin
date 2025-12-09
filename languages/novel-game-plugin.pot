@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Novel Game Plugin 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin\n"
-"POT-Creation-Date: 2025-12-09 04:24+0000\n"
+"POT-Creation-Date: 2025-12-09 06:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,273 +22,307 @@ msgstr ""
 #: admin/my-games.php:22 admin/plugin-settings.php:22
 #: admin/game-settings.php:40 admin/game-settings.php:98
 #: admin/game-settings.php:198 admin/game-settings.php:237
-#: admin/game-settings.php:296 admin/game-settings.php:356
+#: admin/game-settings.php:298 admin/game-settings.php:357
+#: admin/game-settings.php:417
 msgid "You do not have permission to access this page."
 msgstr ""
 
-#: admin/game-manager.php:43
+#: admin/game-manager.php:46
 msgid "- Game Management"
 msgstr ""
 
-#: admin/game-manager.php:49
+#: admin/game-manager.php:52
 msgid "Back to My Games"
 msgstr ""
 
-#: admin/game-manager.php:56
+#: admin/game-manager.php:59
 msgid "Scene List"
 msgstr ""
 
-#: admin/game-manager.php:60 admin/game-manager.php:154
-#: admin/game-manager.php:228
+#: admin/game-manager.php:63 admin/game-manager.php:196
+#: admin/game-manager.php:283
 msgid "Create New Scene"
 msgstr ""
 
-#: admin/game-manager.php:64
+#: admin/game-manager.php:67
 msgid "Game Settings"
 msgstr ""
 
-#: admin/game-manager.php:103 admin/game-manager.php:254
+#: admin/game-manager.php:110 admin/game-manager.php:309
 #: admin/meta-boxes.php:27 admin/new-game.php:130 admin/my-games.php:71
-#: admin/game-settings.php:415 admin/game-settings.php:1155
-#: admin/game-settings.php:1193
+#: admin/game-settings.php:476 admin/game-settings.php:1216
+#: admin/game-settings.php:1254
 msgid "Security check failed."
 msgstr ""
 
-#: admin/game-manager.php:106
+#: admin/game-manager.php:113
 msgid "Failed to move scene to trash."
 msgstr ""
 
-#: admin/game-manager.php:109 admin/my-games.php:77
+#: admin/game-manager.php:116
+msgid "Failed to restore scene from trash."
+msgstr ""
+
+#: admin/game-manager.php:119 admin/my-games.php:77
 msgid "Invalid ID."
 msgstr ""
 
-#: admin/game-manager.php:112
+#: admin/game-manager.php:122
 msgid "You do not have permission to delete this scene."
 msgstr ""
 
-#: admin/game-manager.php:121
+#: admin/game-manager.php:125
+msgid "You do not have permission to restore this scene."
+msgstr ""
+
+#: admin/game-manager.php:134
 msgid ""
 "Scene has been moved to trash. You can restore it from the trash if needed."
 msgstr ""
 
-#: admin/game-manager.php:142
+#: admin/game-manager.php:137
+msgid "Scene has been restored from trash."
+msgstr ""
+
+#: admin/game-manager.php:159
+msgid "← Back to Scene List"
+msgstr ""
+
+#: admin/game-manager.php:164
+msgid "View Trash"
+msgstr ""
+
+#: admin/game-manager.php:172
+msgid "No scenes in trash."
+msgstr ""
+
+#: admin/game-manager.php:174
 msgid "No scenes have been created for this game yet."
 msgstr ""
 
-#: admin/game-manager.php:145
+#: admin/game-manager.php:177
 msgid "Create First Scene"
 msgstr ""
 
-#: admin/game-manager.php:151
+#: admin/game-manager.php:187
+#, php-format
+msgid "Trash: %d scenes"
+msgstr ""
+
+#: admin/game-manager.php:189
 #, php-format
 msgid "Total: %d scenes"
 msgstr ""
 
-#: admin/game-manager.php:161
+#: admin/game-manager.php:204
 msgid "Scene Title"
 msgstr ""
 
-#: admin/game-manager.php:162
+#: admin/game-manager.php:205
 msgid "Status"
 msgstr ""
 
-#: admin/game-manager.php:163
+#: admin/game-manager.php:206
 msgid "Date"
 msgstr ""
 
-#: admin/game-manager.php:164 admin/game-manager.php:491
+#: admin/game-manager.php:207 admin/game-manager.php:546
 #: admin/meta-boxes.php:979
 msgid "Actions"
 msgstr ""
 
-#: admin/game-manager.php:188 admin/meta-boxes.php:382
+#: admin/game-manager.php:237
+msgid "Restore"
+msgstr ""
+
+#: admin/game-manager.php:242 admin/meta-boxes.php:382
 msgid "Edit"
 msgstr ""
 
-#: admin/game-manager.php:191
+#: admin/game-manager.php:245
 msgid "Preview"
 msgstr ""
 
-#: admin/game-manager.php:198
+#: admin/game-manager.php:252
 msgid ""
 "Are you sure you want to move this scene to the Trash? You can restore it "
 "later from the Trash."
 msgstr ""
 
-#: admin/game-manager.php:199
+#: admin/game-manager.php:253
 msgid "Move to Trash"
 msgstr ""
 
-#: admin/game-manager.php:222
+#: admin/game-manager.php:277
 msgid ""
 "Create a new scene for this game. After creation, you will be taken to the "
 "scene editing screen where you can add backgrounds, characters, dialogue, "
 "and choices."
 msgstr ""
 
-#: admin/game-manager.php:257 admin/new-game.php:133
+#: admin/game-manager.php:312 admin/new-game.php:133
 msgid "Please enter a game title."
 msgstr ""
 
-#: admin/game-manager.php:260
+#: admin/game-manager.php:315
 msgid "A game with that title already exists."
 msgstr ""
 
-#: admin/game-manager.php:263
+#: admin/game-manager.php:318
 msgid "Failed to save game."
 msgstr ""
 
-#: admin/game-manager.php:271
+#: admin/game-manager.php:326
 msgid "Game updated successfully."
 msgstr ""
 
-#: admin/game-manager.php:274
+#: admin/game-manager.php:329
 msgid "Flag added successfully."
 msgstr ""
 
-#: admin/game-manager.php:277
+#: admin/game-manager.php:332
 msgid "Flag deleted successfully."
 msgstr ""
 
-#: admin/game-manager.php:305 admin/meta-boxes.php:768
+#: admin/game-manager.php:360 admin/meta-boxes.php:768
 #: admin/export-import.php:120 admin/new-game.php:169
 #: includes/post-types.php:88 includes/revisions.php:390
 msgid "Game Title"
 msgstr ""
 
-#: admin/game-manager.php:319 admin/new-game.php:187
+#: admin/game-manager.php:374 admin/new-game.php:187
 msgid "Game Overview"
 msgstr ""
 
-#: admin/game-manager.php:331 admin/new-game.php:203
+#: admin/game-manager.php:386 admin/new-game.php:203
 msgid "Title Screen Image"
 msgstr ""
 
-#: admin/game-manager.php:340 admin/new-game.php:212
+#: admin/game-manager.php:395 admin/new-game.php:212
 msgid "Title Screen Image Preview"
 msgstr ""
 
-#: admin/game-manager.php:346 admin/meta-boxes.php:823 admin/new-game.php:218
+#: admin/game-manager.php:401 admin/meta-boxes.php:823 admin/new-game.php:218
 msgid "Select from Media"
 msgstr ""
 
-#: admin/game-manager.php:352 admin/new-game.php:224
+#: admin/game-manager.php:407 admin/new-game.php:224
 msgid "Delete Image"
 msgstr ""
 
-#: admin/game-manager.php:360
+#: admin/game-manager.php:415
 msgid "Game Over Screen Text"
 msgstr ""
 
-#: admin/game-manager.php:368
+#: admin/game-manager.php:423
 msgid ""
 "Text displayed when there are no choices or next scenes in a non-ending. "
 "Default is \"Game Over\"."
 msgstr ""
 
-#: admin/game-manager.php:374
+#: admin/game-manager.php:429
 msgid "Title Display on Image"
 msgstr ""
 
-#: admin/game-manager.php:390
+#: admin/game-manager.php:445
 msgid "Display title overlaid on title image"
 msgstr ""
 
-#: admin/game-manager.php:392
+#: admin/game-manager.php:447
 msgid ""
 "Uncheck this if your title image already includes the game title to avoid "
 "duplication."
 msgstr ""
 
-#: admin/game-manager.php:398
+#: admin/game-manager.php:453
 msgid "Title Text Color"
 msgstr ""
 
-#: admin/game-manager.php:413
+#: admin/game-manager.php:468
 msgid ""
 "Choose the color for the title text. Automatic contrast enhancement (text "
 "stroke and shadow) will be applied for readability."
 msgstr ""
 
-#: admin/game-manager.php:418
+#: admin/game-manager.php:473
 msgid "Ad Settings"
 msgstr ""
 
-#: admin/game-manager.php:422
+#: admin/game-manager.php:477
 msgid "Ad Provider"
 msgstr ""
 
-#: admin/game-manager.php:438
+#: admin/game-manager.php:493
 msgid "No Ads"
 msgstr ""
 
-#: admin/game-manager.php:445 admin/ad-management.php:97
+#: admin/game-manager.php:500 admin/ad-management.php:97
 msgid "Google AdSense"
 msgstr ""
 
-#: admin/game-manager.php:452 admin/ad-management.php:142
+#: admin/game-manager.php:507 admin/ad-management.php:142
 msgid "Adsterra"
 msgstr ""
 
-#: admin/game-manager.php:459
+#: admin/game-manager.php:514
 #, php-format
 msgid ""
 "Note: To display ads, you must first configure the ad provider IDs in %s. If "
 "IDs are not set, ads will not be displayed."
 msgstr ""
 
-#: admin/game-manager.php:460 admin/ad-management.php:22
+#: admin/game-manager.php:515 admin/ad-management.php:22
 #: admin/ad-management.php:23 admin/ad-management.php:71
 msgid "Ad Management"
 msgstr ""
 
-#: admin/game-manager.php:472
+#: admin/game-manager.php:527
 msgid "Update Game"
 msgstr ""
 
-#: admin/game-manager.php:476
+#: admin/game-manager.php:531
 msgid "Flag Management"
 msgstr ""
 
-#: admin/game-manager.php:482
+#: admin/game-manager.php:537
 msgid "Current Flags List"
 msgstr ""
 
-#: admin/game-manager.php:488
+#: admin/game-manager.php:543
 msgid "ID"
 msgstr ""
 
-#: admin/game-manager.php:489 admin/game-manager.php:530
+#: admin/game-manager.php:544 admin/game-manager.php:585
 msgid "Flag Name"
 msgstr ""
 
-#: admin/game-manager.php:490 admin/game-manager.php:543
+#: admin/game-manager.php:545 admin/game-manager.php:598
 msgid "Description"
 msgstr ""
 
-#: admin/game-manager.php:509 admin/my-games.php:182 includes/revisions.php:320
+#: admin/game-manager.php:564 admin/my-games.php:182 includes/revisions.php:320
 msgid "Delete"
 msgstr ""
 
-#: admin/game-manager.php:510
+#: admin/game-manager.php:565
 msgid "Are you sure you want to delete this flag?"
 msgstr ""
 
-#: admin/game-manager.php:518 admin/meta-boxes.php:1079
+#: admin/game-manager.php:573 admin/meta-boxes.php:1079
 msgid "No flags have been set for this game yet."
 msgstr ""
 
-#: admin/game-manager.php:521
+#: admin/game-manager.php:576
 msgid "Add New Flag"
 msgstr ""
 
-#: admin/game-manager.php:538
+#: admin/game-manager.php:593
 msgid ""
 "Only alphanumeric characters and underscores are allowed. Cannot start with "
 "a number."
 msgstr ""
 
-#: admin/game-manager.php:558
+#: admin/game-manager.php:613
 msgid "Add Flag"
 msgstr ""
 
@@ -1088,7 +1122,7 @@ msgstr ""
 msgid "File size is too large. Maximum 10MB allowed."
 msgstr ""
 
-#: admin/export-import.php:242 admin/game-settings.php:1292
+#: admin/export-import.php:242 admin/game-settings.php:1353
 #, php-format
 msgid "Note: %d image(s) failed to download."
 msgstr ""
@@ -1383,122 +1417,122 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: admin/game-settings.php:421 admin/game-settings.php:1161
+#: admin/game-settings.php:482 admin/game-settings.php:1222
 msgid "Invalid game ID."
 msgstr ""
 
-#: admin/game-settings.php:426
+#: admin/game-settings.php:487
 msgid "You do not have permission to edit this game."
 msgstr ""
 
-#: admin/game-settings.php:549
+#: admin/game-settings.php:610
 msgid "Game not found."
 msgstr ""
 
-#: admin/game-settings.php:751
+#: admin/game-settings.php:812
 msgid "Invalid import data format."
 msgstr ""
 
-#: admin/game-settings.php:758
+#: admin/game-settings.php:819
 msgid "Game data must be an object."
 msgstr ""
 
-#: admin/game-settings.php:763
+#: admin/game-settings.php:824
 msgid "Game title is required and must be a string."
 msgstr ""
 
-#: admin/game-settings.php:768
+#: admin/game-settings.php:829
 msgid "Scenes must be an array."
 msgstr ""
 
-#: admin/game-settings.php:776
+#: admin/game-settings.php:837
 #, php-format
 msgid "Scene at index %d must be an object."
 msgstr ""
 
-#: admin/game-settings.php:782
+#: admin/game-settings.php:843
 #, php-format
 msgid "Scene at index %d must have a valid title."
 msgstr ""
 
-#: admin/game-settings.php:798
+#: admin/game-settings.php:859
 msgid "Unable to create unique game title after 100 attempts."
 msgstr ""
 
-#: admin/game-settings.php:844
+#: admin/game-settings.php:905
 msgid "Failed to save game data."
 msgstr ""
 
-#: admin/game-settings.php:1058
+#: admin/game-settings.php:1119
 msgid "Invalid image URL."
 msgstr ""
 
-#: admin/game-settings.php:1065
+#: admin/game-settings.php:1126
 msgid "Only HTTP/HTTPS URLs are allowed."
 msgstr ""
 
-#: admin/game-settings.php:1078
+#: admin/game-settings.php:1139
 msgid "URL does not point to an image."
 msgstr ""
 
-#: admin/game-settings.php:1099
+#: admin/game-settings.php:1160
 msgid "Downloaded file is not a valid image."
 msgstr ""
 
-#: admin/game-settings.php:1150 admin/game-settings.php:1188
+#: admin/game-settings.php:1211 admin/game-settings.php:1249
 msgid "Insufficient permissions."
 msgstr ""
 
-#: admin/game-settings.php:1198 admin/game-settings.php:1211
+#: admin/game-settings.php:1259 admin/game-settings.php:1272
 msgid "No file selected."
 msgstr ""
 
-#: admin/game-settings.php:1205
+#: admin/game-settings.php:1266
 msgid "File size exceeds limit."
 msgstr ""
 
-#: admin/game-settings.php:1208
+#: admin/game-settings.php:1269
 msgid "File upload was interrupted."
 msgstr ""
 
-#: admin/game-settings.php:1215
+#: admin/game-settings.php:1276
 msgid "Server upload error."
 msgstr ""
 
-#: admin/game-settings.php:1218
+#: admin/game-settings.php:1279
 msgid "File upload blocked by extension."
 msgstr ""
 
-#: admin/game-settings.php:1221
+#: admin/game-settings.php:1282
 msgid "File upload failed."
 msgstr ""
 
-#: admin/game-settings.php:1227
+#: admin/game-settings.php:1288
 msgid "File size exceeds 10MB limit."
 msgstr ""
 
-#: admin/game-settings.php:1246
+#: admin/game-settings.php:1307
 msgid "Only JSON files are allowed."
 msgstr ""
 
-#: admin/game-settings.php:1252
+#: admin/game-settings.php:1313
 msgid "Failed to read file."
 msgstr ""
 
-#: admin/game-settings.php:1258
+#: admin/game-settings.php:1319
 msgid "Invalid JSON encoding."
 msgstr ""
 
-#: admin/game-settings.php:1263
+#: admin/game-settings.php:1324
 msgid "Missing required \"game\" or \"scenes\" keys."
 msgstr ""
 
-#: admin/game-settings.php:1277
+#: admin/game-settings.php:1338
 #, php-format
 msgid "Successfully imported game with %d scenes (%d choices remapped)."
 msgstr ""
 
-#: admin/game-settings.php:1284
+#: admin/game-settings.php:1345
 #, php-format
 msgid "Game title was auto-renamed from \"%s\" to avoid duplication."
 msgstr ""
