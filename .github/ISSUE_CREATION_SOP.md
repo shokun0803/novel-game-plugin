@@ -46,8 +46,6 @@ Issue のタイトルをここに記載する
 ## 参考 には次を必ず含めます。
 - リポジトリ運用規約: .github/copilot-instructions.md
 - 案件固有の参照（関連PR/Issue、設計ドキュメント等）
- - コメント主導レビューポリシー: .github/copilot-instructions.md の "コメント主導レビューポリシー" セクションを参照
-- PR コメント投稿ルール: .github/copilot-instructions.md の "PRコメント投稿ルール" セクションを参照（`@copilot` の使用、コードブロック、エスケープの注意点など）
 
 ## 6. 投稿上の記号・レイアウト制約
 - 通常の改行のみ使用（\n）。\n\nの直書き禁止。
