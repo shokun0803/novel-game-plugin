@@ -286,6 +286,67 @@ function noveltool_admin_post_delete_scene() {
 add_action( 'admin_post_noveltool_delete_scene', 'noveltool_admin_post_delete_scene' );
 
 /**
+ * admin-post ハンドラー: シーン復元
+ *
+ * ごみ箱からシーンを復元します。
+ *
+ * @since 1.2.0
+ */
+function noveltool_admin_post_restore_scene() {
+    // 基本権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+    }
+
+    // nonceチェック
+    if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'manage_scenes' ) ) {
+        $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
+        $redirect_url = $game_id 
+            ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'status' => 'trash', 'error' => 'security' ) )
+            : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
+
+    $scene_id = isset( $_POST['scene_id'] ) ? intval( wp_unslash( $_POST['scene_id'] ) ) : 0;
+    $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
+
+    if ( $scene_id ) {
+        // 個別の投稿に対する編集権限チェック
+        if ( ! current_user_can( 'edit_post', $scene_id ) ) {
+            error_log( sprintf( '[NovelGamePlugin] User does not have permission to restore scene ID: %d', $scene_id ) );
+            $redirect_url = $game_id 
+                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'status' => 'trash', 'error' => 'no_restore_permission' ) )
+                : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+            wp_safe_redirect( $redirect_url );
+            exit;
+        }
+
+        // シーンをごみ箱から復元
+        $result = wp_untrash_post( $scene_id );
+
+        if ( $result ) {
+            $redirect_url = $game_id 
+                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'success' => 'scene_restored' ) )
+                : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+        } else {
+            error_log( sprintf( '[NovelGamePlugin] Failed to restore scene ID: %d', $scene_id ) );
+            $redirect_url = $game_id 
+                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'status' => 'trash', 'error' => 'restore_failed' ) )
+                : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+        }
+    } else {
+        $redirect_url = $game_id 
+            ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'status' => 'trash', 'error' => 'invalid_id' ) )
+            : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+    }
+
+    wp_safe_redirect( $redirect_url );
+    exit;
+}
+add_action( 'admin_post_noveltool_restore_scene', 'noveltool_admin_post_restore_scene' );
+
+/**
  * admin-post ハンドラー: フラグ追加
  *
  * @since 1.2.0

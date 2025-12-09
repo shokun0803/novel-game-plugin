@@ -33,8 +33,11 @@ function noveltool_game_manager_page( $game ) {
         }
     }
 
+    // ステータスの取得（デフォルトは published）
+    $view_status = isset( $_GET['status'] ) && 'trash' === $_GET['status'] ? 'trash' : 'publish';
+    
     // シーン一覧の取得
-    $scenes = noveltool_get_posts_by_game_title( $game['title'] );
+    $scenes = noveltool_get_posts_by_game_title( $game['title'], array( 'post_status' => $view_status ) );
 
     ?>
     <div class="wrap">
@@ -93,6 +96,10 @@ function noveltool_game_manager_page( $game ) {
  * @since 1.2.0
  */
 function noveltool_render_scenes_tab( $game, $scenes ) {
+    // 現在のステータス表示を取得
+    $view_status = isset( $_GET['status'] ) && 'trash' === $_GET['status'] ? 'trash' : 'publish';
+    $is_trash_view = 'trash' === $view_status;
+    
     // エラー・成功メッセージの取得
     $error_message = '';
     $success_message = '';
@@ -105,11 +112,17 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
             case 'delete_failed':
                 $error_message = __( 'Failed to move scene to trash.', 'novel-game-plugin' );
                 break;
+            case 'restore_failed':
+                $error_message = __( 'Failed to restore scene from trash.', 'novel-game-plugin' );
+                break;
             case 'invalid_id':
                 $error_message = __( 'Invalid ID.', 'novel-game-plugin' );
                 break;
             case 'no_permission':
                 $error_message = __( 'You do not have permission to delete this scene.', 'novel-game-plugin' );
+                break;
+            case 'no_restore_permission':
+                $error_message = __( 'You do not have permission to restore this scene.', 'novel-game-plugin' );
                 break;
         }
     }
@@ -119,6 +132,9 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
             case 'scene_deleted': // 後方互換性のため維持
             case 'scene_trashed':
                 $success_message = __( 'Scene has been moved to trash. You can restore it from the trash if needed.', 'novel-game-plugin' );
+                break;
+            case 'scene_restored':
+                $success_message = __( 'Scene has been restored from trash.', 'novel-game-plugin' );
                 break;
         }
     }
@@ -137,22 +153,49 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
             </div>
         <?php endif; ?>
         
+        <div class="subsubsub-wrapper" style="margin-bottom: 15px;">
+            <?php if ( $is_trash_view ) : ?>
+                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes' ) ); ?>">
+                    <?php esc_html_e( '← Back to Scene List', 'novel-game-plugin' ); ?>
+                </a>
+            <?php else : ?>
+                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'trash' ) ) ); ?>">
+                    <span class="dashicons dashicons-trash" style="vertical-align: middle;"></span>
+                    <?php esc_html_e( 'View Trash', 'novel-game-plugin' ); ?>
+                </a>
+            <?php endif; ?>
+        </div>
+        
         <?php if ( empty( $scenes ) ) : ?>
             <div class="no-scenes-message">
-                <p><?php esc_html_e( 'No scenes have been created for this game yet.', 'novel-game-plugin' ); ?></p>
-                <p>
-                    <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
-                        <?php esc_html_e( 'Create First Scene', 'novel-game-plugin' ); ?>
-                    </a>
-                </p>
+                <?php if ( $is_trash_view ) : ?>
+                    <p><?php esc_html_e( 'No scenes in trash.', 'novel-game-plugin' ); ?></p>
+                <?php else : ?>
+                    <p><?php esc_html_e( 'No scenes have been created for this game yet.', 'novel-game-plugin' ); ?></p>
+                    <p>
+                        <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
+                            <?php esc_html_e( 'Create First Scene', 'novel-game-plugin' ); ?>
+                        </a>
+                    </p>
+                <?php endif; ?>
             </div>
         <?php else : ?>
             <div class="scenes-header">
-                <p><?php printf( esc_html__( 'Total: %d scenes', 'novel-game-plugin' ), count( $scenes ) ); ?></p>
-                <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
-                    <span class="dashicons dashicons-plus-alt"></span>
-                    <?php esc_html_e( 'Create New Scene', 'novel-game-plugin' ); ?>
-                </a>
+                <p>
+                    <?php
+                    if ( $is_trash_view ) {
+                        printf( esc_html__( 'Trash: %d scenes', 'novel-game-plugin' ), count( $scenes ) );
+                    } else {
+                        printf( esc_html__( 'Total: %d scenes', 'novel-game-plugin' ), count( $scenes ) );
+                    }
+                    ?>
+                </p>
+                <?php if ( ! $is_trash_view ) : ?>
+                    <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
+                        <span class="dashicons dashicons-plus-alt"></span>
+                        <?php esc_html_e( 'Create New Scene', 'novel-game-plugin' ); ?>
+                    </a>
+                <?php endif; ?>
             </div>
             
             <table class="wp-list-table widefat fixed striped">
@@ -184,21 +227,33 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                                 <?php echo esc_html( get_the_date( 'Y/m/d H:i', $scene->ID ) ); ?>
                             </td>
                             <td>
-                                <a href="<?php echo esc_url( get_edit_post_link( $scene->ID ) ); ?>" class="button button-small">
-                                    <?php esc_html_e( 'Edit', 'novel-game-plugin' ); ?>
-                                </a>
-                                <a href="<?php echo esc_url( get_permalink( $scene->ID ) ); ?>" class="button button-small" target="_blank">
-                                    <?php esc_html_e( 'Preview', 'novel-game-plugin' ); ?>
-                                </a>
-                                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;" class="noveltool-delete-scene-form">
-                                    <?php wp_nonce_field( 'manage_scenes' ); ?>
-                                    <input type="hidden" name="action" value="noveltool_delete_scene" />
-                                    <input type="hidden" name="scene_id" value="<?php echo esc_attr( $scene->ID ); ?>" />
-                                    <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
-                                    <button type="submit" class="button button-small noveltool-delete-button" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to move this scene to the Trash? You can restore it later from the Trash.', 'novel-game-plugin' ) ); ?>');">
-                                        <?php esc_html_e( 'Move to Trash', 'novel-game-plugin' ); ?>
-                                    </button>
-                                </form>
+                                <?php if ( $is_trash_view ) : ?>
+                                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;" class="noveltool-restore-scene-form">
+                                        <?php wp_nonce_field( 'manage_scenes' ); ?>
+                                        <input type="hidden" name="action" value="noveltool_restore_scene" />
+                                        <input type="hidden" name="scene_id" value="<?php echo esc_attr( $scene->ID ); ?>" />
+                                        <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
+                                        <button type="submit" class="button button-small button-primary">
+                                            <?php esc_html_e( 'Restore', 'novel-game-plugin' ); ?>
+                                        </button>
+                                    </form>
+                                <?php else : ?>
+                                    <a href="<?php echo esc_url( get_edit_post_link( $scene->ID ) ); ?>" class="button button-small">
+                                        <?php esc_html_e( 'Edit', 'novel-game-plugin' ); ?>
+                                    </a>
+                                    <a href="<?php echo esc_url( get_permalink( $scene->ID ) ); ?>" class="button button-small" target="_blank">
+                                        <?php esc_html_e( 'Preview', 'novel-game-plugin' ); ?>
+                                    </a>
+                                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;" class="noveltool-delete-scene-form">
+                                        <?php wp_nonce_field( 'manage_scenes' ); ?>
+                                        <input type="hidden" name="action" value="noveltool_delete_scene" />
+                                        <input type="hidden" name="scene_id" value="<?php echo esc_attr( $scene->ID ); ?>" />
+                                        <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
+                                        <button type="submit" class="button button-small noveltool-delete-button" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to move this scene to the Trash? You can restore it later from the Trash.', 'novel-game-plugin' ) ); ?>');">
+                                            <?php esc_html_e( 'Move to Trash', 'novel-game-plugin' ); ?>
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
