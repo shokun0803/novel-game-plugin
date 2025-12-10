@@ -33,11 +33,24 @@ function noveltool_game_manager_page( $game ) {
         }
     }
 
-    // ステータスの取得（デフォルトは published）
-    $view_status = isset( $_GET['status'] ) && 'trash' === $_GET['status'] ? 'trash' : 'publish';
+    // ステータスの取得
+    $status_param = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : '';
+    
+    // view_statusの決定（all, publish, trash）
+    if ( 'trash' === $status_param ) {
+        $view_status = 'trash';
+        $post_status_query = 'trash';
+    } elseif ( 'publish' === $status_param ) {
+        $view_status = 'publish';
+        $post_status_query = 'publish';
+    } else {
+        // デフォルトはAll（ごみ箱以外すべて）
+        $view_status = 'all';
+        $post_status_query = array( 'publish', 'draft', 'pending', 'future', 'private' );
+    }
     
     // シーン一覧の取得
-    $scenes = noveltool_get_posts_by_game_title( $game['title'], array( 'post_status' => $view_status ) );
+    $scenes = noveltool_get_posts_by_game_title( $game['title'], array( 'post_status' => $post_status_query ) );
 
     ?>
     <div class="wrap">
@@ -101,19 +114,27 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
     $is_trash_view = 'trash' === $view_status;
     
     // シーンの統計情報を取得（WordPress標準スタイル）
-    $all_scenes = noveltool_get_posts_by_game_title( $game['title'], array( 'post_status' => 'any' ) );
-    $publish_count = 0;
-    $trash_count = 0;
+    // ごみ箱以外のすべてのシーンを取得（All用）
+    $all_non_trash_scenes = noveltool_get_posts_by_game_title( 
+        $game['title'], 
+        array( 'post_status' => array( 'publish', 'draft', 'pending', 'future', 'private' ) ) 
+    );
     
-    foreach ( $all_scenes as $scene ) {
-        if ( 'publish' === $scene->post_status ) {
-            $publish_count++;
-        } elseif ( 'trash' === $scene->post_status ) {
-            $trash_count++;
-        }
-    }
+    // Published状態のシーンを取得
+    $published_scenes = noveltool_get_posts_by_game_title( 
+        $game['title'], 
+        array( 'post_status' => 'publish' ) 
+    );
     
-    $total_count = count( $all_scenes ) - $trash_count; // ごみ箱を除く合計
+    // ごみ箱のシーンを取得
+    $trashed_scenes = noveltool_get_posts_by_game_title( 
+        $game['title'], 
+        array( 'post_status' => 'trash' ) 
+    );
+    
+    $total_count = count( $all_non_trash_scenes ); // ごみ箱を除く合計
+    $publish_count = count( $published_scenes );
+    $trash_count = count( $trashed_scenes );
     
     // エラー・成功メッセージの取得
     $error_message = '';

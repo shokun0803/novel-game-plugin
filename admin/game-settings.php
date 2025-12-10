@@ -326,6 +326,7 @@ function noveltool_admin_post_restore_scene() {
         $result = wp_untrash_post( $scene_id );
 
         if ( $result ) {
+            // 復元成功：デフォルト（All）ビューにリダイレクト
             $redirect_url = $game_id 
                 ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'success' => 'scene_restored' ) )
                 : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
