@@ -312,8 +312,8 @@ function noveltool_admin_post_restore_scene() {
     $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
 
     if ( $scene_id ) {
-        // 個別の投稿に対する編集権限チェック
-        if ( ! current_user_can( 'edit_post', $scene_id ) ) {
+        // 個別の投稿に対する削除権限チェック（復元も削除権限で統一）
+        if ( ! current_user_can( 'delete_post', $scene_id ) ) {
             error_log( sprintf( '[NovelGamePlugin] User does not have permission to restore scene ID: %d', $scene_id ) );
             $redirect_url = $game_id 
                 ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'status' => 'trash', 'error' => 'no_restore_permission' ) )

@@ -97,8 +97,23 @@ function noveltool_game_manager_page( $game ) {
  */
 function noveltool_render_scenes_tab( $game, $scenes ) {
     // 現在のステータス表示を取得
-    $view_status = isset( $_GET['status'] ) && 'trash' === $_GET['status'] ? 'trash' : 'publish';
+    $view_status = isset( $_GET['status'] ) && 'trash' === $_GET['status'] ? 'trash' : 'all';
     $is_trash_view = 'trash' === $view_status;
+    
+    // シーンの統計情報を取得（WordPress標準スタイル）
+    $all_scenes = noveltool_get_posts_by_game_title( $game['title'], array( 'post_status' => 'any' ) );
+    $publish_count = 0;
+    $trash_count = 0;
+    
+    foreach ( $all_scenes as $scene ) {
+        if ( 'publish' === $scene->post_status ) {
+            $publish_count++;
+        } elseif ( 'trash' === $scene->post_status ) {
+            $trash_count++;
+        }
+    }
+    
+    $total_count = count( $all_scenes ) - $trash_count; // ごみ箱を除く合計
     
     // エラー・成功メッセージの取得
     $error_message = '';
@@ -153,18 +168,31 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
             </div>
         <?php endif; ?>
         
-        <div class="subsubsub-wrapper" style="margin-bottom: 15px;">
-            <?php if ( $is_trash_view ) : ?>
-                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes' ) ); ?>">
-                    <?php esc_html_e( '← Back to Scene List', 'novel-game-plugin' ); ?>
+        <!-- WordPress標準のsubsubsubナビゲーション -->
+        <ul class="subsubsub">
+            <li class="all">
+                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes' ) ); ?>" 
+                   <?php echo ( 'all' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
+                    <?php esc_html_e( 'All', 'novel-game-plugin' ); ?>
+                    <span class="count">(<?php echo esc_html( $total_count ); ?>)</span>
+                </a> |
+            </li>
+            <li class="publish">
+                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'publish' ) ) ); ?>"
+                   <?php echo ( 'publish' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
+                    <?php esc_html_e( 'Published', 'novel-game-plugin' ); ?>
+                    <span class="count">(<?php echo esc_html( $publish_count ); ?>)</span>
+                </a> |
+            </li>
+            <li class="trash">
+                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'trash' ) ) ); ?>"
+                   <?php echo ( 'trash' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
+                    <?php esc_html_e( 'Trash', 'novel-game-plugin' ); ?>
+                    <span class="count">(<?php echo esc_html( $trash_count ); ?>)</span>
                 </a>
-            <?php else : ?>
-                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'trash' ) ) ); ?>">
-                    <span class="dashicons dashicons-trash" style="vertical-align: middle;"></span>
-                    <?php esc_html_e( 'View Trash', 'novel-game-plugin' ); ?>
-                </a>
-            <?php endif; ?>
-        </div>
+            </li>
+        </ul>
+        <br class="clear" />
         
         <?php if ( empty( $scenes ) ) : ?>
             <div class="no-scenes-message">
@@ -180,23 +208,16 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                 <?php endif; ?>
             </div>
         <?php else : ?>
-            <div class="scenes-header">
-                <p>
-                    <?php
-                    if ( $is_trash_view ) {
-                        printf( esc_html__( 'Trash: %d scenes', 'novel-game-plugin' ), count( $scenes ) );
-                    } else {
-                        printf( esc_html__( 'Total: %d scenes', 'novel-game-plugin' ), count( $scenes ) );
-                    }
-                    ?>
-                </p>
-                <?php if ( ! $is_trash_view ) : ?>
-                    <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
-                        <span class="dashicons dashicons-plus-alt"></span>
-                        <?php esc_html_e( 'Create New Scene', 'novel-game-plugin' ); ?>
-                    </a>
-                <?php endif; ?>
-            </div>
+            <?php if ( ! $is_trash_view ) : ?>
+                <div class="tablenav top">
+                    <div class="alignleft actions">
+                        <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
+                            <span class="dashicons dashicons-plus-alt"></span>
+                            <?php esc_html_e( 'Create New Scene', 'novel-game-plugin' ); ?>
+                        </a>
+                    </div>
+                </div>
+            <?php endif; ?>
             
             <table class="wp-list-table widefat fixed striped">
                 <thead>
