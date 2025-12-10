@@ -326,9 +326,21 @@ function noveltool_admin_post_restore_scene() {
         $result = wp_untrash_post( $scene_id );
 
         if ( $result ) {
+            // 復元成功：復元後のステータスを確認してメッセージに反映
+            $restored_post = get_post( $scene_id );
+            $restored_status = $restored_post ? $restored_post->post_status : '';
+            
+            // ステータスに応じたメッセージパラメータを設定
+            $success_param = 'scene_restored';
+            if ( 'draft' === $restored_status ) {
+                $success_param = 'scene_restored_draft';
+            } elseif ( 'publish' === $restored_status ) {
+                $success_param = 'scene_restored_published';
+            }
+            
             // 復元成功：デフォルト（All）ビューにリダイレクト
             $redirect_url = $game_id 
-                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'success' => 'scene_restored' ) )
+                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'success' => $success_param, 'status' => 'all' ) )
                 : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
         } else {
             error_log( sprintf( '[NovelGamePlugin] Failed to restore scene ID: %d', $scene_id ) );

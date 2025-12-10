@@ -172,6 +172,12 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
             case 'scene_restored':
                 $success_message = __( 'Scene has been restored from trash.', 'novel-game-plugin' );
                 break;
+            case 'scene_restored_draft':
+                $success_message = __( 'Scene has been restored from trash as a draft.', 'novel-game-plugin' );
+                break;
+            case 'scene_restored_published':
+                $success_message = __( 'Scene has been restored from trash and is now published.', 'novel-game-plugin' );
+                break;
         }
     }
     
@@ -194,24 +200,37 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
             <li class="all">
                 <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes' ) ); ?>" 
                    <?php echo ( 'all' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
-                    <?php esc_html_e( 'All', 'novel-game-plugin' ); ?>
+                    <?php
+                    // WordPress コア翻訳を使用
+                    echo esc_html( _x( 'All', 'posts' ) );
+                    ?>
                     <span class="count">(<?php echo esc_html( $total_count ); ?>)</span>
                 </a> |
             </li>
             <li class="publish">
                 <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'publish' ) ) ); ?>"
                    <?php echo ( 'publish' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
-                    <?php esc_html_e( 'Published', 'novel-game-plugin' ); ?>
+                    <?php
+                    // WordPress コア翻訳を使用
+                    $publish_status_obj = get_post_status_object( 'publish' );
+                    echo esc_html( $publish_status_obj ? $publish_status_obj->label : __( 'Published' ) );
+                    ?>
                     <span class="count">(<?php echo esc_html( $publish_count ); ?>)</span>
-                </a> |
+                </a><?php echo ( $trash_count > 0 ) ? ' |' : ''; ?>
             </li>
+            <?php if ( $trash_count > 0 ) : ?>
             <li class="trash">
                 <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'trash' ) ) ); ?>"
                    <?php echo ( 'trash' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
-                    <?php esc_html_e( 'Trash', 'novel-game-plugin' ); ?>
+                    <?php
+                    // WordPress コア翻訳を使用
+                    $trash_status_obj = get_post_status_object( 'trash' );
+                    echo esc_html( $trash_status_obj ? $trash_status_obj->label : __( 'Trash' ) );
+                    ?>
                     <span class="count">(<?php echo esc_html( $trash_count ); ?>)</span>
                 </a>
             </li>
+            <?php endif; ?>
         </ul>
         <br class="clear" />
         
