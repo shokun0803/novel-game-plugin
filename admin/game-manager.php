@@ -110,7 +110,18 @@ function noveltool_game_manager_page( $game ) {
  */
 function noveltool_render_scenes_tab( $game, $scenes ) {
     // 現在のステータス表示を取得
-    $view_status = isset( $_GET['status'] ) && 'trash' === $_GET['status'] ? 'trash' : 'all';
+    $status_param = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : '';
+    
+    if ( 'trash' === $status_param ) {
+        $view_status = 'trash';
+    } elseif ( 'publish' === $status_param ) {
+        $view_status = 'publish';
+    } elseif ( 'draft' === $status_param ) {
+        $view_status = 'draft';
+    } else {
+        $view_status = 'all';
+    }
+    
     $is_trash_view = 'trash' === $view_status;
     
     // シーンの統計情報を取得（WordPress標準スタイル）
@@ -126,6 +137,12 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
         array( 'post_status' => 'publish' ) 
     );
     
+    // Draft状態のシーンを取得
+    $draft_scenes = noveltool_get_posts_by_game_title( 
+        $game['title'], 
+        array( 'post_status' => 'draft' ) 
+    );
+    
     // ごみ箱のシーンを取得
     $trashed_scenes = noveltool_get_posts_by_game_title( 
         $game['title'], 
@@ -134,6 +151,7 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
     
     $total_count = count( $all_non_trash_scenes ); // ごみ箱を除く合計
     $publish_count = count( $published_scenes );
+    $draft_count = count( $draft_scenes );
     $trash_count = count( $trashed_scenes );
     
     // エラー・成功メッセージの取得
@@ -216,6 +234,17 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                     echo esc_html( $publish_status_obj ? $publish_status_obj->label : __( 'Published' ) );
                     ?>
                     <span class="count">(<?php echo esc_html( $publish_count ); ?>)</span>
+                </a> |
+            </li>
+            <li class="draft">
+                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'draft' ) ) ); ?>"
+                   <?php echo ( 'draft' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
+                    <?php
+                    // WordPress コア翻訳を使用
+                    $draft_status_obj = get_post_status_object( 'draft' );
+                    echo esc_html( $draft_status_obj ? $draft_status_obj->label : __( 'Drafts', 'novel-game-plugin' ) );
+                    ?>
+                    <span class="count">(<?php echo esc_html( $draft_count ); ?>)</span>
                 </a><?php echo ( $trash_count > 0 ) ? ' |' : ''; ?>
             </li>
             <?php if ( $trash_count > 0 ) : ?>
