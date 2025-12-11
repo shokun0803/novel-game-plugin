@@ -131,64 +131,32 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
     // 効率的なカウント取得（IDのみ取得）
     
     // ごみ箱以外のすべてのシーン数を取得（All用）
-    $total_count = count( get_posts( array(
-        'post_type'     => 'novel_game',
+    $total_count = count( noveltool_get_posts_by_game_title( $game['title'], array(
         'post_status'   => array( 'publish', 'draft', 'pending', 'future', 'private' ),
-        'meta_query'    => array(
-            array(
-                'key'     => 'noveltool_game_title',
-                'value'   => $game['title'],
-                'compare' => '=',
-            ),
-        ),
         'fields'        => 'ids',
         'no_found_rows' => true,
         'posts_per_page' => -1,
     ) ) );
     
     // Published状態のシーン数を取得
-    $publish_count = count( get_posts( array(
-        'post_type'     => 'novel_game',
+    $publish_count = count( noveltool_get_posts_by_game_title( $game['title'], array(
         'post_status'   => 'publish',
-        'meta_query'    => array(
-            array(
-                'key'     => 'noveltool_game_title',
-                'value'   => $game['title'],
-                'compare' => '=',
-            ),
-        ),
         'fields'        => 'ids',
         'no_found_rows' => true,
         'posts_per_page' => -1,
     ) ) );
     
     // Draft状態のシーン数を取得
-    $draft_count = count( get_posts( array(
-        'post_type'     => 'novel_game',
+    $draft_count = count( noveltool_get_posts_by_game_title( $game['title'], array(
         'post_status'   => 'draft',
-        'meta_query'    => array(
-            array(
-                'key'     => 'noveltool_game_title',
-                'value'   => $game['title'],
-                'compare' => '=',
-            ),
-        ),
         'fields'        => 'ids',
         'no_found_rows' => true,
         'posts_per_page' => -1,
     ) ) );
     
     // ごみ箱のシーン数を取得
-    $trash_count = count( get_posts( array(
-        'post_type'     => 'novel_game',
+    $trash_count = count( noveltool_get_posts_by_game_title( $game['title'], array(
         'post_status'   => 'trash',
-        'meta_query'    => array(
-            array(
-                'key'     => 'noveltool_game_title',
-                'value'   => $game['title'],
-                'compare' => '=',
-            ),
-        ),
         'fields'        => 'ids',
         'no_found_rows' => true,
         'posts_per_page' => -1,
