@@ -219,12 +219,20 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                 <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes' ) ); ?>" 
                    <?php echo ( 'all' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
                     <?php
-                    // WordPress コア翻訳を使用
-                    echo esc_html( _x( 'All', 'posts' ) );
+                    // WordPress コア翻訳を使用（_nx形式でカウントを含む）
+                    printf(
+                        _nx(
+                            'All <span class="count">(%s)</span>',
+                            'All <span class="count">(%s)</span>',
+                            $total_count,
+                            'posts'
+                        ),
+                        number_format_i18n( $total_count )
+                    );
                     ?>
-                    <span class="count">(<?php echo esc_html( $total_count ); ?>)</span>
-                </a> |
+                </a><?php echo ( $publish_count > 0 || $draft_count > 0 || $trash_count > 0 ) ? ' |' : ''; ?>
             </li>
+            <?php if ( $publish_count > 0 || 'publish' === $view_status ) : ?>
             <li class="publish">
                 <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'publish' ) ) ); ?>"
                    <?php echo ( 'publish' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
@@ -234,8 +242,10 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                     echo esc_html( $publish_status_obj ? $publish_status_obj->label : __( 'Published' ) );
                     ?>
                     <span class="count">(<?php echo esc_html( $publish_count ); ?>)</span>
-                </a> |
+                </a><?php echo ( $draft_count > 0 || $trash_count > 0 ) ? ' |' : ''; ?>
             </li>
+            <?php endif; ?>
+            <?php if ( $draft_count > 0 || 'draft' === $view_status ) : ?>
             <li class="draft">
                 <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'draft' ) ) ); ?>"
                    <?php echo ( 'draft' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
@@ -247,7 +257,8 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                     <span class="count">(<?php echo esc_html( $draft_count ); ?>)</span>
                 </a><?php echo ( $trash_count > 0 ) ? ' |' : ''; ?>
             </li>
-            <?php if ( $trash_count > 0 ) : ?>
+            <?php endif; ?>
+            <?php if ( $trash_count > 0 || 'trash' === $view_status ) : ?>
             <li class="trash">
                 <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'trash' ) ) ); ?>"
                    <?php echo ( 'trash' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
