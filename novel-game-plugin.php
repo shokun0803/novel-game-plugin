@@ -372,9 +372,9 @@ function noveltool_delete_game( $game_id ) {
         }
     }
     
-    // 関連するすべてのシーンを削除
+    // 関連するすべてのシーンを削除（公開中・下書き・ごみ箱を含む全て）
     if ( $game_title ) {
-        $scenes = noveltool_get_posts_by_game_title( $game_title );
+        $scenes = noveltool_get_posts_by_game_title( $game_title, array( 'post_status' => 'any' ) );
         foreach ( $scenes as $scene ) {
             wp_delete_post( $scene->ID, true ); // 完全削除（ゴミ箱に入れない）
         }

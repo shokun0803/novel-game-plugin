@@ -33,8 +33,27 @@ function noveltool_game_manager_page( $game ) {
         }
     }
 
+    // ステータスの取得
+    $status_param = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : '';
+    
+    // view_statusの決定（all, publish, draft, trash）
+    if ( 'trash' === $status_param ) {
+        $view_status = 'trash';
+        $post_status_query = 'trash';
+    } elseif ( 'publish' === $status_param ) {
+        $view_status = 'publish';
+        $post_status_query = 'publish';
+    } elseif ( 'draft' === $status_param ) {
+        $view_status = 'draft';
+        $post_status_query = 'draft';
+    } else {
+        // デフォルトはAll（ごみ箱以外すべて）
+        $view_status = 'all';
+        $post_status_query = array( 'publish', 'draft', 'pending', 'future', 'private' );
+    }
+    
     // シーン一覧の取得
-    $scenes = noveltool_get_posts_by_game_title( $game['title'] );
+    $scenes = noveltool_get_posts_by_game_title( $game['title'], array( 'post_status' => $post_status_query ) );
 
     ?>
     <div class="wrap">
@@ -93,6 +112,56 @@ function noveltool_game_manager_page( $game ) {
  * @since 1.2.0
  */
 function noveltool_render_scenes_tab( $game, $scenes ) {
+    // 現在のステータス表示を取得
+    $status_param = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : '';
+    
+    if ( 'trash' === $status_param ) {
+        $view_status = 'trash';
+    } elseif ( 'publish' === $status_param ) {
+        $view_status = 'publish';
+    } elseif ( 'draft' === $status_param ) {
+        $view_status = 'draft';
+    } else {
+        $view_status = 'all';
+    }
+    
+    $is_trash_view = 'trash' === $view_status;
+    
+    // シーンの統計情報を取得（WordPress標準スタイル）
+    // 効率的なカウント取得（IDのみ取得）
+    
+    // ごみ箱以外のすべてのシーン数を取得（All用）
+    $total_count = count( noveltool_get_posts_by_game_title( $game['title'], array(
+        'post_status'   => array( 'publish', 'draft', 'pending', 'future', 'private' ),
+        'fields'        => 'ids',
+        'no_found_rows' => true,
+        'posts_per_page' => -1,
+    ) ) );
+    
+    // Published状態のシーン数を取得
+    $publish_count = count( noveltool_get_posts_by_game_title( $game['title'], array(
+        'post_status'   => 'publish',
+        'fields'        => 'ids',
+        'no_found_rows' => true,
+        'posts_per_page' => -1,
+    ) ) );
+    
+    // Draft状態のシーン数を取得
+    $draft_count = count( noveltool_get_posts_by_game_title( $game['title'], array(
+        'post_status'   => 'draft',
+        'fields'        => 'ids',
+        'no_found_rows' => true,
+        'posts_per_page' => -1,
+    ) ) );
+    
+    // ごみ箱のシーン数を取得
+    $trash_count = count( noveltool_get_posts_by_game_title( $game['title'], array(
+        'post_status'   => 'trash',
+        'fields'        => 'ids',
+        'no_found_rows' => true,
+        'posts_per_page' => -1,
+    ) ) );
+    
     // エラー・成功メッセージの取得
     $error_message = '';
     $success_message = '';
@@ -103,18 +172,37 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                 $error_message = __( 'Security check failed.', 'novel-game-plugin' );
                 break;
             case 'delete_failed':
-                $error_message = __( 'Failed to delete.', 'novel-game-plugin' );
+                $error_message = __( 'Failed to move scene to trash.', 'novel-game-plugin' );
+                break;
+            case 'restore_failed':
+                $error_message = __( 'Failed to restore scene from trash.', 'novel-game-plugin' );
                 break;
             case 'invalid_id':
                 $error_message = __( 'Invalid ID.', 'novel-game-plugin' );
+                break;
+            case 'no_permission':
+                $error_message = __( 'You do not have permission to delete this scene.', 'novel-game-plugin' );
+                break;
+            case 'no_restore_permission':
+                $error_message = __( 'You do not have permission to restore this scene.', 'novel-game-plugin' );
                 break;
         }
     }
     
     if ( isset( $_GET['success'] ) ) {
         switch ( sanitize_text_field( wp_unslash( $_GET['success'] ) ) ) {
-            case 'scene_deleted':
-                $success_message = __( 'Scene has been deleted.', 'novel-game-plugin' );
+            case 'scene_deleted': // 後方互換性のため維持
+            case 'scene_trashed':
+                $success_message = __( 'Scene has been moved to trash. You can restore it from the trash if needed.', 'novel-game-plugin' );
+                break;
+            case 'scene_restored':
+                $success_message = __( 'Scene has been restored from trash.', 'novel-game-plugin' );
+                break;
+            case 'scene_restored_draft':
+                $success_message = __( 'Scene has been restored from trash as a draft.', 'novel-game-plugin' );
+                break;
+            case 'scene_restored_published':
+                $success_message = __( 'Scene has been restored from trash and is now published.', 'novel-game-plugin' );
                 break;
         }
     }
@@ -133,23 +221,91 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
             </div>
         <?php endif; ?>
         
+        <!-- WordPress標準のsubsubsubナビゲーション -->
+        <ul class="subsubsub">
+            <li class="all">
+                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes' ) ); ?>" 
+                   <?php echo ( 'all' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
+                    <?php
+                    // WordPress コア翻訳を使用（_nx形式でカウントを含む）
+                    printf(
+                        _nx(
+                            'All <span class="count">(%s)</span>',
+                            'All <span class="count">(%s)</span>',
+                            $total_count,
+                            'posts'
+                        ),
+                        number_format_i18n( $total_count )
+                    );
+                    ?>
+                </a><?php echo ( $publish_count > 0 || $draft_count > 0 || $trash_count > 0 ) ? ' |' : ''; ?>
+            </li>
+            <?php if ( $publish_count > 0 || 'publish' === $view_status ) : ?>
+            <li class="publish">
+                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'publish' ) ) ); ?>"
+                   <?php echo ( 'publish' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
+                    <?php
+                    // WordPress コア翻訳を使用
+                    $publish_status_obj = get_post_status_object( 'publish' );
+                    echo esc_html( $publish_status_obj ? $publish_status_obj->label : __( 'Published' ) );
+                    ?>
+                    <span class="count">(<?php echo esc_html( $publish_count ); ?>)</span>
+                </a><?php echo ( $draft_count > 0 || $trash_count > 0 ) ? ' |' : ''; ?>
+            </li>
+            <?php endif; ?>
+            <?php if ( $draft_count > 0 || 'draft' === $view_status ) : ?>
+            <li class="draft">
+                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'draft' ) ) ); ?>"
+                   <?php echo ( 'draft' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
+                    <?php
+                    // WordPress コア翻訳を使用
+                    $draft_status_obj = get_post_status_object( 'draft' );
+                    echo esc_html( $draft_status_obj ? $draft_status_obj->label : __( 'Drafts', 'novel-game-plugin' ) );
+                    ?>
+                    <span class="count">(<?php echo esc_html( $draft_count ); ?>)</span>
+                </a><?php echo ( $trash_count > 0 ) ? ' |' : ''; ?>
+            </li>
+            <?php endif; ?>
+            <?php if ( $trash_count > 0 || 'trash' === $view_status ) : ?>
+            <li class="trash">
+                <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( 'status' => 'trash' ) ) ); ?>"
+                   <?php echo ( 'trash' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
+                    <?php
+                    // WordPress コア翻訳を使用
+                    $trash_status_obj = get_post_status_object( 'trash' );
+                    echo esc_html( $trash_status_obj ? $trash_status_obj->label : __( 'Trash' ) );
+                    ?>
+                    <span class="count">(<?php echo esc_html( $trash_count ); ?>)</span>
+                </a>
+            </li>
+            <?php endif; ?>
+        </ul>
+        <br class="clear" />
+        
         <?php if ( empty( $scenes ) ) : ?>
             <div class="no-scenes-message">
-                <p><?php esc_html_e( 'No scenes have been created for this game yet.', 'novel-game-plugin' ); ?></p>
-                <p>
-                    <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
-                        <?php esc_html_e( 'Create First Scene', 'novel-game-plugin' ); ?>
-                    </a>
-                </p>
+                <?php if ( $is_trash_view ) : ?>
+                    <p><?php esc_html_e( 'No scenes in trash.', 'novel-game-plugin' ); ?></p>
+                <?php else : ?>
+                    <p><?php esc_html_e( 'No scenes have been created for this game yet.', 'novel-game-plugin' ); ?></p>
+                    <p>
+                        <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
+                            <?php esc_html_e( 'Create First Scene', 'novel-game-plugin' ); ?>
+                        </a>
+                    </p>
+                <?php endif; ?>
             </div>
         <?php else : ?>
-            <div class="scenes-header">
-                <p><?php printf( esc_html__( 'Total: %d scenes', 'novel-game-plugin' ), count( $scenes ) ); ?></p>
-                <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
-                    <span class="dashicons dashicons-plus-alt"></span>
-                    <?php esc_html_e( 'Create New Scene', 'novel-game-plugin' ); ?>
-                </a>
-            </div>
+            <?php if ( ! $is_trash_view ) : ?>
+                <div class="tablenav top">
+                    <div class="alignleft actions">
+                        <a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game&game_title=' . urlencode( $game['title'] ) ) ); ?>" class="button button-primary">
+                            <span class="dashicons dashicons-plus-alt"></span>
+                            <?php esc_html_e( 'Create New Scene', 'novel-game-plugin' ); ?>
+                        </a>
+                    </div>
+                </div>
+            <?php endif; ?>
             
             <table class="wp-list-table widefat fixed striped">
                 <thead>
@@ -180,21 +336,33 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                                 <?php echo esc_html( get_the_date( 'Y/m/d H:i', $scene->ID ) ); ?>
                             </td>
                             <td>
-                                <a href="<?php echo esc_url( get_edit_post_link( $scene->ID ) ); ?>" class="button button-small">
-                                    <?php esc_html_e( 'Edit', 'novel-game-plugin' ); ?>
-                                </a>
-                                <a href="<?php echo esc_url( get_permalink( $scene->ID ) ); ?>" class="button button-small" target="_blank">
-                                    <?php esc_html_e( 'Preview', 'novel-game-plugin' ); ?>
-                                </a>
-                                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;" class="noveltool-delete-scene-form">
-                                    <?php wp_nonce_field( 'manage_scenes' ); ?>
-                                    <input type="hidden" name="action" value="noveltool_delete_scene" />
-                                    <input type="hidden" name="scene_id" value="<?php echo esc_attr( $scene->ID ); ?>" />
-                                    <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
-                                    <button type="submit" class="button button-small noveltool-delete-button" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete this scene? This action cannot be undone.', 'novel-game-plugin' ) ); ?>');">
-                                        <?php esc_html_e( 'Delete', 'novel-game-plugin' ); ?>
-                                    </button>
-                                </form>
+                                <?php if ( $is_trash_view ) : ?>
+                                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;" class="noveltool-restore-scene-form">
+                                        <?php wp_nonce_field( 'manage_scenes' ); ?>
+                                        <input type="hidden" name="action" value="noveltool_restore_scene" />
+                                        <input type="hidden" name="scene_id" value="<?php echo esc_attr( $scene->ID ); ?>" />
+                                        <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
+                                        <button type="submit" class="button button-small button-primary">
+                                            <?php esc_html_e( 'Restore', 'novel-game-plugin' ); ?>
+                                        </button>
+                                    </form>
+                                <?php else : ?>
+                                    <a href="<?php echo esc_url( get_edit_post_link( $scene->ID ) ); ?>" class="button button-small">
+                                        <?php esc_html_e( 'Edit', 'novel-game-plugin' ); ?>
+                                    </a>
+                                    <a href="<?php echo esc_url( get_permalink( $scene->ID ) ); ?>" class="button button-small" target="_blank">
+                                        <?php esc_html_e( 'Preview', 'novel-game-plugin' ); ?>
+                                    </a>
+                                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;" class="noveltool-delete-scene-form">
+                                        <?php wp_nonce_field( 'manage_scenes' ); ?>
+                                        <input type="hidden" name="action" value="noveltool_delete_scene" />
+                                        <input type="hidden" name="scene_id" value="<?php echo esc_attr( $scene->ID ); ?>" />
+                                        <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
+                                        <button type="submit" class="button button-small noveltool-delete-button" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to move this scene to the Trash? You can restore it later from the Trash.', 'novel-game-plugin' ) ); ?>');">
+                                            <?php esc_html_e( 'Move to Trash', 'novel-game-plugin' ); ?>
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
