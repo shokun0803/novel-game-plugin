@@ -350,7 +350,7 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                                     <a href="<?php echo esc_url( get_edit_post_link( $scene->ID ) ); ?>" class="button button-small">
                                         <?php esc_html_e( 'Edit', 'novel-game-plugin' ); ?>
                                     </a>
-                                    <a href="<?php echo esc_url( get_permalink( $scene->ID ) ); ?>" class="button button-small" target="_blank">
+                                    <a href="<?php echo esc_url( add_query_arg( 'shortcode', '1', get_permalink( $scene->ID ) ) ); ?>" class="button button-small" target="_blank">
                                         <?php esc_html_e( 'Preview', 'novel-game-plugin' ); ?>
                                     </a>
                                     <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;" class="noveltool-delete-scene-form">
