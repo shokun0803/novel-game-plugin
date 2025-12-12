@@ -1,3 +1,4 @@
+---
 name: 機能追加（テンプレート）
 about: 機能追加 Issue の空テンプレート
 labels: enhancement

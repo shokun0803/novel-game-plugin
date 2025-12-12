@@ -372,9 +372,9 @@ function noveltool_delete_game( $game_id ) {
         }
     }
     
-    // 関連するすべてのシーンを削除
+    // 関連するすべてのシーンを削除（公開中・下書き・ごみ箱を含む全て）
     if ( $game_title ) {
-        $scenes = noveltool_get_posts_by_game_title( $game_title );
+        $scenes = noveltool_get_posts_by_game_title( $game_title, array( 'post_status' => 'any' ) );
         foreach ( $scenes as $scene ) {
             wp_delete_post( $scene->ID, true ); // 完全削除（ゴミ箱に入れない）
         }
@@ -1074,6 +1074,31 @@ function noveltool_redirect_single_scene_direct_access() {
     
     // shortcode=1パラメータが付いている場合はモーダル表示用なのでリダイレクトしない
     if ( isset( $_GET['shortcode'] ) && $_GET['shortcode'] === '1' ) {
+        // autostart=1 パラメータのセキュリティチェック
+        // 管理者権限を持つログインユーザーのみ autostart を許可
+        if ( isset( $_GET['autostart'] ) && '1' === $_GET['autostart'] ) {
+            if ( ! is_user_logged_in() || ! current_user_can( 'edit_post', get_the_ID() ) ) {
+                // 未ログインまたは編集権限がない場合はリダイレクト
+                $redirect_url = '';
+                
+                // 可能であればゲームの最初のシーンにリダイレクト
+                $first_scene_id = get_post_meta( get_the_ID(), '_first_scene_id', true );
+                if ( $first_scene_id && get_post_status( $first_scene_id ) === 'publish' ) {
+                    // 最初のシーンに shortcode=1 を付けてリダイレクト
+                    $redirect_url = add_query_arg( 'shortcode', '1', get_permalink( $first_scene_id ) );
+                } else {
+                    // 最初のシーンが取得できない場合はアーカイブページへ
+                    $redirect_url = get_post_type_archive_link( 'novel_game' );
+                    if ( ! $redirect_url ) {
+                        // アーカイブページが無効な場合はトップページへ
+                        $redirect_url = home_url( '/' );
+                    }
+                }
+                
+                wp_safe_redirect( $redirect_url );
+                exit;
+            }
+        }
         return;
     }
     
