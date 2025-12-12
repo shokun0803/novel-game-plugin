@@ -2431,6 +2431,15 @@
 				}
 
 				var shouldAutostart = urlHasAutostart( gameUrlOrData );
+				
+				// ログイン状態を確認（WordPress の body クラスで判定）
+				var isLoggedIn = document.body && document.body.classList && document.body.classList.contains( 'logged-in' );
+				
+				// autostart は管理者のみ許可（未ログインの場合は autostart を無視）
+				if ( shouldAutostart && ! isLoggedIn ) {
+					debugLog( 'autostart=1 detected but user is not logged in — ignoring autostart' );
+					shouldAutostart = false;
+				}
 
 				loadGameData( gameUrlOrData ).then( function() {
 					debugLog( 'Game data loaded successfully' );
@@ -4431,13 +4440,50 @@
 		// URLにshortcode=1が含まれている場合、プレビュー目的で来ている可能性が高いため
 		// ページ読み込み時に自動でモーダルを開く（管理画面のPreviewボタン使用時の挙動改善）
 		try {
-			if ( isShortcodeContext() ) {
+			if ( isShortcodeContext() && ! window.__novel_autostart_handled ) {
 				debugLog( 'shortcode=1 detected on load — auto opening modal' );
-				if ( $modalOverlay.length > 0 ) {
-					openModal( window.location.href );
+				
+				// autostart=1 が含まれているか確認
+				var urlObj = new URL( window.location.href, window.location.origin );
+				var isAutostart = urlObj.searchParams.get( 'autostart' ) === '1';
+				
+				// ログイン状態を確認（WordPress の body クラスで判定）
+				var isLoggedIn = document.body && document.body.classList && document.body.classList.contains( 'logged-in' );
+				
+				if ( isAutostart && ! isLoggedIn ) {
+					// autostart=1 が含まれているが未ログインの場合
+					debugLog( 'autostart=1 detected but user is not logged in — redirecting to normal mode' );
+					
+					// モーダルが既に開いていれば閉じる
+					try {
+						if ( isModalOpen ) {
+							closeModal( true );
+						}
+					} catch ( e ) {
+						debugLog( 'warn', 'Failed to close modal:', e );
+					}
+					
+					// autostart を削除した URL を生成
+					urlObj.searchParams.delete( 'autostart' );
+					var urlWithoutAutostart = urlObj.toString();
+					
+					// 無限ループ防止フラグを設定
+					window.__novel_autostart_handled = true;
+					
+					// 通常モード（タイトル画面）でモーダル起動
+					if ( $modalOverlay.length > 0 ) {
+						openModal( urlWithoutAutostart );
+					} else {
+						navigateWithShortcodeParam( urlWithoutAutostart );
+					}
 				} else {
-					// モーダル要素がない場合は念のためshortcodeパラメータを保持して遷移
-					navigateWithShortcodeParam( window.location.href );
+					// autostart がないかログイン済みなら既存の挙動を維持
+					if ( $modalOverlay.length > 0 ) {
+						openModal( window.location.href );
+					} else {
+						// モーダル要素がない場合は念のためshortcodeパラメータを保持して遷移
+						navigateWithShortcodeParam( window.location.href );
+					}
 				}
 			}
 		} catch ( e ) {
