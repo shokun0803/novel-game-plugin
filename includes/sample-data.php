@@ -1346,45 +1346,68 @@ function noveltool_install_shadow_detective_game() {
             }
             
             // Start Scene を作成（手動作成フローとの整合性を保つ）
-            $start_scene_title = sprintf( __( '%s - Start Scene', 'novel-game-plugin' ), $target_title );
+            $sanitized_target_title = sanitize_text_field( $target_title );
+            $start_scene_title = sprintf( _x( '%s - Start Scene', 'start scene title', 'novel-game-plugin' ), $sanitized_target_title );
             
             // 既に同名の Start Scene が存在するかチェック（idempotent）
             $existing_start_scene = get_posts( array(
                 'post_type'      => 'novel_game',
-                'title'          => $start_scene_title,
                 'posts_per_page' => 1,
                 'post_status'    => 'any',
+                'fields'         => 'ids',
                 'meta_query'     => array(
+                    'relation' => 'AND',
                     array(
                         'key'   => '_game_title',
-                        'value' => $target_title,
+                        'value' => $sanitized_target_title,
+                    ),
+                    array(
+                        'key'   => '_is_start_scene',
+                        'value' => '1',
                     ),
                 ),
             ) );
             
             if ( empty( $existing_start_scene ) ) {
+                // 投稿者IDの取得（0の場合は1にフォールバック）
+                $author_id = get_current_user_id();
+                if ( 0 === $author_id ) {
+                    $author_id = 1;
+                }
+                
                 // Start Scene を作成
                 $start_post_data = array(
                     'post_type'    => 'novel_game',
                     'post_title'   => $start_scene_title,
+                    'post_name'    => sanitize_title( $start_scene_title ),
                     'post_content' => '',
                     'post_status'  => 'publish',
-                    'post_author'  => get_current_user_id(),
+                    'post_author'  => $author_id,
                 );
                 
                 $start_scene_id = wp_insert_post( $start_post_data );
                 
                 if ( $start_scene_id && ! is_wp_error( $start_scene_id ) ) {
                     // ゲームタイトルをメタデータとして保存
-                    update_post_meta( $start_scene_id, '_game_title', $target_title );
-                    error_log( sprintf( 'noveltool_install_shadow_detective_game: Start Scene created (ID: %d) for "%s" during regeneration', $start_scene_id, $target_title ) );
+                    update_post_meta( $start_scene_id, '_game_title', $sanitized_target_title );
+                    // Start Scene 識別用メタデータ
+                    update_post_meta( $start_scene_id, '_is_start_scene', '1' );
+                    // デフォルトのセリフを設定
+                    $default_dialogue = sprintf( __( 'Welcome to "%s"!', 'novel-game-plugin' ), $sanitized_target_title );
+                    update_post_meta( $start_scene_id, '_dialogue_text', $default_dialogue );
+                    
+                    if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                        error_log( sprintf( 'noveltool_install_shadow_detective_game: Start Scene created (ID: %d) for "%s" during regeneration', $start_scene_id, $sanitized_target_title ) );
+                    }
                 } else {
                     // Start Scene 作成に失敗した場合はエラーログを残すが、処理は継続
                     $error_message = is_wp_error( $start_scene_id ) ? $start_scene_id->get_error_message() : 'wp_insert_post returned 0';
-                    error_log( sprintf( 'noveltool_install_shadow_detective_game: Failed to create Start Scene for "%s" during regeneration: %s', $target_title, $error_message ) );
+                    error_log( sprintf( 'noveltool_install_shadow_detective_game: Failed to create Start Scene for "%s" during regeneration: %s', $sanitized_target_title, $error_message ) );
                 }
             } else {
-                error_log( sprintf( 'noveltool_install_shadow_detective_game: Start Scene already exists for "%s" during regeneration, skipping creation', $target_title ) );
+                if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                    error_log( sprintf( 'noveltool_install_shadow_detective_game: Start Scene already exists for "%s" during regeneration, skipping creation', $sanitized_target_title ) );
+                }
             }
             
             // シーン再生成
@@ -1418,45 +1441,68 @@ function noveltool_install_shadow_detective_game() {
     }
     
     // Start Scene を作成（手動作成フローとの整合性を保つ）
-    $start_scene_title = sprintf( __( '%s - Start Scene', 'novel-game-plugin' ), $game_data['title'] );
+    $sanitized_game_title = sanitize_text_field( $game_data['title'] );
+    $start_scene_title = sprintf( _x( '%s - Start Scene', 'start scene title', 'novel-game-plugin' ), $sanitized_game_title );
     
     // 既に同名の Start Scene が存在するかチェック（idempotent）
     $existing_start_scene = get_posts( array(
         'post_type'      => 'novel_game',
-        'title'          => $start_scene_title,
         'posts_per_page' => 1,
         'post_status'    => 'any',
+        'fields'         => 'ids',
         'meta_query'     => array(
+            'relation' => 'AND',
             array(
                 'key'   => '_game_title',
-                'value' => $game_data['title'],
+                'value' => $sanitized_game_title,
+            ),
+            array(
+                'key'   => '_is_start_scene',
+                'value' => '1',
             ),
         ),
     ) );
     
     if ( empty( $existing_start_scene ) ) {
+        // 投稿者IDの取得（0の場合は1にフォールバック）
+        $author_id = get_current_user_id();
+        if ( 0 === $author_id ) {
+            $author_id = 1;
+        }
+        
         // Start Scene を作成
         $start_post_data = array(
             'post_type'    => 'novel_game',
             'post_title'   => $start_scene_title,
+            'post_name'    => sanitize_title( $start_scene_title ),
             'post_content' => '',
             'post_status'  => 'publish',
-            'post_author'  => get_current_user_id(),
+            'post_author'  => $author_id,
         );
         
         $start_scene_id = wp_insert_post( $start_post_data );
         
         if ( $start_scene_id && ! is_wp_error( $start_scene_id ) ) {
             // ゲームタイトルをメタデータとして保存
-            update_post_meta( $start_scene_id, '_game_title', $game_data['title'] );
-            error_log( sprintf( 'noveltool_install_shadow_detective_game: Start Scene created (ID: %d) for "%s"', $start_scene_id, $game_data['title'] ) );
+            update_post_meta( $start_scene_id, '_game_title', $sanitized_game_title );
+            // Start Scene 識別用メタデータ
+            update_post_meta( $start_scene_id, '_is_start_scene', '1' );
+            // デフォルトのセリフを設定
+            $default_dialogue = sprintf( __( 'Welcome to "%s"!', 'novel-game-plugin' ), $sanitized_game_title );
+            update_post_meta( $start_scene_id, '_dialogue_text', $default_dialogue );
+            
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                error_log( sprintf( 'noveltool_install_shadow_detective_game: Start Scene created (ID: %d) for "%s"', $start_scene_id, $sanitized_game_title ) );
+            }
         } else {
             // Start Scene 作成に失敗した場合はエラーログを残すが、処理は継続
             $error_message = is_wp_error( $start_scene_id ) ? $start_scene_id->get_error_message() : 'wp_insert_post returned 0';
-            error_log( sprintf( 'noveltool_install_shadow_detective_game: Failed to create Start Scene for "%s": %s', $game_data['title'], $error_message ) );
+            error_log( sprintf( 'noveltool_install_shadow_detective_game: Failed to create Start Scene for "%s": %s', $sanitized_game_title, $error_message ) );
         }
     } else {
-        error_log( sprintf( 'noveltool_install_shadow_detective_game: Start Scene already exists for "%s", skipping creation', $game_data['title'] ) );
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            error_log( sprintf( 'noveltool_install_shadow_detective_game: Start Scene already exists for "%s", skipping creation', $sanitized_game_title ) );
+        }
     }
     
     // フラグIDの一覧を作成（検証用）

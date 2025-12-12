@@ -1180,12 +1180,15 @@ msgid ""
 "presentation."
 msgstr ""
 
-#: admin/new-game.php:282
+#: admin/new-game.php:284 includes/sample-data.php:1350
+#: includes/sample-data.php:1423
 #, php-format
+msgctxt "start scene title"
 msgid "%s - Start Scene"
 msgstr ""
 
-#: admin/new-game.php:302
+#: admin/new-game.php:299 includes/sample-data.php:1363
+#: includes/sample-data.php:1436
 #, php-format
 msgid "Welcome to \"%s\"!"
 msgstr ""

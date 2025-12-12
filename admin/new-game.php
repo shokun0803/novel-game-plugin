@@ -278,28 +278,42 @@ function noveltool_game_title_exists( $game_title ) {
  * @since 1.1.0
  */
 function noveltool_create_new_game( $game_title ) {
+    // タイトルのサニタイズ
+    $sanitized_game_title = sanitize_text_field( $game_title );
+    
     // 最初のシーンのタイトルを生成
-    $scene_title = sprintf( __( '%s - Start Scene', 'novel-game-plugin' ), $game_title );
+    $scene_title = sprintf( _x( '%s - Start Scene', 'start scene title', 'novel-game-plugin' ), $sanitized_game_title );
+
+    // 投稿者IDの取得（0の場合は1にフォールバック）
+    $author_id = get_current_user_id();
+    if ( 0 === $author_id ) {
+        $author_id = 1;
+    }
 
     // 新規投稿の作成
     $post_data = array(
         'post_type'    => 'novel_game',
         'post_title'   => $scene_title,
+        'post_name'    => sanitize_title( $scene_title ),
         'post_content' => '',
         'post_status'  => 'publish',
+        'post_author'  => $author_id,
     );
 
     $new_id = wp_insert_post( $post_data );
 
     if ( $new_id && ! is_wp_error( $new_id ) ) {
         // ゲームタイトルをメタデータとして保存
-        update_post_meta( $new_id, '_game_title', $game_title );
+        update_post_meta( $new_id, '_game_title', $sanitized_game_title );
+        
+        // Start Scene 識別用メタデータ
+        update_post_meta( $new_id, '_is_start_scene', '1' );
         
         // ゲームタイトルをグローバル設定としても保存
-        update_option( 'noveltool_game_title', $game_title );
+        update_option( 'noveltool_game_title', $sanitized_game_title );
         
         // デフォルトのセリフを設定
-        $default_dialogue = sprintf( __( 'Welcome to "%s"!', 'novel-game-plugin' ), $game_title );
+        $default_dialogue = sprintf( __( 'Welcome to "%s"!', 'novel-game-plugin' ), $sanitized_game_title );
         update_post_meta( $new_id, '_dialogue_text', $default_dialogue );
     }
 
