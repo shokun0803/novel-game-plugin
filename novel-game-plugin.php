@@ -329,6 +329,11 @@ function noveltool_save_game( $game_data ) {
         $game_data['created_at'] = current_time( 'timestamp' );
         $game_data['updated_at'] = current_time( 'timestamp' );
         
+        // start_scene_id が未設定の場合は null で初期化
+        if ( ! isset( $game_data['start_scene_id'] ) ) {
+            $game_data['start_scene_id'] = null;
+        }
+        
         $games[] = $game_data;
     } else {
         // 既存ゲームの更新
@@ -337,6 +342,12 @@ function noveltool_save_game( $game_data ) {
             if ( $games[$i]['id'] == $game_data['id'] ) {
                 $game_data['created_at'] = $games[$i]['created_at']; // 作成日時を保持
                 $game_data['updated_at'] = current_time( 'timestamp' );
+                
+                // start_scene_id の保持（明示的に更新されない限り既存値を維持）
+                if ( ! array_key_exists( 'start_scene_id', $game_data ) && isset( $games[$i]['start_scene_id'] ) ) {
+                    $game_data['start_scene_id'] = $games[$i]['start_scene_id'];
+                }
+                
                 $games[$i] = $game_data;
                 $found = true;
                 break;
@@ -351,6 +362,27 @@ function noveltool_save_game( $game_data ) {
     $result = update_option( 'noveltool_games', $games );
     
     return $result ? $game_data['id'] : false;
+}
+
+/**
+ * ゲームの開始シーンIDを更新する関数
+ *
+ * @param string $game_title ゲームタイトル
+ * @param int|null $scene_id シーンID（nullの場合はクリア）
+ * @return bool 更新成功の場合true
+ * @since 1.4.0
+ */
+function noveltool_update_game_start_scene( $game_title, $scene_id ) {
+    $game = noveltool_get_game_by_title( $game_title );
+    
+    if ( ! $game ) {
+        return false;
+    }
+    
+    $game['start_scene_id'] = $scene_id;
+    $result = noveltool_save_game( $game );
+    
+    return (bool) $result;
 }
 
 /**
