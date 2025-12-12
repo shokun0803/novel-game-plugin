@@ -2419,24 +2419,49 @@
 			// URLが文字列として指定された場合（URLから直接または従来の方法）
 			else if ( typeof gameUrlOrData === 'string' ) {
 				debugLog( 'Loading game data from URL:', gameUrlOrData );
+				// プレビュー用途ではタイトルをスキップして直接開始する場合があるため、
+				// URL に autostart=1 が付与されているかを確認する
+				function urlHasAutostart( url ) {
+					try {
+						var params = new URL( url, window.location.origin ).searchParams;
+						return params.get( 'autostart' ) === '1';
+					} catch ( e ) {
+						return ( url.indexOf( 'autostart=1' ) !== -1 );
+					}
+				}
+
+				var shouldAutostart = urlHasAutostart( gameUrlOrData );
+
 				loadGameData( gameUrlOrData ).then( function() {
 					debugLog( 'Game data loaded successfully' );
-					
-					// タイトル画面を必ず更新して UI と内部データを同期する
-					if ( window.currentGameSelectionData ) {
-						showTitleScreen( Object.assign( {}, window.currentGameSelectionData ) );
+					// 自動開始フラグがある場合はタイトルをスキップして直接ゲーム開始
+					if ( shouldAutostart ) {
+						try {
+							// currentGameSelectionData があることを期待
+							var dataForStart = window.currentGameSelectionData || { url: gameUrlOrData };
+							// タイトルを非表示にして直接初期化
+							hideTitleScreen( false );
+							setTimeout( function() {
+								initializeGameContent();
+							}, 100 );
+						} catch ( e ) {
+							debugLog( 'error', 'autostart failed:', e );
+							// フォールバック: タイトルを表示
+							showTitleScreen( Object.assign( {}, window.currentGameSelectionData || createFallbackGameData() ) );
+						}
 					} else {
-						// フォールバック：createFallbackGameData を使用
-						showTitleScreen( Object.assign( {}, createFallbackGameData( window.currentGameSelectionData ) ) );
+						// 通常フロー: タイトル画面を表示してから初期化
+						if ( window.currentGameSelectionData ) {
+							showTitleScreen( Object.assign( {}, window.currentGameSelectionData ) );
+						} else {
+							showTitleScreen( Object.assign( {}, createFallbackGameData( window.currentGameSelectionData ) ) );
+						}
+						checkAndOfferResumeOption().then( function() {
+							setTimeout( function() {
+								initializeGameContent();
+							}, 100 );
+						} );
 					}
-					
-					// 保存された進捗をチェック
-					checkAndOfferResumeOption().then( function() {
-						// モーダル表示後にゲームを初期化
-						setTimeout( function() {
-							initializeGameContent();
-						}, 100 );
-					} );
 				} ).catch( function( error ) {
 					debugLog( 'error', 'ゲームの読み込みに失敗しました:', error );
 					closeModal( true );
@@ -4402,6 +4427,22 @@
 
 		// ゲームの初期化
 		initializeGame();
+
+		// URLにshortcode=1が含まれている場合、プレビュー目的で来ている可能性が高いため
+		// ページ読み込み時に自動でモーダルを開く（管理画面のPreviewボタン使用時の挙動改善）
+		try {
+			if ( isShortcodeContext() ) {
+				debugLog( 'shortcode=1 detected on load — auto opening modal' );
+				if ( $modalOverlay.length > 0 ) {
+					openModal( window.location.href );
+				} else {
+					// モーダル要素がない場合は念のためshortcodeパラメータを保持して遷移
+					navigateWithShortcodeParam( window.location.href );
+				}
+			}
+		} catch ( e ) {
+			try { debugLog( 'error', 'auto-open modal failed:', e ); } catch ( _ ) {}
+		}
 		
 		// モーダル機能をグローバルに常に公開
 		// archive-novel_game.phpからの呼び出しに対応するため
