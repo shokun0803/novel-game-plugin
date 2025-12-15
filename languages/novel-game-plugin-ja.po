@@ -3211,3 +3211,7 @@ msgstr "開始: %s"
 
 #~ msgid "novel"
 #~ msgstr "novel"
+
+#: admin/game-manager.php:354
+msgid "Start"
+msgstr "開始シーン"

@@ -329,7 +329,6 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
             <table class="wp-list-table widefat fixed striped">
                 <thead>
                     <tr>
-                        <th class="manage-column column-start noveltool-start-column"><?php esc_html_e( 'Start', 'novel-game-plugin' ); ?></th>
                         <th class="manage-column column-title column-primary"><?php esc_html_e( 'Scene Title', 'novel-game-plugin' ); ?></th>
                         <th class="manage-column column-status"><?php esc_html_e( 'Status', 'novel-game-plugin' ); ?></th>
                         <th class="manage-column column-date"><?php esc_html_e( 'Date', 'novel-game-plugin' ); ?></th>
@@ -345,13 +344,6 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                         $is_start = $is_start_scene || $is_start_by_id;
                         ?>
                         <tr>
-                            <td class="noveltool-start-column" data-colname="<?php esc_attr_e( 'Start', 'novel-game-plugin' ); ?>">
-                                <?php if ( $is_start ) : ?>
-                                    <span class="dashicons dashicons-yes-alt noveltool-start-icon" title="<?php esc_attr_e( 'This is the start scene', 'novel-game-plugin' ); ?>"></span>
-                                <?php else : ?>
-                                    <span class="dashicons dashicons-minus noveltool-not-start-icon" title="<?php esc_attr_e( 'Not a start scene', 'novel-game-plugin' ); ?>"></span>
-                                <?php endif; ?>
-                            </td>
                             <td class="column-title column-primary" data-colname="<?php esc_attr_e( 'Scene Title', 'novel-game-plugin' ); ?>">
                                 <strong>
                                     <a href="<?php echo esc_url( get_edit_post_link( $scene->ID ) ); ?>">
@@ -359,7 +351,7 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                                     </a>
                                 </strong>
                                 <?php if ( $is_start ) : ?>
-                                    <span class="noveltool-start-badge"><?php esc_html_e( 'START', 'novel-game-plugin' ); ?></span>
+                                    <span class="post-state"><?php esc_html_e( 'Start', 'novel-game-plugin' ); ?></span>
                                 <?php endif; ?>
                                 <button type="button" class="toggle-row"><span class="screen-reader-text"><?php esc_html_e( 'Show more details', 'novel-game-plugin' ); ?></span></button>
                             </td>
