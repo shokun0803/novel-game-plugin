@@ -3215,3 +3215,12 @@ msgstr "開始: %s"
 #: admin/game-manager.php:354
 msgid "Start"
 msgstr "開始シーン"
+
+#: admin/game-manager.php:215
+msgid "The start scene was removed. Please set a new start scene for this game."
+msgstr "開始シーンが削除されました。このゲームの新しい開始シーンを設定してください。"
+
+#: admin/game-manager.php:218
+msgid "The start scene was restored and is now set as the start scene again."
+msgstr "開始シーンが復元され、再び開始シーンとして設定されました。"
+

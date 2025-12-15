@@ -2812,3 +2812,12 @@ msgstr ""
 #: admin/game-manager.php:354
 msgid "Start"
 msgstr ""
+
+#: admin/game-manager.php:215
+msgid "The start scene was removed. Please set a new start scene for this game."
+msgstr ""
+
+#: admin/game-manager.php:218
+msgid "The start scene was restored and is now set as the start scene again."
+msgstr ""
+

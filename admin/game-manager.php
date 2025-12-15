@@ -212,10 +212,10 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
     if ( isset( $_GET['notice'] ) ) {
         switch ( sanitize_text_field( wp_unslash( $_GET['notice'] ) ) ) {
             case 'start_scene_removed':
-                $notice_message = __( 'Notice: The start scene was removed. Please set a new start scene for this game.', 'novel-game-plugin' );
+                $notice_message = __( 'The start scene was removed. Please set a new start scene for this game.', 'novel-game-plugin' );
                 break;
             case 'start_scene_restored':
-                $notice_message = __( 'Notice: The start scene was restored and is now set as the start scene again.', 'novel-game-plugin' );
+                $notice_message = __( 'The start scene was restored and is now set as the start scene again.', 'novel-game-plugin' );
                 break;
         }
     }
