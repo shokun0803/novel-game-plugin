@@ -207,6 +207,19 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
         }
     }
     
+    // 追加の通知メッセージ（start_scene関連）
+    $notice_message = '';
+    if ( isset( $_GET['notice'] ) ) {
+        switch ( sanitize_text_field( wp_unslash( $_GET['notice'] ) ) ) {
+            case 'start_scene_removed':
+                $notice_message = __( 'Notice: The start scene was removed. Please set a new start scene for this game.', 'novel-game-plugin' );
+                break;
+            case 'start_scene_restored':
+                $notice_message = __( 'Notice: The start scene was restored and is now set as the start scene again.', 'novel-game-plugin' );
+                break;
+        }
+    }
+    
     ?>
     <div class="noveltool-scenes-tab">
         <?php if ( $error_message ) : ?>
@@ -218,6 +231,12 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
         <?php if ( $success_message ) : ?>
             <div class="notice notice-success is-dismissible">
                 <p><?php echo esc_html( $success_message ); ?></p>
+            </div>
+        <?php endif; ?>
+        
+        <?php if ( $notice_message ) : ?>
+            <div class="notice notice-warning is-dismissible">
+                <p><?php echo esc_html( $notice_message ); ?></p>
             </div>
         <?php endif; ?>
         
@@ -325,6 +344,13 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                                         <?php echo esc_html( $scene->post_title ); ?>
                                     </a>
                                 </strong>
+                                <?php
+                                // 開始シーンバッジを表示
+                                $is_start_scene = get_post_meta( $scene->ID, '_is_start_scene', true );
+                                if ( $is_start_scene ) {
+                                    echo ' <span class="noveltool-start-badge" style="background: #00a32a; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; margin-left: 5px;">' . esc_html__( 'START', 'novel-game-plugin' ) . '</span>';
+                                }
+                                ?>
                             </td>
                             <td>
                                 <?php
