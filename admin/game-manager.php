@@ -349,10 +349,11 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                                     <a href="<?php echo esc_url( get_edit_post_link( $scene->ID ) ); ?>">
                                         <?php echo esc_html( $scene->post_title ); ?>
                                     </a>
+                                    <?php // タイトルと同一行に表示するため、post-stateは<strong>内に配置 ?>
+                                    <?php if ( $is_start ) : ?>
+                                        <span class="post-state"><?php esc_html_e( 'Start', 'novel-game-plugin' ); ?></span>
+                                    <?php endif; ?>
                                 </strong>
-                                <?php if ( $is_start ) : ?>
-                                    <span class="post-state"><?php esc_html_e( 'Start', 'novel-game-plugin' ); ?></span>
-                                <?php endif; ?>
                                 <button type="button" class="toggle-row"><span class="screen-reader-text"><?php esc_html_e( 'Show more details', 'novel-game-plugin' ); ?></span></button>
                             </td>
                             <td class="column-status" data-colname="<?php esc_attr_e( 'Status', 'novel-game-plugin' ); ?>">
