@@ -1241,12 +1241,7 @@ msgstr ""
 "より良いプレゼンテーションのために、任意でゲーム概要とタイトル画面画像を追加"
 "できます。"
 
-#: admin/new-game.php:284 includes/sample-data.php:1350
-#: includes/sample-data.php:1423
-#, php-format
-msgctxt "start scene title"
-msgid "%s - Start Scene"
-msgstr "%s - 開始シーン"
+
 
 #: admin/new-game.php:299 includes/sample-data.php:1363
 #: includes/sample-data.php:1436
