@@ -85,14 +85,12 @@ msgid "Scene has been restored from trash."
 msgstr "シーンをごみ箱から復元しました。"
 
 #: admin/game-manager.php:202
-#, fuzzy
 msgid "Scene has been restored from trash as a draft."
-msgstr "シーンをごみ箱から復元しました。"
+msgstr "シーンをごみ箱から下書きとして復元しました。"
 
 #: admin/game-manager.php:205
-#, fuzzy
 msgid "Scene has been restored from trash and is now published."
-msgstr "シーンをごみ箱から復元しました。"
+msgstr "シーンをごみ箱から復元され、公開されました。"
 
 #: admin/game-manager.php:215
 msgid ""
@@ -112,18 +110,16 @@ msgid_plural "All <span class=\"count\">(%s)</span>"
 msgstr[0] ""
 
 #: admin/game-manager.php:269
-#, fuzzy
 msgid "Published"
-msgstr "ゲームを公開"
+msgstr "公開"
 
 #: admin/game-manager.php:282
 msgid "Drafts"
 msgstr ""
 
 #: admin/game-manager.php:295
-#, fuzzy
 msgid "Trash"
-msgstr "ごみ箱を見る"
+msgstr "ごみ箱"
 
 #: admin/game-manager.php:307
 msgid "No scenes in trash."
@@ -859,9 +855,8 @@ msgid " The flag to set when this choice is selected"
 msgstr "この選択肢を選んだ時に設定されるフラグ"
 
 #: admin/meta-boxes.php:1048
-#, fuzzy
 msgid "Start Scene Settings"
-msgstr "設定を保存"
+msgstr "開始シーン設定"
 
 #. translators: %s: title of the other start scene
 #: admin/meta-boxes.php:1057
@@ -872,9 +867,8 @@ msgid ""
 msgstr ""
 
 #: admin/meta-boxes.php:1072
-#, fuzzy
 msgid "Set this scene as the start scene (first scene of the game)"
-msgstr "このシーンをエンディング（ゲームの終了）として設定する"
+msgstr "このシーンを開始シーン（ゲームの最初のシーン）に設定する"
 
 #: admin/meta-boxes.php:1075
 msgid ""
@@ -1095,9 +1089,8 @@ msgid "Select a game and export it in JSON format."
 msgstr "ゲームを選択してJSON形式でエクスポートします。"
 
 #: admin/export-import.php:39
-#, fuzzy
 msgid "No games available to export."
-msgstr "まだゲームが作成されていません。"
+msgstr "エクスポート可能なゲームはありません。"
 
 #: admin/export-import.php:43
 msgid "Select game to export"
@@ -1225,9 +1218,8 @@ msgid "Please select a file to import."
 msgstr "プレイしたいゲームを選択してください"
 
 #: admin/export-import.php:240
-#, fuzzy
 msgid "Please select a game to export."
-msgstr "プレイしたいゲームを選択してください"
+msgstr "エクスポートするゲームを選択してください"
 
 #: admin/export-import.php:241
 msgid "File size is too large. Maximum 10MB allowed."
