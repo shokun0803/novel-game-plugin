@@ -162,6 +162,89 @@ find . -name "*.php" \
   --output=languages/novel-game-plugin.pot
 ```
 
+  ### POT 再生成時の翻訳漏れ防止手順
+
+  POT 再生成時に一部の翻訳文字列が抜け落ちる事故を防ぐため、以下の手順で全領域を網羅して pot を生成・検証してください。gettext ツール（xgettext/msgmerge/msgfmt/msgattrib 等）が必要です。
+
+  - PHP（メインドメイン）: `includes/sample-data.php` を除外して生成
+
+  ```bash
+  find . -name "*.php" \
+    -not -path "./languages/*" \
+    -not -path "./node_modules/*" \
+    -not -path "./.git/*" \
+    -not -path "./includes/sample-data.php" \
+    -print0 | xargs -0 xgettext \
+    --default-domain=novel-game-plugin \
+    --from-code=UTF-8 \
+    --language=PHP \
+    --keyword=__ \
+    --keyword=_e \
+    --keyword=_x:1,2c \
+    --keyword=_n:1,2 \
+    --keyword=_nx:1,2,4c \
+    --keyword=esc_html__ \
+    --keyword=esc_html_e \
+    --keyword=esc_attr__ \
+    --keyword=esc_attr_e \
+    --add-comments=translators \
+    --output=languages/novel-game-plugin.pot
+  ```
+
+  - PHP（サンプルデータ専用）: サンプル文字列のみを別ドメインに集約
+
+  ```bash
+  xgettext --default-domain=novel-game-plugin-sample \
+    --from-code=UTF-8 --language=PHP --keyword=__ \
+    --output=languages/novel-game-plugin-sample.pot includes/sample-data.php
+  ```
+
+  - JavaScript（ブロックやフロントの JS）: `wp.i18n` で使用している `__()` や `_x()` を抽出
+
+  ```bash
+  find . -name "*.js" -not -path "./node_modules/*" -not -path "./.git/*" -print0 | xargs -0 xgettext \
+    --language=JavaScript --from-code=UTF-8 --keyword=__ --keyword=_x:1,2c \
+    --output=languages/novel-game-plugin-js.pot
+  ```
+
+  - 生成後の検証手順（抜け落ち検出）:
+
+    - POT に新規文字列が含まれているかを各 `.po` と比較して確認してください。簡易チェック例:
+
+  ```bash
+  # POT に含まれるエントリで該当 .po に未翻訳のものを探す（簡易版）
+  for pot in languages/*.pot; do
+    echo "Checking $pot";
+    # 対応する po 名を決めてチェックするなど運用に合わせて調整
+  done
+
+  # 未翻訳エントリの一覧（例）
+  grep -n "^msgstr \"\"" languages/*.po || true
+  ```
+
+  - obsolete（`#~`）の除去: `msgattrib --no-obsolete` を用いると `.po` 内の obsolete を除去できます（必要に応じて実行）。
+
+  ```bash
+  msgattrib --no-obsolete --output-file=languages/novel-game-plugin-ja.po languages/novel-game-plugin-ja.po
+  msgattrib --no-obsolete --output-file=languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample-ja.po
+  ```
+
+  - 最終更新とコンパイル（例）
+
+  ```bash
+  msgmerge --update --backup=none languages/novel-game-plugin-ja.po languages/novel-game-plugin.pot
+  msgmerge --update --backup=none languages/novel-game-plugin-sample-ja.po languages/novel-game-plugin-sample.pot
+
+  msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja.mo
+  msgfmt languages/novel-game-plugin-ja.po -o languages/novel-game-plugin-ja_JP.mo
+
+  msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja.mo
+  msgfmt languages/novel-game-plugin-sample-ja.po -o languages/novel-game-plugin-sample-ja_JP.mo
+  ```
+
+  注意: 上記コマンドは各環境の shell/ツールに依存します。実行前に `gettext` ツール群がインストールされていることを確認してください。
+
+
 ### .po / .mo ファイルの更新
 
 **重要**: 翻訳ファイルを更新する前に、必ずバックアップを作成してください。
