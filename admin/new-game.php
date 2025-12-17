@@ -281,8 +281,9 @@ function noveltool_create_new_game( $game_title ) {
     // タイトルのサニタイズ
     $sanitized_game_title = sanitize_text_field( $game_title );
     
-    // 最初のシーンのタイトルを生成
-    $scene_title = sprintf( _x( '%s - Start Scene', 'start scene title', 'novel-game-plugin' ), $sanitized_game_title );
+    // 投稿タイトルはユーザーが入力したゲームタイトルを使用する
+    // 表示上「開始シーン」であることは管理画面で post-state によって示す（タイトルを書き換えない）
+    $post_title_use = $sanitized_game_title;
 
     // 投稿者IDの取得（0の場合は1にフォールバック）
     $author_id = get_current_user_id();
@@ -293,8 +294,8 @@ function noveltool_create_new_game( $game_title ) {
     // 新規投稿の作成
     $post_data = array(
         'post_type'    => 'novel_game',
-        'post_title'   => $scene_title,
-        'post_name'    => sanitize_title( $scene_title ),
+        'post_title'   => $post_title_use,
+        'post_name'    => sanitize_title( $post_title_use ),
         'post_content' => '',
         'post_status'  => 'publish',
         'post_author'  => $author_id,
@@ -308,6 +309,12 @@ function noveltool_create_new_game( $game_title ) {
         
         // Start Scene 識別用メタデータ
         update_post_meta( $new_id, '_is_start_scene', '1' );
+
+        // ゲームデータの start_scene_id を更新（明示的に開始シーンを保持）
+        // noveltool_update_game_start_scene はゲームタイトルでゲームを特定する
+        if ( function_exists( 'noveltool_update_game_start_scene' ) ) {
+            noveltool_update_game_start_scene( $sanitized_game_title, $new_id );
+        }
         
         // ゲームタイトルをグローバル設定としても保存
         update_option( 'noveltool_game_title', $sanitized_game_title );
