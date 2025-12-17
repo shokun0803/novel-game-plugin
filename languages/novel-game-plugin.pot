@@ -1180,12 +1180,10 @@ msgid ""
 "presentation."
 msgstr ""
 
-#: admin/new-game.php:282
-#, php-format
-msgid "%s - Start Scene"
-msgstr ""
 
-#: admin/new-game.php:302
+
+#: admin/new-game.php:299 includes/sample-data.php:1363
+#: includes/sample-data.php:1436
 #, php-format
 msgid "Welcome to \"%s\"!"
 msgstr ""
@@ -2805,3 +2803,16 @@ msgstr ""
 #, php-format
 msgid "Start: %s"
 msgstr ""
+
+#: admin/game-manager.php:354
+msgid "Start"
+msgstr ""
+
+#: admin/game-manager.php:215
+msgid "The start scene was removed. Please set a new start scene for this game."
+msgstr ""
+
+#: admin/game-manager.php:218
+msgid "The start scene was restored and is now set as the start scene again."
+msgstr ""
+

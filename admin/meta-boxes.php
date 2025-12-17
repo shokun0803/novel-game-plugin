@@ -214,6 +214,41 @@ function noveltool_meta_box_callback( $post ) {
     $is_ending = get_post_meta( $post->ID, '_is_ending', true );
     $ending_text = get_post_meta( $post->ID, '_ending_text', true );
     
+    // 開始シーン設定の取得
+    $is_start_scene = get_post_meta( $post->ID, '_is_start_scene', true );
+    
+    // 同じゲームタイトルの他のシーンに開始シーンが既に存在するかチェック
+    $has_other_start_scene = false;
+    $other_start_scene_title = '';
+    if ( $game_title ) {
+        $existing_start_scenes = get_posts( array(
+            'post_type'      => 'novel_game',
+            'posts_per_page' => 1,
+            'post_status'    => 'any',
+            'fields'         => 'ids',
+            'post__not_in'   => array( $post->ID ), // 現在の投稿を除外
+            'meta_query'     => array(
+                'relation' => 'AND',
+                array(
+                    'key'   => '_game_title',
+                    'value' => $game_title,
+                ),
+                array(
+                    'key'   => '_is_start_scene',
+                    'value' => '1',
+                ),
+            ),
+        ) );
+        
+        if ( ! empty( $existing_start_scenes ) ) {
+            $has_other_start_scene = true;
+            $other_start_scene_post = get_post( $existing_start_scenes[0] );
+            if ( $other_start_scene_post ) {
+                $other_start_scene_title = $other_start_scene_post->post_title;
+            }
+        }
+    }
+    
     // セリフフラグ条件データの取得
     $dialogue_flag_conditions = get_post_meta( $post->ID, '_dialogue_flag_conditions', true );
     if ( ! is_array( $dialogue_flag_conditions ) ) {
@@ -1010,6 +1045,41 @@ function noveltool_meta_box_callback( $post ) {
 
         <tr>
             <th scope="row">
+                <label for="novel_is_start_scene"><?php esc_html_e( 'Start Scene Settings', 'novel-game-plugin' ); ?></label>
+            </th>
+            <td>
+                <?php if ( $has_other_start_scene && ! $is_start_scene ) : ?>
+                    <p class="description" style="color: #d63638;">
+                        <?php
+                        echo esc_html(
+                            sprintf(
+                                /* translators: %s: title of the other start scene */
+                                __( 'A start scene already exists for this game: "%s". Only one start scene can be set per game.', 'novel-game-plugin' ),
+                                $other_start_scene_title
+                            )
+                        );
+                        ?>
+                    </p>
+                    <input type="hidden" name="is_start_scene" value="0" />
+                <?php else : ?>
+                    <label for="novel_is_start_scene">
+                        <input type="checkbox"
+                               id="novel_is_start_scene"
+                               name="is_start_scene"
+                               value="1"
+                               <?php checked( $is_start_scene ); ?>
+                               <?php disabled( $has_other_start_scene ); ?> />
+                        <?php esc_html_e( 'Set this scene as the start scene (first scene of the game)', 'novel-game-plugin' ); ?>
+                    </label>
+                    <p class="description">
+                        <?php esc_html_e( 'When checked, this scene will be the starting point of the game. Only one start scene can be set per game.', 'novel-game-plugin' ); ?>
+                    </p>
+                <?php endif; ?>
+            </td>
+        </tr>
+
+        <tr>
+            <th scope="row">
                 <label for="novel_is_ending"><?php esc_html_e( 'Ending Settings', 'novel-game-plugin' ); ?></label>
             </th>
             <td>
@@ -1287,6 +1357,61 @@ function noveltool_save_meta_box_data( $post_id ) {
             update_post_meta( $post_id, '_ending_text', $ending_text );
         } else {
             delete_post_meta( $post_id, '_ending_text' );
+        }
+    }
+
+    // 開始シーン設定の保存処理
+    $game_title = get_post_meta( $post_id, '_game_title', true );
+    
+    if ( isset( $_POST['is_start_scene'] ) && '1' === $_POST['is_start_scene'] ) {
+        // チェックされている場合
+        
+        // 同じゲームタイトルの他のシーンから _is_start_scene を削除
+        if ( $game_title ) {
+            $other_start_scenes = get_posts( array(
+                'post_type'      => 'novel_game',
+                'posts_per_page' => -1,
+                'post_status'    => 'any',
+                'fields'         => 'ids',
+                'post__not_in'   => array( $post_id ),
+                'meta_query'     => array(
+                    'relation' => 'AND',
+                    array(
+                        'key'   => '_game_title',
+                        'value' => $game_title,
+                    ),
+                    array(
+                        'key'   => '_is_start_scene',
+                        'value' => '1',
+                    ),
+                ),
+            ) );
+            
+            // 既存の開始シーンから _is_start_scene を削除
+            foreach ( $other_start_scenes as $other_scene_id ) {
+                delete_post_meta( $other_scene_id, '_is_start_scene' );
+            }
+        }
+        
+        // 現在の投稿を開始シーンとして設定
+        update_post_meta( $post_id, '_is_start_scene', '1' );
+        
+        // ゲームデータの start_scene_id を更新
+        if ( $game_title ) {
+            noveltool_update_game_start_scene( $game_title, $post_id );
+        }
+    } else {
+        // チェックされていない場合
+        $was_start_scene = get_post_meta( $post_id, '_is_start_scene', true );
+        
+        if ( $was_start_scene ) {
+            // 以前は開始シーンだった場合、メタデータを削除
+            delete_post_meta( $post_id, '_is_start_scene' );
+            
+            // ゲームデータの start_scene_id をクリア
+            if ( $game_title ) {
+                noveltool_update_game_start_scene( $game_title, null );
+            }
         }
     }
 

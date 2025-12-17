@@ -261,13 +261,31 @@ function noveltool_admin_post_delete_scene() {
             exit;
         }
 
+        // 開始シーンかどうかをチェック
+        $is_start_scene = get_post_meta( $scene_id, '_is_start_scene', true );
+        $game_title = get_post_meta( $scene_id, '_game_title', true );
+
         // シーンをゴミ箱へ移動
         $result = wp_trash_post( $scene_id );
 
         if ( $result ) {
-            $redirect_url = $game_id 
-                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'success' => 'scene_trashed' ) )
-                : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+            // 開始シーンが削除された場合、start_scene_idをクリア
+            if ( $is_start_scene && $game_title ) {
+                noveltool_update_game_start_scene( $game_title, null );
+                
+                if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                    error_log( sprintf( '[NovelGamePlugin] Start scene (ID: %d) was trashed. Cleared start_scene_id for game "%s"', $scene_id, $game_title ) );
+                }
+                
+                // 開始シーンが削除されたことを通知
+                $redirect_url = $game_id 
+                    ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'success' => 'scene_trashed', 'notice' => 'start_scene_removed' ) )
+                    : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+            } else {
+                $redirect_url = $game_id 
+                    ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'success' => 'scene_trashed' ) )
+                    : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
+            }
         } else {
             error_log( sprintf( '[NovelGamePlugin] Failed to trash scene ID: %d', $scene_id ) );
             $redirect_url = $game_id 
@@ -330,6 +348,19 @@ function noveltool_admin_post_restore_scene() {
             $restored_post = get_post( $scene_id );
             $restored_status = $restored_post ? $restored_post->post_status : '';
             
+            // 開始シーンが復元された場合の処理
+            $is_start_scene = get_post_meta( $scene_id, '_is_start_scene', true );
+            $game_title = get_post_meta( $scene_id, '_game_title', true );
+            
+            if ( $is_start_scene && $game_title ) {
+                // start_scene_idを再設定
+                noveltool_update_game_start_scene( $game_title, $scene_id );
+                
+                if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                    error_log( sprintf( '[NovelGamePlugin] Start scene (ID: %d) was restored. Updated start_scene_id for game "%s"', $scene_id, $game_title ) );
+                }
+            }
+            
             // ステータスに応じたメッセージパラメータを設定
             $success_param = 'scene_restored';
             if ( 'draft' === $restored_status ) {
@@ -338,9 +369,15 @@ function noveltool_admin_post_restore_scene() {
                 $success_param = 'scene_restored_published';
             }
             
+            // 開始シーンが復元された場合は通知を追加
+            $url_params = array( 'success' => $success_param, 'status' => 'all' );
+            if ( $is_start_scene ) {
+                $url_params['notice'] = 'start_scene_restored';
+            }
+            
             // 復元成功：デフォルト（All）ビューにリダイレクト
             $redirect_url = $game_id 
-                ? noveltool_get_game_manager_url( $game_id, 'scenes', array( 'success' => $success_param, 'status' => 'all' ) )
+                ? noveltool_get_game_manager_url( $game_id, 'scenes', $url_params )
                 : admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' );
         } else {
             error_log( sprintf( '[NovelGamePlugin] Failed to restore scene ID: %d', $scene_id ) );
