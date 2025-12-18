@@ -6,6 +6,13 @@ All notable changes to Novel Game Plugin will be documented in this file.
 
 ### Added (追加機能)
 
+- **リリース自動化**
+  - GitHub Actions による自動リリースビルド（タグプッシュ時）
+  - WordPress 直接インストール可能な ZIP の自動生成
+  - SHA256 チェックサムの自動生成と GitHub Release への公開
+  - リリースプロセスドキュメント（`docs/RELEASE_PROCESS.md`）の追加
+  - 手動ビルドスクリプト（`scripts/build-release.sh`）の追加
+
 - **タイトル画像上の文字可読性向上**
   - タイトル文字に自動的に縁取り（text-stroke）と影（text-shadow）を適用
   - どんな画像背景でもタイトルが読みやすくなる可読性強化
@@ -13,6 +20,12 @@ All notable changes to Novel Game Plugin will be documented in this file.
   - 管理画面でタイトル文字色のカスタマイズ（カラーピッカー）
   - Webkit非対応ブラウザ向けのフォールバック対応
   - 既存の表示動作を維持（デフォルトでオン）
+
+### Developer Experience (開発者向け改善)
+
+- リリース作業の自動化により、手作業によるミスを削減
+- リリース手順の標準化とドキュメント化
+- 詳細は [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md) を参照
 
 ## [1.2.0] - Unreleased
 

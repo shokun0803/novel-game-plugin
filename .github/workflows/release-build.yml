@@ -1,0 +1,139 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'タグ名（例: v1.3.0）'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: タグ名の取得
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG_NAME="${{ github.event.inputs.tag_name }}"
+          else
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "version=${TAG_NAME#v}" >> $GITHUB_OUTPUT
+          echo "Building release for tag: $TAG_NAME"
+      
+      - name: リリース用 ZIP のビルド
+        run: |
+          bash scripts/build-release.sh "${{ steps.get_version.outputs.tag_name }}"
+      
+      - name: ビルド成果物の確認
+        run: |
+          echo "Checking build artifacts..."
+          ls -lh build/
+          echo ""
+          echo "ZIP contents preview:"
+          unzip -l build/novel-game-plugin-${{ steps.get_version.outputs.tag_name }}.zip | head -30
+          echo ""
+          echo "SHA256 checksum:"
+          cat build/novel-game-plugin-${{ steps.get_version.outputs.tag_name }}.zip.sha256
+      
+      - name: リリースノートの生成
+        id: release_notes
+        run: |
+          TAG_NAME="${{ steps.get_version.outputs.tag_name }}"
+          ZIP_NAME="novel-game-plugin-${TAG_NAME}.zip"
+          SHA256=$(cat build/${ZIP_NAME}.sha256 | cut -d' ' -f1)
+          
+          cat << EOF > release-notes.md
+          ## 📦 Novel Game Plugin ${TAG_NAME}
+          
+          WordPress に直接インストール可能なプラグイン ZIP ファイルです。
+          
+          ### インストール方法
+          
+          1. 下記のアセットから \`${ZIP_NAME}\` をダウンロード
+          2. WordPress 管理画面 → プラグイン → 新規追加 → プラグインのアップロード
+          3. ダウンロードした ZIP ファイルを選択してインストール
+          4. プラグインを有効化
+          
+          ### 🔐 検証手順
+          
+          ダウンロードしたファイルの整合性を確認するには：
+          
+          \`\`\`bash
+          # SHA256 チェックサムの検証
+          sha256sum ${ZIP_NAME}
+          # 期待される値: ${SHA256}
+          
+          # または、チェックサムファイルを使用
+          sha256sum -c ${ZIP_NAME}.sha256
+          \`\`\`
+          
+          ### 📋 チェックサム
+          
+          \`\`\`
+          SHA256: ${SHA256}
+          \`\`\`
+          
+          ### ⚠️ 互換性について
+          
+          - **必須環境**: WordPress 4.7+, PHP 7.0+, MySQL 5.6+
+          - **推奨環境**: WordPress 6.0+, PHP 8.0+
+          - **テスト済み**: WordPress 6.0+
+          
+          ### 📝 変更内容
+          
+          詳細な変更履歴は [CHANGELOG.md](https://github.com/shokun0803/novel-game-plugin/blob/master/CHANGELOG.md) をご覧ください。
+          
+          ### 🐛 問題が発生した場合
+          
+          - [Issues](https://github.com/shokun0803/novel-game-plugin/issues) で既存の問題を確認
+          - 新しい問題を報告する場合は Issue テンプレートをご利用ください
+          
+          ### 📚 ドキュメント
+          
+          - [README.md](https://github.com/shokun0803/novel-game-plugin/blob/master/README.md) - プラグインの使い方
+          - [リリースプロセス](https://github.com/shokun0803/novel-game-plugin/blob/master/docs/RELEASE_PROCESS.md) - リリース手順
+          EOF
+          
+          echo "Release notes generated."
+      
+      - name: GitHub Release の作成
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag_name }}
+          name: Novel Game Plugin ${{ steps.get_version.outputs.tag_name }}
+          body_path: release-notes.md
+          files: |
+            build/novel-game-plugin-${{ steps.get_version.outputs.tag_name }}.zip
+            build/novel-game-plugin-${{ steps.get_version.outputs.tag_name }}.zip.sha256
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: ビルド完了通知
+        run: |
+          echo "=========================================="
+          echo "✅ Release build completed successfully!"
+          echo "=========================================="
+          echo ""
+          echo "Tag: ${{ steps.get_version.outputs.tag_name }}"
+          echo "Version: ${{ steps.get_version.outputs.version }}"
+          echo ""
+          echo "Release URL:"
+          echo "https://github.com/${{ github.repository }}/releases/tag/${{ steps.get_version.outputs.tag_name }}"
