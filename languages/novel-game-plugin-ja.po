@@ -107,7 +107,7 @@ msgstr "開始シーンが復元され、再び開始シーンとして設定さ
 msgctxt "posts"
 msgid "All <span class=\"count\">(%s)</span>"
 msgid_plural "All <span class=\"count\">(%s)</span>"
-msgstr[0] ""
+msgstr[0] "すべて <span class=\"count\">(%s)</span>"
 
 #: admin/game-manager.php:269
 msgid "Published"
@@ -115,7 +115,7 @@ msgstr "公開"
 
 #: admin/game-manager.php:282
 msgid "Drafts"
-msgstr ""
+msgstr "下書き"
 
 #: admin/game-manager.php:295
 msgid "Trash"
@@ -156,7 +156,7 @@ msgstr "開始シーン"
 
 #: admin/game-manager.php:357
 msgid "Show more details"
-msgstr ""
+msgstr "詳細をもっと表示"
 
 #: admin/game-manager.php:376
 msgid "Restore"
@@ -1702,7 +1702,7 @@ msgstr "続きから始める"
 
 #: novel-game-plugin.php:1035
 msgid "Saved play data"
-msgstr ""
+msgstr "保存済みプレイデータ"
 
 #: novel-game-plugin.php:1036
 msgid "No saved data."
@@ -1710,7 +1710,7 @@ msgstr "保存されているデータはありません。"
 
 #: novel-game-plugin.php:1038
 msgid "Clear all data"
-msgstr ""
+msgstr "すべてのデータを削除"
 
 #: novel-game-plugin.php:1039
 msgid "Close"
@@ -1731,7 +1731,7 @@ msgstr "このゲームのすべての保存データを削除しますか？こ
 #: novel-game-plugin.php:1043
 msgid ""
 "Your browser does not support local storage; saved data cannot be managed."
-msgstr ""
+msgstr "お使いのブラウザはローカルストレージをサポートしていません。保存データを管理できません。"
 
 #: novel-game-plugin.php:1044
 msgid "Failed to delete data."
@@ -1743,23 +1743,23 @@ msgstr "データのクリアに失敗しました。"
 
 #: novel-game-plugin.php:1046
 msgid "Saved at:"
-msgstr ""
+msgstr "保存日時:"
 
 #: novel-game-plugin.php:1047
 msgid "Size:"
-msgstr ""
+msgstr "サイズ:"
 
 #: novel-game-plugin.php:1048
 msgid "Unknown"
-msgstr ""
+msgstr "不明"
 
 #: novel-game-plugin.php:1049
 msgid "Progress data"
-msgstr ""
+msgstr "進行データ"
 
 #: novel-game-plugin.php:1050
 msgid "Last choice"
-msgstr ""
+msgstr "最後の選択"
 
 #: novel-game-plugin.php:1051
 msgid "Flag data"
