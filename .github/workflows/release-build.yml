@@ -61,68 +61,62 @@ jobs:
           ZIP_NAME="novel-game-plugin-${TAG_NAME}.zip"
           SHA256=$(cat build/${ZIP_NAME}.sha256 | cut -d' ' -f1)
 
-          cat << EOF > release-notes.md
+          cat << 'EOF' > release-notes.md
           ## 📦 Novel Game Plugin ${TAG_NAME}
 
-          WordPress に直接インストール可能な
-          プラグイン ZIP ファイルです。
+          WordPress に直接インストール可能なプラグイン ZIP ファイルです。
 
           ### インストール方法
 
-          1. 下記のアセットから \`${ZIP_NAME}\` を
-          ダウンロード
-          2. WordPress 管理画面 → プラグイン →
-          新規追加 → プラグインのアップロード
-          3. ダウンロードした ZIP ファイルを選択して
-          インストール
+          1. 下記のアセットから `${ZIP_NAME}` をダウンロード
+          2. WordPress 管理画面 → プラグイン → 新規追加 → プラグインのアップロード
+          3. ダウンロードした ZIP ファイルを選択してインストール
           4. プラグインを有効化
 
           ### 🔐 検証手順
 
           ダウンロードしたファイルの整合性を確認するには：
 
-          \`\`\`bash
+          ```bash
           # SHA256 チェックサムの検証
           sha256sum ${ZIP_NAME}
           # 期待される値: ${SHA256}
 
           # または、チェックサムファイルを使用
           sha256sum -c ${ZIP_NAME}.sha256
-          \`\`\`
+          ```
 
           ### 📋 チェックサム
 
-          \`\`\`
+          ```
           SHA256: ${SHA256}
-          \`\`\`
+          ```
 
           ### ⚠️ 互換性について
 
-          - **必須環境**: WordPress 4.7+, PHP 7.0+,
-          MySQL 5.6+
+          - **必須環境**: WordPress 4.7+, PHP 7.0+, MySQL 5.6+
           - **推奨環境**: WordPress 6.0+, PHP 8.0+
           - **テスト済み**: WordPress 6.0+
 
           ### 📝 変更内容
 
-          詳細な変更履歴は
-          [CHANGELOG.md](https://github.com/shokun0803/novel-game-plugin/blob/master/CHANGELOG.md)
-          をご覧ください。
+          詳細な変更履歴は [CHANGELOG.md](https://github.com/shokun0803/novel-game-plugin/blob/master/CHANGELOG.md) をご覧ください。
 
           ### 🐛 問題が発生した場合
 
-          - [Issues](https://github.com/shokun0803/novel-game-plugin/issues)
-          で既存の問題を確認
-          - 新しい問題を報告する場合は Issue テンプレートを
-          ご利用ください
+          - [Issues](https://github.com/shokun0803/novel-game-plugin/issues) で既存の問題を確認
+          - 新しい問題を報告する場合は Issue テンプレートをご利用ください
 
           ### 📚 ドキュメント
 
-          - [README.md](https://github.com/shokun0803/novel-game-plugin/blob/master/README.md)
-          - プラグインの使い方
-          - [リリースプロセス](https://github.com/shokun0803/novel-game-plugin/blob/master/docs/RELEASE_PROCESS.md)
-          - リリース手順
+          - [README.md](https://github.com/shokun0803/novel-game-plugin/blob/master/README.md) - プラグインの使い方
+          - [リリースプロセス](https://github.com/shokun0803/novel-game-plugin/blob/master/docs/RELEASE_PROCESS.md) - リリース手順
           EOF
+
+          # 変数を置換
+          sed -i "s/\${TAG_NAME}/$TAG_NAME/g" release-notes.md
+          sed -i "s/\${ZIP_NAME}/$ZIP_NAME/g" release-notes.md
+          sed -i "s/\${SHA256}/$SHA256/g" release-notes.md
 
           echo "Release notes generated."
 

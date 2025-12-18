@@ -427,8 +427,10 @@ unzip -p build/novel-game-plugin-v1.3.0.zip novel-game-plugin/novel-game-plugin.
 
 ## 参考情報
 
-- [WordPress Plugin Handbook - Plugin Headers](https://developer.wordpress.org/plugins/plugin-basics/header-requirements/)
-- [GitHub Actions - Using workflows](https://docs.github.com/en/actions/using-workflows)
+**注**: 外部ドキュメントへのリンクは定期的に確認し、URL が変更されている場合は更新してください。
+
+- [WordPress Plugin Handbook - Plugin Headers](https://developer.wordpress.org/plugins/plugin-basics/header-requirements/) - プラグインヘッダーの要件
+- [GitHub Actions - Using workflows](https://docs.github.com/en/actions/using-workflows) - ワークフローの使用方法
 - [CHANGELOG.md](../CHANGELOG.md) - 変更履歴
 - [README.md](../README.md) - プラグイン概要と使用方法
 

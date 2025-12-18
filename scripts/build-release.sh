@@ -49,6 +49,9 @@ mkdir -p "$PLUGIN_DIR"
 
 # ファイルのコピー（rsync を使用して除外パターンを適用）
 echo "Copying plugin files..."
+# 注: *.min.js と *.min.css はビルド成果物として除外しています。
+# 本プラグインは圧縮されていないソースファイルを配布し、
+# WordPress 環境で必要に応じて圧縮処理が行われることを想定しています。
 rsync -av --progress \
     --exclude='.git/' \
     --exclude='.github/' \
