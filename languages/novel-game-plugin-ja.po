@@ -1705,31 +1705,28 @@ msgid "Saved play data"
 msgstr ""
 
 #: novel-game-plugin.php:1036
-#, fuzzy
 msgid "No saved data."
-msgstr "ゲームデータの保存に失敗しました。"
+msgstr "保存されているデータはありません。"
 
 #: novel-game-plugin.php:1038
 msgid "Clear all data"
 msgstr ""
 
 #: novel-game-plugin.php:1039
-#, fuzzy
 msgid "Close"
-msgstr "ゲームを閉じる"
+msgstr "閉じる"
 
 #. translators: %s is the data label name
 #: novel-game-plugin.php:1041
-#, fuzzy, php-format
+#, php-format
 msgid "Are you sure you want to delete \"%s\"? This action cannot be undone."
-msgstr "本当にこのゲームを削除しますか？この操作は取り消せません。"
+msgstr "「%s」を削除しますか？この操作は取り消せません。"
 
 #: novel-game-plugin.php:1042
-#, fuzzy
 msgid ""
 "Are you sure you want to delete all saved data for this game? This action "
 "cannot be undone."
-msgstr "本当にこのゲームを削除しますか？この操作は取り消せません。"
+msgstr "このゲームのすべての保存データを削除しますか？この操作は取り消せません。"
 
 #: novel-game-plugin.php:1043
 msgid ""
@@ -1737,14 +1734,12 @@ msgid ""
 msgstr ""
 
 #: novel-game-plugin.php:1044
-#, fuzzy
 msgid "Failed to delete data."
-msgstr "削除に失敗しました。"
+msgstr "データの削除に失敗しました。"
 
 #: novel-game-plugin.php:1045
-#, fuzzy
 msgid "Failed to clear data."
-msgstr "ゲームデータの保存に失敗しました。"
+msgstr "データのクリアに失敗しました。"
 
 #: novel-game-plugin.php:1046
 msgid "Saved at:"
@@ -1767,19 +1762,16 @@ msgid "Last choice"
 msgstr ""
 
 #: novel-game-plugin.php:1051
-#, fuzzy
 msgid "Flag data"
-msgstr "フラグ名"
+msgstr "フラグデータ"
 
 #: novel-game-plugin.php:1052
-#, fuzzy
 msgid "Game data"
-msgstr "ゲーム一覧"
+msgstr "ゲームデータ"
 
 #: novel-game-plugin.php:1054
-#, fuzzy
 msgid "Manage saved data"
-msgstr "ゲームを管理"
+msgstr "保存データの管理"
 
 #: novel-game-plugin.php:1295 novel-game-plugin.php:1572
 msgid "Start Playing"
