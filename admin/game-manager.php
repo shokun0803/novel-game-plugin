@@ -207,6 +207,19 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
         }
     }
     
+    // 追加の通知メッセージ（start_scene関連）
+    $notice_message = '';
+    if ( isset( $_GET['notice'] ) ) {
+        switch ( sanitize_text_field( wp_unslash( $_GET['notice'] ) ) ) {
+            case 'start_scene_removed':
+                $notice_message = __( 'The start scene was removed. Please set a new start scene for this game.', 'novel-game-plugin' );
+                break;
+            case 'start_scene_restored':
+                $notice_message = __( 'The start scene was restored and is now set as the start scene again.', 'novel-game-plugin' );
+                break;
+        }
+    }
+    
     ?>
     <div class="noveltool-scenes-tab">
         <?php if ( $error_message ) : ?>
@@ -218,6 +231,12 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
         <?php if ( $success_message ) : ?>
             <div class="notice notice-success is-dismissible">
                 <p><?php echo esc_html( $success_message ); ?></p>
+            </div>
+        <?php endif; ?>
+        
+        <?php if ( $notice_message ) : ?>
+            <div class="notice notice-warning is-dismissible">
+                <p><?php echo esc_html( $notice_message ); ?></p>
             </div>
         <?php endif; ?>
         
@@ -310,32 +329,43 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
             <table class="wp-list-table widefat fixed striped">
                 <thead>
                     <tr>
-                        <th class="manage-column"><?php esc_html_e( 'Scene Title', 'novel-game-plugin' ); ?></th>
-                        <th class="manage-column"><?php esc_html_e( 'Status', 'novel-game-plugin' ); ?></th>
-                        <th class="manage-column"><?php esc_html_e( 'Date', 'novel-game-plugin' ); ?></th>
-                        <th class="manage-column"><?php esc_html_e( 'Actions', 'novel-game-plugin' ); ?></th>
+                        <th class="manage-column column-title column-primary"><?php esc_html_e( 'Scene Title', 'novel-game-plugin' ); ?></th>
+                        <th class="manage-column column-status"><?php esc_html_e( 'Status', 'novel-game-plugin' ); ?></th>
+                        <th class="manage-column column-date"><?php esc_html_e( 'Date', 'novel-game-plugin' ); ?></th>
+                        <th class="manage-column column-actions"><?php esc_html_e( 'Actions', 'novel-game-plugin' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ( $scenes as $scene ) : ?>
+                        <?php
+                        // 開始シーン判定（_is_start_scene メタまたは start_scene_id との一致）
+                        $is_start_scene = get_post_meta( $scene->ID, '_is_start_scene', true );
+                        $is_start_by_id = ( isset( $game['start_scene_id'] ) && (int) $game['start_scene_id'] === (int) $scene->ID );
+                        $is_start = $is_start_scene || $is_start_by_id;
+                        ?>
                         <tr>
-                            <td>
+                            <td class="column-title column-primary" data-colname="<?php esc_attr_e( 'Scene Title', 'novel-game-plugin' ); ?>">
                                 <strong>
                                     <a href="<?php echo esc_url( get_edit_post_link( $scene->ID ) ); ?>">
                                         <?php echo esc_html( $scene->post_title ); ?>
                                     </a>
+                                    <?php // タイトルと同一行に表示するため、post-stateは<strong>内に配置 ?>
+                                    <?php if ( $is_start ) : ?>
+                                        <span class="post-state"><?php esc_html_e( 'Start', 'novel-game-plugin' ); ?></span>
+                                    <?php endif; ?>
                                 </strong>
+                                <button type="button" class="toggle-row"><span class="screen-reader-text"><?php esc_html_e( 'Show more details', 'novel-game-plugin' ); ?></span></button>
                             </td>
-                            <td>
+                            <td class="column-status" data-colname="<?php esc_attr_e( 'Status', 'novel-game-plugin' ); ?>">
                                 <?php
                                 $status_obj = get_post_status_object( $scene->post_status );
                                 echo esc_html( $status_obj ? $status_obj->label : $scene->post_status );
                                 ?>
                             </td>
-                            <td>
+                            <td class="column-date" data-colname="<?php esc_attr_e( 'Date', 'novel-game-plugin' ); ?>">
                                 <?php echo esc_html( get_the_date( 'Y/m/d H:i', $scene->ID ) ); ?>
                             </td>
-                            <td>
+                            <td class="column-actions" data-colname="<?php esc_attr_e( 'Actions', 'novel-game-plugin' ); ?>">
                                 <?php if ( $is_trash_view ) : ?>
                                     <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;" class="noveltool-restore-scene-form">
                                         <?php wp_nonce_field( 'manage_scenes' ); ?>

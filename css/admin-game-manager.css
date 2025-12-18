@@ -21,8 +21,7 @@
     .nav-tab-wrapper {
         margin-bottom: 0;
     }
-    </style>
-    <style>
+
     .noveltool-scenes-tab {
         background: #fff;
         padding: 20px;
@@ -72,8 +71,7 @@
         border-color: #c22a2a;
         color: #fff;
     }
-    </style>
-    <style>
+
     .noveltool-new-scene-tab {
         background: #fff;
         padding: 40px;
@@ -101,8 +99,7 @@
         padding: 12px 24px;
         font-size: 16px;
     }
-    </style>
-    <style>
+
     .noveltool-game-settings-tab {
         background: #fff;
         padding: 20px;
@@ -194,4 +191,18 @@
 
     .noveltool-export-import-section .notice {
         margin: 15px 0;
+    }
+
+    /* WordPress標準post-state形式のスタイル */
+    .wp-list-table .column-title .post-state {
+        display: inline-block;
+        margin-left: 6px;
+        color: #666;
+        font-size: 12px;
+        vertical-align: middle;
+    }
+
+    .wp-list-table .column-title .post-state:before {
+        content: "\2014\00a0"; /* — + space */
+        color: #666;
     }

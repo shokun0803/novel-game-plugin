@@ -1,14 +1,14 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR shokun0803
+# Translation template for Novel Game Plugin
+# Copyright (C) 2025 Novel Game Plugin
 # This file is distributed under the same license as the Novel Game Plugin package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Novel Game Plugin 1.3.0\n"
-"Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin\n"
-"POT-Creation-Date: 2025-12-09 06:08+0000\n"
+"Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin/"
+"issues\n"
+"POT-Creation-Date: 2025-12-18 03:18+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,313 +16,343 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: admin/game-manager.php:23 admin/dashboard.php:22 admin/ad-management.php:40
 #: admin/export-import.php:22 admin/new-game.php:48 admin/new-game.php:122
 #: admin/my-games.php:22 admin/plugin-settings.php:22
 #: admin/game-settings.php:40 admin/game-settings.php:98
 #: admin/game-settings.php:198 admin/game-settings.php:237
-#: admin/game-settings.php:298 admin/game-settings.php:357
-#: admin/game-settings.php:417
+#: admin/game-settings.php:316 admin/game-settings.php:407
+#: admin/game-settings.php:467
 msgid "You do not have permission to access this page."
 msgstr ""
 
-#: admin/game-manager.php:46
+#: admin/game-manager.php:62
 msgid "- Game Management"
 msgstr ""
 
-#: admin/game-manager.php:52
+#: admin/game-manager.php:68
 msgid "Back to My Games"
 msgstr ""
 
-#: admin/game-manager.php:59
+#: admin/game-manager.php:75
 msgid "Scene List"
 msgstr ""
 
-#: admin/game-manager.php:63 admin/game-manager.php:196
-#: admin/game-manager.php:283
+#: admin/game-manager.php:79 admin/game-manager.php:323
+#: admin/game-manager.php:422
 msgid "Create New Scene"
 msgstr ""
 
-#: admin/game-manager.php:67
+#: admin/game-manager.php:83
 msgid "Game Settings"
 msgstr ""
 
-#: admin/game-manager.php:110 admin/game-manager.php:309
+#: admin/game-manager.php:172 admin/game-manager.php:448
 #: admin/meta-boxes.php:27 admin/new-game.php:130 admin/my-games.php:71
-#: admin/game-settings.php:476 admin/game-settings.php:1216
-#: admin/game-settings.php:1254
+#: admin/game-settings.php:526 admin/game-settings.php:1266
+#: admin/game-settings.php:1304
 msgid "Security check failed."
 msgstr ""
 
-#: admin/game-manager.php:113
+#: admin/game-manager.php:175
 msgid "Failed to move scene to trash."
 msgstr ""
 
-#: admin/game-manager.php:116
+#: admin/game-manager.php:178
 msgid "Failed to restore scene from trash."
 msgstr ""
 
-#: admin/game-manager.php:119 admin/my-games.php:77
+#: admin/game-manager.php:181 admin/my-games.php:77
 msgid "Invalid ID."
 msgstr ""
 
-#: admin/game-manager.php:122
+#: admin/game-manager.php:184
 msgid "You do not have permission to delete this scene."
 msgstr ""
 
-#: admin/game-manager.php:125
+#: admin/game-manager.php:187
 msgid "You do not have permission to restore this scene."
 msgstr ""
 
-#: admin/game-manager.php:134
+#: admin/game-manager.php:196
 msgid ""
 "Scene has been moved to trash. You can restore it from the trash if needed."
 msgstr ""
 
-#: admin/game-manager.php:137
+#: admin/game-manager.php:199
 msgid "Scene has been restored from trash."
 msgstr ""
 
-#: admin/game-manager.php:159
-msgid "← Back to Scene List"
-msgstr ""
-
-#: admin/game-manager.php:164
-msgid "View Trash"
-msgstr ""
-
-#: admin/game-manager.php:172
-msgid "No scenes in trash."
-msgstr ""
-
-#: admin/game-manager.php:174
-msgid "No scenes have been created for this game yet."
-msgstr ""
-
-#: admin/game-manager.php:177
-msgid "Create First Scene"
-msgstr ""
-
-#: admin/game-manager.php:187
-#, php-format
-msgid "Trash: %d scenes"
-msgstr ""
-
-#: admin/game-manager.php:189
-#, php-format
-msgid "Total: %d scenes"
-msgstr ""
-
-#: admin/game-manager.php:204
-msgid "Scene Title"
+#: admin/game-manager.php:202
+msgid "Scene has been restored from trash as a draft."
 msgstr ""
 
 #: admin/game-manager.php:205
-msgid "Status"
+msgid "Scene has been restored from trash and is now published."
 msgstr ""
 
-#: admin/game-manager.php:206
-msgid "Date"
+#: admin/game-manager.php:215
+msgid ""
+"The start scene was removed. Please set a new start scene for this game."
 msgstr ""
 
-#: admin/game-manager.php:207 admin/game-manager.php:546
-#: admin/meta-boxes.php:979
-msgid "Actions"
-msgstr ""
-
-#: admin/game-manager.php:237
-msgid "Restore"
-msgstr ""
-
-#: admin/game-manager.php:242 admin/meta-boxes.php:382
-msgid "Edit"
-msgstr ""
-
-#: admin/game-manager.php:245
-msgid "Preview"
+#: admin/game-manager.php:218
+msgid "The start scene was restored and is now set as the start scene again."
 msgstr ""
 
 #: admin/game-manager.php:252
+#, php-format
+msgctxt "posts"
+msgid "All <span class=\"count\">(%s)</span>"
+msgid_plural "All <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/game-manager.php:269
+msgid "Published"
+msgstr ""
+
+#: admin/game-manager.php:282
+msgid "Drafts"
+msgstr ""
+
+#: admin/game-manager.php:295
+msgid "Trash"
+msgstr ""
+
+#: admin/game-manager.php:307
+msgid "No scenes in trash."
+msgstr ""
+
+#: admin/game-manager.php:309
+msgid "No scenes have been created for this game yet."
+msgstr ""
+
+#: admin/game-manager.php:312
+msgid "Create First Scene"
+msgstr ""
+
+#: admin/game-manager.php:332 admin/game-manager.php:347
+msgid "Scene Title"
+msgstr ""
+
+#: admin/game-manager.php:333 admin/game-manager.php:359
+msgid "Status"
+msgstr ""
+
+#: admin/game-manager.php:334 admin/game-manager.php:365
+msgid "Date"
+msgstr ""
+
+#: admin/game-manager.php:335 admin/game-manager.php:368
+#: admin/game-manager.php:685 admin/meta-boxes.php:1014
+msgid "Actions"
+msgstr ""
+
+#: admin/game-manager.php:354
+msgid "Start"
+msgstr ""
+
+#: admin/game-manager.php:357
+msgid "Show more details"
+msgstr ""
+
+#: admin/game-manager.php:376
+msgid "Restore"
+msgstr ""
+
+#: admin/game-manager.php:381 admin/meta-boxes.php:417
+msgid "Edit"
+msgstr ""
+
+#: admin/game-manager.php:384
+msgid "Preview"
+msgstr ""
+
+#: admin/game-manager.php:391
 msgid ""
 "Are you sure you want to move this scene to the Trash? You can restore it "
 "later from the Trash."
 msgstr ""
 
-#: admin/game-manager.php:253
+#: admin/game-manager.php:392
 msgid "Move to Trash"
 msgstr ""
 
-#: admin/game-manager.php:277
+#: admin/game-manager.php:416
 msgid ""
 "Create a new scene for this game. After creation, you will be taken to the "
 "scene editing screen where you can add backgrounds, characters, dialogue, "
 "and choices."
 msgstr ""
 
-#: admin/game-manager.php:312 admin/new-game.php:133
+#: admin/game-manager.php:451 admin/new-game.php:133
 msgid "Please enter a game title."
 msgstr ""
 
-#: admin/game-manager.php:315
+#: admin/game-manager.php:454
 msgid "A game with that title already exists."
 msgstr ""
 
-#: admin/game-manager.php:318
+#: admin/game-manager.php:457
 msgid "Failed to save game."
 msgstr ""
 
-#: admin/game-manager.php:326
+#: admin/game-manager.php:465
 msgid "Game updated successfully."
 msgstr ""
 
-#: admin/game-manager.php:329
+#: admin/game-manager.php:468
 msgid "Flag added successfully."
 msgstr ""
 
-#: admin/game-manager.php:332
+#: admin/game-manager.php:471
 msgid "Flag deleted successfully."
 msgstr ""
 
-#: admin/game-manager.php:360 admin/meta-boxes.php:768
+#: admin/game-manager.php:499 admin/meta-boxes.php:803
 #: admin/export-import.php:120 admin/new-game.php:169
 #: includes/post-types.php:88 includes/revisions.php:390
 msgid "Game Title"
 msgstr ""
 
-#: admin/game-manager.php:374 admin/new-game.php:187
+#: admin/game-manager.php:513 admin/new-game.php:187
 msgid "Game Overview"
 msgstr ""
 
-#: admin/game-manager.php:386 admin/new-game.php:203
+#: admin/game-manager.php:525 admin/new-game.php:203
 msgid "Title Screen Image"
 msgstr ""
 
-#: admin/game-manager.php:395 admin/new-game.php:212
+#: admin/game-manager.php:534 admin/new-game.php:212
 msgid "Title Screen Image Preview"
 msgstr ""
 
-#: admin/game-manager.php:401 admin/meta-boxes.php:823 admin/new-game.php:218
+#: admin/game-manager.php:540 admin/meta-boxes.php:858 admin/new-game.php:218
 msgid "Select from Media"
 msgstr ""
 
-#: admin/game-manager.php:407 admin/new-game.php:224
+#: admin/game-manager.php:546 admin/new-game.php:224
 msgid "Delete Image"
 msgstr ""
 
-#: admin/game-manager.php:415
+#: admin/game-manager.php:554
 msgid "Game Over Screen Text"
 msgstr ""
 
-#: admin/game-manager.php:423
+#: admin/game-manager.php:562
 msgid ""
 "Text displayed when there are no choices or next scenes in a non-ending. "
 "Default is \"Game Over\"."
 msgstr ""
 
-#: admin/game-manager.php:429
+#: admin/game-manager.php:568
 msgid "Title Display on Image"
 msgstr ""
 
-#: admin/game-manager.php:445
+#: admin/game-manager.php:584
 msgid "Display title overlaid on title image"
 msgstr ""
 
-#: admin/game-manager.php:447
+#: admin/game-manager.php:586
 msgid ""
 "Uncheck this if your title image already includes the game title to avoid "
 "duplication."
 msgstr ""
 
-#: admin/game-manager.php:453
+#: admin/game-manager.php:592
 msgid "Title Text Color"
 msgstr ""
 
-#: admin/game-manager.php:468
+#: admin/game-manager.php:607
 msgid ""
 "Choose the color for the title text. Automatic contrast enhancement (text "
 "stroke and shadow) will be applied for readability."
 msgstr ""
 
-#: admin/game-manager.php:473
+#: admin/game-manager.php:612
 msgid "Ad Settings"
 msgstr ""
 
-#: admin/game-manager.php:477
+#: admin/game-manager.php:616
 msgid "Ad Provider"
 msgstr ""
 
-#: admin/game-manager.php:493
+#: admin/game-manager.php:632
 msgid "No Ads"
 msgstr ""
 
-#: admin/game-manager.php:500 admin/ad-management.php:97
+#: admin/game-manager.php:639 admin/ad-management.php:97
 msgid "Google AdSense"
 msgstr ""
 
-#: admin/game-manager.php:507 admin/ad-management.php:142
+#: admin/game-manager.php:646 admin/ad-management.php:142
 msgid "Adsterra"
 msgstr ""
 
-#: admin/game-manager.php:514
+#. translators: %s: Link to ad management page
+#: admin/game-manager.php:653
 #, php-format
 msgid ""
 "Note: To display ads, you must first configure the ad provider IDs in %s. If "
 "IDs are not set, ads will not be displayed."
 msgstr ""
 
-#: admin/game-manager.php:515 admin/ad-management.php:22
+#: admin/game-manager.php:654 admin/ad-management.php:22
 #: admin/ad-management.php:23 admin/ad-management.php:71
 msgid "Ad Management"
 msgstr ""
 
-#: admin/game-manager.php:527
+#: admin/game-manager.php:666
 msgid "Update Game"
 msgstr ""
 
-#: admin/game-manager.php:531
+#: admin/game-manager.php:670
 msgid "Flag Management"
 msgstr ""
 
-#: admin/game-manager.php:537
+#: admin/game-manager.php:676
 msgid "Current Flags List"
 msgstr ""
 
-#: admin/game-manager.php:543
+#: admin/game-manager.php:682
 msgid "ID"
 msgstr ""
 
-#: admin/game-manager.php:544 admin/game-manager.php:585
+#: admin/game-manager.php:683 admin/game-manager.php:724
 msgid "Flag Name"
 msgstr ""
 
-#: admin/game-manager.php:545 admin/game-manager.php:598
+#: admin/game-manager.php:684 admin/game-manager.php:737
 msgid "Description"
 msgstr ""
 
-#: admin/game-manager.php:564 admin/my-games.php:182 includes/revisions.php:320
+#: admin/game-manager.php:703 admin/my-games.php:182 novel-game-plugin.php:1037
+#: includes/revisions.php:320
 msgid "Delete"
 msgstr ""
 
-#: admin/game-manager.php:565
+#: admin/game-manager.php:704
 msgid "Are you sure you want to delete this flag?"
 msgstr ""
 
-#: admin/game-manager.php:573 admin/meta-boxes.php:1079
+#: admin/game-manager.php:712 admin/meta-boxes.php:1149
 msgid "No flags have been set for this game yet."
 msgstr ""
 
-#: admin/game-manager.php:576
+#: admin/game-manager.php:715
 msgid "Add New Flag"
 msgstr ""
 
-#: admin/game-manager.php:593
+#: admin/game-manager.php:732
 msgid ""
 "Only alphanumeric characters and underscores are allowed. Cannot start with "
 "a number."
 msgstr ""
 
-#: admin/game-manager.php:613
+#: admin/game-manager.php:752
 msgid "Add Flag"
 msgstr ""
 
@@ -348,7 +378,7 @@ msgstr ""
 
 #: admin/dashboard.php:63 admin/new-game.php:22 admin/new-game.php:23
 #: admin/my-games.php:127 admin/my-games.php:193
-#: templates/archive-novel_game.php:140
+#: templates/archive-novel_game.php:157
 msgid "Create New Game"
 msgstr ""
 
@@ -439,416 +469,438 @@ msgstr ""
 msgid "Scene Data"
 msgstr ""
 
-#: admin/meta-boxes.php:336
+#: admin/meta-boxes.php:371
 msgid "-- Select --"
 msgstr ""
 
-#: admin/meta-boxes.php:337
+#: admin/meta-boxes.php:372
 msgid "+ Create New..."
 msgstr ""
 
-#: admin/meta-boxes.php:338 admin/meta-boxes.php:868 admin/meta-boxes.php:903
-#: admin/meta-boxes.php:938
+#: admin/meta-boxes.php:373 admin/meta-boxes.php:903 admin/meta-boxes.php:938
+#: admin/meta-boxes.php:973
 msgid "Remove"
 msgstr ""
 
-#: admin/meta-boxes.php:339 admin/meta-boxes.php:862 admin/meta-boxes.php:897
-#: admin/meta-boxes.php:932
+#: admin/meta-boxes.php:374 admin/meta-boxes.php:897 admin/meta-boxes.php:932
+#: admin/meta-boxes.php:967
 msgid "Select Image"
 msgstr ""
 
-#: admin/meta-boxes.php:340
+#: admin/meta-boxes.php:375
 msgid "Use This Image"
 msgstr ""
 
-#: admin/meta-boxes.php:341
+#: admin/meta-boxes.php:376
 msgid "Are you sure you want to delete?"
 msgstr ""
 
-#: admin/meta-boxes.php:342
+#: admin/meta-boxes.php:377
 msgid "Creation failed."
 msgstr ""
 
-#: admin/meta-boxes.php:343
+#: admin/meta-boxes.php:378
 msgid "Please enter a title for the new scene"
 msgstr ""
 
-#: admin/meta-boxes.php:344
+#: admin/meta-boxes.php:379
 msgid "Please enter a title for the next command"
 msgstr ""
 
-#: admin/meta-boxes.php:345
+#: admin/meta-boxes.php:380
 msgid "Creating..."
 msgstr ""
 
-#: admin/meta-boxes.php:346
+#: admin/meta-boxes.php:381
 msgid "Please enter dialogue"
 msgstr ""
 
-#: admin/meta-boxes.php:347
+#: admin/meta-boxes.php:382
 msgid "Speaker:"
 msgstr ""
 
-#: admin/meta-boxes.php:348
+#: admin/meta-boxes.php:383
 msgid "-- Select Speaker --"
 msgstr ""
 
-#: admin/meta-boxes.php:349 admin/meta-boxes.php:840 novel-game-plugin.php:823
-#: novel-game-plugin.php:1000
+#: admin/meta-boxes.php:384 admin/meta-boxes.php:875 novel-game-plugin.php:855
+#: novel-game-plugin.php:1032
 msgid "Left Character"
 msgstr ""
 
-#: admin/meta-boxes.php:350 admin/meta-boxes.php:875 novel-game-plugin.php:827
-#: novel-game-plugin.php:1001
+#: admin/meta-boxes.php:385 admin/meta-boxes.php:910 novel-game-plugin.php:859
+#: novel-game-plugin.php:1033
 msgid "Center Character"
 msgstr ""
 
-#: admin/meta-boxes.php:351 admin/meta-boxes.php:910 novel-game-plugin.php:831
-#: novel-game-plugin.php:1002
+#: admin/meta-boxes.php:386 admin/meta-boxes.php:945 novel-game-plugin.php:863
+#: novel-game-plugin.php:1034
 msgid "Right Character"
 msgstr ""
 
-#: admin/meta-boxes.php:352
+#: admin/meta-boxes.php:387
 msgid "Narrator"
 msgstr ""
 
-#: admin/meta-boxes.php:353
+#: admin/meta-boxes.php:388
 msgid "Background Image:"
 msgstr ""
 
-#: admin/meta-boxes.php:354
+#: admin/meta-boxes.php:389
 msgid "Select Background Image"
 msgstr ""
 
-#: admin/meta-boxes.php:355
+#: admin/meta-boxes.php:390
 msgid "Flag Control:"
 msgstr ""
 
-#: admin/meta-boxes.php:356
+#: admin/meta-boxes.php:391
 msgid "Display Control:"
 msgstr ""
 
-#: admin/meta-boxes.php:357
+#: admin/meta-boxes.php:392
 msgid "Always Display"
 msgstr ""
 
-#: admin/meta-boxes.php:358
+#: admin/meta-boxes.php:393
 msgid "Hide When Condition Met"
 msgstr ""
 
-#: admin/meta-boxes.php:359
+#: admin/meta-boxes.php:394
 msgid "Show Alternative Text When Condition Met"
 msgstr ""
 
-#: admin/meta-boxes.php:360
+#: admin/meta-boxes.php:395
 msgid "-- Select Flag --"
 msgstr ""
 
-#: admin/meta-boxes.php:361
+#: admin/meta-boxes.php:396
 msgid "Flag"
 msgstr ""
 
-#: admin/meta-boxes.php:362
+#: admin/meta-boxes.php:397
 msgid "Condition:"
 msgstr ""
 
-#: admin/meta-boxes.php:363
+#: admin/meta-boxes.php:398
 msgid "AND (All)"
 msgstr ""
 
-#: admin/meta-boxes.php:364
+#: admin/meta-boxes.php:399
 msgid "OR (Any)"
 msgstr ""
 
-#: admin/meta-boxes.php:365
+#: admin/meta-boxes.php:400
 msgid "Alternative Text (displayed when condition is met):"
 msgstr ""
 
-#: admin/meta-boxes.php:366
+#: admin/meta-boxes.php:401
 msgid "Enter the dialogue to display when the flag condition is met"
 msgstr ""
 
-#: admin/meta-boxes.php:367 admin/meta-boxes.php:948
+#: admin/meta-boxes.php:402 admin/meta-boxes.php:983
 msgid "Dialogue"
 msgstr ""
 
-#: admin/meta-boxes.php:368
+#: admin/meta-boxes.php:403
 msgid "At least one dialogue is required."
 msgstr ""
 
-#: admin/meta-boxes.php:369
+#: admin/meta-boxes.php:404
 msgid "Are you sure you want to delete this dialogue?"
 msgstr ""
 
-#: admin/meta-boxes.php:370
+#: admin/meta-boxes.php:405
 msgid "Media library is not available."
 msgstr ""
 
-#: admin/meta-boxes.php:371
+#: admin/meta-boxes.php:406
 msgid "Select Character Image"
 msgstr ""
 
-#: admin/meta-boxes.php:372
+#: admin/meta-boxes.php:407
 msgid "No Flags"
 msgstr ""
 
-#: admin/meta-boxes.php:373
+#: admin/meta-boxes.php:408
 msgid "Flag Setting Change:"
 msgstr ""
 
-#: admin/meta-boxes.php:374
+#: admin/meta-boxes.php:409
 msgid "Do Not Set"
 msgstr ""
 
-#: admin/meta-boxes.php:375
+#: admin/meta-boxes.php:410
 msgid "Default is \"Do Not Set\""
 msgstr ""
 
-#: admin/meta-boxes.php:376
+#: admin/meta-boxes.php:411
 msgid "Delete Target:"
 msgstr ""
 
-#: admin/meta-boxes.php:377
+#: admin/meta-boxes.php:412
 msgid "Warning: This is the last choice. Deleting it will remove all choices."
 msgstr ""
 
-#: admin/meta-boxes.php:378
+#: admin/meta-boxes.php:413
 msgid "All choices have been deleted."
 msgstr ""
 
-#: admin/meta-boxes.php:379
+#: admin/meta-boxes.php:414
 msgid ""
 "There are unsaved changes in the current post.\\n\\nDo you want to open the "
 "edit screen without saving?\\n\\nSelect \"Cancel\" to save the current post "
 "first."
 msgstr ""
 
-#: admin/meta-boxes.php:380
+#: admin/meta-boxes.php:415
 msgid ""
 "The post has not been saved. Do you want to save it before creating a new "
 "command?"
 msgstr ""
 
-#: admin/meta-boxes.php:381
+#: admin/meta-boxes.php:416
 #, php-format
 msgid ""
 "A new scene \"%s\" has been created. You can edit it from the edit link."
 msgstr ""
 
-#: admin/meta-boxes.php:383
+#: admin/meta-boxes.php:418
 msgid ""
 "Unsupported file format. Only jpg, jpeg, png, gif, and webp files can be "
 "uploaded."
 msgstr ""
 
-#: admin/meta-boxes.php:384
+#: admin/meta-boxes.php:419
 msgid "Unsupported file format. Only image files can be uploaded."
 msgstr ""
 
-#: admin/meta-boxes.php:385
+#: admin/meta-boxes.php:420
 msgid "File size is too large. Please upload a file smaller than 5MB."
 msgstr ""
 
-#: admin/meta-boxes.php:387
+#: admin/meta-boxes.php:422
 msgid "Character Settings for This Dialogue"
 msgstr ""
 
-#: admin/meta-boxes.php:388
+#: admin/meta-boxes.php:423
 msgid ""
 "You can set individual character images for each dialogue. If not set, the "
 "scene's character settings will be used."
 msgstr ""
 
-#: admin/meta-boxes.php:389
+#: admin/meta-boxes.php:424
 msgid "▼ Show Character Settings"
 msgstr ""
 
-#: admin/meta-boxes.php:390
+#: admin/meta-boxes.php:425
 msgid "▲ Hide Character Settings"
 msgstr ""
 
-#: admin/meta-boxes.php:391
+#: admin/meta-boxes.php:426
 msgid "(Use Scene Default)"
 msgstr ""
 
-#: admin/meta-boxes.php:392
+#: admin/meta-boxes.php:427
 msgid "Clear"
 msgstr ""
 
-#: admin/meta-boxes.php:776
+#: admin/meta-boxes.php:811
 msgid "-- Please Select a Game --"
 msgstr ""
 
-#: admin/meta-boxes.php:784
+#: admin/meta-boxes.php:819
 msgid "Please select the game this scene belongs to."
 msgstr ""
 
-#: admin/meta-boxes.php:786 admin/meta-boxes.php:799
+#: admin/meta-boxes.php:821 admin/meta-boxes.php:834
 msgid "Manage Games"
 msgstr ""
 
-#: admin/meta-boxes.php:795
+#: admin/meta-boxes.php:830
 msgid "Enter the title of the game this scene belongs to"
 msgstr ""
 
-#: admin/meta-boxes.php:797
+#: admin/meta-boxes.php:832
 msgid "Set the title for the entire game."
 msgstr ""
 
-#: admin/meta-boxes.php:808 includes/revisions.php:376
+#: admin/meta-boxes.php:843 includes/revisions.php:376
 msgid "Background Image"
 msgstr ""
 
-#: admin/meta-boxes.php:817
+#: admin/meta-boxes.php:852
 msgid "Background Image Preview"
 msgstr ""
 
-#: admin/meta-boxes.php:826
+#: admin/meta-boxes.php:861
 msgid "Set the background image for this scene."
 msgstr ""
 
-#: admin/meta-boxes.php:832
+#: admin/meta-boxes.php:867
 msgid "Character Images"
 msgstr ""
 
-#: admin/meta-boxes.php:836
+#: admin/meta-boxes.php:871
 msgid "You can place up to 3 characters in left, center, and right positions."
 msgstr ""
 
-#: admin/meta-boxes.php:846 admin/meta-boxes.php:881 admin/meta-boxes.php:916
+#: admin/meta-boxes.php:881 admin/meta-boxes.php:916 admin/meta-boxes.php:951
 msgid "Character Name"
 msgstr ""
 
-#: admin/meta-boxes.php:851 admin/meta-boxes.php:886 admin/meta-boxes.php:921
+#: admin/meta-boxes.php:886 admin/meta-boxes.php:921 admin/meta-boxes.php:956
 msgid "Enter Character Name"
 msgstr ""
 
-#: admin/meta-boxes.php:856
+#: admin/meta-boxes.php:891
 msgid "Left Character Image Preview"
 msgstr ""
 
-#: admin/meta-boxes.php:891
+#: admin/meta-boxes.php:926
 msgid "Center Character Image Preview"
 msgstr ""
 
-#: admin/meta-boxes.php:926
+#: admin/meta-boxes.php:961
 msgid "Right Character Image Preview"
 msgstr ""
 
-#: admin/meta-boxes.php:957
+#: admin/meta-boxes.php:992
 msgid "+ Add Dialogue"
 msgstr ""
 
-#: admin/meta-boxes.php:961
+#: admin/meta-boxes.php:996
 msgid ""
 "You can set a background image for each dialogue. If no background image is "
 "specified, the background from the previous scene will continue."
 msgstr ""
 
-#: admin/meta-boxes.php:967 includes/revisions.php:389
+#: admin/meta-boxes.php:1002 includes/revisions.php:389
 msgid "Choices"
 msgstr ""
 
-#: admin/meta-boxes.php:974
+#: admin/meta-boxes.php:1009
 msgid "Order"
 msgstr ""
 
-#: admin/meta-boxes.php:975
+#: admin/meta-boxes.php:1010
 msgid "Text"
 msgstr ""
 
-#: admin/meta-boxes.php:976
+#: admin/meta-boxes.php:1011
 msgid "Next Scene"
 msgstr ""
 
-#: admin/meta-boxes.php:977
+#: admin/meta-boxes.php:1012
 msgid "Flag Conditions"
 msgstr ""
 
-#: admin/meta-boxes.php:978 admin/meta-boxes.php:1041
+#: admin/meta-boxes.php:1013 admin/meta-boxes.php:1111
 msgid "Flag Settings"
 msgstr ""
 
-#: admin/meta-boxes.php:990
+#: admin/meta-boxes.php:1025
 msgid "Add Choice"
 msgstr ""
 
-#: admin/meta-boxes.php:995
+#: admin/meta-boxes.php:1030
 msgid "Create New Next Command"
 msgstr ""
 
-#: admin/meta-boxes.php:1003
+#: admin/meta-boxes.php:1038
 msgid "Set choices that players can select."
 msgstr ""
 
-#: admin/meta-boxes.php:1004
+#: admin/meta-boxes.php:1039
 msgid "Flag Conditions:"
 msgstr ""
 
-#: admin/meta-boxes.php:1004
+#: admin/meta-boxes.php:1039
 msgid " Flag conditions required for display (up to 3, AND/OR supported)"
 msgstr ""
 
-#: admin/meta-boxes.php:1005
+#: admin/meta-boxes.php:1040
 msgid "Flag Settings:"
 msgstr ""
 
-#: admin/meta-boxes.php:1005
+#: admin/meta-boxes.php:1040
 msgid " The flag to set when this choice is selected"
 msgstr ""
 
-#: admin/meta-boxes.php:1013
+#: admin/meta-boxes.php:1048
+msgid "Start Scene Settings"
+msgstr ""
+
+#. translators: %s: title of the other start scene
+#: admin/meta-boxes.php:1057
+#, php-format
+msgid ""
+"A start scene already exists for this game: \"%s\". Only one start scene can "
+"be set per game."
+msgstr ""
+
+#: admin/meta-boxes.php:1072
+msgid "Set this scene as the start scene (first scene of the game)"
+msgstr ""
+
+#: admin/meta-boxes.php:1075
+msgid ""
+"When checked, this scene will be the starting point of the game. Only one "
+"start scene can be set per game."
+msgstr ""
+
+#: admin/meta-boxes.php:1083
 msgid "Ending Settings"
 msgstr ""
 
-#: admin/meta-boxes.php:1022
+#: admin/meta-boxes.php:1092
 msgid "Set this scene as an ending (end of game)"
 msgstr ""
 
-#: admin/meta-boxes.php:1024
+#: admin/meta-boxes.php:1094
 msgid ""
 "When checked, the game will end at this scene. The ending takes priority "
 "even if choices are set."
 msgstr ""
 
-#: admin/meta-boxes.php:1027
+#: admin/meta-boxes.php:1097
 msgid "Ending Screen Text"
 msgstr ""
 
-#: admin/meta-boxes.php:1033
+#: admin/meta-boxes.php:1103
 msgid "Text to display on ending screen (Default: END)"
 msgstr ""
 
-#: admin/meta-boxes.php:1034
+#: admin/meta-boxes.php:1104
 msgid ""
 "Set the text to display on the ending screen. If blank, \"END\" will be "
 "displayed."
 msgstr ""
 
-#: admin/meta-boxes.php:1059
+#: admin/meta-boxes.php:1129
 msgid "Flags to Set on Scene Arrival"
 msgstr ""
 
-#: admin/meta-boxes.php:1060
+#: admin/meta-boxes.php:1130
 msgid "Select flags that will be automatically set when this scene is reached."
 msgstr ""
 
-#: admin/meta-boxes.php:1081
+#: admin/meta-boxes.php:1151
 msgid "Manage Flags in Game Settings"
 msgstr ""
 
-#: admin/meta-boxes.php:1087
+#: admin/meta-boxes.php:1157
 msgid "Dialogue-Level Flag Conditions"
 msgstr ""
 
-#: admin/meta-boxes.php:1088
+#: admin/meta-boxes.php:1158
 msgid ""
 "To set individual flag conditions for each dialogue, configure them when "
 "editing dialogues. Dialogues will not be displayed if flag conditions are "
 "not met."
 msgstr ""
 
-#: admin/meta-boxes.php:1091
+#: admin/meta-boxes.php:1161
 msgid ""
 "Dialogue flag conditions can be set when editing each dialogue in the "
 "\"Dialogue\" section above."
@@ -1122,7 +1174,7 @@ msgstr ""
 msgid "File size is too large. Maximum 10MB allowed."
 msgstr ""
 
-#: admin/export-import.php:242 admin/game-settings.php:1353
+#: admin/export-import.php:242 admin/game-settings.php:1403
 #, php-format
 msgid "Note: %d image(s) failed to download."
 msgstr ""
@@ -1180,12 +1232,7 @@ msgid ""
 "presentation."
 msgstr ""
 
-#: admin/new-game.php:282
-#, php-format
-msgid "%s - Start Scene"
-msgstr ""
-
-#: admin/new-game.php:302
+#: admin/new-game.php:323
 #, php-format
 msgid "Welcome to \"%s\"!"
 msgstr ""
@@ -1208,8 +1255,8 @@ msgstr ""
 msgid "Install Sample Game"
 msgstr ""
 
-#: admin/my-games.php:124 novel-game-plugin.php:1140 novel-game-plugin.php:1457
-#: templates/archive-novel_game.php:138
+#: admin/my-games.php:124 novel-game-plugin.php:1197 novel-game-plugin.php:1514
+#: templates/archive-novel_game.php:155
 msgid "No games have been created yet."
 msgstr ""
 
@@ -1217,8 +1264,8 @@ msgstr ""
 msgid "Select a game to manage its scenes and settings."
 msgstr ""
 
-#: admin/my-games.php:163 novel-game-plugin.php:1216 novel-game-plugin.php:1513
-#: templates/archive-novel_game.php:124
+#: admin/my-games.php:163 novel-game-plugin.php:1273 novel-game-plugin.php:1570
+#: templates/archive-novel_game.php:141
 #, php-format
 msgid "%d Scenes"
 msgstr ""
@@ -1414,125 +1461,126 @@ msgid ""
 msgstr ""
 
 #: admin/game-settings.php:22 admin/game-settings.php:23
+#: novel-game-plugin.php:1053
 msgid "Settings"
 msgstr ""
 
-#: admin/game-settings.php:482 admin/game-settings.php:1222
+#: admin/game-settings.php:532 admin/game-settings.php:1272
 msgid "Invalid game ID."
 msgstr ""
 
-#: admin/game-settings.php:487
+#: admin/game-settings.php:537
 msgid "You do not have permission to edit this game."
 msgstr ""
 
-#: admin/game-settings.php:610
+#: admin/game-settings.php:660
 msgid "Game not found."
 msgstr ""
 
-#: admin/game-settings.php:812
+#: admin/game-settings.php:862
 msgid "Invalid import data format."
 msgstr ""
 
-#: admin/game-settings.php:819
+#: admin/game-settings.php:869
 msgid "Game data must be an object."
 msgstr ""
 
-#: admin/game-settings.php:824
+#: admin/game-settings.php:874
 msgid "Game title is required and must be a string."
 msgstr ""
 
-#: admin/game-settings.php:829
+#: admin/game-settings.php:879
 msgid "Scenes must be an array."
 msgstr ""
 
-#: admin/game-settings.php:837
+#: admin/game-settings.php:887
 #, php-format
 msgid "Scene at index %d must be an object."
 msgstr ""
 
-#: admin/game-settings.php:843
+#: admin/game-settings.php:893
 #, php-format
 msgid "Scene at index %d must have a valid title."
 msgstr ""
 
-#: admin/game-settings.php:859
+#: admin/game-settings.php:909
 msgid "Unable to create unique game title after 100 attempts."
 msgstr ""
 
-#: admin/game-settings.php:905
+#: admin/game-settings.php:955
 msgid "Failed to save game data."
 msgstr ""
 
-#: admin/game-settings.php:1119
+#: admin/game-settings.php:1169
 msgid "Invalid image URL."
 msgstr ""
 
-#: admin/game-settings.php:1126
+#: admin/game-settings.php:1176
 msgid "Only HTTP/HTTPS URLs are allowed."
 msgstr ""
 
-#: admin/game-settings.php:1139
+#: admin/game-settings.php:1189
 msgid "URL does not point to an image."
 msgstr ""
 
-#: admin/game-settings.php:1160
+#: admin/game-settings.php:1210
 msgid "Downloaded file is not a valid image."
 msgstr ""
 
-#: admin/game-settings.php:1211 admin/game-settings.php:1249
+#: admin/game-settings.php:1261 admin/game-settings.php:1299
 msgid "Insufficient permissions."
 msgstr ""
 
-#: admin/game-settings.php:1259 admin/game-settings.php:1272
+#: admin/game-settings.php:1309 admin/game-settings.php:1322
 msgid "No file selected."
 msgstr ""
 
-#: admin/game-settings.php:1266
+#: admin/game-settings.php:1316
 msgid "File size exceeds limit."
 msgstr ""
 
-#: admin/game-settings.php:1269
+#: admin/game-settings.php:1319
 msgid "File upload was interrupted."
 msgstr ""
 
-#: admin/game-settings.php:1276
+#: admin/game-settings.php:1326
 msgid "Server upload error."
 msgstr ""
 
-#: admin/game-settings.php:1279
+#: admin/game-settings.php:1329
 msgid "File upload blocked by extension."
 msgstr ""
 
-#: admin/game-settings.php:1282
+#: admin/game-settings.php:1332
 msgid "File upload failed."
 msgstr ""
 
-#: admin/game-settings.php:1288
+#: admin/game-settings.php:1338
 msgid "File size exceeds 10MB limit."
 msgstr ""
 
-#: admin/game-settings.php:1307
+#: admin/game-settings.php:1357
 msgid "Only JSON files are allowed."
 msgstr ""
 
-#: admin/game-settings.php:1313
+#: admin/game-settings.php:1363
 msgid "Failed to read file."
 msgstr ""
 
-#: admin/game-settings.php:1319
+#: admin/game-settings.php:1369
 msgid "Invalid JSON encoding."
 msgstr ""
 
-#: admin/game-settings.php:1324
+#: admin/game-settings.php:1374
 msgid "Missing required \"game\" or \"scenes\" keys."
 msgstr ""
 
-#: admin/game-settings.php:1338
+#: admin/game-settings.php:1388
 #, php-format
 msgid "Successfully imported game with %d scenes (%d choices remapped)."
 msgstr ""
 
-#: admin/game-settings.php:1345
+#: admin/game-settings.php:1395
 #, php-format
 msgid "Game title was auto-renamed from \"%s\" to avoid duplication."
 msgstr ""
@@ -1557,1024 +1605,113 @@ msgstr ""
 msgid "Shadow Detective game installed successfully"
 msgstr ""
 
-#: novel-game-plugin.php:781 novel-game-plugin.php:1406
-#: templates/archive-novel_game.php:128
+#: novel-game-plugin.php:813 novel-game-plugin.php:1463
+#: templates/archive-novel_game.php:145
 msgid "Start Game"
 msgstr ""
 
-#: novel-game-plugin.php:784
+#: novel-game-plugin.php:816
 msgid "Clear Progress"
 msgstr ""
 
-#: novel-game-plugin.php:793 novel-game-plugin.php:1252
-#: novel-game-plugin.php:1415 templates/archive-novel_game.php:154
+#: novel-game-plugin.php:825 novel-game-plugin.php:1309
+#: novel-game-plugin.php:1472 templates/archive-novel_game.php:171
 msgid "Close Game"
 msgstr ""
 
-#: novel-game-plugin.php:805 novel-game-plugin.php:1263
-#: novel-game-plugin.php:1426 templates/archive-novel_game.php:166
+#: novel-game-plugin.php:837 novel-game-plugin.php:1320
+#: novel-game-plugin.php:1483 templates/archive-novel_game.php:183
 msgid "Start from Beginning"
 msgstr ""
 
-#: novel-game-plugin.php:808 novel-game-plugin.php:1266
-#: novel-game-plugin.php:1429 templates/archive-novel_game.php:169
+#: novel-game-plugin.php:840 novel-game-plugin.php:1323
+#: novel-game-plugin.php:1486 templates/archive-novel_game.php:186
 msgid "Continue from Save"
 msgstr ""
 
-#: novel-game-plugin.php:1003
-msgid "保存済みのプレイデータ"
+#: novel-game-plugin.php:1035
+msgid "Saved play data"
 msgstr ""
 
-#: novel-game-plugin.php:1004
-msgid "保存されているデータはありません。"
+#: novel-game-plugin.php:1036
+msgid "No saved data."
 msgstr ""
 
-#: novel-game-plugin.php:1005
-msgid "削除"
+#: novel-game-plugin.php:1038
+msgid "Clear all data"
 msgstr ""
 
-#: novel-game-plugin.php:1006
-msgid "すべてのデータをクリア"
+#: novel-game-plugin.php:1039
+msgid "Close"
 msgstr ""
 
-#: novel-game-plugin.php:1007
-msgid "閉じる"
-msgstr ""
-
-#: novel-game-plugin.php:1009
+#. translators: %s is the data label name
+#: novel-game-plugin.php:1041
 #, php-format
-msgid "「%s」を削除しますか？この操作は取り消せません。"
+msgid "Are you sure you want to delete \"%s\"? This action cannot be undone."
 msgstr ""
 
-#: novel-game-plugin.php:1010
+#: novel-game-plugin.php:1042
 msgid ""
-"このゲームのすべての保存データを削除しますか？この操作は取り消せません。"
+"Are you sure you want to delete all saved data for this game? This action "
+"cannot be undone."
 msgstr ""
 
-#: novel-game-plugin.php:1011
+#: novel-game-plugin.php:1043
 msgid ""
-"お使いのブラウザはローカルストレージに対応していないため、保存データの管理が"
-"できません。"
+"Your browser does not support local storage; saved data cannot be managed."
 msgstr ""
 
-#: novel-game-plugin.php:1012
-msgid "データの削除に失敗しました。"
+#: novel-game-plugin.php:1044
+msgid "Failed to delete data."
 msgstr ""
 
-#: novel-game-plugin.php:1013
-msgid "データのクリアに失敗しました。"
+#: novel-game-plugin.php:1045
+msgid "Failed to clear data."
 msgstr ""
 
-#: novel-game-plugin.php:1014
-msgid "保存日時:"
+#: novel-game-plugin.php:1046
+msgid "Saved at:"
 msgstr ""
 
-#: novel-game-plugin.php:1015
-msgid "サイズ:"
+#: novel-game-plugin.php:1047
+msgid "Size:"
 msgstr ""
 
-#: novel-game-plugin.php:1016
-msgid "不明"
+#: novel-game-plugin.php:1048
+msgid "Unknown"
 msgstr ""
 
-#: novel-game-plugin.php:1017
-msgid "進捗データ"
+#: novel-game-plugin.php:1049
+msgid "Progress data"
 msgstr ""
 
-#: novel-game-plugin.php:1018
-msgid "最後の選択肢"
+#: novel-game-plugin.php:1050
+msgid "Last choice"
 msgstr ""
 
-#: novel-game-plugin.php:1019
-msgid "フラグデータ"
+#: novel-game-plugin.php:1051
+msgid "Flag data"
 msgstr ""
 
-#: novel-game-plugin.php:1020
-msgid "ゲームデータ"
+#: novel-game-plugin.php:1052
+msgid "Game data"
 msgstr ""
 
-#: novel-game-plugin.php:1021
-msgid "設定"
+#: novel-game-plugin.php:1054
+msgid "Manage saved data"
 msgstr ""
 
-#: novel-game-plugin.php:1022
-msgid "保存データの管理"
-msgstr ""
-
-#: novel-game-plugin.php:1238 novel-game-plugin.php:1515
+#: novel-game-plugin.php:1295 novel-game-plugin.php:1572
 msgid "Start Playing"
 msgstr ""
 
-#: novel-game-plugin.php:1332
+#: novel-game-plugin.php:1389
 msgid "There are no posts for this game."
 msgstr ""
 
-#: novel-game-plugin.php:1463
+#: novel-game-plugin.php:1520
 msgid "Game List"
-msgstr ""
-
-#: includes/sample-data.php:79 includes/sample-data.php:1316
-msgid "Shadow Detective"
-msgstr ""
-
-#: includes/sample-data.php:80
-msgid ""
-"A full-fledged mystery game. Investigate the disappearance of businessman "
-"Makoto Kurosaki and uncover the truth. Gather evidence and make the right "
-"choices to reach the complete solution ending."
-msgstr ""
-
-#: includes/sample-data.php:82
-msgid "Investigation Failed"
-msgstr ""
-
-#: includes/sample-data.php:92
-msgid "Shadow Detective - The Beginning"
-msgstr ""
-
-#: includes/sample-data.php:97 includes/sample-data.php:142
-#: includes/sample-data.php:277 includes/sample-data.php:319
-#: includes/sample-data.php:508 includes/sample-data.php:555
-#: includes/sample-data.php:597 includes/sample-data.php:776
-#: includes/sample-data.php:815 includes/sample-data.php:857
-#: includes/sample-data.php:904 includes/sample-data.php:942
-msgid "Detective"
-msgstr ""
-
-#: includes/sample-data.php:99 includes/sample-data.php:144
-#: includes/sample-data.php:275 includes/sample-data.php:506
-#: includes/sample-data.php:996
-msgid "Misaki"
-msgstr ""
-
-#: includes/sample-data.php:101
-msgid "On an autumn evening, a woman visited my office."
-msgstr ""
-
-#: includes/sample-data.php:102
-msgid ""
-"Detective, please help me... My husband has been missing for three days."
-msgstr ""
-
-#: includes/sample-data.php:103
-msgid ""
-"The police say there's no criminal activity, but my husband would never do "
-"this..."
-msgstr ""
-
-#: includes/sample-data.php:104
-msgid ""
-"The client's name is Misaki Kurosaki. Her husband is businessman Makoto "
-"Kurosaki."
-msgstr ""
-
-#: includes/sample-data.php:117
-msgid "Please tell me the details"
-msgstr ""
-
-#: includes/sample-data.php:121
-msgid "When did you last see him?"
-msgstr ""
-
-#: includes/sample-data.php:125
-msgid "What kind of person is your husband?"
-msgstr ""
-
-#: includes/sample-data.php:137
-msgid "Shadow Detective - Details of Disappearance"
-msgstr ""
-
-#: includes/sample-data.php:146
-msgid ""
-"Three days ago in the evening, my husband said \"I have an important "
-"business meeting\" and left."
-msgstr ""
-
-#: includes/sample-data.php:147
-msgid ""
-"Since then, his phone hasn't connected, and he hasn't shown up at the "
-"company."
-msgstr ""
-
-#: includes/sample-data.php:148
-msgid "Recently he seemed strange... as if he was worried about something."
-msgstr ""
-
-#: includes/sample-data.php:149
-msgid ""
-"Strange behavior before disappearing. This might not be a simple runaway "
-"case."
-msgstr ""
-
-#: includes/sample-data.php:162
-msgid "First, I'll investigate the disappearance site"
-msgstr ""
-
-#: includes/sample-data.php:166
-msgid "Let me talk to your family"
-msgstr ""
-
-#: includes/sample-data.php:170
-msgid "I'd like to hear from friends and acquaintances"
-msgstr ""
-
-#: includes/sample-data.php:182
-msgid "Shadow Detective - Warehouse District"
-msgstr ""
-
-#: includes/sample-data.php:191
-msgid ""
-"The warehouse district by the port where he was last seen. A deserted, dimly "
-"lit place."
-msgstr ""
-
-#: includes/sample-data.php:192
-msgid "Something shiny is on the ground... It's a pocket watch."
-msgstr ""
-
-#: includes/sample-data.php:193
-msgid ""
-"Opening the back reveals an inscription: \"To Makoto, with love, Misaki\""
-msgstr ""
-
-#: includes/sample-data.php:194
-msgid "This must belong to Makoto Kurosaki. Something happened here."
-msgstr ""
-
-#: includes/sample-data.php:200
-msgid "Continue questioning the area"
-msgstr ""
-
-#: includes/sample-data.php:204
-msgid "Return to the office to organize information"
-msgstr ""
-
-#: includes/sample-data.php:208
-msgid "Search more carefully around the pocket watch"
-msgstr ""
-
-#: includes/sample-data.php:222
-msgid "Shadow Detective - Time to Deduce"
-msgstr ""
-
-#: includes/sample-data.php:231
-msgid "Time to organize the gathered information."
-msgstr ""
-
-#: includes/sample-data.php:232
-msgid "The pocket watch... evidence he was at the disappearance site."
-msgstr ""
-
-#: includes/sample-data.php:233
-msgid ""
-"A businessman's sudden disappearance. Mention of family noticing strange "
-"behavior."
-msgstr ""
-
-#: includes/sample-data.php:234
-msgid "This case doesn't seem superficial."
-msgstr ""
-
-#: includes/sample-data.php:245
-msgid ""
-"The pocket watch found at the scene... and sudden disappearance. This "
-"connects to something bigger."
-msgstr ""
-
-#: includes/sample-data.php:250
-msgid "Prioritize questioning the family"
-msgstr ""
-
-#: includes/sample-data.php:254
-msgid "Investigate friends and associates"
-msgstr ""
-
-#: includes/sample-data.php:258
-msgid "Search for clues in the company records"
-msgstr ""
-
-#: includes/sample-data.php:270
-msgid "Shadow Detective - Family Testimony"
-msgstr ""
-
-#: includes/sample-data.php:279
-msgid ""
-"Actually... my husband was recently troubled by business management issues."
-msgstr ""
-
-#: includes/sample-data.php:280
-msgid ""
-"He seemed to have problems with business partners... but he wouldn't tell me "
-"details."
-msgstr ""
-
-#: includes/sample-data.php:281
-msgid "Also... there were calls from unknown men."
-msgstr ""
-
-#: includes/sample-data.php:282
-msgid "My husband said \"It's fine\" but his expression was dark..."
-msgstr ""
-
-#: includes/sample-data.php:288
-msgid "Talk to company associates"
-msgstr ""
-
-#: includes/sample-data.php:292
-msgid "Let me investigate the study"
-msgstr ""
-
-#: includes/sample-data.php:300
-msgid "Ask about the unknown callers in detail"
-msgstr ""
-
-#: includes/sample-data.php:314
-msgid "Shadow Detective - Friend's Testimony"
-msgstr ""
-
-#: includes/sample-data.php:321
-msgid "Sato"
-msgstr ""
-
-#: includes/sample-data.php:323
-msgid "Mr. Makoto has been acting strange recently."
-msgstr ""
-
-#: includes/sample-data.php:324
-msgid "Last week, I happened to see him... talking with suspicious men."
-msgstr ""
-
-#: includes/sample-data.php:325
-msgid "I was worried, so I took a photo. Here it is."
-msgstr ""
-
-#: includes/sample-data.php:326
-msgid ""
-"In the photo, Kurosaki is with men who clearly seem to be from the "
-"underworld..."
-msgstr ""
-
-#: includes/sample-data.php:332
-msgid "Investigate these men"
-msgstr ""
-
-#: includes/sample-data.php:340
-msgid "First, investigate the Kurosaki residence more"
-msgstr ""
-
-#: includes/sample-data.php:344
-msgid "Ask Sato for more information"
-msgstr ""
-
-#: includes/sample-data.php:359
-msgid "Shadow Detective - Secret of the Study"
-msgstr ""
-
-#: includes/sample-data.php:368
-msgid "With permission, I investigate the study."
-msgstr ""
-
-#: includes/sample-data.php:369
-msgid ""
-"Desk drawers contain receipts and contracts... nothing particularly "
-"suspicious."
-msgstr ""
-
-#: includes/sample-data.php:370
-msgid "However, the bookshelf arrangement seems unnatural..."
-msgstr ""
-
-#: includes/sample-data.php:371
-msgid "Moving the bookshelf reveals... a hidden door!"
-msgstr ""
-
-#: includes/sample-data.php:377
-msgid "Try to open the hidden door"
-msgstr ""
-
-#: includes/sample-data.php:381 includes/sample-data.php:614
-msgid "Retreat for now"
-msgstr ""
-
-#: includes/sample-data.php:385
-msgid "Search the study more thoroughly first"
-msgstr ""
-
-#: includes/sample-data.php:397
-msgid "Shadow Detective - Hidden Truth"
-msgstr ""
-
-#: includes/sample-data.php:406
-msgid "Beyond the hidden door is a small room. There's a safe and a desk."
-msgstr ""
-
-#: includes/sample-data.php:407
-msgid "A diary on the desk... It's Makoto Kurosaki's handwriting."
-msgstr ""
-
-#: includes/sample-data.php:408
-msgid "\"I chose the wrong path...\""
-msgstr ""
-
-#: includes/sample-data.php:409
-msgid "\"I can't repay the debt to them. I don't want to trouble my family.\""
-msgstr ""
-
-#: includes/sample-data.php:415
-msgid "Try to open the safe"
-msgstr ""
-
-#: includes/sample-data.php:423
-msgid "Take the diary back for analysis"
-msgstr ""
-
-#: includes/sample-data.php:427
-msgid "Investigate other items in the hidden room"
-msgstr ""
-
-#: includes/sample-data.php:441
-msgid "Shadow Detective - To the Core of the Case"
-msgstr ""
-
-#: includes/sample-data.php:450
-msgid "From the diary, it's clear Kurosaki had debt problems."
-msgstr ""
-
-#: includes/sample-data.php:451
-msgid "The men in the photo from my friend... loan sharks?"
-msgstr ""
-
-#: includes/sample-data.php:452
-msgid "But why a hidden room? There must be something he's hiding."
-msgstr ""
-
-#: includes/sample-data.php:453
-msgid "I need to find the key to the safe."
-msgstr ""
-
-#: includes/sample-data.php:464
-msgid ""
-"The men in the photo from my friend... clearly loan sharks from Ryu-gumi."
-msgstr ""
-
-#: includes/sample-data.php:472
-msgid ""
-"The hidden room I found... There's definitely something big he was hiding."
-msgstr ""
-
-#: includes/sample-data.php:477
-msgid "Ask the wife about the safe key"
-msgstr ""
-
-#: includes/sample-data.php:481
-msgid "Pursue the men in the photo"
-msgstr ""
-
-#: includes/sample-data.php:489
-msgid "Carefully review all gathered evidence"
-msgstr ""
-
-#: includes/sample-data.php:501
-msgid "Shadow Detective - Finding the Key"
-msgstr ""
-
-#: includes/sample-data.php:510
-msgid ""
-"The safe key... Oh, I think there was a spare in my husband's study drawer."
-msgstr ""
-
-#: includes/sample-data.php:511
-msgid "Guided by Misaki, I find a small key deep in the drawer."
-msgstr ""
-
-#: includes/sample-data.php:512
-msgid "Will this reveal anything...?"
-msgstr ""
-
-#: includes/sample-data.php:513
-msgid "This key might open the safe in the hidden room."
-msgstr ""
-
-#: includes/sample-data.php:519
-msgid "Open the safe in the hidden room immediately"
-msgstr ""
-
-#: includes/sample-data.php:527
-msgid "Gather other clues first"
-msgstr ""
-
-#: includes/sample-data.php:535
-msgid "Check with the wife about her husband's business dealings"
-msgstr ""
-
-#: includes/sample-data.php:550
-msgid "Shadow Detective - Dangerous Investigation"
-msgstr ""
-
-#: includes/sample-data.php:557
-msgid "Informant"
-msgstr ""
-
-#: includes/sample-data.php:559
-msgid "I ask a well-connected informant about the men in the photo."
-msgstr ""
-
-#: includes/sample-data.php:560
-msgid "Ah, these guys... dangerous bunch."
-msgstr ""
-
-#: includes/sample-data.php:561
-msgid ""
-"They're from \"Ryu-gumi\", a loan shark operation. Once you're in, you're "
-"done."
-msgstr ""
-
-#: includes/sample-data.php:562
-msgid "Makoto Kurosaki? Yeah, I've heard. He owed them a huge amount."
-msgstr ""
-
-#: includes/sample-data.php:568
-msgid "Investigate Ryu-gumi in detail"
-msgstr ""
-
-#: includes/sample-data.php:572
-msgid "Organize information for now"
-msgstr ""
-
-#: includes/sample-data.php:576
-msgid "Search for more connections to Ryu-gumi"
-msgstr ""
-
-#: includes/sample-data.php:592
-msgid "Shadow Detective - Dragon's Den"
-msgstr ""
-
-#: includes/sample-data.php:599
-msgid "Ryu-gumi Executive"
-msgstr ""
-
-#: includes/sample-data.php:601
-msgid "Makoto Kurosaki? Yeah, I know him."
-msgstr ""
-
-#: includes/sample-data.php:602
-msgid "He ran away after defaulting on a 30 million yen debt."
-msgstr ""
-
-#: includes/sample-data.php:603
-msgid "But we didn't do anything. You got no proof, right?"
-msgstr ""
-
-#: includes/sample-data.php:604
-msgid ""
-"They won't say anything publicly... but they seem to be hiding something."
-msgstr ""
-
-#: includes/sample-data.php:610
-msgid "Press hard"
-msgstr ""
-
-#: includes/sample-data.php:618
-msgid "Try a different approach and negotiate"
-msgstr ""
-
-#: includes/sample-data.php:632
-msgid "Shadow Detective - Decisive Evidence"
-msgstr ""
-
-#: includes/sample-data.php:641
-msgid "I use the key to open the safe."
-msgstr ""
-
-#: includes/sample-data.php:642
-msgid "Inside are numerous documents and... cash!"
-msgstr ""
-
-#: includes/sample-data.php:643
-msgid "Looking at the documents, records of illicit transactions..."
-msgstr ""
-
-#: includes/sample-data.php:644
-msgid "Another name surfaces... \"Takagi Construction, President Takagi\"?"
-msgstr ""
-
-#: includes/sample-data.php:655
-msgid ""
-"And a name other than Ryu-gumi... \"Takagi Construction, President Takagi\"?"
-msgstr ""
-
-#: includes/sample-data.php:660
-msgid "Investigate Takagi Construction"
-msgstr ""
-
-#: includes/sample-data.php:669
-msgid "Contact Ryu-gumi again"
-msgstr ""
-
-#: includes/sample-data.php:677
-msgid "Carefully examine the documents in the safe"
-msgstr ""
-
-#: includes/sample-data.php:689
-msgid "Shadow Detective - Shadow of the Mastermind"
-msgstr ""
-
-#: includes/sample-data.php:698
-msgid ""
-"Takagi Construction... a major general contractor. Why involved in illicit "
-"deals?"
-msgstr ""
-
-#: includes/sample-data.php:699
-msgid "While investigating around the office, I find a memo in the trash..."
-msgstr ""
-
-#: includes/sample-data.php:700
-msgid "\"Payment from Kurosaki confirmed. Process next through Ryu-gumi\""
-msgstr ""
-
-#: includes/sample-data.php:701
-msgid ""
-"This is... President Takagi using Kurosaki and Ryu-gumi for illegal "
-"transactions?"
-msgstr ""
-
-#: includes/sample-data.php:707
-msgid "Go directly to meet President Takagi"
-msgstr ""
-
-#: includes/sample-data.php:711
-msgid "Gather more evidence"
-msgstr ""
-
-#: includes/sample-data.php:715
-msgid "Investigate Takagi Construction employees"
-msgstr ""
-
-#: includes/sample-data.php:729
-msgid "Shadow Detective - Deepening Investigation"
-msgstr ""
-
-#: includes/sample-data.php:738
-msgid ""
-"Evidence has been accumulating. But I still don't have complete certainty."
-msgstr ""
-
-#: includes/sample-data.php:739
-msgid "President Takagi's memo... this could be the decisive evidence."
-msgstr ""
-
-#: includes/sample-data.php:740
-msgid ""
-"Ryu-gumi, Kurosaki, and Takagi Construction... the connections are becoming "
-"clear."
-msgstr ""
-
-#: includes/sample-data.php:741
-msgid "It's time to confront them directly."
-msgstr ""
-
-#: includes/sample-data.php:747
-msgid "Interrogate President Takagi"
-msgstr ""
-
-#: includes/sample-data.php:751
-msgid "Consult with the police"
-msgstr ""
-
-#: includes/sample-data.php:755
-msgid "Verify the evidence one more time"
-msgstr ""
-
-#: includes/sample-data.php:771
-msgid "Shadow Detective - Encounter with the Mastermind"
-msgstr ""
-
-#: includes/sample-data.php:778 includes/sample-data.php:817
-#: includes/sample-data.php:859 includes/sample-data.php:906
-msgid "President Takagi"
-msgstr ""
-
-#: includes/sample-data.php:780
-msgid "Detective, what brings you here?"
-msgstr ""
-
-#: includes/sample-data.php:781
-msgid "Calm demeanor, but his eyes aren't smiling."
-msgstr ""
-
-#: includes/sample-data.php:782
-msgid "Please tell me about your relationship with Makoto Kurosaki."
-msgstr ""
-
-#: includes/sample-data.php:783
-msgid "Ah, I had a business relationship with him."
-msgstr ""
-
-#: includes/sample-data.php:789
-msgid "Explain this illicit transaction memo"
-msgstr ""
-
-#: includes/sample-data.php:794
-msgid "What about your relationship with Ryu-gumi?"
-msgstr ""
-
-#: includes/sample-data.php:798
-msgid "Ask about the disappearance directly"
-msgstr ""
-
-#: includes/sample-data.php:810
-msgid "Shadow Detective - Cautious Approach"
-msgstr ""
-
-#: includes/sample-data.php:819
-msgid "Ryu-gumi? Ah, I've heard rumors, but I have no connection with them."
-msgstr ""
-
-#: includes/sample-data.php:820
-msgid ""
-"He skillfully evaded... Without decisive evidence, I can't press further."
-msgstr ""
-
-#: includes/sample-data.php:821
-msgid "Detective, baseless defamation is libel, you know."
-msgstr ""
-
-#: includes/sample-data.php:822
-msgid "At this rate, I can't reach the truth..."
-msgstr ""
-
-#: includes/sample-data.php:828
-msgid "Wait, please look at this evidence"
-msgstr ""
-
-#: includes/sample-data.php:836
-msgid "Sorry, excuse me"
-msgstr ""
-
-#: includes/sample-data.php:840
-msgid "Try bluffing with partial evidence"
-msgstr ""
-
-#: includes/sample-data.php:852
-msgid "Shadow Detective - Revealing the Truth"
-msgstr ""
-
-#: includes/sample-data.php:861
-msgid "I place the illicit transaction memo on the desk."
-msgstr ""
-
-#: includes/sample-data.php:862
-msgid "...This is..."
-msgstr ""
-
-#: includes/sample-data.php:863
-msgid "His expression changed. Bull's eye."
-msgstr ""
-
-#: includes/sample-data.php:864
-msgid "Tch... Kurosaki left evidence behind."
-msgstr ""
-
-#: includes/sample-data.php:877
-msgid "Where is Makoto Kurosaki?"
-msgstr ""
-
-#: includes/sample-data.php:881
-msgid "I'm calling the police"
-msgstr ""
-
-#: includes/sample-data.php:885
-msgid "Tell me everything you know"
-msgstr ""
-
-#: includes/sample-data.php:899
-msgid "Shadow Detective - All the Truth"
-msgstr ""
-
-#: includes/sample-data.php:908
-msgid "Fine... I'll tell you everything."
-msgstr ""
-
-#: includes/sample-data.php:909
-msgid "Kurosaki discovered my fraud. So I tried to silence him..."
-msgstr ""
-
-#: includes/sample-data.php:910
-msgid "But I didn't kill him. I asked Ryu-gumi to threaten him."
-msgstr ""
-
-#: includes/sample-data.php:911
-msgid "Kurosaki is now hiding in my villa. By his own choice."
-msgstr ""
-
-#: includes/sample-data.php:917
-msgid "Protect Kurosaki immediately"
-msgstr ""
-
-#: includes/sample-data.php:921
-msgid "Call the police"
-msgstr ""
-
-#: includes/sample-data.php:925
-msgid "Get the villa location first"
-msgstr ""
-
-#: includes/sample-data.php:937
-msgid "Shadow Detective - Reunion with the Missing"
-msgstr ""
-
-#: includes/sample-data.php:944
-msgid "Makoto Kurosaki"
-msgstr ""
-
-#: includes/sample-data.php:946
-msgid "You're the detective..."
-msgstr ""
-
-#: includes/sample-data.php:947
-msgid "I discovered Takagi's fraud and was threatened."
-msgstr ""
-
-#: includes/sample-data.php:948
-msgid "I was told my family would be harmed, so I had no choice but to hide."
-msgstr ""
-
-#: includes/sample-data.php:949
-msgid "Please... let me see my wife, Misaki."
-msgstr ""
-
-#: includes/sample-data.php:962
-msgid "Everything is resolved. Let's go back to your family"
-msgstr ""
-
-#: includes/sample-data.php:975
-msgid "There are still unclear points..."
-msgstr ""
-
-#: includes/sample-data.php:979
-msgid "Let me confirm the evidence one more time"
-msgstr ""
-
-#: includes/sample-data.php:991
-msgid "Shadow Detective - Complete Solution"
-msgstr ""
-
-#: includes/sample-data.php:998
-msgid "Makoto"
-msgstr ""
-
-#: includes/sample-data.php:1000
-msgid "All evidence gathered, the truth has been revealed."
-msgstr ""
-
-#: includes/sample-data.php:1001
-msgid "Detective, thank you so much."
-msgstr ""
-
-#: includes/sample-data.php:1002
-msgid "President Takagi was arrested, and I will cooperate with the police."
-msgstr ""
-
-#: includes/sample-data.php:1003
-msgid "Another case solved. This is a detective's work."
-msgstr ""
-
-#: includes/sample-data.php:1009
-msgid "Complete Solution - All truths have been revealed"
-msgstr ""
-
-#: includes/sample-data.php:1016
-msgid "Shadow Detective - Partial Solution"
-msgstr ""
-
-#: includes/sample-data.php:1025
-msgid "Makoto Kurosaki was protected, and the case saw some resolution."
-msgstr ""
-
-#: includes/sample-data.php:1026
-msgid "However, I couldn't gather all the evidence."
-msgstr ""
-
-#: includes/sample-data.php:1027
-msgid ""
-"President Takagi's crimes couldn't be fully proven, leaving parts unresolved."
-msgstr ""
-
-#: includes/sample-data.php:1028
-msgid ""
-"Frustrating, but this is detective work... perfect case resolution is "
-"difficult."
-msgstr ""
-
-#: includes/sample-data.php:1034
-msgid "Partial Solution - Some truths remain in darkness"
-msgstr ""
-
-#: includes/sample-data.php:1041
-msgid "Shadow Detective - Insufficient Evidence"
-msgstr ""
-
-#: includes/sample-data.php:1050
-msgid "Evidence was insufficient, couldn't reach the truth."
-msgstr ""
-
-#: includes/sample-data.php:1051
-msgid "Makoto Kurosaki remains missing."
-msgstr ""
-
-#: includes/sample-data.php:1052
-msgid "I should have been more careful and thorough in my investigation."
-msgstr ""
-
-#: includes/sample-data.php:1053
-msgid "Let's start the investigation over from the beginning."
-msgstr ""
-
-#: includes/sample-data.php:1059
-msgid "Insufficient Evidence - Detective Failure"
-msgstr ""
-
-#: includes/sample-data.php:1068
-msgid "Pocket Watch"
-msgstr ""
-
-#: includes/sample-data.php:1069
-msgid ""
-"A pocket watch belonging to Makoto Kurosaki. Evidence he was at the "
-"disappearance site."
-msgstr ""
-
-#: includes/sample-data.php:1073
-msgid "Missing Person's Diary"
-msgstr ""
-
-#: includes/sample-data.php:1074
-msgid "Kurosaki's diary revealing his troubles and evidence of transactions."
-msgstr ""
-
-#: includes/sample-data.php:1078
-msgid "Evidence Photo"
-msgstr ""
-
-#: includes/sample-data.php:1079
-msgid "A photo of the illicit transaction scene."
-msgstr ""
-
-#: includes/sample-data.php:1083
-msgid "Hidden Room Key"
-msgstr ""
-
-#: includes/sample-data.php:1084
-msgid "The key to access the hidden room."
-msgstr ""
-
-#: includes/sample-data.php:1088
-msgid "Illicit Transaction Memo"
-msgstr ""
-
-#: includes/sample-data.php:1089
-msgid "Decisive evidence revealing the mastermind's identity."
-msgstr ""
-
-#: includes/sample-data.php:1093
-msgid "Talked to Wife"
-msgstr ""
-
-#: includes/sample-data.php:1094
-msgid "Obtained testimony from Misaki."
-msgstr ""
-
-#: includes/sample-data.php:1098
-msgid "Talked to Friend"
-msgstr ""
-
-#: includes/sample-data.php:1099
-msgid "Obtained testimony from friend Sato."
-msgstr ""
-
-#: includes/sample-data.php:1103
-msgid "Discovered Hidden Room"
-msgstr ""
-
-#: includes/sample-data.php:1104
-msgid "Found the hidden room in the study."
-msgstr ""
-
-#: includes/sample-data.php:1108
-msgid "Contacted Underworld"
-msgstr ""
-
-#: includes/sample-data.php:1109
-msgid "Made contact with Ryu-gumi."
-msgstr ""
-
-#: includes/sample-data.php:1113
-msgid "Confronted Mastermind"
-msgstr ""
-
-#: includes/sample-data.php:1114
-msgid "Confronted President Takagi."
 msgstr ""
 
 #: includes/post-types.php:21
@@ -2797,11 +1934,11 @@ msgstr ""
 msgid "Please select a game to play"
 msgstr ""
 
-#: templates/archive-novel_game.php:115
+#: templates/archive-novel_game.php:132
 msgid "No Image"
 msgstr ""
 
-#: templates/archive-novel_game.php:125
+#: templates/archive-novel_game.php:142
 #, php-format
 msgid "Start: %s"
 msgstr ""

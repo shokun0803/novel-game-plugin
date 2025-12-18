@@ -329,6 +329,11 @@ function noveltool_save_game( $game_data ) {
         $game_data['created_at'] = current_time( 'timestamp' );
         $game_data['updated_at'] = current_time( 'timestamp' );
         
+        // start_scene_id が未設定の場合は null で初期化
+        if ( ! isset( $game_data['start_scene_id'] ) ) {
+            $game_data['start_scene_id'] = null;
+        }
+        
         $games[] = $game_data;
     } else {
         // 既存ゲームの更新
@@ -337,6 +342,12 @@ function noveltool_save_game( $game_data ) {
             if ( $games[$i]['id'] == $game_data['id'] ) {
                 $game_data['created_at'] = $games[$i]['created_at']; // 作成日時を保持
                 $game_data['updated_at'] = current_time( 'timestamp' );
+                
+                // start_scene_id の保持（明示的に更新されない限り既存値を維持）
+                if ( ! array_key_exists( 'start_scene_id', $game_data ) && isset( $games[$i]['start_scene_id'] ) ) {
+                    $game_data['start_scene_id'] = $games[$i]['start_scene_id'];
+                }
+                
                 $games[$i] = $game_data;
                 $found = true;
                 break;
@@ -351,6 +362,27 @@ function noveltool_save_game( $game_data ) {
     $result = update_option( 'noveltool_games', $games );
     
     return $result ? $game_data['id'] : false;
+}
+
+/**
+ * ゲームの開始シーンIDを更新する関数
+ *
+ * @param string $game_title ゲームタイトル
+ * @param int|null $scene_id シーンID（nullの場合はクリア）
+ * @return bool 更新成功の場合true
+ * @since 1.4.0
+ */
+function noveltool_update_game_start_scene( $game_title, $scene_id ) {
+    $game = noveltool_get_game_by_title( $game_title );
+    
+    if ( ! $game ) {
+        return false;
+    }
+    
+    $game['start_scene_id'] = $scene_id;
+    $result = noveltool_save_game( $game );
+    
+    return (bool) $result;
 }
 
 /**
@@ -1000,26 +1032,26 @@ function noveltool_enqueue_scripts() {
                 'leftCharacter'          => esc_html__( 'Left Character', 'novel-game-plugin' ),
                 'centerCharacter'        => esc_html__( 'Center Character', 'novel-game-plugin' ),
                 'rightCharacter'         => esc_html__( 'Right Character', 'novel-game-plugin' ),
-                'settingsTitle'          => esc_html__( '保存済みのプレイデータ', 'novel-game-plugin' ),
-                'noData'                 => esc_html__( '保存されているデータはありません。', 'novel-game-plugin' ),
-                'deleteLabel'            => esc_html__( '削除', 'novel-game-plugin' ),
-                'clearAllLabel'          => esc_html__( 'すべてのデータをクリア', 'novel-game-plugin' ),
-                'closeLabel'             => esc_html__( '閉じる', 'novel-game-plugin' ),
+                'settingsTitle'          => esc_html__( 'Saved play data', 'novel-game-plugin' ),
+                'noData'                 => esc_html__( 'No saved data.', 'novel-game-plugin' ),
+                'deleteLabel'            => esc_html__( 'Delete', 'novel-game-plugin' ),
+                'clearAllLabel'          => esc_html__( 'Clear all data', 'novel-game-plugin' ),
+                'closeLabel'             => esc_html__( 'Close', 'novel-game-plugin' ),
                 /* translators: %s is the data label name */
-                'confirmDeleteMsg'       => esc_html__( '「%s」を削除しますか？この操作は取り消せません。', 'novel-game-plugin' ),
-                'confirmClearAllMsg'     => esc_html__( 'このゲームのすべての保存データを削除しますか？この操作は取り消せません。', 'novel-game-plugin' ),
-                'localStorageNotSupport' => esc_html__( 'お使いのブラウザはローカルストレージに対応していないため、保存データの管理ができません。', 'novel-game-plugin' ),
-                'deleteErrorMsg'         => esc_html__( 'データの削除に失敗しました。', 'novel-game-plugin' ),
-                'clearErrorMsg'          => esc_html__( 'データのクリアに失敗しました。', 'novel-game-plugin' ),
-                'savedAt'                => esc_html__( '保存日時:', 'novel-game-plugin' ),
-                'size'                   => esc_html__( 'サイズ:', 'novel-game-plugin' ),
-                'unknown'                => esc_html__( '不明', 'novel-game-plugin' ),
-                'progressData'           => esc_html__( '進捗データ', 'novel-game-plugin' ),
-                'lastChoice'             => esc_html__( '最後の選択肢', 'novel-game-plugin' ),
-                'flagData'               => esc_html__( 'フラグデータ', 'novel-game-plugin' ),
-                'gameData'               => esc_html__( 'ゲームデータ', 'novel-game-plugin' ),
-                'settingsButtonLabel'    => esc_html__( '設定', 'novel-game-plugin' ),
-                'settingsButtonTitle'    => esc_html__( '保存データの管理', 'novel-game-plugin' ),
+                'confirmDeleteMsg'       => esc_html__( 'Are you sure you want to delete "%s"? This action cannot be undone.', 'novel-game-plugin' ),
+                'confirmClearAllMsg'     => esc_html__( 'Are you sure you want to delete all saved data for this game? This action cannot be undone.', 'novel-game-plugin' ),
+                'localStorageNotSupport' => esc_html__( 'Your browser does not support local storage; saved data cannot be managed.', 'novel-game-plugin' ),
+                'deleteErrorMsg'         => esc_html__( 'Failed to delete data.', 'novel-game-plugin' ),
+                'clearErrorMsg'          => esc_html__( 'Failed to clear data.', 'novel-game-plugin' ),
+                'savedAt'                => esc_html__( 'Saved at:', 'novel-game-plugin' ),
+                'size'                   => esc_html__( 'Size:', 'novel-game-plugin' ),
+                'unknown'                => esc_html__( 'Unknown', 'novel-game-plugin' ),
+                'progressData'           => esc_html__( 'Progress data', 'novel-game-plugin' ),
+                'lastChoice'             => esc_html__( 'Last choice', 'novel-game-plugin' ),
+                'flagData'               => esc_html__( 'Flag data', 'novel-game-plugin' ),
+                'gameData'               => esc_html__( 'Game data', 'novel-game-plugin' ),
+                'settingsButtonLabel'    => esc_html__( 'Settings', 'novel-game-plugin' ),
+                'settingsButtonTitle'    => esc_html__( 'Manage saved data', 'novel-game-plugin' ),
             )
         )
     );

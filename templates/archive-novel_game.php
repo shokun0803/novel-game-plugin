@@ -39,20 +39,37 @@
             // オプションからゲーム一覧を取得
             $games = array();
             foreach ( $games_from_option as $game_data ) {
-                // 各ゲームの最初のシーンを取得（ゲームの開始点）
-                $first_scene_query = $wpdb->prepare("
-                    SELECT p.ID, p.post_title
-                    FROM {$wpdb->posts} p
-                    INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-                    WHERE p.post_type = 'novel_game'
-                    AND p.post_status = 'publish'
-                    AND pm.meta_key = '_game_title'
-                    AND pm.meta_value = %s
-                    ORDER BY p.post_date ASC
-                    LIMIT 1
-                ", $game_data['title']);
+                // 開始シーンを取得（start_scene_id優先、なければ最初のシーン）
+                $first_scene = null;
+                $first_scene_id = isset( $game_data['start_scene_id'] ) ? intval( $game_data['start_scene_id'] ) : 0;
                 
-                $first_scene = $wpdb->get_row($first_scene_query);
+                if ( $first_scene_id > 0 ) {
+                    // start_scene_idが設定されている場合はそれを使用
+                    $first_scene_post = get_post( $first_scene_id );
+                    if ( $first_scene_post && 'publish' === $first_scene_post->post_status ) {
+                        $first_scene = (object) array(
+                            'ID' => $first_scene_post->ID,
+                            'post_title' => $first_scene_post->post_title,
+                        );
+                    }
+                }
+                
+                // start_scene_idがない、または取得失敗した場合は最初のシーンを取得
+                if ( ! $first_scene ) {
+                    $first_scene_query = $wpdb->prepare("
+                        SELECT p.ID, p.post_title
+                        FROM {$wpdb->posts} p
+                        INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+                        WHERE p.post_type = 'novel_game'
+                        AND p.post_status = 'publish'
+                        AND pm.meta_key = '_game_title'
+                        AND pm.meta_value = %s
+                        ORDER BY p.post_date ASC
+                        LIMIT 1
+                    ", $game_data['title']);
+                    
+                    $first_scene = $wpdb->get_row($first_scene_query);
+                }
                 
                 if ( $first_scene ) {
                     // ゲーム内の総シーン数を取得
