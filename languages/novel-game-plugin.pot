@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Novel Game Plugin 1.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin/"
 "issues\n"
-"POT-Creation-Date: 2025-12-17 05:52+0000\n"
+"POT-Creation-Date: 2025-12-18 03:18+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -329,7 +329,8 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: admin/game-manager.php:703 admin/my-games.php:182 includes/revisions.php:320
+#: admin/game-manager.php:703 admin/my-games.php:182 novel-game-plugin.php:1037
+#: includes/revisions.php:320
 msgid "Delete"
 msgstr ""
 
@@ -1460,6 +1461,7 @@ msgid ""
 msgstr ""
 
 #: admin/game-settings.php:22 admin/game-settings.php:23
+#: novel-game-plugin.php:1053
 msgid "Settings"
 msgstr ""
 
@@ -1628,84 +1630,76 @@ msgid "Continue from Save"
 msgstr ""
 
 #: novel-game-plugin.php:1035
-msgid "保存済みのプレイデータ"
+msgid "Saved play data"
 msgstr ""
 
 #: novel-game-plugin.php:1036
-msgid "保存されているデータはありません。"
-msgstr ""
-
-#: novel-game-plugin.php:1037
-msgid "削除"
+msgid "No saved data."
 msgstr ""
 
 #: novel-game-plugin.php:1038
-msgid "すべてのデータをクリア"
+msgid "Clear all data"
 msgstr ""
 
 #: novel-game-plugin.php:1039
-msgid "閉じる"
+msgid "Close"
 msgstr ""
 
 #. translators: %s is the data label name
 #: novel-game-plugin.php:1041
 #, php-format
-msgid "「%s」を削除しますか？この操作は取り消せません。"
+msgid "Are you sure you want to delete \"%s\"? This action cannot be undone."
 msgstr ""
 
 #: novel-game-plugin.php:1042
 msgid ""
-"このゲームのすべての保存データを削除しますか？この操作は取り消せません。"
+"Are you sure you want to delete all saved data for this game? This action "
+"cannot be undone."
 msgstr ""
 
 #: novel-game-plugin.php:1043
 msgid ""
-"お使いのブラウザはローカルストレージに対応していないため、保存データの管理が"
-"できません。"
+"Your browser does not support local storage; saved data cannot be managed."
 msgstr ""
 
 #: novel-game-plugin.php:1044
-msgid "データの削除に失敗しました。"
+msgid "Failed to delete data."
 msgstr ""
 
 #: novel-game-plugin.php:1045
-msgid "データのクリアに失敗しました。"
+msgid "Failed to clear data."
 msgstr ""
 
 #: novel-game-plugin.php:1046
-msgid "保存日時:"
+msgid "Saved at:"
 msgstr ""
 
 #: novel-game-plugin.php:1047
-msgid "サイズ:"
+msgid "Size:"
 msgstr ""
 
 #: novel-game-plugin.php:1048
-msgid "不明"
+msgid "Unknown"
 msgstr ""
 
 #: novel-game-plugin.php:1049
-msgid "進捗データ"
+msgid "Progress data"
 msgstr ""
 
 #: novel-game-plugin.php:1050
-msgid "最後の選択肢"
+msgid "Last choice"
 msgstr ""
 
 #: novel-game-plugin.php:1051
-msgid "フラグデータ"
+msgid "Flag data"
 msgstr ""
 
 #: novel-game-plugin.php:1052
-msgid "ゲームデータ"
-msgstr ""
-
-#: novel-game-plugin.php:1053
-msgid "設定"
+msgid "Game data"
 msgstr ""
 
 #: novel-game-plugin.php:1054
-msgid "保存データの管理"
+msgid "Manage saved data"
 msgstr ""
 
 #: novel-game-plugin.php:1295 novel-game-plugin.php:1572
