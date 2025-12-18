@@ -865,7 +865,7 @@ msgstr "開始シーン設定"
 msgid ""
 "A start scene already exists for this game: \"%s\". Only one start scene can "
 "be set per game."
-msgstr ""
+msgstr "このゲームには既に開始シーン「%s」が存在します。開始シーンは1つだけ設定できます。"
 
 #: admin/meta-boxes.php:1072
 msgid "Set this scene as the start scene (first scene of the game)"
@@ -875,7 +875,7 @@ msgstr "このシーンを開始シーン（ゲームの最初のシーン）に
 msgid ""
 "When checked, this scene will be the starting point of the game. Only one "
 "start scene can be set per game."
-msgstr ""
+msgstr "チェックすると、このシーンがゲームの開始地点になります。開始シーンは1つだけ設定できます。"
 
 #: admin/meta-boxes.php:1083
 msgid "Ending Settings"
