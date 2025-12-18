@@ -95,7 +95,8 @@ msgstr "シーンをごみ箱から復元され、公開されました。"
 #: admin/game-manager.php:215
 msgid ""
 "The start scene was removed. Please set a new start scene for this game."
-msgstr "The start scene was removed. Please set a new start scene for this game."
+msgstr ""
+"開始シーンが削除されました。このゲームの新しい開始シーンを設定してください。"
 
 #: admin/game-manager.php:218
 msgid "The start scene was restored and is now set as the start scene again."
@@ -106,7 +107,7 @@ msgstr "開始シーンが復元され、再び開始シーンとして設定さ
 msgctxt "posts"
 msgid "All <span class=\"count\">(%s)</span>"
 msgid_plural "All <span class=\"count\">(%s)</span>"
-msgstr[0] "すべて <span class=\"count\">(%s)</span>"
+msgstr[0] ""
 
 #: admin/game-manager.php:269
 msgid "Published"
@@ -114,7 +115,7 @@ msgstr "公開"
 
 #: admin/game-manager.php:282
 msgid "Drafts"
-msgstr "下書き"
+msgstr ""
 
 #: admin/game-manager.php:295
 msgid "Trash"
@@ -155,7 +156,7 @@ msgstr "開始シーン"
 
 #: admin/game-manager.php:357
 msgid "Show more details"
-msgstr "詳細を表示"
+msgstr ""
 
 #: admin/game-manager.php:376
 msgid "Restore"
@@ -184,7 +185,9 @@ msgid ""
 "Create a new scene for this game. After creation, you will be taken to the "
 "scene editing screen where you can add backgrounds, characters, dialogue, "
 "and choices."
-msgstr "Create a new scene for this game. After creation, you will be taken to the scene editing screen where you can add backgrounds, characters, dialogue, and choices."
+msgstr ""
+"このゲーム用の新しいシーンを作成します。作成後、背景、キャラクター、セリフ、"
+"選択肢を追加できる編集画面に移動します。"
 
 #: admin/game-manager.php:451 admin/new-game.php:133
 msgid "Please enter a game title."
@@ -244,7 +247,9 @@ msgstr "ゲームオーバー画面テキスト"
 msgid ""
 "Text displayed when there are no choices or next scenes in a non-ending. "
 "Default is \"Game Over\"."
-msgstr "Text displayed when there are no choices or next scenes in a non-ending. Default is \\\\"Game Over\\\\"."
+msgstr ""
+"非エンディングで選択肢や次のシーンがない場合に表示されるテキストです。デフォ"
+"ルトは「Game Over」です。"
 
 #: admin/game-manager.php:568
 msgid "Title Display on Image"
@@ -258,7 +263,9 @@ msgstr "タイトル画像にタイトルを重ねて表示する"
 msgid ""
 "Uncheck this if your title image already includes the game title to avoid "
 "duplication."
-msgstr "Uncheck this if your title image already includes the game title to avoid duplication."
+msgstr ""
+"タイトル画像に既にゲームタイトルが含まれている場合は、重複を避けるためチェッ"
+"クを外してください。"
 
 #: admin/game-manager.php:592
 msgid "Title Text Color"
@@ -268,7 +275,9 @@ msgstr "タイトル文字の色"
 msgid ""
 "Choose the color for the title text. Automatic contrast enhancement (text "
 "stroke and shadow) will be applied for readability."
-msgstr "Choose the color for the title text. Automatic contrast enhancement (text stroke and shadow) will be applied for readability."
+msgstr ""
+"タイトル文字の色を選択してください。可読性向上のため、自動的にコントラスト強"
+"調（縁取りと影）が適用されます。"
 
 #: admin/game-manager.php:612
 msgid "Ad Settings"
@@ -296,7 +305,9 @@ msgstr "Adsterra"
 msgid ""
 "Note: To display ads, you must first configure the ad provider IDs in %s. If "
 "IDs are not set, ads will not be displayed."
-msgstr "Note: To display ads, you must first configure the ad provider IDs in %s. If IDs are not set, ads will not be displayed."
+msgstr ""
+"注意：広告を表示するには、まず%sで広告プロバイダーIDを設定する必要がありま"
+"す。IDが設定されていない場合、広告は表示されません。"
 
 #: admin/game-manager.php:654 admin/ad-management.php:22
 #: admin/ad-management.php:23 admin/ad-management.php:71
@@ -396,7 +407,9 @@ msgstr "新しいゲームを作成"
 msgid ""
 "Click \"Create New Game\" to set up your game title, description, and title "
 "image."
-msgstr "Click \\\\"Create New Game\\\\" to set up your game title, description, and title image."
+msgstr ""
+"「新規ゲーム作成」をクリックして、ゲームタイトル、説明、タイトル画像を設定し"
+"ます。"
 
 #: admin/dashboard.php:86
 msgid "Create Scenes"
@@ -413,7 +426,8 @@ msgstr "ゲームを公開"
 
 #: admin/dashboard.php:94
 msgid "Use shortcodes to display your game on any page or post on your site."
-msgstr "Use shortcodes to display your game on any page or post on your site."
+msgstr ""
+"ショートコードを使用して、サイトの任意のページや投稿にゲームを表示します。"
 
 #: admin/dashboard.php:102
 msgid "About Novel Game Plugin"
@@ -424,7 +438,10 @@ msgid ""
 "Novel Game Plugin allows you to create visual novel or sound novel style "
 "games directly in WordPress. You can create multiple games, manage scenes "
 "with branching storylines, and use flags for conditional content."
-msgstr "Novel Game Plugin allows you to create visual novel or sound novel style games directly in WordPress. You can create multiple games, manage scenes with branching storylines, and use flags for conditional content."
+msgstr ""
+"ノベルゲームプラグインは、WordPress上で直接ビジュアルノベルやサウンドノベル形"
+"式のゲームを作成できます。複数のゲームを作成し、分岐するストーリーラインで"
+"シーンを管理し、条件付きコンテンツにフラグを使用できます。"
 
 #: admin/dashboard.php:104
 msgid "Key Features:"
@@ -648,7 +665,12 @@ msgid ""
 "There are unsaved changes in the current post.\\n\\nDo you want to open the "
 "edit screen without saving?\\n\\nSelect \"Cancel\" to save the current post "
 "first."
-msgstr "There are unsaved changes in the current post.\\\\n\\\\nDo you want to open the edit screen without saving?\\\\n\\\\nSelect \\\\"Cancel\\\\" to save the current post first."
+msgstr ""
+"現在の投稿に未保存の変更があります。\n"
+"\n"
+"保存せずに編集画面を開きますか？\n"
+"\n"
+"「キャンセル」を選択すると、まず現在の投稿を保存できます。"
 
 #: admin/meta-boxes.php:415
 msgid ""
@@ -666,15 +688,19 @@ msgstr "新しいシーン「%s」が作成されました。編集リンクか�
 msgid ""
 "Unsupported file format. Only jpg, jpeg, png, gif, and webp files can be "
 "uploaded."
-msgstr "Unsupported file format. Only jpg, jpeg, png, gif, and webp files can be uploaded."
+msgstr ""
+"サポートされていないファイル形式です。jpg, jpeg, png, gif, webp のみアップ"
+"ロード可能です。"
 
 #: admin/meta-boxes.php:419
 msgid "Unsupported file format. Only image files can be uploaded."
-msgstr "Unsupported file format. Only image files can be uploaded."
+msgstr ""
+"サポートされていないファイル形式です。画像ファイルのみアップロード可能です。"
 
 #: admin/meta-boxes.php:420
 msgid "File size is too large. Please upload a file smaller than 5MB."
-msgstr "File size is too large. Please upload a file smaller than 5MB."
+msgstr ""
+"ファイルサイズが大きすぎます。5MB以下のファイルをアップロードしてください。"
 
 #: admin/meta-boxes.php:422
 msgid "Character Settings for This Dialogue"
@@ -684,7 +710,9 @@ msgstr "このセリフのキャラクター設定"
 msgid ""
 "You can set individual character images for each dialogue. If not set, the "
 "scene's character settings will be used."
-msgstr "You can set individual character images for each dialogue. If not set, the scene's character settings will be used."
+msgstr ""
+"各セリフに個別のキャラクター画像を設定できます。未設定の場合は、シーン全体の"
+"キャラクター設定が使用されます。"
 
 #: admin/meta-boxes.php:424
 msgid "▼ Show Character Settings"
@@ -770,7 +798,9 @@ msgstr "+ セリフを追加"
 msgid ""
 "You can set a background image for each dialogue. If no background image is "
 "specified, the background from the previous scene will continue."
-msgstr "You can set a background image for each dialogue. If no background image is specified, the background from the previous scene will continue."
+msgstr ""
+"各セリフに対して背景画像を設定できます。背景画像が指定されていない場合は、前"
+"のシーンの背景が継続されます。"
 
 #: admin/meta-boxes.php:1002 includes/revisions.php:389
 msgid "Choices"
@@ -834,7 +864,7 @@ msgstr "開始シーン設定"
 msgid ""
 "A start scene already exists for this game: \"%s\". Only one start scene can "
 "be set per game."
-msgstr "A start scene already exists for this game: \\\\"%s\\\\". Only one start scene can be set per game."
+msgstr ""
 
 #: admin/meta-boxes.php:1072
 msgid "Set this scene as the start scene (first scene of the game)"
@@ -844,7 +874,7 @@ msgstr "このシーンを開始シーン（ゲームの最初のシーン）に
 msgid ""
 "When checked, this scene will be the starting point of the game. Only one "
 "start scene can be set per game."
-msgstr "When checked, this scene will be the starting point of the game. Only one start scene can be set per game."
+msgstr ""
 
 #: admin/meta-boxes.php:1083
 msgid "Ending Settings"
@@ -858,7 +888,9 @@ msgstr "このシーンをエンディング（ゲームの終了）として設
 msgid ""
 "When checked, the game will end at this scene. The ending takes priority "
 "even if choices are set."
-msgstr "When checked, the game will end at this scene. The ending takes priority even if choices are set."
+msgstr ""
+"チェックを入れると、このシーンでゲームが終了します。選択肢が設定されていても"
+"エンディングが優先されます。"
 
 #: admin/meta-boxes.php:1097
 msgid "Ending Screen Text"
@@ -872,7 +904,9 @@ msgstr "エンディング画面に表示するテキスト（デフォルト: �
 msgid ""
 "Set the text to display on the ending screen. If blank, \"END\" will be "
 "displayed."
-msgstr "Set the text to display on the ending screen. If blank, \\\\"END\\\\" will be displayed."
+msgstr ""
+"エンディング画面に表示するテキストを設定します。空欄の場合は「END」が表示され"
+"ます。"
 
 #: admin/meta-boxes.php:1129
 msgid "Flags to Set on Scene Arrival"
@@ -895,13 +929,17 @@ msgid ""
 "To set individual flag conditions for each dialogue, configure them when "
 "editing dialogues. Dialogues will not be displayed if flag conditions are "
 "not met."
-msgstr "To set individual flag conditions for each dialogue, configure them when editing dialogues. Dialogues will not be displayed if flag conditions are not met."
+msgstr ""
+"各セリフに個別のフラグ条件を設定する場合は、セリフ編集時に設定してください。"
+"フラグ条件を満たさない場合、そのセリフは表示されません。"
 
 #: admin/meta-boxes.php:1161
 msgid ""
 "Dialogue flag conditions can be set when editing each dialogue in the "
 "\"Dialogue\" section above."
-msgstr "Dialogue flag conditions can be set when editing each dialogue in the \\\\"Dialogue\\\\" section above."
+msgstr ""
+"セリフのフラグ条件は、上記の「セリフ」セクションで各セリフを編集する際に設定"
+"できます。"
 
 #: admin/ad-management.php:61
 msgid "Ad settings have been saved successfully."
@@ -917,7 +955,9 @@ msgstr "広告機能をご利用になる前に、必ずお読みください:"
 
 #: admin/ad-management.php:80
 msgid "The advertising IDs and settings you enter are your own responsibility."
-msgstr "The advertising IDs and settings you enter are your own responsibility."
+msgstr ""
+"入力される広告IDおよび設定内容は、ユーザーご自身の責任において管理してくださ"
+"い。"
 
 #: admin/ad-management.php:81
 msgid ""
@@ -933,13 +973,17 @@ msgstr "各広告プロバイダーの利用規約を必ず遵守してくださ
 msgid ""
 "The plugin developer is not responsible for any issues arising from the use "
 "of advertising features."
-msgstr "The plugin developer is not responsible for any issues arising from the use of advertising features."
+msgstr ""
+"プラグイン開発者は、広告機能の使用に起因する問題について一切の責任を負いませ"
+"ん。"
 
 #: admin/ad-management.php:84
 msgid ""
 "Make sure you have properly registered with the advertising provider and "
 "have an approved account before entering your IDs."
-msgstr "Make sure you have properly registered with the advertising provider and have an approved account before entering your IDs."
+msgstr ""
+"IDを入力する前に、広告プロバイダーに適切に登録し、承認されたアカウントを持っ"
+"ていることを確認してください。"
 
 #: admin/ad-management.php:104
 msgid "AdSense Publisher ID"
@@ -947,7 +991,8 @@ msgstr "AdSense Publisher ID"
 
 #: admin/ad-management.php:117
 msgid "Enter your Google AdSense Publisher ID (e.g., ca-pub-1234567890123456)"
-msgstr "Enter your Google AdSense Publisher ID (e.g., ca-pub-1234567890123456)"
+msgstr ""
+"Google AdSense Publisher IDを入力してください（例：ca-pub-1234567890123456）"
 
 #: admin/ad-management.php:123 admin/ad-management.php:168
 msgid "Official Website"
@@ -961,7 +1006,9 @@ msgstr "Google AdSenseにアクセス"
 msgid ""
 "Register for a Google AdSense account and get your Publisher ID from the "
 "official website."
-msgstr "Register for a Google AdSense account and get your Publisher ID from the official website."
+msgstr ""
+"Google AdSenseアカウントに登録し、公式ウェブサイトからPublisher IDを取得して"
+"ください。"
 
 #: admin/ad-management.php:149
 msgid "Adsterra Publisher ID"
@@ -979,7 +1026,9 @@ msgstr "Adsterraにアクセス"
 msgid ""
 "Register for an Adsterra account and get your Publisher ID from the official "
 "website."
-msgstr "Register for an Adsterra account and get your Publisher ID from the official website."
+msgstr ""
+"Adsterraアカウントに登録し、公式ウェブサイトからPublisher IDを取得してくださ"
+"い。"
 
 #: admin/ad-management.php:185
 msgid "Save Ad Settings"
@@ -993,7 +1042,9 @@ msgstr "追加情報"
 msgid ""
 "This section allows you to manage advertising provider IDs for displaying "
 "ads in your novel games."
-msgstr "This section allows you to manage advertising provider IDs for displaying ads in your novel games."
+msgstr ""
+"このセクションでは、ノベルゲームに広告を表示するための広告プロバイダーIDを管"
+"理できます。"
 
 #: admin/ad-management.php:194
 msgid "Currently supported advertising providers:"
@@ -1009,7 +1060,8 @@ msgstr "幅広い広告主を持つ最も人気のある広告ネットワーク
 msgid ""
 "An alternative advertising network with various ad formats and payment "
 "options."
-msgstr "An alternative advertising network with various ad formats and payment options."
+msgstr ""
+"さまざまな広告フォーマットと支払いオプションを持つ代替広告ネットワークです。"
 
 #: admin/ad-management.php:200
 msgid "Note:"
@@ -1019,7 +1071,9 @@ msgstr "注意:"
 msgid ""
 "Ad display functionality is currently under development. The IDs saved here "
 "will be used when the feature is fully implemented."
-msgstr "Ad display functionality is currently under development. The IDs saved here will be used when the feature is fully implemented."
+msgstr ""
+"広告表示機能は現在開発中です。ここに保存されたIDは、機能が完全に実装された際"
+"に使用されます。"
 
 #: admin/export-import.php:29 includes/post-types.php:334
 #: includes/post-types.php:335
@@ -1215,19 +1269,25 @@ msgstr "ヘルプ"
 #: admin/new-game.php:246
 msgid ""
 "Enter a game title and click the \"Create Game\" button to create a new game."
-msgstr "Enter a game title and click the \\\\"Create Game\\\\" button to create a new game."
+msgstr ""
+"ゲームタイトルを入力して「ゲームを作成」ボタンをクリックすると、新しいゲーム"
+"が作成されます。"
 
 #: admin/new-game.php:247
 msgid ""
 "After creation, you will be taken to the game management screen where you "
 "can create scenes, manage settings, and configure your game."
-msgstr "After creation, you will be taken to the game management screen where you can create scenes, manage settings, and configure your game."
+msgstr ""
+"作成後、ゲーム管理画面に移動します。そこでシーンの作成、設定の管理、ゲームの"
+"構成ができます。"
 
 #: admin/new-game.php:248
 msgid ""
 "You can optionally add a game overview and title screen image for a better "
 "presentation."
-msgstr "You can optionally add a game overview and title screen image for a better presentation."
+msgstr ""
+"より良いプレゼンテーションのために、任意でゲーム概要とタイトル画面画像を追加"
+"できます。"
 
 #: admin/new-game.php:323
 #, php-format
@@ -1246,7 +1306,9 @@ msgstr "ゲームと関連するすべてのシーンを完全に削除しまし
 msgid ""
 "Sample game is not installed. You can install a sample game to see how the "
 "plugin works."
-msgstr "Sample game is not installed. You can install a sample game to see how the plugin works."
+msgstr ""
+"サンプルゲームがインストールされていません。プラグインの動作を確認するにはサ"
+"ンプルゲームをインストールしてください。"
 
 #: admin/my-games.php:116 admin/my-games.php:256 admin/my-games.php:260
 msgid "Install Sample Game"
@@ -1316,7 +1378,9 @@ msgstr "コピー"
 msgid ""
 "Displays all games in a beautiful card format. This is the most recommended "
 "shortcode for game lists."
-msgstr "Displays all games in a beautiful card format. This is the most recommended shortcode for game lists."
+msgstr ""
+"すべてのゲームを美しいカード形式で表示します。ゲーム一覧に最も推奨される"
+"ショートコードです。"
 
 #: admin/plugin-settings.php:63 admin/plugin-settings.php:110
 msgid "Available Options:"
@@ -1382,7 +1446,9 @@ msgstr "特定のゲームを表示"
 msgid ""
 "Displays a specific game with a hero image and play button. Replace \"Game "
 "Name\" with your actual game title."
-msgstr "Displays a specific game with a hero image and play button. Replace \\\\"Game Name\\\\" with your actual game title."
+msgstr ""
+"特定のゲームをヒーロー画像とプレイボタン付きで表示します。「ゲーム名」を実際"
+"のゲームタイトルに置き換えてください。"
 
 #: admin/plugin-settings.php:113
 msgid "game_title"
@@ -1408,7 +1474,9 @@ msgstr "ブロックエディタ"
 msgid ""
 "In the Gutenberg block editor, search for \"Novel Game List\" block. You can "
 "easily insert game lists or individual games with intuitive operations."
-msgstr "In the Gutenberg block editor, search for \\\\"Novel Game List\\\\" block. You can easily insert game lists or individual games with intuitive operations."
+msgstr ""
+"Gutenbergブロックエディタで「ノベルゲーム一覧」ブロックを検索してください。直"
+"感的な操作でゲーム一覧や個別のゲームを簡単に挿入できます。"
 
 #: admin/plugin-settings.php:134
 msgid "Plugin Information"
@@ -1435,7 +1503,10 @@ msgid ""
 "When enabled, all game data, posts, and settings will be permanently deleted "
 "when you uninstall this plugin. This action cannot be undone. Normally, "
 "leave this unchecked."
-msgstr "When enabled, all game data, posts, and settings will be permanently deleted when you uninstall this plugin. This action cannot be undone. Normally, leave this unchecked."
+msgstr ""
+"この設定を有効にすると、プラグイン削除時にすべてのゲームデータ、投稿、設定が"
+"完全に削除されます。この操作は元に戻せません。通常はチェックを外したままにし"
+"てください。"
 
 #: admin/plugin-settings.php:178
 msgid ""
@@ -1455,7 +1526,9 @@ msgstr "コピーしました！"
 msgid ""
 "Are you sure you want to delete all data on uninstall? This action cannot be "
 "undone."
-msgstr "Are you sure you want to delete all data on uninstall? This action cannot be undone."
+msgstr ""
+"本当にアンインストール時にすべてのデータを削除しますか？この操作は元に戻せま"
+"せん。"
 
 #: admin/game-settings.php:22 admin/game-settings.php:23
 msgid "Settings"
@@ -1627,84 +1700,84 @@ msgstr "続きから始める"
 
 #: novel-game-plugin.php:1035
 msgid "保存済みのプレイデータ"
-msgstr "保存済みのプレイデータ"
+msgstr ""
 
 #: novel-game-plugin.php:1036
 msgid "保存されているデータはありません。"
-msgstr "保存されているデータはありません。"
+msgstr ""
 
 #: novel-game-plugin.php:1037
 msgid "削除"
-msgstr "削除"
+msgstr ""
 
 #: novel-game-plugin.php:1038
 msgid "すべてのデータをクリア"
-msgstr "すべてのデータをクリア"
+msgstr ""
 
 #: novel-game-plugin.php:1039
 msgid "閉じる"
-msgstr "閉じる"
+msgstr ""
 
 #. translators: %s is the data label name
 #: novel-game-plugin.php:1041
 #, php-format
 msgid "「%s」を削除しますか？この操作は取り消せません。"
-msgstr "「%s」を削除しますか？この操作は取り消せません。"
+msgstr ""
 
 #: novel-game-plugin.php:1042
 msgid ""
 "このゲームのすべての保存データを削除しますか？この操作は取り消せません。"
-msgstr "このゲームのすべての保存データを削除しますか？この操作は取り消せません。"
+msgstr ""
 
 #: novel-game-plugin.php:1043
 msgid ""
 "お使いのブラウザはローカルストレージに対応していないため、保存データの管理が"
 "できません。"
-msgstr "お使いのブラウザはローカルストレージに対応していないため、保存データの管理ができません。"
+msgstr ""
 
 #: novel-game-plugin.php:1044
 msgid "データの削除に失敗しました。"
-msgstr "データの削除に失敗しました。"
+msgstr ""
 
 #: novel-game-plugin.php:1045
 msgid "データのクリアに失敗しました。"
-msgstr "データのクリアに失敗しました。"
+msgstr ""
 
 #: novel-game-plugin.php:1046
 msgid "保存日時:"
-msgstr "保存日時:"
+msgstr ""
 
 #: novel-game-plugin.php:1047
 msgid "サイズ:"
-msgstr "サイズ:"
+msgstr ""
 
 #: novel-game-plugin.php:1048
 msgid "不明"
-msgstr "不明"
+msgstr ""
 
 #: novel-game-plugin.php:1049
 msgid "進捗データ"
-msgstr "進捗データ"
+msgstr ""
 
 #: novel-game-plugin.php:1050
 msgid "最後の選択肢"
-msgstr "最後の選択肢"
+msgstr ""
 
 #: novel-game-plugin.php:1051
 msgid "フラグデータ"
-msgstr "フラグデータ"
+msgstr ""
 
 #: novel-game-plugin.php:1052
 msgid "ゲームデータ"
-msgstr "ゲームデータ"
+msgstr ""
 
 #: novel-game-plugin.php:1053
 msgid "設定"
-msgstr "設定"
+msgstr ""
 
 #: novel-game-plugin.php:1054
 msgid "保存データの管理"
-msgstr "保存データの管理"
+msgstr ""
 
 #: novel-game-plugin.php:1295 novel-game-plugin.php:1572
 msgid "Start Playing"

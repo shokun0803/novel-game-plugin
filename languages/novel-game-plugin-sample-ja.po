@@ -24,7 +24,9 @@ msgid ""
 "A full-fledged mystery game. Investigate the disappearance of businessman "
 "Makoto Kurosaki and uncover the truth. Gather evidence and make the right "
 "choices to reach the complete solution ending."
-msgstr "A full-fledged mystery game. Investigate the disappearance of businessman Makoto Kurosaki and uncover the truth. Gather evidence and make the right choices to reach the complete solution ending."
+msgstr ""
+"本格的なミステリーゲーム。実業家・黒崎誠の失踪を調査し、真実を明らかにしま"
+"す。証拠を集め、正しい選択をして完全解決エンディングを目指しましょう。"
 
 #: includes/sample-data.php:82
 msgid "Investigation Failed"
@@ -62,7 +64,8 @@ msgstr "探偵さん、お願いします...夫が3日前から行方不明な�
 msgid ""
 "The police say there's no criminal activity, but my husband would never do "
 "this..."
-msgstr "The police say there's no criminal activity, but my husband would never do this..."
+msgstr ""
+"警察は事件性はないと言いますが、夫は絶対にこんなことをする人ではありません..."
 
 #: includes/sample-data.php:104
 msgid ""
@@ -181,7 +184,9 @@ msgstr "この事件、表面的なものではない気がする。"
 msgid ""
 "The pocket watch found at the scene... and sudden disappearance. This "
 "connects to something bigger."
-msgstr "The pocket watch found at the scene... and sudden disappearance. This connects to something bigger."
+msgstr ""
+"現場で見つかった懐中時計…そして突然の失踪。これはもっと大きな何かに繋がってい"
+"る。"
 
 #: includes/sample-data.php:250
 msgid "Prioritize questioning the family"
