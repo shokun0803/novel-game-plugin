@@ -25,6 +25,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y zip rsync
+
       - name: タグ名の取得
         id: get_version
         run: |
@@ -61,14 +66,14 @@ jobs:
           ZIP_NAME="novel-game-plugin-${TAG_NAME}.zip"
           SHA256=$(cat build/${ZIP_NAME}.sha256 | cut -d' ' -f1)
 
-          cat << 'EOF' > release-notes.md
+          cat > release-notes.md <<EOF
           ## 📦 Novel Game Plugin ${TAG_NAME}
 
           WordPress に直接インストール可能なプラグイン ZIP ファイルです。
 
           ### インストール方法
 
-          1. 下記のアセットから `${ZIP_NAME}` をダウンロード
+          1. 下記のアセットから \`${ZIP_NAME}\` をダウンロード
           2. WordPress 管理画面 → プラグイン → 新規追加 → プラグインのアップロード
           3. ダウンロードした ZIP ファイルを選択してインストール
           4. プラグインを有効化
@@ -77,20 +82,20 @@ jobs:
 
           ダウンロードしたファイルの整合性を確認するには：
 
-          ```bash
+          \`\`\`bash
           # SHA256 チェックサムの検証
           sha256sum ${ZIP_NAME}
           # 期待される値: ${SHA256}
 
           # または、チェックサムファイルを使用
           sha256sum -c ${ZIP_NAME}.sha256
-          ```
+          \`\`\`
 
           ### 📋 チェックサム
 
-          ```
+          \`\`\`
           SHA256: ${SHA256}
-          ```
+          \`\`\`
 
           ### ⚠️ 互換性について
 
@@ -112,11 +117,6 @@ jobs:
           - [README.md](https://github.com/shokun0803/novel-game-plugin/blob/master/README.md) - プラグインの使い方
           - [リリースプロセス](https://github.com/shokun0803/novel-game-plugin/blob/master/docs/RELEASE_PROCESS.md) - リリース手順
           EOF
-
-          # 変数を置換
-          sed -i "s/\${TAG_NAME}/$TAG_NAME/g" release-notes.md
-          sed -i "s/\${ZIP_NAME}/$ZIP_NAME/g" release-notes.md
-          sed -i "s/\${SHA256}/$SHA256/g" release-notes.md
 
           echo "Release notes generated."
 

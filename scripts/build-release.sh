@@ -13,12 +13,36 @@
 
 set -euo pipefail
 
+# 必須コマンドチェック
+for cmd in rsync zip; do
+    command -v "$cmd" >/dev/null 2>&1 || {
+        echo "Error: $cmd is required but not installed." >&2
+        echo "Please install $cmd on the system." >&2
+        exit 1
+    }
+done
+
+# SHA256 生成コマンドの確認
+if command -v sha256sum >/dev/null 2>&1; then
+    SHA256_CMD="sha256sum"
+elif command -v shasum >/dev/null 2>&1; then
+    SHA256_CMD="shasum -a 256"
+else
+    echo "Error: Neither sha256sum nor shasum is available." >&2
+    echo "Please install coreutils or perl on the system." >&2
+    exit 1
+fi
+
 # バージョン引数の取得（オプション）
 VERSION="${1:-}"
 if [ -z "$VERSION" ]; then
-    # バージョンが指定されていない場合は plugin ファイルから取得
+    # バージョンが指定されていない場合は plugin ファイルから取得（POSIX 互換）
     if [ -f "novel-game-plugin.php" ]; then
-        VERSION=$(grep -oP "Version:\s*\K[\d.]+" novel-game-plugin.php || echo "unknown")
+        VERSION=$(grep -m1 -E '^[[:space:]]*\*[[:space:]]*Version:' novel-game-plugin.php | sed -E 's/.*Version:[[:space:]]*([0-9.]+).*/\1/' || echo "unknown")
+        if [ -z "$VERSION" ] || [ "$VERSION" = "unknown" ]; then
+            # フォールバック: コメントなしの Version: 行を探す
+            VERSION=$(grep -m1 'Version:' novel-game-plugin.php | sed 's/.*Version:[[:space:]]*\([0-9.]*\).*/\1/' || echo "unknown")
+        fi
     else
         VERSION="unknown"
     fi
@@ -94,7 +118,7 @@ echo ""
 # SHA256 チェックサムの生成
 echo "Generating SHA256 checksum..."
 cd "$OUTPUT_DIR"
-sha256sum "$ZIP_NAME" > "${ZIP_NAME}.sha256"
+$SHA256_CMD "$ZIP_NAME" > "${ZIP_NAME}.sha256"
 cd ..
 
 echo "Checksum created: ${ZIP_PATH}.sha256"
