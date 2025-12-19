@@ -19,7 +19,35 @@ Novel Game Plugin では、Git タグをプッシュすることで自動的に�
 各リリースには以下のファイルが含まれます：
 
 - `novel-game-plugin-vX.Y.Z.zip` - WordPress に直接インストール可能なプラグイン ZIP
-- `novel-game-plugin-vX.Y.Z.zip.sha256` - SHA256 チェックサムファイル
+- `novel-game-plugin-vX.Y.Z.zip.sha256` - プラグイン ZIP の SHA256 チェックサムファイル
+- `novel-game-plugin-sample-images-vX.Y.Z.zip` - サンプル画像パッケージ（別途配布）
+- `novel-game-plugin-sample-images-vX.Y.Z.zip.sha256` - サンプル画像 ZIP の SHA256 チェックサムファイル
+
+#### サンプル画像パッケージについて
+
+サンプル画像は `assets/sample-images/` ディレクトリの内容を別 ZIP としてパッケージ化し、GitHub Release のアセットとして提供されます。
+
+**ダウンロード URL 形式**:
+```
+https://github.com/shokun0803/novel-game-plugin/releases/download/{tag}/novel-game-plugin-sample-images-{tag}.zip
+```
+
+**チェックサム検証例**:
+```bash
+# サンプル画像 ZIP をダウンロード
+wget https://github.com/shokun0803/novel-game-plugin/releases/download/v1.3.0/novel-game-plugin-sample-images-v1.3.0.zip
+wget https://github.com/shokun0803/novel-game-plugin/releases/download/v1.3.0/novel-game-plugin-sample-images-v1.3.0.zip.sha256
+
+# チェックサム検証
+sha256sum -c novel-game-plugin-sample-images-v1.3.0.zip.sha256
+```
+
+**プラグイン側での利用**:
+プラグインは初回インストール時（または管理画面からの手動操作時）に、この Release アセットを参照してサンプル画像を自動ダウンロードします。これにより、プラグイン本体の ZIP サイズを削減し、必要な場合のみサンプル画像を取得できます。詳細は Issue #213「サンプル画像の初回ダウンロード実装」を参照してください。
+
+**ファイルサイズの注意**:
+- GitHub Release のアセットは 2GB まで添付可能です
+- サンプル画像の総サイズが大きい場合は、複数の ZIP に分割するか、外部ストレージの利用を検討してください
 
 ### ZIP の構成
 
@@ -51,7 +79,7 @@ novel-game-plugin/
 - `.vscode/`, `.idea/` - IDE 設定ファイル
 - `*.test.js`, `*.spec.js` - テストファイル
 - `test-*.html`, `validate-*.php` - 検証用ファイル
-- `assets/sample-images/` - サンプル画像はリリースZIPに含めません（初回インストール時にダウンロードする案を別 Issue で実装予定）
+- `assets/sample-images/` - サンプル画像は別パッケージとして配布
 
 ## 自動ビルド手順
 
@@ -418,16 +446,33 @@ unzip -p build/novel-game-plugin-v1.3.0.zip novel-game-plugin/novel-game-plugin.
 5. **生成された Release を確認**
 
    - Pre-release として Draft 状態で作成されることを確認
+   - 以下のアセットが添付されていることを確認：
+     - `novel-game-plugin-${TAG}.zip`
+     - `novel-game-plugin-${TAG}.zip.sha256`
+     - `novel-game-plugin-sample-images-${TAG}.zip`
+     - `novel-game-plugin-sample-images-${TAG}.zip.sha256`
    - ZIP ファイルをダウンロードして検証手順を実施
 
-6. **問題がなければテストタグを削除**
+6. **チェックサム検証**
+
+   ```bash
+   # プラグイン ZIP の検証
+   sha256sum -c novel-game-plugin-test-v1.3.0-rc1.zip.sha256
+   # → novel-game-plugin-test-v1.3.0-rc1.zip: OK
+
+   # サンプル画像 ZIP の検証
+   sha256sum -c novel-game-plugin-sample-images-test-v1.3.0-rc1.zip.sha256
+   # → novel-game-plugin-sample-images-test-v1.3.0-rc1.zip: OK
+   ```
+
+7. **問題がなければテストタグを削除**
 
    ```bash
    git tag -d test-v1.3.0-rc1
    git push origin :test-v1.3.0-rc1
    ```
 
-7. **本番タグを作成**
+8. **本番タグを作成**
 
    ```bash
    git checkout master

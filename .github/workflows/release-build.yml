@@ -47,17 +47,32 @@ jobs:
           TAG="${{ steps.get_version.outputs.tag_name }}"
           bash scripts/build-release.sh "$TAG"
 
+      - name: サンプル画像 ZIP のビルド
+        run: |
+          TAG="${{ steps.get_version.outputs.tag_name }}"
+          bash scripts/build-sample-images.sh "$TAG"
+
       - name: ビルド成果物の確認
         run: |
           TAG="${{ steps.get_version.outputs.tag_name }}"
           echo "Checking build artifacts..."
           ls -lh build/
           echo ""
-          echo "ZIP contents preview:"
+          echo "Plugin ZIP contents preview:"
           unzip -l "build/novel-game-plugin-${TAG}.zip" | head -30
           echo ""
-          echo "SHA256 checksum:"
+          echo "Plugin ZIP SHA256 checksum:"
           cat "build/novel-game-plugin-${TAG}.zip.sha256"
+          echo ""
+          if [ -f "build/novel-game-plugin-sample-images-${TAG}.zip" ]; then
+            echo "Sample images ZIP size:"
+            ls -lh "build/novel-game-plugin-sample-images-${TAG}.zip"
+            echo ""
+            echo "Sample images ZIP SHA256 checksum:"
+            cat "build/novel-game-plugin-sample-images-${TAG}.zip.sha256"
+          else
+            echo "No sample images ZIP generated."
+          fi
 
       - name: リリースノートの生成
         id: release_notes
@@ -131,6 +146,8 @@ jobs:
           files: |
             build/novel-game-plugin-${{ steps.get_version.outputs.tag_name }}.zip
             build/novel-game-plugin-${{ steps.get_version.outputs.tag_name }}.zip.sha256
+            build/novel-game-plugin-sample-images-${{ steps.get_version.outputs.tag_name }}.zip
+            build/novel-game-plugin-sample-images-${{ steps.get_version.outputs.tag_name }}.zip.sha256
           draft: false
           prerelease: false
         env:
