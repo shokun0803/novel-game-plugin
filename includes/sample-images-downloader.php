@@ -135,10 +135,17 @@ function noveltool_find_sample_images_asset( $release_data ) {
 function noveltool_download_sample_images_zip( $download_url ) {
     $temp_file = wp_tempnam( 'noveltool-sample-images.zip' );
     
+    if ( ! $temp_file ) {
+        return new WP_Error(
+            'tempfile_error',
+            __( 'Failed to create temporary file.', 'novel-game-plugin' )
+        );
+    }
+    
     $response = wp_remote_get(
         $download_url,
         array(
-            'timeout'  => 300, // 5分
+            'timeout'  => 300, // 5 minutes
             'stream'   => true,
             'filename' => $temp_file,
         )

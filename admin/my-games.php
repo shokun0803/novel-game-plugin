@@ -233,7 +233,8 @@ function noveltool_my_games_admin_scripts( $hook ) {
     }
 
     // サンプル画像プロンプトのスクリプトとスタイルを読み込み
-    $should_prompt = ! noveltool_sample_images_exists() && ! get_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed', true );
+    // 管理者権限を持つユーザーのみに表示（REST API と同じ権限）
+    $should_prompt = current_user_can( 'manage_options' ) && ! noveltool_sample_images_exists() && ! get_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed', true );
     
     if ( $should_prompt ) {
         wp_enqueue_style(
@@ -327,8 +328,8 @@ function noveltool_dismiss_sample_images_prompt_ajax() {
         wp_send_json_error( array( 'message' => __( 'Security check failed', 'novel-game-plugin' ) ) );
     }
     
-    // 権限チェック
-    if ( ! current_user_can( 'edit_posts' ) ) {
+    // 権限チェック（REST API と同じ権限を使用）
+    if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'novel-game-plugin' ) ) );
     }
     

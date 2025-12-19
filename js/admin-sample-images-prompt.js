@@ -135,13 +135,18 @@
         var content = modal.find('.noveltool-modal-content');
 
         content.find('h2').text(novelToolSampleImages.strings.success);
-        content.find('p').text(message);
+        content.find('p').html('<span style="color: #46b450;">' + message + '</span>');
         content.find('.noveltool-modal-buttons').html(
             $('<button>', {
                 class: 'button button-primary',
                 text: novelToolSampleImages.strings.closeButton,
                 click: function () {
-                    location.reload();
+                    // モーダルを閉じてページをリロード（サンプル画像が表示されるように）
+                    modal.removeClass('show');
+                    setTimeout(function () {
+                        modal.remove();
+                        location.reload();
+                    }, 300);
                 }
             })
         );
