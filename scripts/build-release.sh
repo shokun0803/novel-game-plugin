@@ -100,6 +100,7 @@ rsync -av --progress \
     --exclude='yarn-debug.log*' \
     --exclude='yarn-error.log*' \
     --exclude='messages.mo*.bak' \
+    --exclude='assets/sample-images/' \
     . "$PLUGIN_DIR/"
 
 echo ""

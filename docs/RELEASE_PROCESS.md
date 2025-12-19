@@ -51,6 +51,7 @@ novel-game-plugin/
 - `.vscode/`, `.idea/` - IDE 設定ファイル
 - `*.test.js`, `*.spec.js` - テストファイル
 - `test-*.html`, `validate-*.php` - 検証用ファイル
+- `assets/sample-images/` - サンプル画像はリリースZIPに含めません（初回インストール時にダウンロードする案を別 Issue で実装予定）
 
 ## 自動ビルド手順
 
