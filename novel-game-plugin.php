@@ -43,6 +43,7 @@ require_once NOVEL_GAME_PLUGIN_PATH . 'includes/post-types.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/blocks.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/revisions.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/sample-data.php';
+require_once NOVEL_GAME_PLUGIN_PATH . 'includes/sample-images-downloader.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/meta-boxes.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/dashboard.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/my-games.php';

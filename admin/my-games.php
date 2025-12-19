@@ -232,6 +232,55 @@ function noveltool_my_games_admin_scripts( $hook ) {
         return;
     }
 
+    // サンプル画像プロンプトのスクリプトとスタイルを読み込み
+    $should_prompt = ! noveltool_sample_images_exists() && ! get_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed', true );
+    
+    if ( $should_prompt ) {
+        wp_enqueue_style(
+            'noveltool-sample-images-prompt',
+            NOVEL_GAME_PLUGIN_URL . 'css/admin-sample-images-prompt.css',
+            array(),
+            NOVEL_GAME_PLUGIN_VERSION
+        );
+        
+        wp_enqueue_script(
+            'noveltool-sample-images-prompt',
+            NOVEL_GAME_PLUGIN_URL . 'js/admin-sample-images-prompt.js',
+            array( 'jquery' ),
+            NOVEL_GAME_PLUGIN_VERSION,
+            true
+        );
+        
+        wp_localize_script(
+            'noveltool-sample-images-prompt',
+            'novelToolSampleImages',
+            array(
+                'shouldPrompt' => $should_prompt,
+                'nonce'        => wp_create_nonce( 'noveltool_sample_images_prompt' ),
+                'restNonce'    => wp_create_nonce( 'wp_rest' ),
+                'apiUrl'       => rest_url( 'novel-game-plugin/v1' ),
+                'strings'      => array(
+                    'modalTitle'       => __( 'Download Sample Images', 'novel-game-plugin' ),
+                    'modalMessage'     => sprintf(
+                        /* translators: %s: estimated file size */
+                        __( 'Sample game images are not installed. Would you like to download them now? Download size: approximately %s.', 'novel-game-plugin' ),
+                        '15 MB'
+                    ),
+                    'downloadButton'   => __( 'Download', 'novel-game-plugin' ),
+                    'laterButton'      => __( 'Later', 'novel-game-plugin' ),
+                    'cancelButton'     => __( 'Cancel', 'novel-game-plugin' ),
+                    'downloading'      => __( 'Downloading...', 'novel-game-plugin' ),
+                    'pleaseWait'       => __( 'Please wait while the sample images are being downloaded. This may take a few minutes.', 'novel-game-plugin' ),
+                    'success'          => __( 'Success', 'novel-game-plugin' ),
+                    'error'            => __( 'Error', 'novel-game-plugin' ),
+                    'downloadFailed'   => __( 'Failed to download sample images. Please try again later.', 'novel-game-plugin' ),
+                    'retryButton'      => __( 'Retry', 'novel-game-plugin' ),
+                    'closeButton'      => __( 'Close', 'novel-game-plugin' ),
+                ),
+            )
+        );
+    }
+
     // インラインスクリプトでAJAX処理を追加
     $inline_script = "
     jQuery(document).ready(function($) {
@@ -266,3 +315,26 @@ function noveltool_my_games_admin_scripts( $hook ) {
     wp_add_inline_script( 'jquery', $inline_script );
 }
 add_action( 'admin_enqueue_scripts', 'noveltool_my_games_admin_scripts' );
+
+/**
+ * サンプル画像プロンプトを非表示にする AJAX ハンドラー
+ *
+ * @since 1.3.0
+ */
+function noveltool_dismiss_sample_images_prompt_ajax() {
+    // Nonce チェック
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'noveltool_sample_images_prompt' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Security check failed', 'novel-game-plugin' ) ) );
+    }
+    
+    // 権限チェック
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'novel-game-plugin' ) ) );
+    }
+    
+    // ユーザーメタに保存
+    update_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed', true );
+    
+    wp_send_json_success();
+}
+add_action( 'wp_ajax_noveltool_dismiss_sample_images_prompt', 'noveltool_dismiss_sample_images_prompt_ajax' );
