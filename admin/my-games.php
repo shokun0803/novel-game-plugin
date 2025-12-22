@@ -253,9 +253,23 @@ function noveltool_my_games_admin_scripts( $hook ) {
 
     // サンプル画像プロンプトのスクリプトとスタイルを読み込み
     // 管理者権限を持つユーザーのみに表示（REST API と同じ権限）
-    $should_prompt = current_user_can( 'manage_options' ) && ! noveltool_sample_images_exists() && ! get_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed', true );
+    // モーダルはプラグイン有効化直後または手動インストール直後の一度だけ表示する
+    $pending = get_option( 'noveltool_sample_images_prompt_pending', false );
+    $user_show = get_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_show', true );
     $is_dismissed = get_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed', true );
+    
+    $should_prompt = current_user_can( 'manage_options' )
+        && ! noveltool_sample_images_exists()
+        && ! $is_dismissed
+        && ( $pending || $user_show );
+    
     $should_show_banner = current_user_can( 'manage_options' ) && ! noveltool_sample_images_exists() && $is_dismissed;
+    
+    // モーダルを表示する場合はフラグをクリアして一度だけ表示するようにする
+    if ( $should_prompt ) {
+        delete_option( 'noveltool_sample_images_prompt_pending' );
+        delete_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_show' );
+    }
     
     // モーダルまたはバナーのいずれかを表示する場合はスクリプトを読み込む
     if ( $should_prompt || $should_show_banner ) {
