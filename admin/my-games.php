@@ -104,6 +104,25 @@ function noveltool_my_games_page() {
         <?php endif; ?>
         
         <?php
+        // サンプル画像がなく、ユーザーが「後で」を選択している場合は通知バナーを表示
+        $is_dismissed = get_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed', true );
+        $should_show_banner = current_user_can( 'manage_options' ) && ! noveltool_sample_images_exists() && $is_dismissed;
+        
+        if ( $should_show_banner ) :
+        ?>
+            <div class="notice notice-warning">
+                <p>
+                    <?php esc_html_e( 'Sample images are not installed. You can download them to use with sample games.', 'novel-game-plugin' ); ?>
+                </p>
+                <p>
+                    <button id="noveltool-download-sample-images-banner" class="button button-secondary">
+                        <?php esc_html_e( 'Download Sample Images', 'novel-game-plugin' ); ?>
+                    </button>
+                </p>
+            </div>
+        <?php endif; ?>
+        
+        <?php
         // Shadow Detectiveサンプルゲームが存在するかチェック
         $shadow_detective_exists = noveltool_get_game_by_machine_name( 'shadow_detective_v1' ) !== null;
         
@@ -235,8 +254,11 @@ function noveltool_my_games_admin_scripts( $hook ) {
     // サンプル画像プロンプトのスクリプトとスタイルを読み込み
     // 管理者権限を持つユーザーのみに表示（REST API と同じ権限）
     $should_prompt = current_user_can( 'manage_options' ) && ! noveltool_sample_images_exists() && ! get_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed', true );
+    $is_dismissed = get_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed', true );
+    $should_show_banner = current_user_can( 'manage_options' ) && ! noveltool_sample_images_exists() && $is_dismissed;
     
-    if ( $should_prompt ) {
+    // モーダルまたはバナーのいずれかを表示する場合はスクリプトを読み込む
+    if ( $should_prompt || $should_show_banner ) {
         wp_enqueue_style(
             'noveltool-sample-images-prompt',
             NOVEL_GAME_PLUGIN_URL . 'css/admin-sample-images-prompt.css',
@@ -257,6 +279,7 @@ function noveltool_my_games_admin_scripts( $hook ) {
             'novelToolSampleImages',
             array(
                 'shouldPrompt'  => $should_prompt,
+                'showBanner'    => $should_show_banner,
                 'nonce'         => wp_create_nonce( 'noveltool_sample_images_prompt' ),
                 'restNonce'     => wp_create_nonce( 'wp_rest' ),
                 'apiDownload'   => rest_url( 'novel-game-plugin/v1/sample-images/download' ),

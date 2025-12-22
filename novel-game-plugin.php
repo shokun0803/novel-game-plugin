@@ -150,6 +150,8 @@ function noveltool_install_sample_game_ajax() {
     $result = noveltool_install_shadow_detective_game();
     
     if ( $result ) {
+        // 再インストール直後はプロンプトを再表示したいため、恒久非表示フラグを削除
+        delete_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed' );
         wp_send_json_success( array( 'message' => __( 'Sample game installed successfully', 'novel-game-plugin' ) ) );
     } else {
         // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
@@ -178,6 +180,8 @@ function noveltool_install_shadow_detective_ajax() {
     $result = noveltool_install_shadow_detective_game();
     
     if ( $result ) {
+        // 再インストール直後はプロンプトを再表示したいため、恒久非表示フラグを削除
+        delete_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed' );
         wp_send_json_success( array( 'message' => __( 'Shadow Detective game installed successfully', 'novel-game-plugin' ) ) );
     } else {
         // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません

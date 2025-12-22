@@ -216,6 +216,13 @@
                 showSampleImagesPrompt();
             }, 500);
         }
+        
+        // バナーのダウンロードボタン処理
+        $('#noveltool-download-sample-images-banner').on('click', function (e) {
+            e.preventDefault();
+            // モーダルを表示してダウンロードを開始
+            showSampleImagesPrompt();
+        });
     });
 
 })(jQuery);
