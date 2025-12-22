@@ -2079,6 +2079,10 @@ msgstr "サンプル画像のダウンロード"
 msgid "Sample game images are not installed. Would you like to download them now? Download size: approximately %s."
 msgstr "サンプル画像がインストールされていません。今すぐダウンロードしますか？ ダウンロードサイズ: 約 %s。"
 
+#: admin/my-games.php:115
+msgid "Sample images are not installed. You can download them to use with sample games."
+msgstr "サンプル画像がインストールされていません。サンプルゲームで使用するにはダウンロードしてください。"
+
 #: admin/my-games.php:270
 msgid "Download"
 msgstr "ダウンロード"
