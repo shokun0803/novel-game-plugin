@@ -47,7 +47,7 @@
             class: 'button',
             text: novelToolSampleImages.strings.laterButton,
             click: function () {
-                dismissModal();
+                dismissPermanently();
             }
         });
 
@@ -55,7 +55,7 @@
             class: 'button',
             text: novelToolSampleImages.strings.cancelButton,
             click: function () {
-                dismissModal();
+                closeOnly();
             }
         });
 
@@ -72,20 +72,28 @@
     }
 
     /**
-     * モーダルを閉じる
+     * モーダルを永続的に非表示にする（後でボタン用）
      */
-    function dismissModal() {
+    function dismissPermanently() {
+        // サーバーに恒久的な非表示フラグを保存
+        $.post(ajaxurl, {
+            action: 'noveltool_dismiss_sample_images_prompt',
+            nonce: novelToolSampleImages.nonce
+        });
+        
+        // モーダルを閉じる
+        closeOnly();
+    }
+
+    /**
+     * モーダルを閉じるだけ（フラグは保存しない）
+     */
+    function closeOnly() {
         var modal = $('#noveltool-sample-images-modal');
         modal.removeClass('show');
         setTimeout(function () {
             modal.remove();
         }, 300);
-
-        // 後で表示しないフラグを設定
-        $.post(ajaxurl, {
-            action: 'noveltool_dismiss_sample_images_prompt',
-            nonce: novelToolSampleImages.nonce
-        });
     }
 
     /**
@@ -189,7 +197,7 @@
             class: 'button',
             text: novelToolSampleImages.strings.closeButton,
             click: function () {
-                dismissModal();
+                closeOnly();
             }
         });
 
