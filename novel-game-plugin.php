@@ -43,6 +43,7 @@ require_once NOVEL_GAME_PLUGIN_PATH . 'includes/post-types.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/blocks.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/revisions.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'includes/sample-data.php';
+require_once NOVEL_GAME_PLUGIN_PATH . 'includes/sample-images-downloader.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/meta-boxes.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/dashboard.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/my-games.php';
@@ -100,6 +101,8 @@ function noveltool_activate_plugin() {
     // これにより、翻訳ファイルが確実にロードされた後にサンプルデータが追加される
     if ( ! get_option( 'noveltool_sample_games_installed' ) ) {
         update_option( 'noveltool_pending_sample_install', true );
+        // プラグイン有効化後の初回アクセス時にサンプル画像ダウンロードのモーダルを表示するフラグを設定
+        update_option( 'noveltool_sample_images_prompt_pending', true );
     }
 }
 register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
@@ -149,6 +152,10 @@ function noveltool_install_sample_game_ajax() {
     $result = noveltool_install_shadow_detective_game();
     
     if ( $result ) {
+        // 再インストール直後はプロンプトを再表示したいため、恒久非表示フラグを削除
+        delete_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed' );
+        // 次回アクセス時にモーダルを表示するためのフラグを設定
+        update_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_show', true );
         wp_send_json_success( array( 'message' => __( 'Sample game installed successfully', 'novel-game-plugin' ) ) );
     } else {
         // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
@@ -177,6 +184,10 @@ function noveltool_install_shadow_detective_ajax() {
     $result = noveltool_install_shadow_detective_game();
     
     if ( $result ) {
+        // 再インストール直後はプロンプトを再表示したいため、恒久非表示フラグを削除
+        delete_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed' );
+        // 次回アクセス時にモーダルを表示するためのフラグを設定
+        update_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_show', true );
         wp_send_json_success( array( 'message' => __( 'Shadow Detective game installed successfully', 'novel-game-plugin' ) ) );
     } else {
         // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません

@@ -7,7 +7,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin/"
 "issues\n"
 "POT-Creation-Date: 2025-12-18 03:18+0000\n"
-"PO-Revision-Date: 2025-11-21 06:04+0000\n"
+"PO-Revision-Date: 2025-12-22 03:30+0000\n"
 "Last-Translator: Novel Game Plugin Team\n"
 "Language-Team: Japanese\n"
 "Language: ja\n"
@@ -2013,3 +2013,110 @@ msgstr "画像なし"
 #, php-format
 msgid "Start: %s"
 msgstr "開始: %s"
+
+#: includes/sample-images-downloader.php:56
+#, php-format
+msgid "Failed to fetch release info. HTTP status code: %d"
+msgstr "リリース情報の取得に失敗しました。HTTP ステータスコード: %d"
+
+#: includes/sample-images-downloader.php:68
+msgid "Failed to parse release information."
+msgstr "リリース情報の解析に失敗しました。"
+
+#: includes/sample-images-downloader.php:141
+msgid "Failed to create temporary file."
+msgstr "一時ファイルの作成に失敗しました。"
+
+#: includes/sample-images-downloader.php:167
+#, php-format
+msgid "Failed to download file. HTTP status code: %d"
+msgstr "ファイルのダウンロードに失敗しました。HTTP ステータスコード: %d"
+
+#: includes/sample-images-downloader.php:214
+msgid "Could not initialize filesystem."
+msgstr "ファイルシステムを初期化できませんでした。"
+
+#: includes/sample-images-downloader.php:225
+#, php-format
+msgid "Could not create destination directory."
+msgstr "展開先ディレクトリを作成できませんでした。"
+
+#: includes/sample-images-downloader.php:235
+#, php-format
+msgid "Destination directory is not writable: %s"
+msgstr "展開先ディレクトリに書き込み権限がありません: %s"
+
+#: includes/sample-images-downloader.php:266
+msgid "Sample images already exist."
+msgstr "サンプル画像は既に存在します。"
+
+#: includes/sample-images-downloader.php:280
+msgid "Download already in progress."
+msgstr "ダウンロードは既に進行中です。"
+
+#: includes/sample-images-downloader.php:293
+msgid "Failed to acquire download lock. Another download may be in progress."
+msgstr "ダウンロードロックの取得に失敗しました。別のダウンロードが進行中の可能性があります。"
+
+#: includes/sample-images-downloader.php:333
+msgid "Sample images asset not found in the latest release."
+msgstr "最新のリリースにサンプル画像アセットが見つかりません。"
+
+#: includes/sample-images-downloader.php:399
+msgid "Checksum verification failed. The downloaded file may be corrupted."
+msgstr "チェックサムの検証に失敗しました。ダウンロードしたファイルが破損している可能性があります。"
+
+#: includes/sample-images-downloader.php:420
+msgid "Sample images downloaded and installed successfully."
+msgstr "サンプル画像が正常にダウンロードおよびインストールされました。"
+
+#: admin/my-games.php:264
+msgid "Download Sample Images"
+msgstr "サンプル画像のダウンロード"
+
+#: admin/my-games.php:267
+#, php-format
+msgid "Sample game images are not installed. Would you like to download them now? Download size: approximately %s."
+msgstr "サンプル画像がインストールされていません。今すぐダウンロードしますか？ ダウンロードサイズ: 約 %s。"
+
+#: admin/my-games.php:115
+msgid "Sample images are not installed. You can download them to use with sample games."
+msgstr "サンプル画像がインストールされていません。サンプルゲームで使用するにはダウンロードしてください。"
+
+#: admin/my-games.php:270
+msgid "Download"
+msgstr "ダウンロード"
+
+#: admin/my-games.php:271
+msgid "Later"
+msgstr "後で"
+
+#: admin/my-games.php:272
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: admin/my-games.php:273
+msgid "Downloading..."
+msgstr "ダウンロード中..."
+
+#: admin/my-games.php:274
+msgid "Please wait while the sample images are being downloaded. This may take a few minutes."
+msgstr "サンプル画像をダウンロード中です。完了まで数分かかる場合があります。しばらくお待ちください。"
+
+#: admin/my-games.php:275
+msgid "Success"
+msgstr "成功"
+
+#: admin/my-games.php:276
+msgid "Error"
+msgstr "エラー"
+
+#: admin/my-games.php:277
+msgid "Failed to download sample images. Please try again later."
+msgstr "サンプル画像のダウンロードに失敗しました。後でもう一度お試しください。"
+
+#: admin/my-games.php:278
+msgid "Retry"
+msgstr "再試行"
+
+
