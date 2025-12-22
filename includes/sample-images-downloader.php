@@ -287,9 +287,11 @@ function noveltool_perform_sample_images_download() {
     // 再度確認して競合状態を回避
     $verify_status = get_option( $option_name, 'not_started' );
     if ( 'in_progress' !== $verify_status ) {
+        // ロック取得に失敗（他のプロセスが先にロックを取得した可能性）
+        error_log( 'NovelGamePlugin: Failed to acquire download lock. Another process may have started the download.' );
         return array(
             'success' => false,
-            'message' => __( 'Download already in progress.', 'novel-game-plugin' ),
+            'message' => __( 'Failed to acquire download lock. Another download may be in progress.', 'novel-game-plugin' ),
         );
     }
     
@@ -383,7 +385,8 @@ function noveltool_perform_sample_images_download() {
         } else {
             $checksum_status = wp_remote_retrieve_response_code( $checksum_response );
             if ( $checksum_status !== 200 ) {
-                error_log( 'NovelGamePlugin: Checksum file fetch returned HTTP ' . $checksum_status );
+                // HTTP ステータスエラーをログに記録（処理は続行）
+                error_log( sprintf( 'NovelGamePlugin: Checksum file fetch returned HTTP %d. URL: %s', $checksum_status, $checksum_asset['browser_download_url'] ) );
             } else {
                 $checksum_body = wp_remote_retrieve_body( $checksum_response );
                 
@@ -400,7 +403,9 @@ function noveltool_perform_sample_images_download() {
                         );
                     }
                 } else {
-                    error_log( 'NovelGamePlugin: Invalid checksum format in .sha256 file' );
+                    // チェックサムフォーマットが不正（64文字の16進数ではない）
+                    error_log( sprintf( 'NovelGamePlugin: Invalid checksum format in .sha256 file. Expected 64-character hex string. Content: %s', substr( $checksum_body, 0, 200 ) ) );
+                    // フォーマット不正の場合も処理は続行（チェックサムなしでインストール）
                 }
             }
         }
