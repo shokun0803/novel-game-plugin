@@ -267,17 +267,31 @@ function noveltool_perform_sample_images_download() {
         );
     }
     
-    // 同時実行ガード: 既にダウンロード中の場合はエラーを返す
-    $status = get_option( 'noveltool_sample_images_download_status', 'not_started' );
-    if ( 'in_progress' === $status ) {
+    // 同時実行ガード: トランザクション的にステータスをチェック＆設定
+    global $wpdb;
+    $option_name = 'noveltool_sample_images_download_status';
+    
+    // オプションを取得またはロック
+    $current_status = get_option( $option_name, 'not_started' );
+    
+    if ( 'in_progress' === $current_status ) {
         return array(
             'success' => false,
             'message' => __( 'Download already in progress.', 'novel-game-plugin' ),
         );
     }
     
-    // ダウンロード状況を記録
-    update_option( 'noveltool_sample_images_download_status', 'in_progress' );
+    // ステータスを in_progress に更新（autoload を無効化してパフォーマンス向上）
+    update_option( $option_name, 'in_progress', false );
+    
+    // 再度確認して競合状態を回避
+    $verify_status = get_option( $option_name, 'not_started' );
+    if ( 'in_progress' !== $verify_status ) {
+        return array(
+            'success' => false,
+            'message' => __( 'Download already in progress.', 'novel-game-plugin' ),
+        );
+    }
     
     // Filesystem の初期化と書き込み権限の事前チェック
     global $wp_filesystem;
@@ -287,7 +301,7 @@ function noveltool_perform_sample_images_download() {
     WP_Filesystem();
     
     if ( ! $wp_filesystem ) {
-        update_option( 'noveltool_sample_images_download_status', 'failed' );
+        update_option( $option_name, 'failed', false );
         return array(
             'success' => false,
             'message' => __( 'Could not initialize filesystem.', 'novel-game-plugin' ),
@@ -296,7 +310,7 @@ function noveltool_perform_sample_images_download() {
     
     $destination_parent = NOVEL_GAME_PLUGIN_PATH . 'assets';
     if ( ! $wp_filesystem->is_writable( $destination_parent ) ) {
-        update_option( 'noveltool_sample_images_download_status', 'failed' );
+        update_option( $option_name, 'failed', false );
         return array(
             'success' => false,
             'message' => sprintf(
@@ -310,7 +324,7 @@ function noveltool_perform_sample_images_download() {
     // 最新リリース情報を取得
     $release_data = noveltool_get_latest_release_info();
     if ( is_wp_error( $release_data ) ) {
-        update_option( 'noveltool_sample_images_download_status', 'failed' );
+        update_option( $option_name, 'failed', false );
         return array(
             'success' => false,
             'message' => $release_data->get_error_message(),
@@ -320,7 +334,7 @@ function noveltool_perform_sample_images_download() {
     // サンプル画像アセットを探す
     $asset = noveltool_find_sample_images_asset( $release_data );
     if ( ! $asset ) {
-        update_option( 'noveltool_sample_images_download_status', 'failed' );
+        update_option( $option_name, 'failed', false );
         return array(
             'success' => false,
             'message' => __( 'Sample images asset not found in the latest release.', 'novel-game-plugin' ),
@@ -342,7 +356,7 @@ function noveltool_perform_sample_images_download() {
     // ZIP をダウンロード
     $temp_zip = noveltool_download_sample_images_zip( $download_url );
     if ( is_wp_error( $temp_zip ) ) {
-        update_option( 'noveltool_sample_images_download_status', 'failed' );
+        update_option( $option_name, 'failed', false );
         return array(
             'success' => false,
             'message' => $temp_zip->get_error_message(),
@@ -379,7 +393,7 @@ function noveltool_perform_sample_images_download() {
                     
                     if ( ! noveltool_verify_checksum( $temp_zip, $expected_checksum ) ) {
                         @unlink( $temp_zip );
-                        update_option( 'noveltool_sample_images_download_status', 'failed' );
+                        update_option( $option_name, 'failed', false );
                         return array(
                             'success' => false,
                             'message' => __( 'Checksum verification failed. The downloaded file may be corrupted.', 'novel-game-plugin' ),
@@ -400,7 +414,7 @@ function noveltool_perform_sample_images_download() {
     @unlink( $temp_zip );
     
     if ( is_wp_error( $extract_result ) ) {
-        update_option( 'noveltool_sample_images_download_status', 'failed' );
+        update_option( $option_name, 'failed', false );
         return array(
             'success' => false,
             'message' => $extract_result->get_error_message(),
@@ -408,8 +422,8 @@ function noveltool_perform_sample_images_download() {
     }
     
     // 完了状態を記録
-    update_option( 'noveltool_sample_images_download_status', 'completed' );
-    update_option( 'noveltool_sample_images_downloaded', true );
+    update_option( $option_name, 'completed', false );
+    update_option( 'noveltool_sample_images_downloaded', true, false );
     
     return array(
         'success' => true,
