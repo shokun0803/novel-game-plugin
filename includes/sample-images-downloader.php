@@ -38,7 +38,8 @@ function noveltool_get_latest_release_info() {
         array(
             'timeout' => 15,
             'headers' => array(
-                'Accept' => 'application/vnd.github.v3+json',
+                'Accept'     => 'application/vnd.github.v3+json',
+                'User-Agent' => 'NovelGamePlugin/' . NOVEL_GAME_PLUGIN_VERSION . ' (+https://github.com/shokun0803/novel-game-plugin)',
             ),
         )
     );
@@ -145,9 +146,12 @@ function noveltool_download_sample_images_zip( $download_url ) {
     $response = wp_remote_get(
         $download_url,
         array(
-            'timeout'  => 300, // 5 minutes
+            'timeout'  => 300, // 5分
             'stream'   => true,
             'filename' => $temp_file,
+            'headers'  => array(
+                'User-Agent' => 'NovelGamePlugin/' . NOVEL_GAME_PLUGIN_VERSION . ' (+https://github.com/shokun0803/novel-game-plugin)',
+            ),
         )
     );
     
@@ -215,6 +219,19 @@ function noveltool_extract_zip( $zip_file, $destination ) {
         );
     }
     
+    // 親ディレクトリの書き込み権限をチェック
+    $parent_dir = dirname( $destination );
+    if ( ! $wp_filesystem->is_writable( $parent_dir ) ) {
+        return new WP_Error(
+            'permission_error',
+            sprintf(
+                /* translators: %s: directory path */
+                __( 'Destination directory is not writable: %s', 'novel-game-plugin' ),
+                $parent_dir
+            )
+        );
+    }
+    
     // 展開先ディレクトリを作成
     if ( ! $wp_filesystem->is_dir( $destination ) ) {
         if ( ! $wp_filesystem->mkdir( $destination, FS_CHMOD_DIR ) ) {
@@ -250,8 +267,45 @@ function noveltool_perform_sample_images_download() {
         );
     }
     
+    // 同時実行ガード: 既にダウンロード中の場合はエラーを返す
+    $status = get_option( 'noveltool_sample_images_download_status', 'not_started' );
+    if ( 'in_progress' === $status ) {
+        return array(
+            'success' => false,
+            'message' => __( 'Download already in progress.', 'novel-game-plugin' ),
+        );
+    }
+    
     // ダウンロード状況を記録
     update_option( 'noveltool_sample_images_download_status', 'in_progress' );
+    
+    // Filesystem の初期化と書き込み権限の事前チェック
+    global $wp_filesystem;
+    if ( ! function_exists( 'WP_Filesystem' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+    }
+    WP_Filesystem();
+    
+    if ( ! $wp_filesystem ) {
+        update_option( 'noveltool_sample_images_download_status', 'failed' );
+        return array(
+            'success' => false,
+            'message' => __( 'Could not initialize filesystem.', 'novel-game-plugin' ),
+        );
+    }
+    
+    $destination_parent = NOVEL_GAME_PLUGIN_PATH . 'assets';
+    if ( ! $wp_filesystem->is_writable( $destination_parent ) ) {
+        update_option( 'noveltool_sample_images_download_status', 'failed' );
+        return array(
+            'success' => false,
+            'message' => sprintf(
+                /* translators: %s: directory path */
+                __( 'Destination directory is not writable: %s', 'novel-game-plugin' ),
+                $destination_parent
+            ),
+        );
+    }
     
     // 最新リリース情報を取得
     $release_data = noveltool_get_latest_release_info();
@@ -297,16 +351,43 @@ function noveltool_perform_sample_images_download() {
     
     // チェックサム検証（チェックサムファイルが存在する場合）
     if ( $checksum_asset ) {
-        $checksum_response = wp_remote_get( $checksum_asset['browser_download_url'] );
-        if ( ! is_wp_error( $checksum_response ) ) {
-            $expected_checksum = trim( wp_remote_retrieve_body( $checksum_response ) );
-            if ( ! noveltool_verify_checksum( $temp_zip, $expected_checksum ) ) {
-                @unlink( $temp_zip );
-                update_option( 'noveltool_sample_images_download_status', 'failed' );
-                return array(
-                    'success' => false,
-                    'message' => __( 'Checksum verification failed. The downloaded file may be corrupted.', 'novel-game-plugin' ),
-                );
+        $headers = array(
+            'User-Agent' => 'NovelGamePlugin/' . NOVEL_GAME_PLUGIN_VERSION . ' (+https://github.com/shokun0803/novel-game-plugin)',
+        );
+        
+        $checksum_response = wp_remote_get(
+            $checksum_asset['browser_download_url'],
+            array(
+                'timeout' => 30,
+                'headers' => $headers,
+            )
+        );
+        
+        if ( is_wp_error( $checksum_response ) ) {
+            // チェックサムファイルの取得失敗は警告のみ（処理は続行）
+            error_log( 'NovelGamePlugin: Failed to fetch checksum file: ' . $checksum_response->get_error_message() );
+        } else {
+            $checksum_status = wp_remote_retrieve_response_code( $checksum_response );
+            if ( $checksum_status !== 200 ) {
+                error_log( 'NovelGamePlugin: Checksum file fetch returned HTTP ' . $checksum_status );
+            } else {
+                $checksum_body = wp_remote_retrieve_body( $checksum_response );
+                
+                // SHA256 チェックサム（64文字の16進数）を抽出
+                if ( preg_match( '/\b([a-f0-9]{64})\b/i', $checksum_body, $matches ) ) {
+                    $expected_checksum = $matches[1];
+                    
+                    if ( ! noveltool_verify_checksum( $temp_zip, $expected_checksum ) ) {
+                        @unlink( $temp_zip );
+                        update_option( 'noveltool_sample_images_download_status', 'failed' );
+                        return array(
+                            'success' => false,
+                            'message' => __( 'Checksum verification failed. The downloaded file may be corrupted.', 'novel-game-plugin' ),
+                        );
+                    }
+                } else {
+                    error_log( 'NovelGamePlugin: Invalid checksum format in .sha256 file' );
+                }
             }
         }
     }

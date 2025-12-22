@@ -105,7 +105,7 @@
 
         // REST API でダウンロード開始
         $.ajax({
-            url: novelToolSampleImages.apiUrl + '/sample-images/download',
+            url: novelToolSampleImages.apiDownload,
             method: 'POST',
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('X-WP-Nonce', novelToolSampleImages.restNonce);

@@ -256,11 +256,12 @@ function noveltool_my_games_admin_scripts( $hook ) {
             'noveltool-sample-images-prompt',
             'novelToolSampleImages',
             array(
-                'shouldPrompt' => $should_prompt,
-                'nonce'        => wp_create_nonce( 'noveltool_sample_images_prompt' ),
-                'restNonce'    => wp_create_nonce( 'wp_rest' ),
-                'apiUrl'       => rest_url( 'novel-game-plugin/v1' ),
-                'strings'      => array(
+                'shouldPrompt'  => $should_prompt,
+                'nonce'         => wp_create_nonce( 'noveltool_sample_images_prompt' ),
+                'restNonce'     => wp_create_nonce( 'wp_rest' ),
+                'apiDownload'   => rest_url( 'novel-game-plugin/v1/sample-images/download' ),
+                'apiStatus'     => rest_url( 'novel-game-plugin/v1/sample-images/status' ),
+                'strings'       => array(
                     'modalTitle'       => __( 'Download Sample Images', 'novel-game-plugin' ),
                     'modalMessage'     => sprintf(
                         /* translators: %s: estimated file size */
@@ -282,9 +283,10 @@ function noveltool_my_games_admin_scripts( $hook ) {
         );
     }
 
-    // インラインスクリプトでAJAX処理を追加
+    // インラインスクリプトでAJAX処理を追加（サンプルゲームインストールボタン用）
     $inline_script = "
     jQuery(document).ready(function($) {
+        // サンプルゲームインストールボタンのクリックイベント
         $('#noveltool-install-sample-game').on('click', function(e) {
             e.preventDefault();
             
@@ -295,17 +297,21 @@ function noveltool_my_games_admin_scripts( $hook ) {
             var button = $(this);
             button.prop('disabled', true).text('" . esc_js( __( 'Installing...', 'novel-game-plugin' ) ) . "');
             
+            // AJAX リクエストでサンプルゲームをインストール
             $.post(ajaxurl, {
                 action: 'noveltool_install_sample_game',
                 nonce: '" . wp_create_nonce( 'noveltool_install_sample_game' ) . "'
             }, function(response) {
                 if (response.success) {
+                    // 成功時はページをリロード
                     location.reload();
                 } else {
+                    // 失敗時はエラーメッセージを表示
                     alert(response.data.message || '" . esc_js( __( 'Installation failed.', 'novel-game-plugin' ) ) . "');
                     button.prop('disabled', false).text('" . esc_js( __( 'Install Sample Game', 'novel-game-plugin' ) ) . "');
                 }
             }).fail(function() {
+                // ネットワークエラー時
                 alert('" . esc_js( __( 'Installation failed.', 'novel-game-plugin' ) ) . "');
                 button.prop('disabled', false).text('" . esc_js( __( 'Install Sample Game', 'novel-game-plugin' ) ) . "');
             });
@@ -333,7 +339,7 @@ function noveltool_dismiss_sample_images_prompt_ajax() {
         wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'novel-game-plugin' ) ) );
     }
     
-    // ユーザーメタに保存
+    // ユーザーメタに保存してプロンプトを非表示に設定
     update_user_meta( get_current_user_id(), 'noveltool_sample_images_prompt_dismissed', true );
     
     wp_send_json_success();
