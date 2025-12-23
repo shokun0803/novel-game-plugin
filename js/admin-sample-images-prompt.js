@@ -170,13 +170,27 @@
         content.find('h2').text(novelToolSampleImages.strings.error);
         
         // エラーメッセージと対処方法を表示
-        var errorHtml = '<span style="color: #dc3232;">' + message + '</span>';
-        errorHtml += '<div style="margin-top: 15px; padding: 10px; background: #f9f9f9; border-left: 4px solid #dc3232;">';
-        errorHtml += '<strong>' + novelToolSampleImages.strings.troubleshooting + '</strong><br>';
-        errorHtml += novelToolSampleImages.strings.troubleshootingSteps;
-        errorHtml += '</div>';
+        var errorMessage = $('<span>', {
+            css: { color: '#dc3232' },
+            text: message
+        });
         
-        content.find('p').html(errorHtml);
+        var troubleshootingBox = $('<div>', {
+            css: {
+                'margin-top': '15px',
+                'padding': '10px',
+                'background': '#f9f9f9',
+                'border-left': '4px solid #dc3232'
+            }
+        });
+        
+        troubleshootingBox.append(
+            $('<strong>').text(novelToolSampleImages.strings.troubleshooting)
+        ).append('<br>').append(
+            $('<span>').html(novelToolSampleImages.strings.troubleshootingSteps)
+        );
+        
+        content.find('p').empty().append(errorMessage).append(troubleshootingBox);
 
         var buttons = $('<div>', {
             class: 'noveltool-modal-buttons'

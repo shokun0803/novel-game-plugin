@@ -253,6 +253,13 @@ function noveltool_extract_zip( $zip_file, $destination ) {
 }
 
 /**
+ * ダウンロードステータスのタイムアウト時間（秒）
+ * 
+ * @since 1.3.0
+ */
+define( 'NOVELTOOL_DOWNLOAD_TTL', 1800 ); // 30分
+
+/**
  * ダウンロードステータスに TTL（Time To Live）をチェック
  * 長時間 in_progress のまま残っている場合は自動的に failed に変更
  *
@@ -265,10 +272,10 @@ function noveltool_check_download_status_ttl() {
         return;
     }
     
-    // in_progress で 30分以上経過している場合は failed に変更
+    // in_progress で TTL 以上経過している場合は failed に変更
     if ( 'in_progress' === $status_data['status'] && isset( $status_data['timestamp'] ) ) {
         $elapsed = time() - $status_data['timestamp'];
-        if ( $elapsed > 1800 ) { // 30分 = 1800秒
+        if ( $elapsed > NOVELTOOL_DOWNLOAD_TTL ) {
             noveltool_update_download_status( 'failed', __( 'Download timeout: The download process took too long and was automatically cancelled.', 'novel-game-plugin' ) );
         }
     }
@@ -282,9 +289,11 @@ function noveltool_check_download_status_ttl() {
  * @since 1.3.0
  */
 function noveltool_update_download_status( $status, $error_message = '' ) {
+    $timestamp = time();
+    
     $status_data = array(
         'status'    => $status,
-        'timestamp' => time(),
+        'timestamp' => $timestamp,
     );
     
     // 後方互換性のため、単純なステータス文字列も保存
@@ -297,7 +306,7 @@ function noveltool_update_download_status( $status, $error_message = '' ) {
             'noveltool_sample_images_download_error',
             array(
                 'message'   => $error_message,
-                'timestamp' => time(),
+                'timestamp' => $timestamp,
             ),
             false
         );
