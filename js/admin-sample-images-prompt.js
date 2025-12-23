@@ -168,7 +168,15 @@
         var content = modal.find('.noveltool-modal-content');
 
         content.find('h2').text(novelToolSampleImages.strings.error);
-        content.find('p').html('<span style="color: #dc3232;">' + message + '</span>');
+        
+        // エラーメッセージと対処方法を表示
+        var errorHtml = '<span style="color: #dc3232;">' + message + '</span>';
+        errorHtml += '<div style="margin-top: 15px; padding: 10px; background: #f9f9f9; border-left: 4px solid #dc3232;">';
+        errorHtml += '<strong>' + novelToolSampleImages.strings.troubleshooting + '</strong><br>';
+        errorHtml += novelToolSampleImages.strings.troubleshootingSteps;
+        errorHtml += '</div>';
+        
+        content.find('p').html(errorHtml);
 
         var buttons = $('<div>', {
             class: 'noveltool-modal-buttons'
@@ -178,18 +186,8 @@
             class: 'button button-primary',
             text: novelToolSampleImages.strings.retryButton,
             click: function () {
-                // モーダルをリセットして再試行
-                content.find('h2').text(novelToolSampleImages.strings.modalTitle);
-                content.find('p').html(novelToolSampleImages.strings.modalMessage);
-                content.find('.noveltool-modal-buttons').html(
-                    $('<button>', {
-                        class: 'button button-primary',
-                        text: novelToolSampleImages.strings.downloadButton,
-                        click: function () {
-                            startDownload();
-                        }
-                    })
-                );
+                // ステータスをリセットしてから再試行
+                resetStatusAndRetry();
             }
         });
 
@@ -203,6 +201,49 @@
 
         buttons.append(retryButton).append(closeButton);
         content.find('.noveltool-modal-buttons').html(buttons);
+    }
+
+    /**
+     * ステータスをリセットして再試行
+     */
+    function resetStatusAndRetry() {
+        var modal = $('#noveltool-sample-images-modal');
+        var content = modal.find('.noveltool-modal-content');
+        
+        // ボタンを無効化
+        content.find('button').prop('disabled', true);
+        
+        // リセット中メッセージ
+        content.find('h2').text(novelToolSampleImages.strings.resetting);
+        content.find('p').html(novelToolSampleImages.strings.pleaseWait);
+        content.find('.noveltool-modal-buttons').html('<div class="noveltool-spinner"></div>');
+        
+        // ステータスリセット API を呼び出し
+        $.ajax({
+            url: novelToolSampleImages.apiResetStatus,
+            method: 'POST',
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-WP-Nonce', novelToolSampleImages.restNonce);
+            },
+            success: function () {
+                // リセット成功後、ダウンロードを再開
+                startDownload();
+            },
+            error: function () {
+                // リセット失敗時は手動再試行を促す
+                content.find('h2').text(novelToolSampleImages.strings.error);
+                content.find('p').html('<span style="color: #dc3232;">' + novelToolSampleImages.strings.resetFailed + '</span>');
+                content.find('.noveltool-modal-buttons').html(
+                    $('<button>', {
+                        class: 'button',
+                        text: novelToolSampleImages.strings.closeButton,
+                        click: function () {
+                            closeOnly();
+                        }
+                    })
+                );
+            }
+        });
     }
 
     /**

@@ -298,23 +298,36 @@ function noveltool_my_games_admin_scripts( $hook ) {
                 'restNonce'     => wp_create_nonce( 'wp_rest' ),
                 'apiDownload'   => rest_url( 'novel-game-plugin/v1/sample-images/download' ),
                 'apiStatus'     => rest_url( 'novel-game-plugin/v1/sample-images/status' ),
+                'apiResetStatus' => rest_url( 'novel-game-plugin/v1/sample-images/reset-status' ),
                 'strings'       => array(
-                    'modalTitle'       => __( 'Download Sample Images', 'novel-game-plugin' ),
-                    'modalMessage'     => sprintf(
+                    'modalTitle'           => __( 'Download Sample Images', 'novel-game-plugin' ),
+                    'modalMessage'         => sprintf(
                         /* translators: %s: estimated file size */
                         __( 'Sample game images are not installed. Would you like to download them now? Download size: approximately %s.', 'novel-game-plugin' ),
                         '15 MB'
                     ),
-                    'downloadButton'   => __( 'Download', 'novel-game-plugin' ),
-                    'laterButton'      => __( 'Later', 'novel-game-plugin' ),
-                    'cancelButton'     => __( 'Cancel', 'novel-game-plugin' ),
-                    'downloading'      => __( 'Downloading...', 'novel-game-plugin' ),
-                    'pleaseWait'       => __( 'Please wait while the sample images are being downloaded. This may take a few minutes.', 'novel-game-plugin' ),
-                    'success'          => __( 'Success', 'novel-game-plugin' ),
-                    'error'            => __( 'Error', 'novel-game-plugin' ),
-                    'downloadFailed'   => __( 'Failed to download sample images. Please try again later.', 'novel-game-plugin' ),
-                    'retryButton'      => __( 'Retry', 'novel-game-plugin' ),
-                    'closeButton'      => __( 'Close', 'novel-game-plugin' ),
+                    'downloadButton'       => __( 'Download', 'novel-game-plugin' ),
+                    'laterButton'          => __( 'Later', 'novel-game-plugin' ),
+                    'cancelButton'         => __( 'Cancel', 'novel-game-plugin' ),
+                    'downloading'          => __( 'Downloading...', 'novel-game-plugin' ),
+                    'pleaseWait'           => __( 'Please wait while the sample images are being downloaded. This may take a few minutes.', 'novel-game-plugin' ),
+                    'success'              => __( 'Success', 'novel-game-plugin' ),
+                    'error'                => __( 'Error', 'novel-game-plugin' ),
+                    'downloadFailed'       => __( 'Failed to download sample images. Please try again later.', 'novel-game-plugin' ),
+                    'retryButton'          => __( 'Retry', 'novel-game-plugin' ),
+                    'closeButton'          => __( 'Close', 'novel-game-plugin' ),
+                    'resetting'            => __( 'Resetting...', 'novel-game-plugin' ),
+                    'resetFailed'          => __( 'Failed to reset download status. Please try again later or contact the administrator.', 'novel-game-plugin' ),
+                    'troubleshooting'      => __( 'Troubleshooting:', 'novel-game-plugin' ),
+                    'troubleshootingSteps' => implode(
+                        '<br>',
+                        array(
+                            __( '1. Check your internet connection', 'novel-game-plugin' ),
+                            __( '2. Verify that the assets directory has write permissions', 'novel-game-plugin' ),
+                            __( '3. Check server error logs for detailed information', 'novel-game-plugin' ),
+                            __( '4. If the problem persists, try manual installation (see documentation)', 'novel-game-plugin' ),
+                        )
+                    ),
                 ),
             )
         );

@@ -22,10 +22,59 @@
 
 #### ダウンロードに失敗した場合
 
-1. インターネット接続を確認してください
-2. WordPressのファイル書き込み権限を確認してください（`wp-content/plugins/novel-game-plugin/assets/` に書き込み権限が必要）
-3. モーダルの「再試行」ボタンをクリックして再度ダウンロードを試みてください
-4. それでも解決しない場合は、サーバーのエラーログを確認してください
+サンプル画像のダウンロードに失敗する主な原因と対処法：
+
+**1. インターネット接続の問題**
+- 症状: 「Failed to download sample images: HTTP status code: 502」のようなエラーメッセージ
+- 対処法: インターネット接続を確認し、時間をおいて再試行してください
+
+**2. ファイル書き込み権限の問題**
+- 症状: 「Destination directory is not writable」エラー
+- 対処法: 以下のコマンドで書き込み権限を設定してください
+  ```bash
+  chmod -R 755 wp-content/plugins/novel-game-plugin/assets/
+  ```
+
+**3. チェックサム検証の失敗**
+- 症状: 「Checksum verification failed」エラー
+- 対処法: ダウンロード中に通信が切断された可能性があります。再試行してください
+
+**4. タイムアウトエラー**
+- 症状: 「Download timeout」エラーまたはダウンロードが進行中のまま30分以上経過
+- 対処法: 
+  - サーバーの php.ini で max_execution_time と memory_limit を確認
+  - 推奨設定: max_execution_time=300, memory_limit=256M
+  - WordPressの管理画面から再試行ボタンをクリック（自動的にステータスがリセットされます）
+
+**5. ダウンロードが「進行中」のまま動かない**
+- 症状: 「Download already in progress」エラーが表示され、再試行できない
+- 対処法: 
+  - 30分以上経過すると自動的にステータスがリセットされます
+  - 手動でリセットする場合は、以下のコマンドをWordPress管理画面またはデータベースで実行:
+    ```php
+    delete_option('noveltool_sample_images_download_status');
+    delete_option('noveltool_sample_images_download_status_data');
+    delete_option('noveltool_sample_images_download_error');
+    ```
+
+**6. GitHub APIレート制限**
+- 症状: 「Failed to fetch release info: HTTP status code: 403」
+- 対処法: GitHub APIのレート制限に達した可能性があります。1時間待ってから再試行してください
+
+#### エラーログの確認方法
+
+詳細なエラー情報は以下の場所で確認できます：
+
+1. **WordPressデバッグログ**: `wp-content/debug.log`（WP_DEBUG が有効な場合）
+2. **WordPressオプション**: 管理画面 > ツール > サイトヘルス > 情報 から確認
+   - `noveltool_sample_images_download_status`: 現在のダウンロード状態
+   - `noveltool_sample_images_download_error`: 最後のエラーメッセージとタイムスタンプ
+
+#### 再試行の方法
+
+1. モーダルの「再試行」ボタンをクリック（自動的にステータスがリセットされ、ダウンロードが再開されます）
+2. それでも解決しない場合は、サーバーのエラーログを確認してください
+3. モーダルが表示されない場合は、「マイゲーム」画面のバナーから「サンプル画像をダウンロード」ボタンをクリック
 
 #### 手動インストール
 
@@ -75,7 +124,11 @@ GET /wp-json/novel-game-plugin/v1/sample-images/status
 ```json
 {
   "exists": false,
-  "status": "not_started"
+  "status": "not_started",
+  "error": {
+    "message": "Failed to download sample images: HTTP status code: 502",
+    "timestamp": 1703299200
+  }
 }
 ```
 
@@ -84,6 +137,28 @@ GET /wp-json/novel-game-plugin/v1/sample-images/status
 - `in_progress`: ダウンロード中
 - `completed`: ダウンロード完了
 - `failed`: ダウンロード失敗
+
+**error フィールド**（失敗時のみ）:
+- `message`: エラーメッセージ
+- `timestamp`: エラー発生時刻（UNIXタイムスタンプ）
+
+#### ダウンロードステータスのリセット
+
+```
+POST /wp-json/novel-game-plugin/v1/sample-images/reset-status
+```
+
+**権限**: `manage_options`（管理者のみ）
+
+**レスポンス**:
+```json
+{
+  "success": true,
+  "message": "Download status has been reset."
+}
+```
+
+**用途**: ダウンロードが「進行中」のまま動かなくなった場合などにステータスをリセットします
 
 ### GitHub Releases との連携
 
@@ -113,6 +188,20 @@ sha256sum novel-game-plugin-sample-images-v1.3.0.zip > novel-game-plugin-sample-
 
 - `noveltool_sample_images_downloaded`: サンプル画像がダウンロード済みかどうか（boolean）
 - `noveltool_sample_images_download_status`: ダウンロード状況（`not_started`, `in_progress`, `completed`, `failed`）
+- `noveltool_sample_images_download_status_data`: ダウンロード状況の詳細情報（タイムスタンプ付き）
+  ```php
+  array(
+      'status'    => 'failed',
+      'timestamp' => 1703299200
+  )
+  ```
+- `noveltool_sample_images_download_error`: 最後のエラー情報
+  ```php
+  array(
+      'message'   => 'Failed to download: HTTP 502',
+      'timestamp' => 1703299200
+  )
+  ```
 
 ### ユーザーメタ
 
@@ -169,6 +258,22 @@ ZIP ファイルを展開します。
 - `$destination` (string): 展開先ディレクトリ
 
 **戻り値**: `bool|WP_Error`
+
+#### `noveltool_update_download_status( $status, $error_message = '' )`
+
+ダウンロードステータスを更新します。
+
+**パラメータ**:
+- `$status` (string): ステータス（`not_started`, `in_progress`, `completed`, `failed`）
+- `$error_message` (string): エラーメッセージ（オプション）
+
+**戻り値**: なし
+
+#### `noveltool_check_download_status_ttl()`
+
+ダウンロードステータスの TTL（有効期限）をチェックします。30分以上 `in_progress` のままの場合は自動的に `failed` に変更します。
+
+**戻り値**: なし
 
 #### `noveltool_perform_sample_images_download()`
 
