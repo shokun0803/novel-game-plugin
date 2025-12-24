@@ -319,14 +319,11 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     'resetting'            => __( 'Resetting...', 'novel-game-plugin' ),
                     'resetFailed'          => __( 'Failed to reset download status. Please try again later or contact the administrator.', 'novel-game-plugin' ),
                     'troubleshooting'      => __( 'Troubleshooting:', 'novel-game-plugin' ),
-                    'troubleshootingSteps' => implode(
-                        '<br>',
-                        array(
-                            __( '1. Check your internet connection', 'novel-game-plugin' ),
-                            __( '2. Verify that the assets directory has write permissions', 'novel-game-plugin' ),
-                            __( '3. Check server error logs for detailed information', 'novel-game-plugin' ),
-                            __( '4. If the problem persists, try manual installation (see documentation)', 'novel-game-plugin' ),
-                        )
+                    'troubleshootingSteps' => array(
+                        __( 'Check your internet connection', 'novel-game-plugin' ),
+                        __( 'Verify that the assets directory has write permissions', 'novel-game-plugin' ),
+                        __( 'Check server error logs for detailed information', 'novel-game-plugin' ),
+                        __( 'If the problem persists, try manual installation (see documentation)', 'novel-game-plugin' ),
                     ),
                 ),
             )

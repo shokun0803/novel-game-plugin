@@ -186,9 +186,21 @@
         
         troubleshootingBox.append(
             $('<strong>').text(novelToolSampleImages.strings.troubleshooting)
-        ).append('<br>').append(
-            $('<span>').html(novelToolSampleImages.strings.troubleshootingSteps)
         );
+        
+        // トラブルシューティング手順をリストとして追加
+        var stepsList = $('<ol>', {
+            css: {
+                'margin': '10px 0 0 0',
+                'padding-left': '20px'
+            }
+        });
+        
+        $.each(novelToolSampleImages.strings.troubleshootingSteps, function(index, step) {
+            stepsList.append($('<li>').text(step));
+        });
+        
+        troubleshootingBox.append(stepsList);
         
         content.find('p').empty().append(errorMessage).append(troubleshootingBox);
 
