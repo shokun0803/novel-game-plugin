@@ -19,6 +19,7 @@ POT ファイルの更新が必要です。
    - `hideErrorDetails` - 詳細非表示ボタン
    - `errorTimestamp` - エラー発生時刻のラベル
    - `errorDetailFetchFailed` - 詳細エラー取得失敗時のメッセージ
+   - `errorDetailNotAvailable` - 詳細エラーが記録されていない場合のメッセージ
 3. その他の文字列：
    - `downloadSuccess` - ダウンロード成功メッセージ
    - `downloadTimeout` - タイムアウトメッセージ
@@ -34,7 +35,7 @@ wp i18n make-pot . languages/novel-game-plugin.pot
 - リポジトリメンテナーまたは WP-CLI が利用可能な開発環境を持つ担当者
 
 ## 関連ファイル
-- `admin/my-games.php`: 新規翻訳文字列の追加
+- `admin/my-games.php`: 新規翻訳文字列の追加（合計12個）
 - `js/admin-sample-images-prompt.js`: プログレスバーと詳細エラー表示機能の実装、アクセシビリティ改善
 - `css/admin-sample-images-prompt.css`: プログレスバーと詳細エラー表示のスタイル、indeterminateモード追加
 

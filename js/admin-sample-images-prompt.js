@@ -104,14 +104,14 @@
             class: 'noveltool-progress-container'
         });
         
-        // ARIA属性をトップレベルで設定
+        // プログレスバーを生成し、ARIA属性を明示的に設定（確実性を保証）
         var progressBar = $('<div>', {
-            class: 'noveltool-progress-bar',
-            role: 'progressbar',
-            'aria-valuemin': 0,
-            'aria-valuemax': 100,
-            'aria-valuenow': 0
+            class: 'noveltool-progress-bar'
         });
+        progressBar.attr('role', 'progressbar')
+                   .attr('aria-valuemin', 0)
+                   .attr('aria-valuemax', 100)
+                   .attr('aria-valuenow', 0);
         
         var progressFill = $('<div>', {
             class: 'noveltool-progress-fill',
@@ -120,13 +120,12 @@
         
         progressBar.append(progressFill);
         
-        // aria-live属性を追加してスクリーンリーダー通知を有効化
+        // ステータステキスト（aria-live属性で確実にスクリーンリーダー通知）
         var progressStatus = $('<div>', {
             class: 'noveltool-progress-status',
-            'aria-live': 'polite',
-            'aria-atomic': 'true',
             text: novelToolSampleImages.strings.statusConnecting || '接続中...'
         });
+        progressStatus.attr('aria-live', 'polite').attr('aria-atomic', 'true');
         
         progressContainer.append(progressBar).append(progressStatus);
         
@@ -154,13 +153,13 @@
             } else {
                 // 確定的な進捗
                 progressBar.removeClass('indeterminate');
-                progressBar.attr('aria-valuenow', percentage);
+                progressBar.attr('aria-valuenow', percentage); // 必ず.attr()で更新
                 progressFill.css('width', percentage + '%').text(percentage + '%');
             }
             
             if (statusText) {
-                // aria-live属性を確実に設定
-                progressStatus.attr('aria-live', 'polite').text(statusText);
+                // aria-live属性を確実に設定してスクリーンリーダー通知を保証
+                progressStatus.attr('aria-live', 'polite').attr('aria-atomic', 'true').text(statusText);
             }
         }
     }
@@ -331,6 +330,8 @@
     
     /**
      * サーバーから詳細エラー情報を取得
+     * 
+     * @param {function} callback - コールバック関数。詳細エラー情報またはフォールバックメッセージを受け取る
      */
     function fetchDetailedError(callback) {
         $.ajax({
@@ -340,10 +341,15 @@
                 xhr.setRequestHeader('X-WP-Nonce', novelToolSampleImages.restNonce);
             },
             success: function (response) {
-                if (response.error) {
+                if (response.error && response.error.message) {
+                    // サーバー側に詳細エラーがある場合
                     callback(response.error);
                 } else {
-                    callback(null);
+                    // 詳細エラーがない場合は簡潔な代替メッセージ
+                    callback({
+                        message: novelToolSampleImages.strings.errorDetailNotAvailable || 'エラーの詳細情報は記録されていません。サーバーログを確認してください。',
+                        timestamp: null
+                    });
                 }
             },
             error: function () {

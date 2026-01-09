@@ -337,6 +337,7 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     'hideErrorDetails'     => __( 'Hide details', 'novel-game-plugin' ),
                     'errorTimestamp'       => __( 'Error occurred at: ', 'novel-game-plugin' ),
                     'errorDetailFetchFailed' => __( 'Failed to retrieve error details. Please check the server logs.', 'novel-game-plugin' ),
+                    'errorDetailNotAvailable' => __( 'Error details are not available. Please check the server logs.', 'novel-game-plugin' ),
                 ),
             )
         );
