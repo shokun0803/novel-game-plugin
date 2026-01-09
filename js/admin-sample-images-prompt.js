@@ -476,10 +476,28 @@
             diagnosticCode.text((novelToolSampleImages.strings.diagnosticCode || '診断コード') + ': ' + errorCode);
         }
         
+        // ステージ情報を表示（あれば）
+        var stageInfo = $('<div>', {
+            class: 'noveltool-error-stage',
+            css: { 'font-size': '12px', 'color': '#666', 'margin-top': '4px' }
+        });
+        if (errorDetail && errorDetail.stage) {
+            var stageLabels = {
+                'fetch_release': novelToolSampleImages.strings.stageFetchRelease || 'リリース情報取得',
+                'download': novelToolSampleImages.strings.stageDownload || 'ダウンロード',
+                'verify_checksum': novelToolSampleImages.strings.stageVerifyChecksum || 'チェックサム検証',
+                'extract': novelToolSampleImages.strings.stageExtract || '展開',
+                'filesystem': novelToolSampleImages.strings.stageFilesystem || 'ファイルシステム',
+                'other': novelToolSampleImages.strings.stageOther || 'その他'
+            };
+            var stageLabel = stageLabels[errorDetail.stage] || errorDetail.stage;
+            stageInfo.text((novelToolSampleImages.strings.errorStage || 'エラー発生段階') + ': ' + stageLabel);
+        }
+        
         // 詳細エラー表示エリア
         var errorDetailsSection = $('<div>');
         
-        if (errorDetail && errorDetail.message) {
+        if (errorDetail && (errorDetail.message || errorDetail.code)) {
             var detailsToggle = $('<button>', {
                 class: 'noveltool-error-details-toggle',
                 text: novelToolSampleImages.strings.showErrorDetails || '詳しいエラーを確認',
@@ -501,13 +519,25 @@
                 css: { display: 'none' }
             });
             
-            var errorDetailsContent = $('<div>', {
-                class: 'noveltool-error-details-content',
-                text: errorDetail.message
-            });
+            // メッセージ
+            if (errorDetail.message) {
+                var errorDetailsContent = $('<div>', {
+                    class: 'noveltool-error-details-content',
+                    text: errorDetail.message
+                });
+                errorDetailsDiv.append(errorDetailsContent);
+            }
             
-            errorDetailsDiv.append(errorDetailsContent);
+            // コード
+            if (errorDetail.code) {
+                var codeDiv = $('<div>', {
+                    class: 'noveltool-error-code',
+                    text: (novelToolSampleImages.strings.errorCode || 'エラーコード') + ': ' + errorDetail.code
+                });
+                errorDetailsDiv.append(codeDiv);
+            }
             
+            // タイムスタンプ
             if (errorDetail.timestamp) {
                 var date = new Date(errorDetail.timestamp * 1000);
                 var timestampText = novelToolSampleImages.strings.errorTimestamp || 'エラー発生時刻: ';
@@ -516,6 +546,24 @@
                     text: timestampText + date.toLocaleString()
                 });
                 errorDetailsDiv.append(errorTimestamp);
+            }
+            
+            // メタ情報（あれば）
+            if (errorDetail.meta && typeof errorDetail.meta === 'object') {
+                var metaDiv = $('<div>', {
+                    class: 'noveltool-error-meta',
+                    css: { 'font-size': '11px', 'color': '#999', 'margin-top': '5px' }
+                });
+                var metaItems = [];
+                for (var key in errorDetail.meta) {
+                    if (errorDetail.meta.hasOwnProperty(key)) {
+                        metaItems.push(key + ': ' + errorDetail.meta[key]);
+                    }
+                }
+                if (metaItems.length > 0) {
+                    metaDiv.text(metaItems.join(', '));
+                    errorDetailsDiv.append(metaDiv);
+                }
             }
             
             errorDetailsSection.append(detailsToggle).append(errorDetailsDiv);
@@ -548,7 +596,7 @@
         
         troubleshootingBox.append(stepsList);
         
-        content.find('p').empty().append(errorMessage).append(diagnosticCode).append(errorDetailsSection).append(troubleshootingBox);
+        content.find('p').empty().append(errorMessage).append(diagnosticCode).append(stageInfo).append(errorDetailsSection).append(troubleshootingBox);
 
         var buttons = $('<div>', {
             class: 'noveltool-modal-buttons'

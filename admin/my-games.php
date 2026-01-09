@@ -345,6 +345,14 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     'errorServerError'     => __( 'A server error occurred.', 'novel-game-plugin' ),
                     'errorServiceUnavailable' => __( 'Service temporarily unavailable.', 'novel-game-plugin' ),
                     'errorUnknown'         => __( 'An error occurred', 'novel-game-plugin' ),
+                    'errorStage'           => __( 'Error stage', 'novel-game-plugin' ),
+                    'errorCode'            => __( 'Error code', 'novel-game-plugin' ),
+                    'stageFetchRelease'    => __( 'Fetching release information', 'novel-game-plugin' ),
+                    'stageDownload'        => __( 'Downloading', 'novel-game-plugin' ),
+                    'stageVerifyChecksum'  => __( 'Verifying checksum', 'novel-game-plugin' ),
+                    'stageExtract'         => __( 'Extracting', 'novel-game-plugin' ),
+                    'stageFilesystem'      => __( 'Filesystem operation', 'novel-game-plugin' ),
+                    'stageOther'           => __( 'Other', 'novel-game-plugin' ),
                 ),
             )
         );

@@ -325,7 +325,7 @@ function noveltool_check_download_status_ttl() {
     if ( 'in_progress' === $status_data['status'] && isset( $status_data['timestamp'] ) ) {
         $elapsed = time() - $status_data['timestamp'];
         if ( $elapsed > NOVELTOOL_DOWNLOAD_TTL ) {
-            noveltool_update_download_status( 'failed', __( 'Download timeout: The download process took too long and was automatically cancelled.', 'novel-game-plugin' ) );
+            noveltool_update_download_status( 'failed', __( 'Download timeout: The download process took too long and was automatically cancelled.', 'novel-game-plugin' ), 'ERR-TIMEOUT', 'other', array( 'stage_detail' => 'ttl_exceeded' ) );
             // 古いロックを削除
             delete_option( 'noveltool_sample_images_download_lock' );
         }
@@ -337,9 +337,12 @@ function noveltool_check_download_status_ttl() {
  *
  * @param string $status ステータス（not_started, in_progress, completed, failed）
  * @param string $error_message エラーメッセージ（失敗時のみ）
+ * @param string $error_code エラーコード（失敗時のみ）
+ * @param string $error_stage エラー発生段階（失敗時のみ）
+ * @param array  $error_meta エラーメタ情報（失敗時のみ）
  * @since 1.3.0
  */
-function noveltool_update_download_status( $status, $error_message = '' ) {
+function noveltool_update_download_status( $status, $error_message = '', $error_code = '', $error_stage = '', $error_meta = array() ) {
     $timestamp = time();
     
     $status_data = array(
@@ -351,21 +354,67 @@ function noveltool_update_download_status( $status, $error_message = '' ) {
     update_option( 'noveltool_sample_images_download_status', $status, false );
     update_option( 'noveltool_sample_images_download_status_data', $status_data, false );
     
-    // エラーメッセージがある場合は保存
-    if ( ! empty( $error_message ) ) {
-        update_option(
-            'noveltool_sample_images_download_error',
-            array(
-                'message'   => $error_message,
-                'timestamp' => $timestamp,
-            ),
-            false
+    // エラー情報を構造化して保存
+    if ( $status === 'failed' && ! empty( $error_message ) ) {
+        $error_data = array(
+            'code'      => ! empty( $error_code ) ? sanitize_text_field( $error_code ) : 'ERR-UNKNOWN',
+            'message'   => sanitize_text_field( $error_message ),
+            'stage'     => ! empty( $error_stage ) ? sanitize_text_field( $error_stage ) : 'other',
+            'timestamp' => $timestamp,
         );
-    } elseif ( 'completed' === $status ) {
-        // 成功時（completed）のみエラー情報をクリア
+        
+        // 非機密メタ情報のみ保存
+        if ( ! empty( $error_meta ) && is_array( $error_meta ) ) {
+            $safe_meta = array();
+            // 許可されたメタキーのみ保存（機密情報を除外）
+            $allowed_keys = array( 'http_code', 'stage_detail', 'retry_count' );
+            foreach ( $allowed_keys as $key ) {
+                if ( isset( $error_meta[ $key ] ) ) {
+                    $safe_meta[ $key ] = sanitize_text_field( $error_meta[ $key ] );
+                }
+            }
+            if ( ! empty( $safe_meta ) ) {
+                $error_data['meta'] = $safe_meta;
+            }
+        }
+        
+        update_option( 'noveltool_sample_images_download_error', $error_data, false );
+        
+        // 内部ログに詳細を記録（デバッグ用）
+        error_log( sprintf(
+            'NovelGamePlugin: Download failed - Code: %s, Stage: %s, Message: %s',
+            $error_data['code'],
+            $error_data['stage'],
+            $error_message
+        ) );
+    } elseif ( $status === 'completed' || $status === 'not_started' ) {
+        // 完了または再開時はエラー情報をクリア
         delete_option( 'noveltool_sample_images_download_error' );
     }
     // in_progress 時は過去のエラー情報を保持（デバッグ用）
+}
+
+/**
+ * 致命的エラー発生時にエラー情報を保存するシャットダウンフック
+ * 
+ * @since 1.3.0
+ */
+function noveltool_save_error_on_shutdown() {
+    $error = error_get_last();
+    if ( $error && in_array( $error['type'], array( E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ), true ) ) {
+        // 致命的エラーの場合、ステータスを failed に更新
+        $status = get_option( 'noveltool_sample_images_download_status', '' );
+        if ( $status === 'in_progress' ) {
+            noveltool_update_download_status(
+                'failed',
+                __( 'A fatal error occurred during download.', 'novel-game-plugin' ),
+                'ERR-FATAL',
+                'other',
+                array( 'stage_detail' => 'php_shutdown' )
+            );
+            delete_option( 'noveltool_sample_images_download_lock' );
+        }
+    }
 }
 
 /**
@@ -402,6 +451,9 @@ function noveltool_perform_sample_images_download() {
     // ステータスを in_progress に更新
     noveltool_update_download_status( 'in_progress' );
     
+    // シャットダウンフック登録（致命的エラー対応）
+    register_shutdown_function( 'noveltool_save_error_on_shutdown' );
+    
     // Filesystem の初期化と書き込み権限の事前チェック
     global $wp_filesystem;
     if ( ! function_exists( 'WP_Filesystem' ) ) {
@@ -411,11 +463,13 @@ function noveltool_perform_sample_images_download() {
     
     if ( ! $wp_filesystem ) {
         $error_msg = __( 'Could not initialize filesystem.', 'novel-game-plugin' );
-        noveltool_update_download_status( 'failed', $error_msg );
+        noveltool_update_download_status( 'failed', $error_msg, 'ERR-FS-INIT', 'filesystem' );
         delete_option( 'noveltool_sample_images_download_lock' );
         return array(
             'success' => false,
             'message' => $error_msg,
+            'code'    => 'ERR-FS-INIT',
+            'stage'   => 'filesystem',
         );
     }
     
@@ -426,11 +480,13 @@ function noveltool_perform_sample_images_download() {
             __( 'Destination directory is not writable: %s. Please check file permissions.', 'novel-game-plugin' ),
             $destination_parent
         );
-        noveltool_update_download_status( 'failed', $error_msg );
+        noveltool_update_download_status( 'failed', $error_msg, 'ERR-PERM', 'filesystem', array( 'stage_detail' => 'parent_dir_not_writable' ) );
         delete_option( 'noveltool_sample_images_download_lock' );
         return array(
             'success' => false,
             'message' => $error_msg,
+            'code'    => 'ERR-PERM',
+            'stage'   => 'filesystem',
         );
     }
     
@@ -442,11 +498,13 @@ function noveltool_perform_sample_images_download() {
             __( 'Failed to fetch release information: %s', 'novel-game-plugin' ),
             $release_data->get_error_message()
         );
-        noveltool_update_download_status( 'failed', $error_msg );
+        noveltool_update_download_status( 'failed', $error_msg, 'ERR-RELEASE-FETCH', 'fetch_release', array( 'http_code' => $release_data->get_error_code() ) );
         delete_option( 'noveltool_sample_images_download_lock' );
         return array(
             'success' => false,
             'message' => $error_msg,
+            'code'    => 'ERR-RELEASE-FETCH',
+            'stage'   => 'fetch_release',
         );
     }
     
@@ -454,11 +512,13 @@ function noveltool_perform_sample_images_download() {
     $asset = noveltool_find_sample_images_asset( $release_data );
     if ( ! $asset ) {
         $error_msg = __( 'Sample images asset not found in the latest release. Please contact the plugin developer.', 'novel-game-plugin' );
-        noveltool_update_download_status( 'failed', $error_msg );
+        noveltool_update_download_status( 'failed', $error_msg, 'ERR-ASSET-NOTFOUND', 'fetch_release' );
         delete_option( 'noveltool_sample_images_download_lock' );
         return array(
             'success' => false,
             'message' => $error_msg,
+            'code'    => 'ERR-ASSET-NOTFOUND',
+            'stage'   => 'fetch_release',
         );
     }
     
@@ -482,11 +542,13 @@ function noveltool_perform_sample_images_download() {
             __( 'Failed to download sample images: %s', 'novel-game-plugin' ),
             $temp_zip->get_error_message()
         );
-        noveltool_update_download_status( 'failed', $error_msg );
+        noveltool_update_download_status( 'failed', $error_msg, 'ERR-DOWNLOAD', 'download', array( 'http_code' => $temp_zip->get_error_code() ) );
         delete_option( 'noveltool_sample_images_download_lock' );
         return array(
             'success' => false,
             'message' => $error_msg,
+            'code'    => 'ERR-DOWNLOAD',
+            'stage'   => 'download',
         );
     }
     
@@ -522,11 +584,13 @@ function noveltool_perform_sample_images_download() {
                     if ( ! noveltool_verify_checksum( $temp_zip, $expected_checksum ) ) {
                         @unlink( $temp_zip );
                         $error_msg = __( 'Checksum verification failed. The downloaded file may be corrupted. Please try again.', 'novel-game-plugin' );
-                        noveltool_update_download_status( 'failed', $error_msg );
+                        noveltool_update_download_status( 'failed', $error_msg, 'ERR-CHECKSUM', 'verify_checksum' );
                         delete_option( 'noveltool_sample_images_download_lock' );
                         return array(
                             'success' => false,
                             'message' => $error_msg,
+                            'code'    => 'ERR-CHECKSUM',
+                            'stage'   => 'verify_checksum',
                         );
                     }
                 } else {
@@ -551,11 +615,13 @@ function noveltool_perform_sample_images_download() {
             __( 'Failed to extract sample images: %s', 'novel-game-plugin' ),
             $extract_result->get_error_message()
         );
-        noveltool_update_download_status( 'failed', $error_msg );
+        noveltool_update_download_status( 'failed', $error_msg, 'ERR-EXTRACT', 'extract' );
         delete_option( 'noveltool_sample_images_download_lock' );
         return array(
             'success' => false,
             'message' => $error_msg,
+            'code'    => 'ERR-EXTRACT',
+            'stage'   => 'extract',
         );
     }
     
@@ -631,16 +697,42 @@ function noveltool_api_download_sample_images( $request ) {
     } else {
         // 失敗時は詳細なエラー情報を含めて返す
         $error_data = get_option( 'noveltool_sample_images_download_error', null );
+        
+        // エラーコードとステージから適切なHTTPステータスを決定
+        $http_status = 400; // デフォルト
+        $error_code = isset( $result['code'] ) ? $result['code'] : 'download_failed';
+        $error_stage = isset( $result['stage'] ) ? $result['stage'] : 'other';
+        
+        // ステージ/コード別のHTTPステータス
+        if ( strpos( $error_code, 'ERR-PERM' ) === 0 || strpos( $error_code, 'ERR-FS-INIT' ) === 0 ) {
+            $http_status = 403; // 権限エラー
+        } elseif ( strpos( $error_code, 'ERR-ASSET-NOTFOUND' ) === 0 ) {
+            $http_status = 404; // リソース未検出
+        } elseif ( strpos( $error_code, 'ERR-CHECKSUM' ) === 0 ) {
+            $http_status = 422; // 検証失敗
+        } elseif ( strpos( $error_code, 'ERR-RELEASE-FETCH' ) === 0 || strpos( $error_code, 'ERR-DOWNLOAD' ) === 0 ) {
+            $http_status = 502; // 外部サービスエラー
+        } elseif ( strpos( $error_code, 'ERR-EXTRACT' ) === 0 || strpos( $error_code, 'ERR-FATAL' ) === 0 ) {
+            $http_status = 500; // サーバー内部エラー
+        }
+        
         $response = array(
             'success' => false,
-            'message' => $result['message'],
+            'message' => sanitize_text_field( $result['message'] ),
             'error'   => array(
-                'code'      => isset( $result['code'] ) ? $result['code'] : 'download_failed',
-                'message'   => $result['message'],
-                'timestamp' => is_array( $error_data ) && isset( $error_data['timestamp'] ) ? $error_data['timestamp'] : time(),
+                'code'      => sanitize_text_field( $error_code ),
+                'message'   => sanitize_text_field( $result['message'] ),
+                'stage'     => sanitize_text_field( $error_stage ),
+                'timestamp' => is_array( $error_data ) && isset( $error_data['timestamp'] ) ? intval( $error_data['timestamp'] ) : time(),
             ),
         );
-        return new WP_REST_Response( $response, 400 );
+        
+        // メタ情報があれば追加（非機密のみ）
+        if ( is_array( $error_data ) && isset( $error_data['meta'] ) && is_array( $error_data['meta'] ) ) {
+            $response['error']['meta'] = $error_data['meta'];
+        }
+        
+        return new WP_REST_Response( $response, $http_status );
     }
 }
 
@@ -661,12 +753,19 @@ function noveltool_api_sample_images_status( $request ) {
         'status' => $status,
     );
     
-    // エラー情報があれば追加
+    // エラー情報があれば構造化して追加
     if ( ! empty( $error_data ) && is_array( $error_data ) ) {
         $response['error'] = array(
-            'message'   => isset( $error_data['message'] ) ? $error_data['message'] : '',
-            'timestamp' => isset( $error_data['timestamp'] ) ? $error_data['timestamp'] : 0,
+            'code'      => isset( $error_data['code'] ) ? sanitize_text_field( $error_data['code'] ) : 'ERR-UNKNOWN',
+            'message'   => isset( $error_data['message'] ) ? sanitize_text_field( $error_data['message'] ) : '',
+            'stage'     => isset( $error_data['stage'] ) ? sanitize_text_field( $error_data['stage'] ) : 'other',
+            'timestamp' => isset( $error_data['timestamp'] ) ? intval( $error_data['timestamp'] ) : 0,
         );
+        
+        // メタ情報があれば追加（非機密のみ）
+        if ( isset( $error_data['meta'] ) && is_array( $error_data['meta'] ) ) {
+            $response['error']['meta'] = $error_data['meta'];
+        }
     }
     
     return new WP_REST_Response( $response, 200 );
