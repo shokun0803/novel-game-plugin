@@ -205,7 +205,14 @@
                     var elapsed = Date.now() - startTime;
                     
                     // バイト単位の進捗情報があれば使用
-                    if (response.progress && response.progress.current && response.progress.total) {
+                    if (
+                        response.progress &&
+                        typeof response.progress.current === 'number' &&
+                        typeof response.progress.total === 'number' &&
+                        isFinite(response.progress.current) &&
+                        isFinite(response.progress.total) &&
+                        response.progress.total > 0
+                    ) {
                         var percentage = Math.floor((response.progress.current / response.progress.total) * 100);
                         var statusText = novelToolSampleImages.strings.statusDownloadingBytes || 'ダウンロード中: ' + 
                             formatBytes(response.progress.current) + ' / ' + formatBytes(response.progress.total);
