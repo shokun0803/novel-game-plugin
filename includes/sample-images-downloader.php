@@ -129,7 +129,10 @@ function noveltool_find_sample_images_asset( $release_data ) {
         return null;
     }
     
+    // サンプル画像アセット名のパターン
+    // 例: novel-game-plugin-sample-images-1.3.0.zip, novel-game-plugin-sample-images-v1.3.0.zip, novel-game-plugin-sample-images.zip
     $preferred_names = array(
+        'novel-game-plugin-sample-images',
         'novel-game-plugin-sample-images-v',
         'novel-game-plugin-sample-images.zip',
     );
