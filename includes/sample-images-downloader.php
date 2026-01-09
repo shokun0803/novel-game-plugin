@@ -50,6 +50,50 @@ function noveltool_get_latest_release_info() {
     
     $status_code = wp_remote_retrieve_response_code( $response );
     if ( $status_code !== 200 ) {
+        // 404 の場合は /releases/latest が存在しない（公開リリースが無い）可能性があるため
+        // プレリリースを含む一覧を取得してフォールバックする
+        if ( $status_code === 404 ) {
+            $list_url = 'https://api.github.com/repos/shokun0803/novel-game-plugin/releases?per_page=10';
+            $list_resp = wp_remote_get(
+                $list_url,
+                array(
+                    'timeout' => 15,
+                    'headers' => array(
+                        'Accept'     => 'application/vnd.github.v3+json',
+                        'User-Agent' => 'NovelGamePlugin/' . NOVEL_GAME_PLUGIN_VERSION . ' (+https://github.com/shokun0803/novel-game-plugin)',
+                    ),
+                )
+            );
+
+            if ( is_wp_error( $list_resp ) ) {
+                return $list_resp;
+            }
+
+            $list_code = wp_remote_retrieve_response_code( $list_resp );
+            if ( $list_code !== 200 ) {
+                return new WP_Error(
+                    'api_error',
+                    sprintf(
+                        /* translators: %d: HTTP status code */
+                        __( 'Failed to fetch release info. HTTP status code: %d', 'novel-game-plugin' ),
+                        $status_code
+                    )
+                );
+            }
+
+            $list_body = wp_remote_retrieve_body( $list_resp );
+            $list_data = json_decode( $list_body, true );
+            if ( json_last_error() !== JSON_ERROR_NONE || empty( $list_data ) || ! is_array( $list_data ) ) {
+                return new WP_Error(
+                    'api_error',
+                    __( 'Failed to fetch release info: no releases found.', 'novel-game-plugin' )
+                );
+            }
+
+            // 一覧の先頭を最新（作成順）とみなして返す
+            return $list_data[0];
+        }
+
         return new WP_Error(
             'api_error',
             sprintf(
