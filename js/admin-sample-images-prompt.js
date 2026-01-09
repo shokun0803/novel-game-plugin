@@ -104,26 +104,27 @@
             class: 'noveltool-progress-container'
         });
         
+        // ARIA属性をトップレベルで設定
         var progressBar = $('<div>', {
             class: 'noveltool-progress-bar',
-            attr: {
-                role: 'progressbar',
-                'aria-valuemin': '0',
-                'aria-valuemax': '100',
-                'aria-valuenow': '0'
-            }
+            role: 'progressbar',
+            'aria-valuemin': 0,
+            'aria-valuemax': 100,
+            'aria-valuenow': 0
         });
         
         var progressFill = $('<div>', {
             class: 'noveltool-progress-fill',
-            css: { width: '0%' },
-            text: '0%'
+            css: { width: '0%' }
         });
         
         progressBar.append(progressFill);
         
+        // aria-live属性を追加してスクリーンリーダー通知を有効化
         var progressStatus = $('<div>', {
             class: 'noveltool-progress-status',
+            'aria-live': 'polite',
+            'aria-atomic': 'true',
             text: novelToolSampleImages.strings.statusConnecting || '接続中...'
         });
         
@@ -134,6 +135,9 @@
     
     /**
      * プログレスバーを更新
+     * 
+     * @param {number|null} percentage - 進捗パーセンテージ（0-100）。nullの場合はindeterminateモード
+     * @param {string} statusText - 表示するステータステキスト
      */
     function updateProgressBar(percentage, statusText) {
         var modal = $('#noveltool-sample-images-modal');
@@ -142,10 +146,21 @@
         var progressStatus = modal.find('.noveltool-progress-status');
         
         if (progressBar.length > 0) {
-            progressBar.attr('aria-valuenow', percentage);
-            progressFill.css('width', percentage + '%').text(percentage + '%');
+            if (percentage === null) {
+                // indeterminateモード：進捗不明
+                progressBar.addClass('indeterminate');
+                progressBar.removeAttr('aria-valuenow');
+                progressFill.css('width', '100%').text('');
+            } else {
+                // 確定的な進捗
+                progressBar.removeClass('indeterminate');
+                progressBar.attr('aria-valuenow', percentage);
+                progressFill.css('width', percentage + '%').text(percentage + '%');
+            }
+            
             if (statusText) {
-                progressStatus.text(statusText);
+                // aria-live属性を確実に設定
+                progressStatus.attr('aria-live', 'polite').text(statusText);
             }
         }
     }
@@ -158,7 +173,9 @@
         
         if (Date.now() - startTime > maxPollTime) {
             // タイムアウト
-            showErrorMessage(novelToolSampleImages.strings.downloadTimeout || 'ダウンロードがタイムアウトしました。');
+            fetchDetailedError(function(detail) {
+                showErrorMessage(novelToolSampleImages.strings.downloadTimeout || 'ダウンロードがタイムアウトしました。', detail);
+            });
             return;
         }
         
@@ -176,26 +193,36 @@
                         showSuccessMessage(novelToolSampleImages.strings.downloadSuccess || 'サンプル画像のダウンロードが完了しました。');
                     }, 500);
                 } else if (response.status === 'failed') {
-                    // ダウンロード失敗
+                    // ダウンロード失敗 - 必ず詳細エラーを取得
                     var errorMsg = novelToolSampleImages.strings.downloadFailed;
                     if (response.error && response.error.message) {
                         errorMsg = response.error.message;
                     }
-                    showErrorMessage(errorMsg, response.error);
+                    fetchDetailedError(function(detailedError) {
+                        showErrorMessage(errorMsg, detailedError || response.error);
+                    });
                 } else if (response.status === 'in_progress') {
-                    // ダウンロード中 - 段階的に進捗を表示
+                    // ダウンロード中
                     var elapsed = Date.now() - startTime;
-                    var progress = Math.min(90, Math.floor((elapsed / maxPollTime) * 100));
                     
-                    var statusText = novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...';
-                    if (elapsed > 30000) {
-                        statusText = novelToolSampleImages.strings.statusVerifying || '検証中...';
+                    // バイト単位の進捗情報があれば使用
+                    if (response.progress && response.progress.current && response.progress.total) {
+                        var percentage = Math.floor((response.progress.current / response.progress.total) * 100);
+                        var statusText = novelToolSampleImages.strings.statusDownloadingBytes || 'ダウンロード中: ' + 
+                            formatBytes(response.progress.current) + ' / ' + formatBytes(response.progress.total);
+                        updateProgressBar(percentage, statusText);
+                    } else {
+                        // バイト情報がない場合はindeterminateモード + 段階的ステータス
+                        var statusText = novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...';
+                        if (elapsed > 30000) {
+                            statusText = novelToolSampleImages.strings.statusVerifying || '検証中...';
+                        }
+                        if (elapsed > 60000) {
+                            statusText = novelToolSampleImages.strings.statusExtracting || '展開中...';
+                        }
+                        
+                        updateProgressBar(null, statusText); // null = indeterminate
                     }
-                    if (elapsed > 60000) {
-                        statusText = novelToolSampleImages.strings.statusExtracting || '展開中...';
-                    }
-                    
-                    updateProgressBar(progress, statusText);
                     
                     // 次のポーリング
                     setTimeout(function() {
@@ -215,6 +242,17 @@
                 }, pollInterval);
             }
         });
+    }
+    
+    /**
+     * バイト数をフォーマット
+     */
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        var k = 1024;
+        var sizes = ['B', 'KB', 'MB', 'GB'];
+        var i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
     /**
@@ -240,8 +278,8 @@
         // ダウンロード開始時刻を記録
         var downloadStartTime = Date.now();
         
-        // 初期進捗を表示
-        updateProgressBar(10, novelToolSampleImages.strings.statusConnecting || '接続中...');
+        // 初期進捗を表示（indeterminate）
+        updateProgressBar(null, novelToolSampleImages.strings.statusConnecting || '接続中...');
 
         // REST API でダウンロード開始
         $.ajax({
@@ -258,20 +296,22 @@
                         showSuccessMessage(response.message);
                     }, 500);
                 } else {
-                    // 失敗レスポンス
-                    showErrorMessage(response.message);
+                    // 失敗レスポンス - 必ず詳細エラーを取得
+                    fetchDetailedError(function(detailedError) {
+                        showErrorMessage(response.message, detailedError);
+                    });
                 }
             },
             error: function (xhr) {
                 // ダウンロードが開始されているがレスポンスが遅い、または失敗
                 if (xhr.status === 0 || xhr.status === 504 || xhr.status === 502) {
                     // タイムアウトまたはゲートウェイエラー - ポーリングで状態確認
-                    updateProgressBar(30, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+                    updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
                     setTimeout(function() {
                         pollDownloadStatus(3000, downloadStartTime);
                     }, 2000);
                 } else {
-                    // その他のエラー
+                    // その他のエラー - 必ず詳細エラーを取得
                     var message = novelToolSampleImages.strings.downloadFailed;
                     var errorDetail = null;
                     
@@ -307,7 +347,11 @@
                 }
             },
             error: function () {
-                callback(null);
+                // 詳細エラー取得に失敗した場合のフォールバック
+                callback({
+                    message: novelToolSampleImages.strings.errorDetailFetchFailed || '詳細の取得に失敗しました。サーバーログを確認してください。',
+                    timestamp: null
+                });
             }
         });
     }

@@ -329,12 +329,14 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     ),
                     'statusConnecting'     => __( 'Connecting to server...', 'novel-game-plugin' ),
                     'statusDownloading'    => __( 'Downloading sample images...', 'novel-game-plugin' ),
+                    'statusDownloadingBytes' => __( 'Downloading: ', 'novel-game-plugin' ),
                     'statusVerifying'      => __( 'Verifying downloaded files...', 'novel-game-plugin' ),
                     'statusExtracting'     => __( 'Extracting files...', 'novel-game-plugin' ),
                     'statusCompleted'      => __( 'Completed', 'novel-game-plugin' ),
                     'showErrorDetails'     => __( 'Show detailed error', 'novel-game-plugin' ),
                     'hideErrorDetails'     => __( 'Hide details', 'novel-game-plugin' ),
                     'errorTimestamp'       => __( 'Error occurred at: ', 'novel-game-plugin' ),
+                    'errorDetailFetchFailed' => __( 'Failed to retrieve error details. Please check the server logs.', 'novel-game-plugin' ),
                 ),
             )
         );

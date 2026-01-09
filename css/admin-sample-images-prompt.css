@@ -140,6 +140,23 @@
     min-width: 30px;
 }
 
+/* indeterminateモード（進捗不明時） */
+.noveltool-progress-bar.indeterminate .noveltool-progress-fill {
+    width: 100%;
+    background: linear-gradient(90deg, #2271b1 0%, #135e96 50%, #2271b1 100%);
+    background-size: 200% 100%;
+    animation: noveltool-progress-indeterminate 1.5s linear infinite;
+}
+
+@keyframes noveltool-progress-indeterminate {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
 .noveltool-progress-status {
     margin-top: 10px;
     font-size: 14px;
