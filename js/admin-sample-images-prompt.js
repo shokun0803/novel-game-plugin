@@ -173,7 +173,7 @@
         if (Date.now() - startTime > maxPollTime) {
             // タイムアウト
             fetchDetailedError(function(detail) {
-                showErrorMessage(novelToolSampleImages.strings.downloadTimeout || 'ダウンロードがタイムアウトしました。', detail);
+                showErrorMessage(novelToolSampleImages.strings.downloadTimeout || 'ダウンロードがタイムアウトしました。', detail, 'ERR-TIMEOUT');
             });
             return;
         }
@@ -194,11 +194,13 @@
                 } else if (response.status === 'failed') {
                     // ダウンロード失敗 - 必ず詳細エラーを取得
                     var errorMsg = novelToolSampleImages.strings.downloadFailed;
+                    var errorCode = 'ERR-DOWNLOAD-FAILED';
                     if (response.error && response.error.message) {
                         errorMsg = response.error.message;
+                        errorCode = response.error.code || errorCode;
                     }
                     fetchDetailedError(function(detailedError) {
-                        showErrorMessage(errorMsg, detailedError || response.error);
+                        showErrorMessage(errorMsg, detailedError || response.error, errorCode);
                     });
                 } else if (response.status === 'in_progress') {
                     // ダウンロード中
@@ -260,6 +262,20 @@
         var i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
+    
+    /**
+     * HTTPステータスコードに基づくユーザー向けメッセージを取得
+     */
+    function getHttpStatusMessage(status) {
+        var messages = {
+            400: novelToolSampleImages.strings.errorBadRequest || 'リクエストが不正です。',
+            403: novelToolSampleImages.strings.errorForbidden || '権限がありません。管理者に確認してください。',
+            404: novelToolSampleImages.strings.errorNotFound || 'リソースが見つかりません。',
+            500: novelToolSampleImages.strings.errorServerError || 'サーバーエラーが発生しました。',
+            503: novelToolSampleImages.strings.errorServiceUnavailable || 'サービスが一時的に利用できません。'
+        };
+        return messages[status] || (novelToolSampleImages.strings.errorUnknown || 'エラーが発生しました（ステータス: ' + status + '）');
+    }
 
     /**
      * ダウンロードを開始
@@ -303,8 +319,12 @@
                     }, 500);
                 } else {
                     // 失敗レスポンス - 必ず詳細エラーを取得
+                    var errorCode = 'ERR-API-FAILED';
+                    if (response.error && response.error.code) {
+                        errorCode = response.error.code;
+                    }
                     fetchDetailedError(function(detailedError) {
-                        showErrorMessage(response.message, detailedError);
+                        showErrorMessage(response.message, detailedError, errorCode);
                     });
                 }
             },
@@ -317,18 +337,52 @@
                         pollDownloadStatus(3000, downloadStartTime);
                     }, 2000);
                 } else {
-                    // その他のエラー - 必ず詳細エラーを取得
-                    var message = novelToolSampleImages.strings.downloadFailed;
+                    // その他のエラー - 即時レスポンスを優先表示
+                    var message = novelToolSampleImages.strings.downloadFailed || 'ダウンロードに失敗しました。';
                     var errorDetail = null;
+                    var errorCode = 'ERR-HTTP-' + xhr.status;
                     
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
-                        errorDetail = xhr.responseJSON.error || null;
+                    // レスポンスJSONを優先的に解析
+                    if (xhr.responseJSON) {
+                        // JSONレスポンスがある場合
+                        if (xhr.responseJSON.error) {
+                            errorDetail = xhr.responseJSON.error;
+                            message = errorDetail.message || xhr.responseJSON.message || message;
+                            errorCode = errorDetail.code || errorCode;
+                        } else if (xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        }
+                        // 即時エラー表示（詳細あり）
+                        showErrorMessage(message, errorDetail, errorCode);
+                    } else if (xhr.responseText) {
+                        // JSONパースを試みる
+                        try {
+                            var parsedResponse = JSON.parse(xhr.responseText);
+                            if (parsedResponse.error) {
+                                errorDetail = parsedResponse.error;
+                                message = errorDetail.message || parsedResponse.message || message;
+                                errorCode = errorDetail.code || errorCode;
+                            } else if (parsedResponse.message) {
+                                message = parsedResponse.message;
+                            }
+                            showErrorMessage(message, errorDetail, errorCode);
+                        } catch (e) {
+                            // JSONパース失敗 - HTTPステータスに基づくメッセージ
+                            message = getHttpStatusMessage(xhr.status);
+                            showErrorMessage(message, null, errorCode);
+                        }
+                    } else {
+                        // レスポンスなし - HTTPステータスに基づくメッセージ
+                        message = getHttpStatusMessage(xhr.status);
+                        showErrorMessage(message, null, errorCode);
                     }
                     
-                    // サーバーから詳細エラーを取得して表示
+                    // フォールバック: サーバー保存のエラー情報も取得（追加情報として）
                     fetchDetailedError(function(detailedError) {
-                        showErrorMessage(message, detailedError || errorDetail);
+                        if (detailedError && !errorDetail) {
+                            // 即時レスポンスになかった場合のみ更新
+                            showErrorMessage(message, detailedError, errorCode);
+                        }
                     });
                 }
             }
@@ -396,18 +450,31 @@
 
     /**
      * エラーメッセージを表示
+     * 
+     * @param {string} message - ユーザー向けエラーメッセージ
+     * @param {object|null} errorDetail - 詳細エラー情報オブジェクト
+     * @param {string} errorCode - エラーコード（診断用）
      */
-    function showErrorMessage(message, errorDetail) {
+    function showErrorMessage(message, errorDetail, errorCode) {
         var modal = $('#noveltool-sample-images-modal');
         var content = modal.find('.noveltool-modal-content');
 
         content.find('h2').text(novelToolSampleImages.strings.error);
         
-        // エラーメッセージと対処方法を表示
+        // エラーメッセージと診断コードを表示
         var errorMessage = $('<span>', {
             css: { color: '#dc3232' },
             text: message
         });
+        
+        // 診断コード（あれば表示）
+        var diagnosticCode = $('<div>', {
+            class: 'noveltool-diagnostic-code',
+            css: { 'font-size': '12px', 'color': '#666', 'margin-top': '8px' }
+        });
+        if (errorCode) {
+            diagnosticCode.text((novelToolSampleImages.strings.diagnosticCode || '診断コード') + ': ' + errorCode);
+        }
         
         // 詳細エラー表示エリア
         var errorDetailsSection = $('<div>');
@@ -481,7 +548,7 @@
         
         troubleshootingBox.append(stepsList);
         
-        content.find('p').empty().append(errorMessage).append(errorDetailsSection).append(troubleshootingBox);
+        content.find('p').empty().append(errorMessage).append(diagnosticCode).append(errorDetailsSection).append(troubleshootingBox);
 
         var buttons = $('<div>', {
             class: 'noveltool-modal-buttons'

@@ -338,6 +338,13 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     'errorTimestamp'       => __( 'Error occurred at: ', 'novel-game-plugin' ),
                     'errorDetailFetchFailed' => __( 'Failed to retrieve error details. Please check the server logs.', 'novel-game-plugin' ),
                     'errorDetailNotAvailable' => __( 'Error details are not available. Please check the server logs.', 'novel-game-plugin' ),
+                    'diagnosticCode'       => __( 'Diagnostic code', 'novel-game-plugin' ),
+                    'errorBadRequest'      => __( 'Invalid request.', 'novel-game-plugin' ),
+                    'errorForbidden'       => __( 'Permission denied. Please contact the administrator.', 'novel-game-plugin' ),
+                    'errorNotFound'        => __( 'Resource not found.', 'novel-game-plugin' ),
+                    'errorServerError'     => __( 'A server error occurred.', 'novel-game-plugin' ),
+                    'errorServiceUnavailable' => __( 'Service temporarily unavailable.', 'novel-game-plugin' ),
+                    'errorUnknown'         => __( 'An error occurred', 'novel-game-plugin' ),
                 ),
             )
         );

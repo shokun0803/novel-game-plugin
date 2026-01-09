@@ -1,7 +1,7 @@
 # POT ファイル更新が必要
 
 ## 概要
-PR の進捗UI（プログレスバー）と詳細エラー表示実装、およびアクセシビリティ改善により、新しい翻訳文字列を追加しました。
+PR の進捗UI（プログレスバー）と詳細エラー表示実装、およびアクセシビリティ改善、エラー処理改善により、新しい翻訳文字列を追加しました。
 POT ファイルの更新が必要です。
 
 **注意**: POTファイルの実ファイル更新は別環境でのWP-CLI実行が必要なため、別タスクとして実施してください。
@@ -20,7 +20,15 @@ POT ファイルの更新が必要です。
    - `errorTimestamp` - エラー発生時刻のラベル
    - `errorDetailFetchFailed` - 詳細エラー取得失敗時のメッセージ
    - `errorDetailNotAvailable` - 詳細エラーが記録されていない場合のメッセージ
-3. その他の文字列：
+3. 診断コードとHTTPエラー関連の文字列を追加：
+   - `diagnosticCode` - 診断コードのラベル
+   - `errorBadRequest` - HTTP 400エラーメッセージ
+   - `errorForbidden` - HTTP 403エラーメッセージ
+   - `errorNotFound` - HTTP 404エラーメッセージ
+   - `errorServerError` - HTTP 500エラーメッセージ
+   - `errorServiceUnavailable` - HTTP 503エラーメッセージ
+   - `errorUnknown` - 不明なエラーメッセージ
+4. その他の文字列：
    - `downloadSuccess` - ダウンロード成功メッセージ
    - `downloadTimeout` - タイムアウトメッセージ
 
@@ -35,9 +43,10 @@ wp i18n make-pot . languages/novel-game-plugin.pot
 - リポジトリメンテナーまたは WP-CLI が利用可能な開発環境を持つ担当者
 
 ## 関連ファイル
-- `admin/my-games.php`: 新規翻訳文字列の追加（合計12個）
-- `js/admin-sample-images-prompt.js`: プログレスバーと詳細エラー表示機能の実装、アクセシビリティ改善
+- `admin/my-games.php`: 新規翻訳文字列の追加（合計19個）
+- `js/admin-sample-images-prompt.js`: プログレスバーと詳細エラー表示機能の実装、アクセシビリティ改善、エラー処理改善
 - `css/admin-sample-images-prompt.css`: プログレスバーと詳細エラー表示のスタイル、indeterminateモード追加
+- `includes/sample-images-downloader.php`: APIレスポンス改善
 
 ## 注意事項
 - POT ファイル更新後、このファイル（POT_UPDATE_NEEDED.md）は削除してください

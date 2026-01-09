@@ -629,7 +629,18 @@ function noveltool_api_download_sample_images( $request ) {
     if ( $result['success'] ) {
         return new WP_REST_Response( $result, 200 );
     } else {
-        return new WP_REST_Response( $result, 400 );
+        // 失敗時は詳細なエラー情報を含めて返す
+        $error_data = get_option( 'noveltool_sample_images_download_error', null );
+        $response = array(
+            'success' => false,
+            'message' => $result['message'],
+            'error'   => array(
+                'code'      => isset( $result['code'] ) ? $result['code'] : 'download_failed',
+                'message'   => $result['message'],
+                'timestamp' => is_array( $error_data ) && isset( $error_data['timestamp'] ) ? $error_data['timestamp'] : time(),
+            ),
+        );
+        return new WP_REST_Response( $response, 400 );
     }
 }
 
