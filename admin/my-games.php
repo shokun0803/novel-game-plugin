@@ -90,6 +90,16 @@ function noveltool_my_games_page() {
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'My Games', 'novel-game-plugin' ); ?></h1>
+
+        <?php if ( current_user_can( 'manage_options' ) ) : ?>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-left:12px;">
+                <?php wp_nonce_field( 'noveltool_download_diagnostic' ); ?>
+                <input type="hidden" name="action" value="noveltool_download_diagnostic" />
+                <button type="submit" class="button button-secondary">
+                    <?php esc_html_e( 'Download Diagnostic Package', 'novel-game-plugin' ); ?>
+                </button>
+            </form>
+        <?php endif; ?>
         
         <?php if ( $error_message ) : ?>
             <div class="notice notice-error is-dismissible">
@@ -420,3 +430,86 @@ function noveltool_dismiss_sample_images_prompt_ajax() {
     wp_send_json_success();
 }
 add_action( 'wp_ajax_noveltool_dismiss_sample_images_prompt', 'noveltool_dismiss_sample_images_prompt_ajax' );
+
+/**
+ * 管理者向け: 診断パッケージを生成してダウンロードさせるハンドラー
+ *
+ * WP 管理画面からワンクリックで取得できる診断 ZIP を生成します。
+ * 含める内容は最小限にし、管理者権限が必要です。
+ *
+ * @since 1.3.0
+ */
+function noveltool_handle_download_diagnostic() {
+    // 権限チェック
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_die( __( 'Permission denied.', 'novel-game-plugin' ) );
+    }
+
+    // ノンス検証
+    check_admin_referer( 'noveltool_download_diagnostic' );
+
+    // ZipArchive 必須
+    if ( ! class_exists( 'ZipArchive' ) ) {
+        wp_die( __( 'Zip extension is not available on the server.', 'novel-game-plugin' ) );
+    }
+
+    $tmp = tempnam( sys_get_temp_dir(), 'noveltool_diag_' );
+    $zip = new ZipArchive();
+    if ( true !== $zip->open( $tmp, ZipArchive::OVERWRITE ) ) {
+        wp_die( __( 'Failed to create diagnostic package.', 'novel-game-plugin' ) );
+    }
+
+    // 診断情報を生成
+    $diagnostics = array();
+    $diagnostics[] = 'Generated: ' . date_i18n( 'c' );
+    $diagnostics[] = 'WP Version: ' . get_bloginfo( 'version' );
+    $diagnostics[] = 'PHP Version: ' . phpversion();
+    $diagnostics[] = 'Memory limit: ' . ini_get( 'memory_limit' );
+    $diagnostics[] = 'Max execution time: ' . ini_get( 'max_execution_time' );
+    if ( defined( 'NOVEL_GAME_PLUGIN_VERSION' ) ) {
+        $diagnostics[] = 'Plugin version: ' . NOVEL_GAME_PLUGIN_VERSION;
+    }
+
+    // もしプラグインが保持している直近のエラー情報があれば収集（任意）
+    $last_error = get_option( 'noveltool_last_error', '' );
+    if ( $last_error ) {
+        $diagnostics[] = '\nLast stored plugin error:';
+        $diagnostics[] = wp_json_encode( $last_error );
+    }
+
+    $zip->addFromString( 'diagnostics.txt', implode( PHP_EOL, $diagnostics ) );
+
+    // wp-content debug.log を含める（存在する場合のみ）
+    if ( defined( 'WP_CONTENT_DIR' ) ) {
+        $debug_log = WP_CONTENT_DIR . '/debug.log';
+        if ( file_exists( $debug_log ) ) {
+            $zip->addFile( $debug_log, 'wp-content-debug.log' );
+        }
+    }
+
+    // プラグイン本体と関連の 1〜2 ファイルを含める（情報収集用）
+    $main_plugin = NOVEL_GAME_PLUGIN_PATH . 'novel-game-plugin.php';
+    if ( file_exists( $main_plugin ) ) {
+        $zip->addFile( $main_plugin, 'plugin-novel-game-plugin.php' );
+    }
+
+    $downloader = NOVEL_GAME_PLUGIN_PATH . 'includes/sample-images-downloader.php';
+    if ( file_exists( $downloader ) ) {
+        $zip->addFile( $downloader, 'includes/sample-images-downloader.php' );
+    }
+
+    $zip->close();
+
+    // 出力して削除
+    if ( file_exists( $tmp ) ) {
+        header( 'Content-Type: application/zip' );
+        header( 'Content-Disposition: attachment; filename="noveltool-diagnostic-' . gmdate( 'Ymd-His' ) . '.zip"' );
+        header( 'Content-Length: ' . filesize( $tmp ) );
+        readfile( $tmp );
+        unlink( $tmp );
+        exit;
+    }
+
+    wp_die( __( 'Failed to generate diagnostic package.', 'novel-game-plugin' ) );
+}
+add_action( 'admin_post_noveltool_download_diagnostic', 'noveltool_handle_download_diagnostic' );
