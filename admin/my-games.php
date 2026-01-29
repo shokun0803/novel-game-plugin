@@ -313,14 +313,15 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     'modalTitle'           => __( 'Download Sample Images', 'novel-game-plugin' ),
                     'modalMessage'         => sprintf(
                         /* translators: %s: estimated file size */
-                        __( 'Sample game images are not installed. Would you like to download them now? Download size: approximately %s.', 'novel-game-plugin' ),
+                        __( 'Sample game images are not installed. Would you like to download them now? Download size: approximately %s. The download will be processed in the background.', 'novel-game-plugin' ),
                         '15 MB'
                     ),
                     'downloadButton'       => __( 'Download', 'novel-game-plugin' ),
                     'laterButton'          => __( 'Later', 'novel-game-plugin' ),
                     'cancelButton'         => __( 'Cancel', 'novel-game-plugin' ),
                     'downloading'          => __( 'Downloading...', 'novel-game-plugin' ),
-                    'pleaseWait'           => __( 'Please wait while the sample images are being downloaded. This may take a few minutes.', 'novel-game-plugin' ),
+                    'pleaseWait'           => __( 'Please wait while the sample images are being downloaded. The download is processed in the background, so you can continue using other features.', 'novel-game-plugin' ),
+                    'backgroundNote'       => __( '(Processing in background)', 'novel-game-plugin' ),
                     'success'              => __( 'Success', 'novel-game-plugin' ),
                     'error'                => __( 'Error', 'novel-game-plugin' ),
                     'downloadSuccess'      => __( 'Sample images downloaded and installed successfully.', 'novel-game-plugin' ),
@@ -363,6 +364,10 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     'stageExtract'         => __( 'Extracting', 'novel-game-plugin' ),
                     'stageFilesystem'      => __( 'Filesystem operation', 'novel-game-plugin' ),
                     'stageOther'           => __( 'Other', 'novel-game-plugin' ),
+                    'stageEnvironmentCheck' => __( 'Environment check', 'novel-game-plugin' ),
+                    'stageBackground'      => __( 'Background processing', 'novel-game-plugin' ),
+                    'errorMemoryLimit'     => __( 'Server memory limit is too low. Please increase memory_limit to 256M or higher in php.ini.', 'novel-game-plugin' ),
+                    'errorNoExtension'     => __( 'Server does not support ZIP extraction. Please install PHP ZipArchive extension or unzip command.', 'novel-game-plugin' ),
                 ),
             )
         );
