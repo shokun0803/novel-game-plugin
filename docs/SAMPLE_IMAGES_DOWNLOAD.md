@@ -467,6 +467,48 @@ wp i18n make-pot . languages/novel-game-plugin.pot
 
 各ジョブは短時間で完了し、タイムアウトやメモリ制限に依存しにくい設計です。
 
+#### WP Cron の依存と制限
+
+バックグラウンド処理は WordPress の WP Cron に依存しています。WP Cron はサイトへのアクセスがトリガーとなるため、以下の制限があります：
+
+**制限事項**:
+- アクセスが少ないサイトでは、ジョブの実行が遅延する可能性があります
+- サーバーの cron 設定が無効な場合、ジョブが実行されません
+
+**対処方法**:
+
+1. **サーバー cron の設定（推奨）**:
+   ```bash
+   # crontab に追加
+   */5 * * * * wget -q -O - https://example.com/wp-cron.php?doing_wp_cron >/dev/null 2>&1
+   ```
+   wp-config.php に以下を追加して WP Cron を無効化:
+   ```php
+   define('DISABLE_WP_CRON', true);
+   ```
+
+2. **WP Crontrol プラグインの利用**:
+   - WP Cron の実行状況を監視・管理できるプラグイン
+   - スケジュール済みイベントを手動実行可能
+
+3. **処理遅延時の対処**:
+   - ダウンロード開始後、5分以上進捗がない場合は「リセット」ボタンをクリック
+   - リセット後、再度ダウンロードを開始してください
+
+4. **従来の同期処理への切替**:
+   ```php
+   update_option( 'noveltool_use_background_processing', false );
+   ```
+
+#### 将来的な改善: Action Scheduler への移行
+
+現在の実装では、将来的に Action Scheduler 等のより堅牢なジョブキューシステムへ移行するための抽象化ポイント（フック）を用意しています：
+
+- `noveltool_schedule_job`: ジョブのスケジュール（`apply_filters` で置換可能）
+- `noveltool_process_job`: ジョブの実行（`do_action` でフック可能）
+
+Action Scheduler を導入する場合は、これらのフックポイントでスケジューリング方式を切り替えることができます。
+
 ### 環境検出
 
 実行前にサーバー環境をチェックし、必要な機能が不足している場合は早期にエラーを返します。

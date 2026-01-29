@@ -261,6 +261,48 @@ function noveltool_verify_checksum( $file_path, $expected_checksum ) {
 }
 
 /**
+ * unzip コマンドの利用可否を堅牢に検出
+ *
+ * @return bool unzip コマンドが利用可能な場合 true
+ * @since 1.4.0
+ */
+function noveltool_detect_unzip_command() {
+    // 方法1: which コマンド（Unix/Linux）
+    $output = array();
+    $return_var = 0;
+    @exec( 'which unzip 2>/dev/null', $output, $return_var );
+    
+    if ( $return_var === 0 && ! empty( $output ) ) {
+        return true;
+    }
+    
+    // 方法2: command -v（より汎用的、bashなど）
+    $output = array();
+    $return_var = 0;
+    @exec( 'command -v unzip 2>/dev/null', $output, $return_var );
+    
+    if ( $return_var === 0 && ! empty( $output ) ) {
+        return true;
+    }
+    
+    // 方法3: unzip を直接実行してバージョン確認（Windows含む）
+    $output = array();
+    $return_var = 0;
+    @exec( 'unzip -v 2>&1', $output, $return_var );
+    
+    // unzip -v は通常 0 を返すか、エラーでも出力がある
+    if ( ! empty( $output ) ) {
+        $output_str = implode( ' ', $output );
+        // unzip のバージョン情報が含まれているか確認
+        if ( stripos( $output_str, 'unzip' ) !== false || stripos( $output_str, 'info-zip' ) !== false ) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+/**
  * 実行環境の抽出能力を検出
  *
  * @return array 検出結果の配列
@@ -310,14 +352,8 @@ function noveltool_detect_extraction_capabilities() {
         if ( ! in_array( 'exec', $disabled, true ) ) {
             $capabilities['has_exec'] = true;
             
-            // unzip コマンドの有無をチェック
-            $output = array();
-            $return_var = 0;
-            @exec( 'which unzip 2>/dev/null', $output, $return_var );
-            
-            if ( $return_var === 0 && ! empty( $output ) ) {
-                $capabilities['has_unzip'] = true;
-            }
+            // unzip コマンドの有無を堅牢にチェック
+            $capabilities['has_unzip'] = noveltool_detect_unzip_command();
         }
     }
     
@@ -333,6 +369,117 @@ function noveltool_detect_extraction_capabilities() {
     }
     
     return $capabilities;
+}
+
+/**
+ * ストリームから直接ファイルへチャンク書き込み（メモリ効率重視）
+ *
+ * @param resource $stream 読み込みストリーム
+ * @param string   $target_path 書き込み先ファイルパス
+ * @param int      $chunk_size チャンクサイズ（バイト）
+ * @param WP_Filesystem_Base $wp_filesystem WordPress Filesystem オブジェクト
+ * @return bool|WP_Error 成功した場合true、失敗した場合WP_Error
+ * @since 1.4.0
+ */
+function noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_filesystem ) {
+    // WP_Filesystem が direct method の場合は PHP のファイルハンドルで直接書き込み
+    if ( $wp_filesystem->method === 'direct' ) {
+        $fp = @fopen( $target_path, 'wb' );
+        if ( false === $fp ) {
+            return new WP_Error(
+                'file_open_error',
+                sprintf(
+                    /* translators: %s: file path */
+                    __( 'Failed to open file for writing: %s', 'novel-game-plugin' ),
+                    $target_path
+                )
+            );
+        }
+        
+        while ( ! feof( $stream ) ) {
+            $chunk = fread( $stream, $chunk_size );
+            if ( false === $chunk ) {
+                fclose( $fp );
+                @unlink( $target_path );
+                return new WP_Error(
+                    'read_error',
+                    __( 'Failed to read from stream.', 'novel-game-plugin' )
+                );
+            }
+            
+            $written = fwrite( $fp, $chunk );
+            if ( false === $written || $written !== strlen( $chunk ) ) {
+                fclose( $fp );
+                @unlink( $target_path );
+                return new WP_Error(
+                    'write_error',
+                    __( 'Failed to write chunk to file.', 'novel-game-plugin' )
+                );
+            }
+        }
+        
+        fclose( $fp );
+        @chmod( $target_path, FS_CHMOD_FILE );
+        return true;
+    }
+    
+    // WP_Filesystem が FTP/SSH 等のリモートメソッドの場合は一時ファイル経由
+    $temp_file = wp_tempnam( basename( $target_path ) );
+    if ( ! $temp_file ) {
+        return new WP_Error(
+            'temp_file_error',
+            __( 'Failed to create temporary file.', 'novel-game-plugin' )
+        );
+    }
+    
+    $fp = @fopen( $temp_file, 'wb' );
+    if ( false === $fp ) {
+        @unlink( $temp_file );
+        return new WP_Error(
+            'temp_file_open_error',
+            __( 'Failed to open temporary file for writing.', 'novel-game-plugin' )
+        );
+    }
+    
+    while ( ! feof( $stream ) ) {
+        $chunk = fread( $stream, $chunk_size );
+        if ( false === $chunk ) {
+            fclose( $fp );
+            @unlink( $temp_file );
+            return new WP_Error(
+                'read_error',
+                __( 'Failed to read from stream.', 'novel-game-plugin' )
+            );
+        }
+        
+        $written = fwrite( $fp, $chunk );
+        if ( false === $written || $written !== strlen( $chunk ) ) {
+            fclose( $fp );
+            @unlink( $temp_file );
+            return new WP_Error(
+                'write_error',
+                __( 'Failed to write chunk to temporary file.', 'novel-game-plugin' )
+            );
+        }
+    }
+    
+    fclose( $fp );
+    
+    // 一時ファイルを最終的な場所に移動
+    $move_result = $wp_filesystem->move( $temp_file, $target_path, true );
+    if ( ! $move_result ) {
+        @unlink( $temp_file );
+        return new WP_Error(
+            'move_error',
+            sprintf(
+                /* translators: %s: file path */
+                __( 'Failed to move temporary file to destination: %s', 'novel-game-plugin' ),
+                $target_path
+            )
+        );
+    }
+    
+    return true;
 }
 
 /**
@@ -399,15 +546,7 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
                 continue;
             }
             
-            $target_path = $destination . '/' . $clean_path;
-            
-            // 正規化後のパスが destination 内にあることを確認
-            $real_target = realpath( dirname( $target_path ) );
-            $real_destination = realpath( $destination );
-            if ( $real_target === false || $real_destination === false || strpos( $real_target, $real_destination ) !== 0 ) {
-                error_log( "NovelGamePlugin: Skipping file outside destination: {$filename}" );
-                continue;
-            }
+            $target_path = $destination . '/' . ltrim( $clean_path, '/' );
             
             // ディレクトリの場合
             if ( substr( $filename, -1 ) === '/' ) {
@@ -421,6 +560,14 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
             $target_dir = dirname( $target_path );
             if ( ! $wp_filesystem->is_dir( $target_dir ) ) {
                 $wp_filesystem->mkdir( $target_dir, FS_CHMOD_DIR, true );
+            }
+            
+            // 正規化後のパスが destination 内にあることを確認（親ディレクトリ作成後）
+            $real_target = realpath( $target_dir );
+            $real_destination = realpath( $destination );
+            if ( $real_target === false || $real_destination === false || strpos( $real_target, $real_destination ) !== 0 ) {
+                error_log( "NovelGamePlugin: Skipping file outside destination: {$filename}" );
+                continue;
             }
             
             // ストリーミング展開（チャンク読み込みでメモリ効率化）
@@ -437,38 +584,15 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
                 );
             }
             
-            // チャンク単位で読み込み・書き込み（メモリ効率化）
+            // 真のストリーミング書き込み（チャンクごとに直接書き込み）
             $chunk_size = 8192; // 8KB
-            $content = '';
-            while ( ! feof( $stream ) ) {
-                $chunk = fread( $stream, $chunk_size );
-                if ( false === $chunk ) {
-                    fclose( $stream );
-                    $zip->close();
-                    return new WP_Error(
-                        'read_error',
-                        sprintf(
-                            /* translators: %s: file name */
-                            __( 'Failed to read file: %s', 'novel-game-plugin' ),
-                            $filename
-                        )
-                    );
-                }
-                $content .= $chunk;
-            }
+            $write_result = noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_filesystem );
+            
             fclose( $stream );
             
-            // ファイルを書き込み
-            if ( ! $wp_filesystem->put_contents( $target_path, $content, FS_CHMOD_FILE ) ) {
+            if ( is_wp_error( $write_result ) ) {
                 $zip->close();
-                return new WP_Error(
-                    'write_error',
-                    sprintf(
-                        /* translators: %s: file name */
-                        __( 'Failed to write file: %s', 'novel-game-plugin' ),
-                        $filename
-                    )
-                );
+                return $write_result;
             }
         }
         
@@ -678,8 +802,74 @@ function noveltool_schedule_background_job( $job_id ) {
         return true;
     }
     
-    // 即座に実行するようスケジュール
+    // フィルターで外部スケジューラ（Action Scheduler等）への切替を可能に
+    $use_custom_scheduler = apply_filters( 'noveltool_use_custom_job_scheduler', false, $job_id );
+    
+    if ( $use_custom_scheduler ) {
+        /**
+         * カスタムジョブスケジューラのフック
+         * 
+         * Action Scheduler 等を使う場合はここでスケジュール
+         * 
+         * @param string $job_id ジョブID
+         * @since 1.4.0
+         */
+        do_action( 'noveltool_schedule_custom_job', $job_id );
+        return true;
+    }
+    
+    // デフォルトは WP Cron を使用
     return wp_schedule_single_event( time(), 'noveltool_process_background_job', array( $job_id ) );
+}
+
+/**
+ * ジョブログにエントリを追加（デバッグ・監査用）
+ *
+ * @param array $log_entry ログエントリ
+ * @since 1.4.0
+ */
+function noveltool_append_job_log( $log_entry ) {
+    $log = get_option( 'noveltool_job_log', array() );
+    
+    // ログの最大サイズを制限（最新50件まで）
+    if ( count( $log ) >= 50 ) {
+        array_shift( $log );
+    }
+    
+    $log[] = $log_entry;
+    update_option( 'noveltool_job_log', $log, false );
+}
+
+/**
+ * 完了したジョブをクリーンアップ
+ *
+ * @since 1.4.0
+ */
+function noveltool_cleanup_completed_jobs() {
+    $jobs = get_option( 'noveltool_background_jobs', array() );
+    $current_time = time();
+    $retention_period = 3600; // 1時間
+    
+    foreach ( $jobs as $job_id => $job ) {
+        // 完了または失敗したジョブで、1時間以上経過しているものを削除
+        if ( in_array( $job['status'], array( NOVELTOOL_JOB_STATUS_COMPLETED, NOVELTOOL_JOB_STATUS_FAILED ), true ) ) {
+            $updated_at = isset( $job['updated_at'] ) ? $job['updated_at'] : 0;
+            if ( $current_time - $updated_at > $retention_period ) {
+                // ログに記録してから削除
+                $log_entry = array(
+                    'type'       => 'job_cleaned',
+                    'job_id'     => $job_id,
+                    'job_status' => $job['status'],
+                    'cleaned_at' => $current_time,
+                );
+                noveltool_append_job_log( $log_entry );
+                
+                unset( $jobs[ $job_id ] );
+            }
+        }
+    }
+    
+    update_option( 'noveltool_background_jobs', $jobs, false );
 }
 
 /**
@@ -881,17 +1071,36 @@ function noveltool_check_download_status_ttl() {
 function noveltool_update_download_status( $status, $error_message = '', $error_code = '', $error_stage = '', $error_meta = array(), $job_info = array() ) {
     $timestamp = time();
     
+    // ステータス値のバリデーション
+    $valid_statuses = array( 'not_started', 'in_progress', 'completed', 'failed' );
+    if ( ! in_array( $status, $valid_statuses, true ) ) {
+        error_log( "NovelGamePlugin: Invalid status value: {$status}" );
+        $status = 'failed';
+    }
+    
     $status_data = array(
-        'status'    => $status,
-        'timestamp' => $timestamp,
+        'status'    => sanitize_text_field( $status ),
+        'timestamp' => intval( $timestamp ),
     );
     
     // ジョブ情報を追加（バックグラウンド処理の場合）
-    if ( ! empty( $job_info ) ) {
-        $status_data['job_id'] = isset( $job_info['job_id'] ) ? sanitize_text_field( $job_info['job_id'] ) : '';
-        $status_data['progress'] = isset( $job_info['progress'] ) ? intval( $job_info['progress'] ) : 0;
-        $status_data['current_step'] = isset( $job_info['current_step'] ) ? sanitize_text_field( $job_info['current_step'] ) : '';
-        $status_data['use_background'] = isset( $job_info['use_background'] ) ? (bool) $job_info['use_background'] : false;
+    if ( ! empty( $job_info ) && is_array( $job_info ) ) {
+        if ( isset( $job_info['job_id'] ) ) {
+            $status_data['job_id'] = sanitize_text_field( $job_info['job_id'] );
+        }
+        if ( isset( $job_info['progress'] ) ) {
+            $progress = intval( $job_info['progress'] );
+            // 進捗値を 0-100 の範囲に制限
+            $status_data['progress'] = max( 0, min( 100, $progress ) );
+        }
+        if ( isset( $job_info['current_step'] ) ) {
+            $valid_steps = array( 'download', 'verify', 'extract' );
+            $step = sanitize_text_field( $job_info['current_step'] );
+            $status_data['current_step'] = in_array( $step, $valid_steps, true ) ? $step : '';
+        }
+        if ( isset( $job_info['use_background'] ) ) {
+            $status_data['use_background'] = (bool) $job_info['use_background'];
+        }
     }
     
     // 後方互換性のため、単純なステータス文字列も保存
@@ -1246,10 +1455,27 @@ function noveltool_check_background_job_extract( $extract_job_id ) {
     noveltool_update_download_status( 'completed' );
     update_option( 'noveltool_sample_images_downloaded', true, false );
     delete_option( 'noveltool_sample_images_download_lock' );
+    
+    // 完了したジョブのログを保存（デバッグ・監査用）
+    $job = noveltool_get_background_job( $extract_job_id );
+    if ( $job ) {
+        $log_entry = array(
+            'type'         => 'job_completed',
+            'job_id'       => $extract_job_id,
+            'completed_at' => time(),
+            'status'       => 'success',
+        );
+        noveltool_append_job_log( $log_entry );
+    }
+    
+    // 現在のジョブを削除
     noveltool_delete_background_job( $extract_job_id );
     
-    // すべてのジョブをクリーンアップ
-    delete_option( 'noveltool_background_jobs' );
+    // 完了したジョブのクリーンアップ（自動削除がオプションで有効な場合）
+    $auto_cleanup = get_option( 'noveltool_auto_cleanup_jobs', true );
+    if ( $auto_cleanup ) {
+        noveltool_cleanup_completed_jobs();
+    }
 }
 add_action( 'noveltool_check_background_job_extract', 'noveltool_check_background_job_extract' );
 
