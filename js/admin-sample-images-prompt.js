@@ -97,6 +97,187 @@
     }
 
     /**
+     * プログレスバーを表示
+     */
+    function showProgressBar() {
+        var progressContainer = $('<div>', {
+            class: 'noveltool-progress-container'
+        });
+        
+        // プログレスバーを生成し、ARIA属性を明示的に設定（確実性を保証）
+        var progressBar = $('<div>', {
+            class: 'noveltool-progress-bar'
+        });
+        progressBar.attr('role', 'progressbar')
+                   .attr('aria-valuemin', 0)
+                   .attr('aria-valuemax', 100)
+                   .attr('aria-valuenow', 0);
+        
+        var progressFill = $('<div>', {
+            class: 'noveltool-progress-fill',
+            css: { width: '0%' }
+        });
+        
+        progressBar.append(progressFill);
+        
+        // ステータステキスト（aria-live属性で確実にスクリーンリーダー通知）
+        var progressStatus = $('<div>', {
+            class: 'noveltool-progress-status',
+            text: novelToolSampleImages.strings.statusConnecting || '接続中...'
+        });
+        progressStatus.attr('aria-live', 'polite').attr('aria-atomic', 'true');
+        
+        progressContainer.append(progressBar).append(progressStatus);
+        
+        return progressContainer;
+    }
+    
+    /**
+     * プログレスバーを更新
+     * 
+     * @param {number|null} percentage - 進捗パーセンテージ（0-100）。nullの場合はindeterminateモード
+     * @param {string} statusText - 表示するステータステキスト
+     */
+    function updateProgressBar(percentage, statusText) {
+        var modal = $('#noveltool-sample-images-modal');
+        var progressBar = modal.find('.noveltool-progress-bar');
+        var progressFill = modal.find('.noveltool-progress-fill');
+        var progressStatus = modal.find('.noveltool-progress-status');
+        
+        if (progressBar.length > 0) {
+            if (percentage === null) {
+                // indeterminateモード：進捗不明
+                progressBar.addClass('indeterminate');
+                progressBar.removeAttr('aria-valuenow');
+                progressFill.css('width', '100%').text('');
+            } else {
+                // 確定的な進捗
+                progressBar.removeClass('indeterminate');
+                progressBar.attr('aria-valuenow', percentage); // 必ず.attr()で更新
+                progressFill.css('width', percentage + '%').text(percentage + '%');
+            }
+            
+            if (statusText) {
+                // aria-live属性を確実に設定してスクリーンリーダー通知を保証
+                progressStatus.attr('aria-live', 'polite').attr('aria-atomic', 'true').text(statusText);
+            }
+        }
+    }
+    
+    /**
+     * ダウンロード状態をポーリング
+     */
+    function pollDownloadStatus(pollInterval, startTime) {
+        var maxPollTime = 300000; // 5分
+        
+        if (Date.now() - startTime > maxPollTime) {
+            // タイムアウト
+            fetchDetailedError(function(detail) {
+                showErrorMessage(novelToolSampleImages.strings.downloadTimeout || 'ダウンロードがタイムアウトしました。', detail, 'ERR-TIMEOUT');
+            });
+            return;
+        }
+        
+        $.ajax({
+            url: novelToolSampleImages.apiStatus,
+            method: 'GET',
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-WP-Nonce', novelToolSampleImages.restNonce);
+            },
+            success: function (response) {
+                if (response.status === 'completed' && response.exists) {
+                    // ダウンロード完了
+                    updateProgressBar(100, novelToolSampleImages.strings.statusCompleted || '完了');
+                    setTimeout(function() {
+                        showSuccessMessage(novelToolSampleImages.strings.downloadSuccess || 'サンプル画像のダウンロードが完了しました。');
+                    }, 500);
+                } else if (response.status === 'failed') {
+                    // ダウンロード失敗 - 必ず詳細エラーを取得
+                    var errorMsg = novelToolSampleImages.strings.downloadFailed;
+                    var errorCode = 'ERR-DOWNLOAD-FAILED';
+                    if (response.error && response.error.message) {
+                        errorMsg = response.error.message;
+                        errorCode = response.error.code || errorCode;
+                    }
+                    fetchDetailedError(function(detailedError) {
+                        showErrorMessage(errorMsg, detailedError || response.error, errorCode);
+                    });
+                } else if (response.status === 'in_progress') {
+                    // ダウンロード中
+                    var elapsed = Date.now() - startTime;
+                    
+                    // バイト単位の進捗情報があれば使用
+                    if (
+                        response.progress &&
+                        typeof response.progress.current === 'number' &&
+                        typeof response.progress.total === 'number' &&
+                        isFinite(response.progress.current) &&
+                        isFinite(response.progress.total) &&
+                        response.progress.total > 0
+                    ) {
+                        var percentage = Math.floor((response.progress.current / response.progress.total) * 100);
+                        var statusText = novelToolSampleImages.strings.statusDownloadingBytes || 'ダウンロード中: ' + 
+                            formatBytes(response.progress.current) + ' / ' + formatBytes(response.progress.total);
+                        updateProgressBar(percentage, statusText);
+                    } else {
+                        // バイト情報がない場合はindeterminateモード + 段階的ステータス
+                        var statusText = novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...';
+                        if (elapsed > 30000) {
+                            statusText = novelToolSampleImages.strings.statusVerifying || '検証中...';
+                        }
+                        if (elapsed > 60000) {
+                            statusText = novelToolSampleImages.strings.statusExtracting || '展開中...';
+                        }
+                        
+                        updateProgressBar(null, statusText); // null = indeterminate
+                    }
+                    
+                    // 次のポーリング
+                    setTimeout(function() {
+                        pollDownloadStatus(pollInterval, startTime);
+                    }, pollInterval);
+                } else {
+                    // not_started または不明な状態 - 継続してポーリング
+                    setTimeout(function() {
+                        pollDownloadStatus(pollInterval, startTime);
+                    }, pollInterval);
+                }
+            },
+            error: function () {
+                // ポーリングエラーは継続
+                setTimeout(function() {
+                    pollDownloadStatus(pollInterval, startTime);
+                }, pollInterval);
+            }
+        });
+    }
+    
+    /**
+     * バイト数をフォーマット
+     */
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        var k = 1024;
+        var sizes = ['B', 'KB', 'MB', 'GB'];
+        var i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    /**
+     * HTTPステータスコードに基づくユーザー向けメッセージを取得
+     */
+    function getHttpStatusMessage(status) {
+        var messages = {
+            400: novelToolSampleImages.strings.errorBadRequest || 'リクエストが不正です。',
+            403: novelToolSampleImages.strings.errorForbidden || '権限がありません。管理者に確認してください。',
+            404: novelToolSampleImages.strings.errorNotFound || 'リソースが見つかりません。',
+            500: novelToolSampleImages.strings.errorServerError || 'サーバーエラーが発生しました。',
+            503: novelToolSampleImages.strings.errorServiceUnavailable || 'サービスが一時的に利用できません。'
+        };
+        return messages[status] || (novelToolSampleImages.strings.errorUnknown || 'エラーが発生しました（ステータス: ' + status + '）');
+    }
+
+    /**
      * ダウンロードを開始
      */
     function startDownload() {
@@ -108,8 +289,19 @@
 
         // プログレス表示に変更
         content.find('h2').text(novelToolSampleImages.strings.downloading);
-        content.find('p').html(novelToolSampleImages.strings.pleaseWait);
+        content.find('p').empty();
+        
+        // プログレスバーを追加
+        var progressBar = showProgressBar();
+        content.find('p').append(progressBar);
+        
         content.find('.noveltool-modal-buttons').html('<div class="noveltool-spinner"></div>');
+
+        // ダウンロード開始時刻を記録
+        var downloadStartTime = Date.now();
+        
+        // 初期進捗を表示（indeterminate）
+        updateProgressBar(null, novelToolSampleImages.strings.statusConnecting || '接続中...');
 
         // REST API でダウンロード開始
         $.ajax({
@@ -120,17 +312,113 @@
             },
             success: function (response) {
                 if (response.success) {
-                    showSuccessMessage(response.message);
+                    // 成功レスポンスが即座に返る場合
+                    updateProgressBar(100, novelToolSampleImages.strings.statusCompleted || '完了');
+                    setTimeout(function() {
+                        showSuccessMessage(response.message);
+                    }, 500);
                 } else {
-                    showErrorMessage(response.message);
+                    // 失敗レスポンス - 必ず詳細エラーを取得
+                    var errorCode = 'ERR-API-FAILED';
+                    if (response.error && response.error.code) {
+                        errorCode = response.error.code;
+                    }
+                    fetchDetailedError(function(detailedError) {
+                        showErrorMessage(response.message, detailedError, errorCode);
+                    });
                 }
             },
             error: function (xhr) {
-                var message = novelToolSampleImages.strings.downloadFailed;
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    message = xhr.responseJSON.message;
+                // ダウンロードが開始されているがレスポンスが遅い、または失敗
+                if (xhr.status === 0 || xhr.status === 504 || xhr.status === 502) {
+                    // タイムアウトまたはゲートウェイエラー - ポーリングで状態確認
+                    updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+                    setTimeout(function() {
+                        pollDownloadStatus(3000, downloadStartTime);
+                    }, 2000);
+                } else {
+                    // その他のエラー - 即時レスポンスを優先表示
+                    var message = novelToolSampleImages.strings.downloadFailed || 'ダウンロードに失敗しました。';
+                    var errorDetail = null;
+                    var errorCode = 'ERR-HTTP-' + xhr.status;
+                    
+                    // レスポンスJSONを優先的に解析
+                    if (xhr.responseJSON) {
+                        // JSONレスポンスがある場合
+                        if (xhr.responseJSON.error) {
+                            errorDetail = xhr.responseJSON.error;
+                            message = errorDetail.message || xhr.responseJSON.message || message;
+                            errorCode = errorDetail.code || errorCode;
+                        } else if (xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        }
+                        // 即時エラー表示（詳細あり）
+                        showErrorMessage(message, errorDetail, errorCode);
+                    } else if (xhr.responseText) {
+                        // JSONパースを試みる
+                        try {
+                            var parsedResponse = JSON.parse(xhr.responseText);
+                            if (parsedResponse.error) {
+                                errorDetail = parsedResponse.error;
+                                message = errorDetail.message || parsedResponse.message || message;
+                                errorCode = errorDetail.code || errorCode;
+                            } else if (parsedResponse.message) {
+                                message = parsedResponse.message;
+                            }
+                            showErrorMessage(message, errorDetail, errorCode);
+                        } catch (e) {
+                            // JSONパース失敗 - HTTPステータスに基づくメッセージ
+                            message = getHttpStatusMessage(xhr.status);
+                            showErrorMessage(message, null, errorCode);
+                        }
+                    } else {
+                        // レスポンスなし - HTTPステータスに基づくメッセージ
+                        message = getHttpStatusMessage(xhr.status);
+                        showErrorMessage(message, null, errorCode);
+                    }
+                    
+                    // フォールバック: サーバー保存のエラー情報も取得（追加情報として）
+                    fetchDetailedError(function(detailedError) {
+                        if (detailedError && !errorDetail) {
+                            // 即時レスポンスになかった場合のみ更新
+                            showErrorMessage(message, detailedError, errorCode);
+                        }
+                    });
                 }
-                showErrorMessage(message);
+            }
+        });
+    }
+    
+    /**
+     * サーバーから詳細エラー情報を取得
+     * 
+     * @param {function} callback - コールバック関数。詳細エラー情報またはフォールバックメッセージを受け取る
+     */
+    function fetchDetailedError(callback) {
+        $.ajax({
+            url: novelToolSampleImages.apiStatus,
+            method: 'GET',
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-WP-Nonce', novelToolSampleImages.restNonce);
+            },
+            success: function (response) {
+                if (response.error && response.error.message) {
+                    // サーバー側に詳細エラーがある場合
+                    callback(response.error);
+                } else {
+                    // 詳細エラーがない場合は簡潔な代替メッセージ
+                    callback({
+                        message: novelToolSampleImages.strings.errorDetailNotAvailable || 'エラーの詳細情報は記録されていません。サーバーログを確認してください。',
+                        timestamp: null
+                    });
+                }
+            },
+            error: function () {
+                // 詳細エラー取得に失敗した場合のフォールバック
+                callback({
+                    message: novelToolSampleImages.strings.errorDetailFetchFailed || '詳細の取得に失敗しました。サーバーログを確認してください。',
+                    timestamp: null
+                });
             }
         });
     }
@@ -162,18 +450,124 @@
 
     /**
      * エラーメッセージを表示
+     * 
+     * @param {string} message - ユーザー向けエラーメッセージ
+     * @param {object|null} errorDetail - 詳細エラー情報オブジェクト
+     * @param {string} errorCode - エラーコード（診断用）
      */
-    function showErrorMessage(message) {
+    function showErrorMessage(message, errorDetail, errorCode) {
         var modal = $('#noveltool-sample-images-modal');
         var content = modal.find('.noveltool-modal-content');
 
         content.find('h2').text(novelToolSampleImages.strings.error);
         
-        // エラーメッセージと対処方法を表示
+        // エラーメッセージと診断コードを表示
         var errorMessage = $('<span>', {
             css: { color: '#dc3232' },
             text: message
         });
+        
+        // 診断コード（あれば表示）
+        var diagnosticCode = $('<div>', {
+            class: 'noveltool-diagnostic-code',
+            css: { 'font-size': '12px', 'color': '#666', 'margin-top': '8px' }
+        });
+        if (errorCode) {
+            diagnosticCode.text((novelToolSampleImages.strings.diagnosticCode || '診断コード') + ': ' + errorCode);
+        }
+        
+        // ステージ情報を表示（あれば）
+        var stageInfo = $('<div>', {
+            class: 'noveltool-error-stage',
+            css: { 'font-size': '12px', 'color': '#666', 'margin-top': '4px' }
+        });
+        if (errorDetail && errorDetail.stage) {
+            var stageLabels = {
+                'fetch_release': novelToolSampleImages.strings.stageFetchRelease || 'リリース情報取得',
+                'download': novelToolSampleImages.strings.stageDownload || 'ダウンロード',
+                'verify_checksum': novelToolSampleImages.strings.stageVerifyChecksum || 'チェックサム検証',
+                'extract': novelToolSampleImages.strings.stageExtract || '展開',
+                'filesystem': novelToolSampleImages.strings.stageFilesystem || 'ファイルシステム',
+                'other': novelToolSampleImages.strings.stageOther || 'その他'
+            };
+            var stageLabel = stageLabels[errorDetail.stage] || errorDetail.stage;
+            stageInfo.text((novelToolSampleImages.strings.errorStage || 'エラー発生段階') + ': ' + stageLabel);
+        }
+        
+        // 詳細エラー表示エリア
+        var errorDetailsSection = $('<div>');
+        
+        if (errorDetail && (errorDetail.message || errorDetail.code)) {
+            var detailsToggle = $('<button>', {
+                class: 'noveltool-error-details-toggle',
+                text: novelToolSampleImages.strings.showErrorDetails || '詳しいエラーを確認',
+                click: function(e) {
+                    e.preventDefault();
+                    var detailsContent = $(this).next('.noveltool-error-details');
+                    if (detailsContent.is(':visible')) {
+                        detailsContent.slideUp();
+                        $(this).text(novelToolSampleImages.strings.showErrorDetails || '詳しいエラーを確認');
+                    } else {
+                        detailsContent.slideDown();
+                        $(this).text(novelToolSampleImages.strings.hideErrorDetails || '詳細を非表示');
+                    }
+                }
+            });
+            
+            var errorDetailsDiv = $('<div>', {
+                class: 'noveltool-error-details',
+                css: { display: 'none' }
+            });
+            
+            // メッセージ
+            if (errorDetail.message) {
+                var errorDetailsContent = $('<div>', {
+                    class: 'noveltool-error-details-content',
+                    text: errorDetail.message
+                });
+                errorDetailsDiv.append(errorDetailsContent);
+            }
+            
+            // コード
+            if (errorDetail.code) {
+                var codeDiv = $('<div>', {
+                    class: 'noveltool-error-code',
+                    text: (novelToolSampleImages.strings.errorCode || 'エラーコード') + ': ' + errorDetail.code
+                });
+                errorDetailsDiv.append(codeDiv);
+            }
+            
+            // タイムスタンプ
+            if (errorDetail.timestamp) {
+                var date = new Date(errorDetail.timestamp * 1000);
+                var timestampText = novelToolSampleImages.strings.errorTimestamp || 'エラー発生時刻: ';
+                var errorTimestamp = $('<div>', {
+                    class: 'noveltool-error-timestamp',
+                    text: timestampText + date.toLocaleString()
+                });
+                errorDetailsDiv.append(errorTimestamp);
+            }
+            
+            // メタ情報（あれば）
+            if (errorDetail.meta && typeof errorDetail.meta === 'object') {
+                var metaDiv = $('<div>', {
+                    class: 'noveltool-error-meta',
+                    css: { 'font-size': '11px', 'color': '#999', 'margin-top': '5px' }
+                });
+                var metaItems = [];
+                for (var key in errorDetail.meta) {
+                    if (errorDetail.meta.hasOwnProperty(key)) {
+                        metaItems.push(key + ': ' + errorDetail.meta[key]);
+                    }
+                }
+                if (metaItems.length > 0) {
+                    metaDiv.text(metaItems.join(', '));
+                    errorDetailsDiv.append(metaDiv);
+                }
+            }
+            
+            errorDetailsSection.append(detailsToggle).append(errorDetailsDiv);
+        }
         
         var troubleshootingBox = $('<div>', {
             css: {
@@ -202,7 +596,7 @@
         
         troubleshootingBox.append(stepsList);
         
-        content.find('p').empty().append(errorMessage).append(troubleshootingBox);
+        content.find('p').empty().append(errorMessage).append(diagnosticCode).append(stageInfo).append(errorDetailsSection).append(troubleshootingBox);
 
         var buttons = $('<div>', {
             class: 'noveltool-modal-buttons'

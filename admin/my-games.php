@@ -90,6 +90,16 @@ function noveltool_my_games_page() {
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'My Games', 'novel-game-plugin' ); ?></h1>
+
+        <?php if ( current_user_can( 'manage_options' ) ) : ?>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-left:12px;">
+                <?php wp_nonce_field( 'noveltool_download_diagnostic' ); ?>
+                <input type="hidden" name="action" value="noveltool_download_diagnostic" />
+                <button type="submit" class="button button-secondary">
+                    <?php esc_html_e( 'Download Diagnostic Package', 'novel-game-plugin' ); ?>
+                </button>
+            </form>
+        <?php endif; ?>
         
         <?php if ( $error_message ) : ?>
             <div class="notice notice-error is-dismissible">
@@ -313,7 +323,9 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     'pleaseWait'           => __( 'Please wait while the sample images are being downloaded. This may take a few minutes.', 'novel-game-plugin' ),
                     'success'              => __( 'Success', 'novel-game-plugin' ),
                     'error'                => __( 'Error', 'novel-game-plugin' ),
+                    'downloadSuccess'      => __( 'Sample images downloaded and installed successfully.', 'novel-game-plugin' ),
                     'downloadFailed'       => __( 'Failed to download sample images. Please try again later.', 'novel-game-plugin' ),
+                    'downloadTimeout'      => __( 'Download timeout. Please try again.', 'novel-game-plugin' ),
                     'retryButton'          => __( 'Retry', 'novel-game-plugin' ),
                     'closeButton'          => __( 'Close', 'novel-game-plugin' ),
                     'resetting'            => __( 'Resetting...', 'novel-game-plugin' ),
@@ -325,6 +337,32 @@ function noveltool_my_games_admin_scripts( $hook ) {
                         __( 'Check server error logs for detailed information', 'novel-game-plugin' ),
                         __( 'If the problem persists, try manual installation (see documentation)', 'novel-game-plugin' ),
                     ),
+                    'statusConnecting'     => __( 'Connecting to server...', 'novel-game-plugin' ),
+                    'statusDownloading'    => __( 'Downloading sample images...', 'novel-game-plugin' ),
+                    'statusDownloadingBytes' => __( 'Downloading: ', 'novel-game-plugin' ),
+                    'statusVerifying'      => __( 'Verifying downloaded files...', 'novel-game-plugin' ),
+                    'statusExtracting'     => __( 'Extracting files...', 'novel-game-plugin' ),
+                    'statusCompleted'      => __( 'Completed', 'novel-game-plugin' ),
+                    'showErrorDetails'     => __( 'Show detailed error', 'novel-game-plugin' ),
+                    'hideErrorDetails'     => __( 'Hide details', 'novel-game-plugin' ),
+                    'errorTimestamp'       => __( 'Error occurred at: ', 'novel-game-plugin' ),
+                    'errorDetailFetchFailed' => __( 'Failed to retrieve error details. Please check the server logs.', 'novel-game-plugin' ),
+                    'errorDetailNotAvailable' => __( 'Error details are not available. Please check the server logs.', 'novel-game-plugin' ),
+                    'diagnosticCode'       => __( 'Diagnostic code', 'novel-game-plugin' ),
+                    'errorBadRequest'      => __( 'Invalid request.', 'novel-game-plugin' ),
+                    'errorForbidden'       => __( 'Permission denied. Please contact the administrator.', 'novel-game-plugin' ),
+                    'errorNotFound'        => __( 'Resource not found.', 'novel-game-plugin' ),
+                    'errorServerError'     => __( 'A server error occurred.', 'novel-game-plugin' ),
+                    'errorServiceUnavailable' => __( 'Service temporarily unavailable.', 'novel-game-plugin' ),
+                    'errorUnknown'         => __( 'An error occurred', 'novel-game-plugin' ),
+                    'errorStage'           => __( 'Error stage', 'novel-game-plugin' ),
+                    'errorCode'            => __( 'Error code', 'novel-game-plugin' ),
+                    'stageFetchRelease'    => __( 'Fetching release information', 'novel-game-plugin' ),
+                    'stageDownload'        => __( 'Downloading', 'novel-game-plugin' ),
+                    'stageVerifyChecksum'  => __( 'Verifying checksum', 'novel-game-plugin' ),
+                    'stageExtract'         => __( 'Extracting', 'novel-game-plugin' ),
+                    'stageFilesystem'      => __( 'Filesystem operation', 'novel-game-plugin' ),
+                    'stageOther'           => __( 'Other', 'novel-game-plugin' ),
                 ),
             )
         );
@@ -392,3 +430,86 @@ function noveltool_dismiss_sample_images_prompt_ajax() {
     wp_send_json_success();
 }
 add_action( 'wp_ajax_noveltool_dismiss_sample_images_prompt', 'noveltool_dismiss_sample_images_prompt_ajax' );
+
+/**
+ * 管理者向け: 診断パッケージを生成してダウンロードさせるハンドラー
+ *
+ * WP 管理画面からワンクリックで取得できる診断 ZIP を生成します。
+ * 含める内容は最小限にし、管理者権限が必要です。
+ *
+ * @since 1.3.0
+ */
+function noveltool_handle_download_diagnostic() {
+    // 権限チェック
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_die( __( 'Permission denied.', 'novel-game-plugin' ) );
+    }
+
+    // ノンス検証
+    check_admin_referer( 'noveltool_download_diagnostic' );
+
+    // ZipArchive 必須
+    if ( ! class_exists( 'ZipArchive' ) ) {
+        wp_die( __( 'Zip extension is not available on the server.', 'novel-game-plugin' ) );
+    }
+
+    $tmp = tempnam( sys_get_temp_dir(), 'noveltool_diag_' );
+    $zip = new ZipArchive();
+    if ( true !== $zip->open( $tmp, ZipArchive::OVERWRITE ) ) {
+        wp_die( __( 'Failed to create diagnostic package.', 'novel-game-plugin' ) );
+    }
+
+    // 診断情報を生成
+    $diagnostics = array();
+    $diagnostics[] = 'Generated: ' . date_i18n( 'c' );
+    $diagnostics[] = 'WP Version: ' . get_bloginfo( 'version' );
+    $diagnostics[] = 'PHP Version: ' . phpversion();
+    $diagnostics[] = 'Memory limit: ' . ini_get( 'memory_limit' );
+    $diagnostics[] = 'Max execution time: ' . ini_get( 'max_execution_time' );
+    if ( defined( 'NOVEL_GAME_PLUGIN_VERSION' ) ) {
+        $diagnostics[] = 'Plugin version: ' . NOVEL_GAME_PLUGIN_VERSION;
+    }
+
+    // もしプラグインが保持している直近のエラー情報があれば収集（任意）
+    $last_error = get_option( 'noveltool_last_error', '' );
+    if ( $last_error ) {
+        $diagnostics[] = '\nLast stored plugin error:';
+        $diagnostics[] = wp_json_encode( $last_error );
+    }
+
+    $zip->addFromString( 'diagnostics.txt', implode( PHP_EOL, $diagnostics ) );
+
+    // wp-content debug.log を含める（存在する場合のみ）
+    if ( defined( 'WP_CONTENT_DIR' ) ) {
+        $debug_log = WP_CONTENT_DIR . '/debug.log';
+        if ( file_exists( $debug_log ) ) {
+            $zip->addFile( $debug_log, 'wp-content-debug.log' );
+        }
+    }
+
+    // プラグイン本体と関連の 1〜2 ファイルを含める（情報収集用）
+    $main_plugin = NOVEL_GAME_PLUGIN_PATH . 'novel-game-plugin.php';
+    if ( file_exists( $main_plugin ) ) {
+        $zip->addFile( $main_plugin, 'plugin-novel-game-plugin.php' );
+    }
+
+    $downloader = NOVEL_GAME_PLUGIN_PATH . 'includes/sample-images-downloader.php';
+    if ( file_exists( $downloader ) ) {
+        $zip->addFile( $downloader, 'includes/sample-images-downloader.php' );
+    }
+
+    $zip->close();
+
+    // 出力して削除
+    if ( file_exists( $tmp ) ) {
+        header( 'Content-Type: application/zip' );
+        header( 'Content-Disposition: attachment; filename="noveltool-diagnostic-' . gmdate( 'Ymd-His' ) . '.zip"' );
+        header( 'Content-Length: ' . filesize( $tmp ) );
+        readfile( $tmp );
+        unlink( $tmp );
+        exit;
+    }
+
+    wp_die( __( 'Failed to generate diagnostic package.', 'novel-game-plugin' ) );
+}
+add_action( 'admin_post_noveltool_download_diagnostic', 'noveltool_handle_download_diagnostic' );
