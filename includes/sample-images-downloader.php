@@ -278,7 +278,11 @@ function noveltool_detect_extraction_capabilities() {
     
     // メモリ制限を MB 単位に変換
     $memory_str = $capabilities['memory_limit'];
-    if ( preg_match( '/^(\d+)(.)$/', $memory_str, $matches ) ) {
+    
+    // -1 は無制限
+    if ( $memory_str === '-1' ) {
+        $capabilities['memory_limit_mb'] = -1;
+    } elseif ( preg_match( '/^(\d+)(.)$/', $memory_str, $matches ) ) {
         $value = intval( $matches[1] );
         $unit = strtoupper( $matches[2] );
         
@@ -293,6 +297,9 @@ function noveltool_detect_extraction_capabilities() {
                 $capabilities['memory_limit_mb'] = $value / 1024;
                 break;
         }
+    } elseif ( is_numeric( $memory_str ) ) {
+        // 単位なしの場合はバイト
+        $capabilities['memory_limit_mb'] = intval( $memory_str ) / 1024 / 1024;
     }
     
     // exec の可否を安全にチェック
@@ -315,7 +322,7 @@ function noveltool_detect_extraction_capabilities() {
     }
     
     // 推奨方式を決定
-    if ( $capabilities['has_ziparchive'] && $capabilities['memory_limit_mb'] >= 128 ) {
+    if ( $capabilities['has_ziparchive'] && ( $capabilities['memory_limit_mb'] === -1 || $capabilities['memory_limit_mb'] >= 128 ) ) {
         $capabilities['recommended'] = 'streaming';
     } elseif ( $capabilities['has_unzip'] ) {
         $capabilities['recommended'] = 'unzip_command';
@@ -387,11 +394,20 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
             $filename = $stat['name'];
             
             // ディレクトリトラバーサル対策
-            if ( strpos( $filename, '..' ) !== false ) {
+            $clean_path = str_replace( array( '\\', "\0" ), '', $filename );
+            if ( strpos( $clean_path, '..' ) !== false ) {
                 continue;
             }
             
-            $target_path = $destination . '/' . $filename;
+            $target_path = $destination . '/' . $clean_path;
+            
+            // 正規化後のパスが destination 内にあることを確認
+            $real_target = realpath( dirname( $target_path ) );
+            $real_destination = realpath( $destination );
+            if ( $real_target === false || $real_destination === false || strpos( $real_target, $real_destination ) !== 0 ) {
+                error_log( "NovelGamePlugin: Skipping file outside destination: {$filename}" );
+                continue;
+            }
             
             // ディレクトリの場合
             if ( substr( $filename, -1 ) === '/' ) {
@@ -407,7 +423,7 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
                 $wp_filesystem->mkdir( $target_dir, FS_CHMOD_DIR, true );
             }
             
-            // ストリーミング展開
+            // ストリーミング展開（チャンク読み込みでメモリ効率化）
             $stream = $zip->getStream( $filename );
             if ( false === $stream ) {
                 $zip->close();
@@ -421,20 +437,26 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
                 );
             }
             
-            $content = stream_get_contents( $stream );
-            fclose( $stream );
-            
-            if ( false === $content ) {
-                $zip->close();
-                return new WP_Error(
-                    'read_error',
-                    sprintf(
-                        /* translators: %s: file name */
-                        __( 'Failed to read file: %s', 'novel-game-plugin' ),
-                        $filename
-                    )
-                );
+            // チャンク単位で読み込み・書き込み（メモリ効率化）
+            $chunk_size = 8192; // 8KB
+            $content = '';
+            while ( ! feof( $stream ) ) {
+                $chunk = fread( $stream, $chunk_size );
+                if ( false === $chunk ) {
+                    fclose( $stream );
+                    $zip->close();
+                    return new WP_Error(
+                        'read_error',
+                        sprintf(
+                            /* translators: %s: file name */
+                            __( 'Failed to read file: %s', 'novel-game-plugin' ),
+                            $filename
+                        )
+                    );
+                }
+                $content .= $chunk;
             }
+            fclose( $stream );
             
             // ファイルを書き込み
             if ( ! $wp_filesystem->put_contents( $target_path, $content, FS_CHMOD_FILE ) ) {
@@ -1009,7 +1031,13 @@ function noveltool_check_background_job_chain( $previous_job_id, $checksum = '' 
     // ジョブが完了していない場合は再スケジュール
     if ( $job['status'] !== NOVELTOOL_JOB_STATUS_COMPLETED ) {
         if ( $job['status'] === NOVELTOOL_JOB_STATUS_FAILED ) {
-            // 失敗した場合
+            // 失敗した場合、一時ファイルをクリーンアップ
+            $result = isset( $job['result'] ) ? $job['result'] : array();
+            $temp_file = isset( $result['temp_file'] ) ? $result['temp_file'] : '';
+            if ( ! empty( $temp_file ) && file_exists( $temp_file ) ) {
+                @unlink( $temp_file );
+            }
+            
             $error = isset( $job['error'] ) ? $job['error'] : array( 'message' => 'Unknown error' );
             noveltool_update_download_status(
                 'failed',
@@ -1022,7 +1050,22 @@ function noveltool_check_background_job_chain( $previous_job_id, $checksum = '' 
             return;
         }
         
-        // まだ完了していない場合は10秒後に再チェック
+        // まだ完了していない場合は10秒後に再チェック（最大30回 = 5分）
+        $attempts = isset( $job['attempts'] ) ? intval( $job['attempts'] ) : 0;
+        if ( $attempts >= 30 ) {
+            // タイムアウト
+            noveltool_update_download_status(
+                'failed',
+                __( 'Job timeout: The job took too long to complete.', 'novel-game-plugin' ),
+                'ERR-JOB-TIMEOUT',
+                'background'
+            );
+            delete_option( 'noveltool_sample_images_download_lock' );
+            noveltool_delete_background_job( $previous_job_id );
+            return;
+        }
+        
+        // 再チェックをスケジュール
         wp_schedule_single_event(
             time() + 10,
             'noveltool_check_background_job_chain',
@@ -1652,10 +1695,18 @@ function noveltool_api_reset_download_status( $request ) {
     // バックグラウンドジョブをクリーンアップ
     delete_option( 'noveltool_background_jobs' );
     
-    // スケジュール済みのイベントをキャンセル
-    $timestamp = wp_next_scheduled( 'noveltool_process_background_job' );
-    if ( $timestamp ) {
-        wp_unschedule_event( $timestamp, 'noveltool_process_background_job' );
+    // スケジュール済みのすべてのイベントをキャンセル
+    $events_to_cancel = array(
+        'noveltool_process_background_job',
+        'noveltool_check_background_job_chain',
+        'noveltool_check_background_job_verify',
+        'noveltool_check_background_job_extract',
+    );
+    
+    foreach ( $events_to_cancel as $event ) {
+        while ( $timestamp = wp_next_scheduled( $event ) ) {
+            wp_unschedule_event( $timestamp, $event );
+        }
     }
     
     return new WP_REST_Response(
