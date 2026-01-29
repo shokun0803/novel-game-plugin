@@ -200,20 +200,49 @@ sha256sum novel-game-plugin-sample-images-v1.3.0.zip > novel-game-plugin-sample-
 
 - `noveltool_sample_images_downloaded`: サンプル画像がダウンロード済みかどうか（boolean）
 - `noveltool_sample_images_download_status`: ダウンロード状況（`not_started`, `in_progress`, `completed`, `failed`）
-- `noveltool_sample_images_download_status_data`: ダウンロード状況の詳細情報（タイムスタンプ付き）
+- `noveltool_sample_images_download_status_data`: ダウンロード状況の詳細情報（v1.4.0 でジョブ情報を追加）
   ```php
   array(
-      'status'    => 'failed',
-      'timestamp' => 1703299200
+      'status'       => 'in_progress',
+      'timestamp'    => 1703299200,
+      // v1.4.0 で追加されたフィールド（バックグラウンド処理時のみ）
+      'job_id'       => 'job_abc123',
+      'progress'     => 50,          // 進捗パーセンテージ（0-100）
+      'current_step' => 'verify',    // 'download', 'verify', 'extract'
+      'use_background' => true       // バックグラウンド処理を使用しているか
   )
   ```
 - `noveltool_sample_images_download_error`: 最後のエラー情報
   ```php
   array(
-      'message'   => 'Failed to download: HTTP 502',
-      'timestamp' => 1703299200
+      'code'      => 'ERR-NO-EXT',
+      'message'   => 'Server does not support ZIP extraction',
+      'stage'     => 'environment_check',
+      'timestamp' => 1703299200,
+      'meta'      => array(           // 非機密情報のみ
+          'http_code'    => 502,
+          'stage_detail' => 'extraction_check',
+          'retry_count'  => 1
+      )
   )
   ```
+- `noveltool_background_jobs`: バックグラウンドジョブの情報（v1.4.0 で追加）
+  ```php
+  array(
+      'job_abc123' => array(
+          'id'         => 'job_abc123',
+          'type'       => 'download',   // 'download', 'verify', 'extract'
+          'status'     => 'completed',  // 'pending', 'in_progress', 'completed', 'failed'
+          'data'       => array(),      // ジョブ固有のデータ
+          'created_at' => 1703299200,
+          'updated_at' => 1703299300,
+          'attempts'   => 1,
+          'error'      => null
+      )
+  )
+  ```
+- `noveltool_use_streaming_extraction`: ストリーミング抽出を使用するか（boolean、デフォルト: true、v1.4.0 で追加）
+- `noveltool_use_background_processing`: バックグラウンド処理を使用するか（boolean、デフォルト: true、v1.4.0 で追加）
 
 ### ユーザーメタ
 
@@ -263,7 +292,7 @@ SHA256 チェックサムを検証します。
 
 #### `noveltool_extract_zip( $zip_file, $destination )`
 
-ZIP ファイルを展開します。
+ZIP ファイルを展開します。v1.4.0 以降はデフォルトでストリーミング抽出を使用します。
 
 **パラメータ**:
 - `$zip_file` (string): ZIP ファイルのパス
@@ -271,13 +300,77 @@ ZIP ファイルを展開します。
 
 **戻り値**: `bool|WP_Error`
 
-#### `noveltool_update_download_status( $status, $error_message = '' )`
+#### `noveltool_detect_extraction_capabilities()`
 
-ダウンロードステータスを更新します。
+サーバー環境の抽出機能を検出します。v1.4.0 で追加。
+
+**戻り値**: `array` - 以下のキーを含む配列
+- `has_ziparchive` (bool): ZipArchive 拡張の有無
+- `has_exec` (bool): exec 関数の利用可否
+- `has_unzip` (bool): unzip コマンドの利用可否
+- `memory_limit` (string): メモリ制限の値
+- `memory_limit_mb` (int): メモリ制限の MB 値
+- `recommended` (string): 推奨抽出方式（`streaming`, `unzip_command`, `standard`, `none`）
+
+#### `noveltool_extract_zip_streaming( $zip_file, $destination )`
+
+ZIP ファイルをストリーミング展開します。v1.4.0 で追加。
+
+メモリ使用量を最小限に抑えるため、ファイルを1つずつ展開します。ZipArchive が利用できない場合は unzip コマンドにフォールバックします。
+
+**パラメータ**:
+- `$zip_file` (string): ZIP ファイルのパス
+- `$destination` (string): 展開先ディレクトリ
+
+**戻り値**: `bool|WP_Error`
+
+#### `noveltool_create_background_job( $job_type, $job_data )`
+
+バックグラウンドジョブを作成します。v1.4.0 で追加。
+
+**パラメータ**:
+- `$job_type` (string): ジョブタイプ（`NOVELTOOL_JOB_TYPE_DOWNLOAD`, `NOVELTOOL_JOB_TYPE_VERIFY`, `NOVELTOOL_JOB_TYPE_EXTRACT`）
+- `$job_data` (array): ジョブデータ
+
+**戻り値**: `string` - ジョブID
+
+#### `noveltool_schedule_background_job( $job_id )`
+
+バックグラウンドジョブをスケジュールします。v1.4.0 で追加。
+
+**パラメータ**:
+- `$job_id` (string): ジョブID
+
+**戻り値**: `bool` - 成功した場合 true
+
+#### `noveltool_perform_sample_images_download_background( $release_data, $asset, $checksum )`
+
+サンプル画像ダウンロードをバックグラウンドで実行します。v1.4.0 で追加。
+
+ダウンロード・検証・抽出を個別のジョブに分割し、WP Cron で順次実行します。
+
+**パラメータ**:
+- `$release_data` (array): リリースデータ
+- `$asset` (array): サンプル画像アセット
+- `$checksum` (string): チェックサム（オプション）
+
+**戻り値**: `array` - `array('success' => bool, 'message' => string, 'job_id' => string)`
+
+#### `noveltool_update_download_status( $status, $error_message = '', $error_code = '', $error_stage = '', $error_meta = array(), $job_info = array() )`
+
+ダウンロードステータスを更新します。v1.4.0 でジョブ情報のサポートを追加。
 
 **パラメータ**:
 - `$status` (string): ステータス（`not_started`, `in_progress`, `completed`, `failed`）
 - `$error_message` (string): エラーメッセージ（オプション）
+- `$error_code` (string): エラーコード（オプション）
+- `$error_stage` (string): エラー発生段階（オプション）
+- `$error_meta` (array): エラーメタ情報（オプション）
+- `$job_info` (array): ジョブ情報（v1.4.0で追加、オプション）
+  - `job_id` (string): ジョブID
+  - `progress` (int): 進捗パーセンテージ（0-100）
+  - `current_step` (string): 現在のステップ（`download`, `verify`, `extract`）
+  - `use_background` (bool): バックグラウンド処理を使用しているか
 
 **戻り値**: なし
 
@@ -338,15 +431,62 @@ wp i18n make-pot . languages/novel-game-plugin.pot
 
 ## 既知の制限事項
 
-1. **サーバー環境依存**: 大きなファイルのダウンロード・展開が可能なサーバー環境が必要です
-2. **タイムアウト**: ダウンロードに時間がかかる場合、PHPのタイムアウト制限に注意が必要です
+~~1. **サーバー環境依存**: 大きなファイルのダウンロード・展開が可能なサーバー環境が必要です~~
+~~2. **タイムアウト**: ダウンロードに時間がかかる場合、PHPのタイムアウト制限に注意が必要です~~
 3. **ファイル権限**: WordPress がファイルを書き込める権限が必要です
+
+**v1.4.0 で大幅に改善**: ストリーミング抽出とバックグラウンド処理により、サーバー環境への依存を最小限に抑えました。
 
 ## 今後の改善案
 
-- [ ] バックグラウンドダウンロード（WP Cron / Action Scheduler の利用）
+- [x] バックグラウンドダウンロード（WP Cron の利用）（v1.4.0で実装済み）
+- [x] ストリーミング抽出によるメモリ効率の改善（v1.4.0で実装済み）
+- [x] 環境検出と早期失敗（v1.4.0で実装済み）
 - [x] ダウンロード進捗バーの表示（v1.3.0で実装済み）
 - [x] ダウンロード失敗時の詳細なエラーレポート（v1.3.0で実装済み）
 - [ ] 複数のミラーサーバーからのダウンロード対応
 - [ ] オフライン環境でのインストール方法の追加
-- [ ] バイト単位のリアルタイム進捗表示（現在は段階的ステータス表示）
+
+## v1.4.0 の改善点
+
+### ストリーミング抽出
+
+従来は ZIP ファイル全体をメモリに展開していましたが、v1.4.0 ではファイルを1つずつストリーミング展開することでメモリ使用量を大幅に削減しました。
+
+- `ZipArchive::getStream()` を使用したファイル単位の展開
+- メモリに全データを保持しないため、低メモリ環境でも動作
+- PHP ZipArchive が利用できない場合は `unzip` コマンドにフォールバック
+
+### バックグラウンド処理
+
+ダウンロード・検証・抽出を小さなジョブに分割し、WP Cron で順次実行することで、PHP の実行時間制限に影響されにくくなりました。
+
+- ダウンロードジョブ: サンプル画像 ZIP をダウンロード
+- 検証ジョブ: SHA256 チェックサムを検証（チェックサムファイルがある場合）
+- 抽出ジョブ: ストリーミング抽出で画像を展開
+
+各ジョブは短時間で完了し、タイムアウトやメモリ制限に依存しにくい設計です。
+
+### 環境検出
+
+実行前にサーバー環境をチェックし、必要な機能が不足している場合は早期にエラーを返します。
+
+検出項目:
+- PHP ZipArchive 拡張の有無
+- exec 関数と unzip コマンドの利用可否
+- memory_limit の値
+
+推奨環境:
+- PHP ZipArchive 拡張またはUnzipコマンド
+- memory_limit: 128MB以上（推奨: 256MB以上）
+
+環境が不十分な場合は、具体的な対処法を含むエラーメッセージが表示されます。
+
+### 設定オプション
+
+管理者は以下のオプションで動作を制御できます（WordPress オプション API を使用）:
+
+- `noveltool_use_streaming_extraction`: ストリーミング抽出を使用するか（デフォルト: true）
+- `noveltool_use_background_processing`: バックグラウンド処理を使用するか（デフォルト: true）
+
+従来の同期処理に戻す場合は、これらのオプションを false に設定してください。
