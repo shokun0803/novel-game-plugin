@@ -1286,20 +1286,53 @@ function noveltool_perform_sample_images_download_background( $release_data, $as
  *
  * @param array $release_data リリース情報
  * @param array $assets_with_checksum アセットとチェックサムの配列
- * @return array 実行結果
+ * @return array|WP_Error 実行結果またはエラー
  * @since 1.4.1
  */
 function noveltool_perform_multi_asset_download_background( $release_data, $assets_with_checksum ) {
+    // 必須修正1: assets 空チェック
+    if ( empty( $assets_with_checksum ) || ! is_array( $assets_with_checksum ) ) {
+        error_log( 'NovelGamePlugin: noveltool_perform_multi_asset_download_background() called with empty assets array' );
+        return new WP_Error(
+            'empty_assets',
+            __( 'No assets available for download.', 'novel-game-plugin' ),
+            array( 'stage' => 'multi_asset_setup' )
+        );
+    }
+    
     // 各アセットの情報を保存（ステータス追跡用）
     $assets_info = array();
     $job_ids = array();
+    $successful_jobs = 0;
+    $failed_assets = array();
     
     foreach ( $assets_with_checksum as $index => $item ) {
         $asset = $item['asset'];
         $checksum = $item['checksum'];
-        $asset_name = $asset['name'];
-        $download_url = $asset['browser_download_url'];
-        $size = isset( $asset['size'] ) ? $asset['size'] : 0;
+        $asset_name = isset( $asset['name'] ) ? sanitize_text_field( $asset['name'] ) : '';
+        $download_url = isset( $asset['browser_download_url'] ) ? esc_url_raw( $asset['browser_download_url'] ) : '';
+        $size = isset( $asset['size'] ) ? absint( $asset['size'] ) : 0;
+        
+        // 必須修正6: 型検査とサニタイズ
+        if ( empty( $asset_name ) || empty( $download_url ) ) {
+            error_log( sprintf( 'NovelGamePlugin: Invalid asset at index %d: missing name or URL', $index ) );
+            $failed_assets[] = array(
+                'index'   => $index,
+                'name'    => $asset_name ? $asset_name : 'unknown',
+                'reason'  => 'invalid_asset_data',
+                'message' => __( 'Invalid asset data', 'novel-game-plugin' ),
+            );
+            continue;
+        }
+        
+        // 必須修正4: チェックサム取得ポリシーの明確化
+        // チェックサムがない場合はログに記録し、検証スキップとして処理
+        if ( empty( $checksum ) ) {
+            error_log( sprintf(
+                'NovelGamePlugin: Checksum not available for %s. Verification will be skipped.',
+                $asset_name
+            ) );
+        }
         
         // ダウンロードジョブを作成
         $download_job_id = noveltool_create_background_job(
@@ -1314,7 +1347,37 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
             )
         );
         
+        // 必須修正2: 背景ジョブ作成の失敗ハンドリング
+        if ( is_wp_error( $download_job_id ) || false === $download_job_id ) {
+            $error_message = is_wp_error( $download_job_id ) ? $download_job_id->get_error_message() : __( 'Failed to create job', 'novel-game-plugin' );
+            error_log( sprintf(
+                'NovelGamePlugin: Failed to create download job for %s: %s',
+                $asset_name,
+                $error_message
+            ) );
+            
+            // 失敗したアセット情報を記録
+            $assets_info[] = array(
+                'name'             => $asset_name,
+                'status'           => 'failed',
+                'progress'         => 0,
+                'job_id'           => '',
+                'total_bytes'      => $size,
+                'downloaded_bytes' => 0,
+                'message'          => sanitize_text_field( __( 'Failed to create background job', 'novel-game-plugin' ) ),
+            );
+            
+            $failed_assets[] = array(
+                'index'   => $index,
+                'name'    => $asset_name,
+                'reason'  => 'job_creation_failed',
+                'message' => sanitize_text_field( $error_message ),
+            );
+            continue;
+        }
+        
         $job_ids[] = $download_job_id;
+        $successful_jobs++;
         
         $assets_info[] = array(
             'name'             => $asset_name,
@@ -1329,13 +1392,32 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
         // ダウンロードジョブをスケジュール（少しずつ時間をずらす）
         noveltool_schedule_background_job( $download_job_id, $index * 2 );
         
-        // チェーンジョブを登録（ダウンロード完了後に実行）
+        // 必須修正3: チェーンスケジューリング整合
+        // noveltool_check_background_job_chain の引数: (job_id, checksum)
+        // チェックサムが空の場合も空文字列として渡す（受け側で判定）
         wp_schedule_single_event(
             time() + 10 + ( $index * 2 ),
             'noveltool_check_background_job_chain',
-            array( $download_job_id, $checksum, $index, count( $assets_with_checksum ) )
+            array( $download_job_id, $checksum )
         );
     }
+    
+    // すべてのジョブ作成に失敗した場合はエラーを返す
+    if ( 0 === $successful_jobs ) {
+        error_log( 'NovelGamePlugin: All asset jobs failed to create' );
+        return new WP_Error(
+            'all_jobs_failed',
+            __( 'Failed to create background jobs for all assets. Please check server logs.', 'novel-game-plugin' ),
+            array(
+                'stage'         => 'multi_asset_setup',
+                'failed_assets' => $failed_assets,
+            )
+        );
+    }
+    
+    // 必須修正5: 集約ステータスの代表 job_id 選定
+    // job_ids 配列全体を保存し、最初の成功したジョブIDを代表として使用
+    $representative_job_id = ! empty( $job_ids ) ? $job_ids[0] : '';
     
     // 集約ステータスを更新
     noveltool_update_download_status(
@@ -1345,25 +1427,43 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
         '',
         array(),
         array(
-            'job_id'           => $job_ids[0], // 最初のジョブIDを代表として保存
+            'job_id'           => $representative_job_id,
+            'job_ids'          => $job_ids, // すべてのジョブIDを配列で保持
             'progress'         => 5,
             'current_step'     => 'download',
             'use_background'   => true,
             'multi_asset'      => true,
             'assets'           => $assets_info,
             'overall_progress' => 0,
+            'total_assets'     => count( $assets_with_checksum ),
+            'successful_jobs'  => $successful_jobs,
+            'failed_jobs'      => count( $failed_assets ),
         )
     );
     
+    // 部分的な失敗がある場合は警告を含める
+    $message = sprintf(
+        /* translators: %d: number of asset files */
+        __( 'Download started for %d asset files in background. Please wait...', 'novel-game-plugin' ),
+        $successful_jobs
+    );
+    
+    if ( ! empty( $failed_assets ) ) {
+        $message .= ' ' . sprintf(
+            /* translators: %d: number of failed assets */
+            __( 'Warning: %d assets could not be queued.', 'novel-game-plugin' ),
+            count( $failed_assets )
+        );
+    }
+    
     return array(
-        'success'      => true,
-        'message'      => sprintf(
-            /* translators: %d: number of asset files */
-            __( 'Download started for %d asset files in background. Please wait...', 'novel-game-plugin' ),
-            count( $assets_with_checksum )
-        ),
-        'job_ids'      => $job_ids,
-        'total_assets' => count( $assets_with_checksum ),
+        'success'        => true,
+        'message'        => sanitize_text_field( $message ),
+        'job_ids'        => $job_ids,
+        'total_assets'   => count( $assets_with_checksum ),
+        'successful'     => $successful_jobs,
+        'failed'         => count( $failed_assets ),
+        'failed_assets'  => $failed_assets,
     );
 }
 
@@ -1819,6 +1919,50 @@ function noveltool_perform_sample_images_download() {
         if ( count( $all_assets ) > 1 ) {
             // 複数アセット: 各アセットに対してジョブを作成
             $result = noveltool_perform_multi_asset_download_background( $release_data, $assets_with_checksum );
+            
+            // WP_Error チェック（必須修正2の対応）
+            if ( is_wp_error( $result ) ) {
+                $error_msg = $result->get_error_message();
+                $error_data = $result->get_error_data();
+                $error_code = $result->get_error_code();
+                
+                // 詳細をログに記録
+                error_log( sprintf(
+                    'NovelGamePlugin: Multi-asset download failed - Code: %s, Message: %s',
+                    $error_code,
+                    $error_msg
+                ) );
+                
+                // ステータスを更新
+                noveltool_update_download_status(
+                    'failed',
+                    sanitize_text_field( $error_msg ),
+                    $error_code,
+                    isset( $error_data['stage'] ) ? $error_data['stage'] : 'multi_asset_setup'
+                );
+                
+                delete_option( 'noveltool_sample_images_download_lock' );
+                
+                // ユーザー向けには簡潔なメッセージを返す
+                return array(
+                    'success' => false,
+                    'message' => sanitize_text_field( $error_msg ),
+                    'code'    => $error_code,
+                    'stage'   => isset( $error_data['stage'] ) ? $error_data['stage'] : 'multi_asset_setup',
+                );
+            }
+            
+            // 配列型チェック（必須修正6の対応）
+            if ( ! is_array( $result ) ) {
+                error_log( 'NovelGamePlugin: Multi-asset download returned non-array result' );
+                delete_option( 'noveltool_sample_images_download_lock' );
+                return array(
+                    'success' => false,
+                    'message' => sanitize_text_field( __( 'Unexpected error during multi-asset download setup', 'novel-game-plugin' ) ),
+                    'code'    => 'ERR-INVALID-RESULT',
+                    'stage'   => 'multi_asset_setup',
+                );
+            }
         } else {
             // 単一アセット: 従来の処理
             $result = noveltool_perform_sample_images_download_background( $release_data, $asset, $expected_checksum );
