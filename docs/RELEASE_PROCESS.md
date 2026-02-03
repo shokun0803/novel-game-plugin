@@ -20,34 +20,52 @@ Novel Game Plugin では、Git タグをプッシュすることで自動的に�
 
 - `novel-game-plugin-vX.Y.Z.zip` - WordPress に直接インストール可能なプラグイン ZIP
 - `novel-game-plugin-vX.Y.Z.zip.sha256` - プラグイン ZIP の SHA256 チェックサムファイル
-- `novel-game-plugin-sample-images-vX.Y.Z.zip` - サンプル画像パッケージ（別途配布）
-- `novel-game-plugin-sample-images-vX.Y.Z.zip.sha256` - サンプル画像 ZIP の SHA256 チェックサムファイル
+- `novel-game-plugin-sample-images-vX.Y.Z-part01.zip` - サンプル画像パッケージ（パート1）
+- `novel-game-plugin-sample-images-vX.Y.Z-part02.zip` - サンプル画像パッケージ（パート2）
+- `novel-game-plugin-sample-images-vX.Y.Z-part0N.zip` - サンプル画像パッケージ（パートN）
+- 各サンプル画像 ZIP に対応する `.sha256` チェックサムファイル
+- `novel-game-plugin-sample-images-vX.Y.Z-all.zip` - サンプル画像まとめパッケージ（オプション）
+- サンプル画像まとめ ZIP の `.sha256` チェックサムファイル
 
 #### サンプル画像パッケージについて
 
-サンプル画像は `assets/sample-images/` ディレクトリの内容を別 ZIP としてパッケージ化し、GitHub Release のアセットとして提供されます。
+サンプル画像は `assets/sample-images/` ディレクトリの内容を小さな複数の ZIP に分割してパッケージ化し、GitHub Release のアセットとして提供されます。これにより、低容量のホスティング環境でも容易にダウンロードできるようになります。
+
+**分割方式**:
+- 各パートのサイズは約 10MB を目標に分割（50MB 以下を保証）
+- 大きな画像ファイルから順に割り当てられます
+- パート番号は `part01`, `part02`, ... の形式で連番
 
 **ダウンロード URL 形式**:
 ```
-https://github.com/shokun0803/novel-game-plugin/releases/download/{tag}/novel-game-plugin-sample-images-{tag}.zip
+# 分割パート
+https://github.com/shokun0803/novel-game-plugin/releases/download/{tag}/novel-game-plugin-sample-images-{tag}-part01.zip
+https://github.com/shokun0803/novel-game-plugin/releases/download/{tag}/novel-game-plugin-sample-images-{tag}-part02.zip
+...
+
+# まとめ ZIP（手動ダウンロード用）
+https://github.com/shokun0803/novel-game-plugin/releases/download/{tag}/novel-game-plugin-sample-images-{tag}-all.zip
 ```
 
 **チェックサム検証例**:
 ```bash
-# サンプル画像 ZIP をダウンロード
-wget https://github.com/shokun0803/novel-game-plugin/releases/download/v1.3.0/novel-game-plugin-sample-images-v1.3.0.zip
-wget https://github.com/shokun0803/novel-game-plugin/releases/download/v1.3.0/novel-game-plugin-sample-images-v1.3.0.zip.sha256
+# 分割パート ZIP をダウンロード
+wget https://github.com/shokun0803/novel-game-plugin/releases/download/v1.3.0/novel-game-plugin-sample-images-v1.3.0-part01.zip
+wget https://github.com/shokun0803/novel-game-plugin/releases/download/v1.3.0/novel-game-plugin-sample-images-v1.3.0-part01.zip.sha256
 
 # チェックサム検証
-sha256sum -c novel-game-plugin-sample-images-v1.3.0.zip.sha256
+sha256sum -c novel-game-plugin-sample-images-v1.3.0-part01.zip.sha256
 ```
 
 **プラグイン側での利用**:
-プラグインは初回インストール時（または管理画面からの手動操作時）に、この Release アセットを参照してサンプル画像を自動ダウンロードします。これにより、プラグイン本体の ZIP サイズを削減し、必要な場合のみサンプル画像を取得できます。詳細は Issue #213「サンプル画像の初回ダウンロード実装」を参照してください。
+プラグインは初回インストール時（または管理画面からの手動操作時）に、この Release アセットを参照してサンプル画像を自動ダウンロードします。分割された ZIP は順次ダウンロード・展開され、完全なサンプル画像セットが構築されます。これにより、プラグイン本体の ZIP サイズを削減し、必要な場合のみサンプル画像を取得できます。詳細は Issue #213「サンプル画像の初回ダウンロード実装」および PR #220「管理画面から分割アセットをダウンロード」を参照してください。
+
+**手動ダウンロードの場合**:
+まとめ ZIP（`sample-images-{version}-all.zip`）を使用することで、すべてのサンプル画像を一度にダウンロードすることも可能です。
 
 **ファイルサイズの注意**:
 - GitHub Release のアセットは 2GB まで添付可能です
-- サンプル画像の総サイズが大きい場合は、複数の ZIP に分割するか、外部ストレージの利用を検討してください
+- 各分割パートは約 10MB を目標にしており、一般的なホスティング環境の制限（50MB 以下）を満たします
 
 ### ZIP の構成
 
@@ -161,8 +179,9 @@ novel-game-plugin/
 
 - `rsync` がインストールされていること
 - `zip` コマンドが利用可能であること
+- `sha256sum` または `shasum` が利用可能であること
 
-### 手順
+### プラグイン本体のビルド
 
 1. **リポジトリのルートディレクトリに移動**
 
@@ -181,6 +200,78 @@ novel-game-plugin/
    ```
 
 3. **生成されたファイルを確認**
+
+   ```bash
+   ls -lh build/
+   # novel-game-plugin-v1.3.0.zip
+   # novel-game-plugin-v1.3.0.zip.sha256
+   ```
+
+### サンプル画像のビルド
+
+サンプル画像は3つのモードでビルドできます：
+
+#### 1. 分割モード（デフォルト）
+
+複数の小さな ZIP に分割して生成します（推奨）：
+
+```bash
+# 分割 ZIP のみ生成
+bash scripts/build-sample-images.sh v1.3.0
+
+# または明示的に --split を指定
+bash scripts/build-sample-images.sh v1.3.0 --split
+```
+
+生成されるファイル:
+```
+build/novel-game-plugin-sample-images-v1.3.0-part01.zip
+build/novel-game-plugin-sample-images-v1.3.0-part01.zip.sha256
+build/novel-game-plugin-sample-images-v1.3.0-part02.zip
+build/novel-game-plugin-sample-images-v1.3.0-part02.zip.sha256
+...
+```
+
+#### 2. まとめ ZIP のみモード
+
+単一の大きな ZIP のみを生成します：
+
+```bash
+bash scripts/build-sample-images.sh v1.3.0 --no-split
+```
+
+生成されるファイル:
+```
+build/novel-game-plugin-sample-images-v1.3.0-all.zip
+build/novel-game-plugin-sample-images-v1.3.0-all.zip.sha256
+```
+
+#### 3. 両方モード
+
+分割 ZIP とまとめ ZIP の両方を生成します（GitHub Release で使用）：
+
+```bash
+bash scripts/build-sample-images.sh v1.3.0 --all
+```
+
+生成されるファイル:
+```
+build/novel-game-plugin-sample-images-v1.3.0-part01.zip
+build/novel-game-plugin-sample-images-v1.3.0-part01.zip.sha256
+build/novel-game-plugin-sample-images-v1.3.0-part02.zip
+build/novel-game-plugin-sample-images-v1.3.0-part02.zip.sha256
+...
+build/novel-game-plugin-sample-images-v1.3.0-all.zip
+build/novel-game-plugin-sample-images-v1.3.0-all.zip.sha256
+```
+
+### ファイルサイズとパート分割について
+
+- 各分割パートは約 10MB を目標にサイズ調整されます
+- 大きな画像ファイルから優先的に各パートに割り当てられます
+- パート数は画像の総サイズに応じて自動的に決定されます
+
+### 生成されたファイルの確認
 
    ```bash
    ls -lh build/
@@ -449,8 +540,13 @@ unzip -p build/novel-game-plugin-v1.3.0.zip novel-game-plugin/novel-game-plugin.
    - 以下のアセットが添付されていることを確認：
      - `novel-game-plugin-${TAG}.zip`
      - `novel-game-plugin-${TAG}.zip.sha256`
-     - `novel-game-plugin-sample-images-${TAG}.zip`
-     - `novel-game-plugin-sample-images-${TAG}.zip.sha256`
+     - `novel-game-plugin-sample-images-${TAG}-part01.zip`
+     - `novel-game-plugin-sample-images-${TAG}-part01.zip.sha256`
+     - `novel-game-plugin-sample-images-${TAG}-part02.zip`
+     - `novel-game-plugin-sample-images-${TAG}-part02.zip.sha256`
+     - ... (その他のパート)
+     - `novel-game-plugin-sample-images-${TAG}-all.zip`
+     - `novel-game-plugin-sample-images-${TAG}-all.zip.sha256`
    - ZIP ファイルをダウンロードして検証手順を実施
 
 6. **チェックサム検証**
@@ -460,12 +556,42 @@ unzip -p build/novel-game-plugin-v1.3.0.zip novel-game-plugin/novel-game-plugin.
    sha256sum -c novel-game-plugin-test-v1.3.0-rc1.zip.sha256
    # → novel-game-plugin-test-v1.3.0-rc1.zip: OK
 
-   # サンプル画像 ZIP の検証
-   sha256sum -c novel-game-plugin-sample-images-test-v1.3.0-rc1.zip.sha256
-   # → novel-game-plugin-sample-images-test-v1.3.0-rc1.zip: OK
+   # サンプル画像分割 ZIP の検証（各パート）
+   sha256sum -c novel-game-plugin-sample-images-test-v1.3.0-rc1-part01.zip.sha256
+   # → novel-game-plugin-sample-images-test-v1.3.0-rc1-part01.zip: OK
+   sha256sum -c novel-game-plugin-sample-images-test-v1.3.0-rc1-part02.zip.sha256
+   # → novel-game-plugin-sample-images-test-v1.3.0-rc1-part02.zip: OK
+   
+   # まとめ ZIP の検証
+   sha256sum -c novel-game-plugin-sample-images-test-v1.3.0-rc1-all.zip.sha256
+   # → novel-game-plugin-sample-images-test-v1.3.0-rc1-all.zip: OK
    ```
 
-7. **問題がなければテストタグを削除**
+7. **分割アセットの整合性確認**
+
+   ```bash
+   # 各パートを展開して結合
+   mkdir temp-extract
+   cd temp-extract
+   unzip ../novel-game-plugin-sample-images-test-v1.3.0-rc1-part01.zip
+   unzip ../novel-game-plugin-sample-images-test-v1.3.0-rc1-part02.zip
+   # ... 他のパートも同様に展開
+   
+   # ファイル数を確認
+   find . -type f | wc -l
+   
+   # まとめ ZIP と比較
+   cd ..
+   mkdir temp-all
+   unzip novel-game-plugin-sample-images-test-v1.3.0-rc1-all.zip -d temp-all/
+   diff -r temp-extract/ temp-all/sample-images/
+   # → 差分がないことを確認
+   
+   # クリーンアップ
+   rm -rf temp-extract temp-all
+   ```
+
+8. **問題がなければテストタグを削除**
 
    ```bash
    git tag -d test-v1.3.0-rc1
