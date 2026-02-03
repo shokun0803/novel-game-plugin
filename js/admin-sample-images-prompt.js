@@ -9,6 +9,12 @@
 
 (function ($) {
     'use strict';
+    
+    // 定数定義
+    var FALLBACK_TIMEOUT_MS = 5000;      // プログレス検出失敗時のフォールバックタイムアウト（5秒）
+    var POLL_INTERVAL_MS = 3000;         // ポーリング間隔（3秒）
+    var MAX_POLL_TIME_MS = 300000;       // 最大ポーリング時間（5分）
+    var XHR_TIMEOUT_MS = 120000;         // XHR初回接続タイムアウト（120秒）
 
     /**
      * モーダルを表示
@@ -168,9 +174,7 @@
      * ダウンロード状態をポーリング
      */
     function pollDownloadStatus(pollInterval, startTime) {
-        var maxPollTime = 300000; // 5分
-        
-        if (Date.now() - startTime > maxPollTime) {
+        if (Date.now() - startTime > MAX_POLL_TIME_MS) {
             // タイムアウト
             fetchDetailedError(function(detail) {
                 showErrorMessage(novelToolSampleImages.strings.downloadTimeout || 'ダウンロードがタイムアウトしました。', detail, 'ERR-TIMEOUT');
@@ -331,22 +335,16 @@
 
         // まずXHRでリアルタイム進捗を試みる
         var xhr = new XMLHttpRequest();
-        var progressSupported = false;
         var fallbackTimeout = null;
+        var xhrCompleted = false;
         
-        // レスポンス受信中の進捗（実際のダウンロード進捗）
-        // 注: サーバーがストリーミングレスポンスを送信する場合のみ機能
-        xhr.addEventListener('progress', function(e) {
-            if (e.lengthComputable) {
-                progressSupported = true;
-                var percentComplete = Math.floor((e.loaded / e.total) * 100);
-                updateProgressBar(percentComplete, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
-                clearTimeout(fallbackTimeout);
-            }
-        });
+        // 注: XHRの'progress'イベントはサーバーがチャンク転送エンコーディング（chunked transfer encoding）で
+        // 段階的な応答を送信する場合のみ機能します。通常のダウンロード開始エンドポイントでは
+        // このイベントは発生しないため、自動的にポーリングモードへフォールバックします。
         
         // 完了ハンドラ
         xhr.addEventListener('load', function() {
+            xhrCompleted = true;
             clearTimeout(fallbackTimeout);
             
             if (xhr.status === 200) {
@@ -390,6 +388,7 @@
         
         // エラーハンドラ
         xhr.addEventListener('error', function() {
+            xhrCompleted = true;
             clearTimeout(fallbackTimeout);
             // ネットワークエラー - ポーリングで状態確認
             updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
@@ -400,6 +399,7 @@
         
         // タイムアウトハンドラ
         xhr.addEventListener('timeout', function() {
+            xhrCompleted = true;
             clearTimeout(fallbackTimeout);
             // タイムアウト - ポーリングで状態確認
             updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
@@ -412,16 +412,18 @@
         xhr.open('POST', novelToolSampleImages.apiDownload, true);
         xhr.setRequestHeader('X-WP-Nonce', novelToolSampleImages.restNonce);
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 120000; // 120秒のタイムアウト（初回接続/ハンドシェイク用。実際のダウンロードはバックグラウンドで継続）
+        // 注: このタイムアウトはバックグラウンド処理をトリガーする初回API呼び出し用です。
+        // 実際のダウンロードはバックグラウンドで継続し、ポーリングで監視します。
+        xhr.timeout = XHR_TIMEOUT_MS;
         
-        // プログレスがサポートされない場合のフォールバック（5秒後にポーリングへ切替）
+        // プログレスイベントが発生しない場合のフォールバック（通常のケース）
         fallbackTimeout = setTimeout(function() {
-            if (!progressSupported) {
-                // プログレスイベントが発生しない場合、バックグラウンド処理として扱う
+            if (!xhrCompleted) {
+                // XHRが完了していない場合のみポーリング開始
                 updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
-                pollDownloadStatus(3000, downloadStartTime);
+                pollDownloadStatus(POLL_INTERVAL_MS, downloadStartTime);
             }
-        }, 5000);
+        }, FALLBACK_TIMEOUT_MS);
         
         xhr.send(JSON.stringify({}));
     }

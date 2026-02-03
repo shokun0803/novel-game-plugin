@@ -1234,6 +1234,18 @@ function noveltool_save_error_on_shutdown() {
 }
 
 /**
+ * ダウンロードジョブIDをuser_metaからクリアするヘルパー関数
+ *
+ * @param int $user_id ユーザーID（0の場合はスキップ）
+ * @since 1.5.0
+ */
+function noveltool_clear_download_job_id( $user_id ) {
+    if ( $user_id > 0 ) {
+        delete_user_meta( $user_id, 'noveltool_download_job_id' );
+    }
+}
+
+/**
  * サンプル画像ダウンロードをバックグラウンドで実行
  *
  * @param array $release_data リリースデータ
@@ -1731,10 +1743,7 @@ function noveltool_check_background_job_extract( $extract_job_id ) {
     // ジョブIDをuser_metaからクリア（バックグラウンド処理の場合はジョブから取得）
     $job = noveltool_get_background_job( $extract_job_id );
     if ( $job && isset( $job['data']['user_id'] ) ) {
-        $user_id = intval( $job['data']['user_id'] );
-        if ( $user_id > 0 ) {
-            delete_user_meta( $user_id, 'noveltool_download_job_id' );
-        }
+        noveltool_clear_download_job_id( intval( $job['data']['user_id'] ) );
     }
     
     // 完了したジョブのログを保存（デバッグ・監査用）
@@ -2105,10 +2114,7 @@ function noveltool_perform_sample_images_download() {
     delete_option( 'noveltool_sample_images_download_lock' );
     
     // ジョブIDをuser_metaからクリア（同期処理の場合）
-    $user_id = get_current_user_id();
-    if ( $user_id ) {
-        delete_user_meta( $user_id, 'noveltool_download_job_id' );
-    }
+    noveltool_clear_download_job_id( get_current_user_id() );
     
     return array(
         'success' => true,

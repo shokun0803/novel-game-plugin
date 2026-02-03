@@ -122,10 +122,11 @@ function noveltool_my_games_page() {
                 <div class="notice notice-warning">
                     <p><?php esc_html_e( 'JavaScript is disabled. Sample image download progress cannot be displayed in real-time.', 'novel-game-plugin' ); ?></p>
                     <p>
-                        <a href="#" class="button button-primary" onclick="alert('<?php echo esc_js( __( 'Please enable JavaScript to download sample images.', 'novel-game-plugin' ) ); ?>'); return false;">
+                        <button type="button" class="button button-primary" disabled>
                             <?php esc_html_e( 'Download Sample Images (requires JavaScript)', 'novel-game-plugin' ); ?>
-                        </a>
+                        </button>
                     </p>
+                    <p><small><?php esc_html_e( 'Please enable JavaScript to download sample images.', 'novel-game-plugin' ); ?></small></p>
                 </div>
             <?php endif; ?>
         </noscript>
@@ -483,6 +484,10 @@ add_action( 'wp_ajax_noveltool_dismiss_sample_images_prompt', 'noveltool_dismiss
 
 /**
  * サンプル画像ダウンロードステータスを取得する Ajax ハンドラー
+ *
+ * 注: このエンドポイントはGETメソッドを使用します。これは読み取り専用の操作であり、
+ * 状態を変更しないためです。nonceはGETパラメータで送信されますが、
+ * これは管理画面内部でのみ使用され、外部に露出されません。
  *
  * @since 1.5.0
  */
