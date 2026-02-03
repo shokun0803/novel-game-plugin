@@ -81,7 +81,8 @@ get_file_size_bytes() {
     
     # 最後の手段: du -b
     if size=$(du -b "$file" 2>/dev/null | cut -f1); then
-        if [ -n "$size" ] && [ "$size" != "0" ] || [ -s "$file" ]; then
+        # 論理式の優先順位を明示して可読性と意図を保証
+        if { [ -n "$size" ] && [ "$size" != "0" ]; } || [ -s "$file" ]; then
             echo "$size"
             return 0
         fi
@@ -219,6 +220,13 @@ generate_split_zips() {
             return 1
         fi
         
+        # FILE_SIZE は数値であることを保証
+        if ! printf '%s' "$FILE_SIZE" | grep -Eq '^[0-9]+$'; then
+            echo -e "${RED}エラー: ファイルサイズが数値ではありません: $FILE${NC}" >&2
+            echo -e "${RED}      処理を中断します。ファイル情報を確認してください。${NC}" >&2
+            return 1
+        fi
+
         # ファイルサイズが0の場合の警告
         if [ "$FILE_SIZE" -eq 0 ]; then
             echo -e "  ${YELLOW}警告: 空ファイルを検出しました: $FILE (0 bytes)${NC}"
