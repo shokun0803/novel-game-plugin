@@ -1282,6 +1282,92 @@ function noveltool_perform_sample_images_download_background( $release_data, $as
 }
 
 /**
+ * 複数アセットのバックグラウンドダウンロードを実行
+ *
+ * @param array $release_data リリース情報
+ * @param array $assets_with_checksum アセットとチェックサムの配列
+ * @return array 実行結果
+ * @since 1.4.1
+ */
+function noveltool_perform_multi_asset_download_background( $release_data, $assets_with_checksum ) {
+    // 各アセットの情報を保存（ステータス追跡用）
+    $assets_info = array();
+    $job_ids = array();
+    
+    foreach ( $assets_with_checksum as $index => $item ) {
+        $asset = $item['asset'];
+        $checksum = $item['checksum'];
+        $asset_name = $asset['name'];
+        $download_url = $asset['browser_download_url'];
+        $size = isset( $asset['size'] ) ? $asset['size'] : 0;
+        
+        // ダウンロードジョブを作成
+        $download_job_id = noveltool_create_background_job(
+            NOVELTOOL_JOB_TYPE_DOWNLOAD,
+            array(
+                'download_url' => $download_url,
+                'asset_name'   => $asset_name,
+                'asset_index'  => $index,
+                'total_assets' => count( $assets_with_checksum ),
+                'size'         => $size,
+                'checksum'     => $checksum,
+            )
+        );
+        
+        $job_ids[] = $download_job_id;
+        
+        $assets_info[] = array(
+            'name'             => $asset_name,
+            'status'           => 'pending',
+            'progress'         => 0,
+            'job_id'           => $download_job_id,
+            'total_bytes'      => $size,
+            'downloaded_bytes' => 0,
+            'message'          => '',
+        );
+        
+        // ダウンロードジョブをスケジュール（少しずつ時間をずらす）
+        noveltool_schedule_background_job( $download_job_id, $index * 2 );
+        
+        // チェーンジョブを登録（ダウンロード完了後に実行）
+        wp_schedule_single_event(
+            time() + 10 + ( $index * 2 ),
+            'noveltool_check_background_job_chain',
+            array( $download_job_id, $checksum, $index, count( $assets_with_checksum ) )
+        );
+    }
+    
+    // 集約ステータスを更新
+    noveltool_update_download_status(
+        'in_progress',
+        '',
+        '',
+        '',
+        array(),
+        array(
+            'job_id'           => $job_ids[0], // 最初のジョブIDを代表として保存
+            'progress'         => 5,
+            'current_step'     => 'download',
+            'use_background'   => true,
+            'multi_asset'      => true,
+            'assets'           => $assets_info,
+            'overall_progress' => 0,
+        )
+    );
+    
+    return array(
+        'success'      => true,
+        'message'      => sprintf(
+            /* translators: %d: number of asset files */
+            __( 'Download started for %d asset files in background. Please wait...', 'novel-game-plugin' ),
+            count( $assets_with_checksum )
+        ),
+        'job_ids'      => $job_ids,
+        'total_assets' => count( $assets_with_checksum ),
+    );
+}
+
+/**
  * バックグラウンドジョブチェーンをチェック
  *
  * @param string $previous_job_id 前のジョブID
@@ -1631,52 +1717,75 @@ function noveltool_perform_sample_images_download() {
         );
     }
     
-    // サンプル画像アセットを探す
-    $asset = noveltool_find_sample_images_asset( $release_data );
-    if ( ! $asset ) {
-        $error_msg = __( 'Sample images asset not found in the latest release. Please contact the plugin developer.', 'novel-game-plugin' );
-        noveltool_update_download_status( 'failed', $error_msg, 'ERR-ASSET-NOTFOUND', 'fetch_release' );
-        delete_option( 'noveltool_sample_images_download_lock' );
-        return array(
-            'success' => false,
-            'message' => $error_msg,
-            'code'    => 'ERR-ASSET-NOTFOUND',
-            'stage'   => 'fetch_release',
-        );
-    }
-    
-    $download_url = $asset['browser_download_url'];
-    $asset_name   = $asset['name'];
-    
-    // チェックサムファイルを探す
-    $checksum_asset = null;
-    $expected_checksum = '';
-    foreach ( $release_data['assets'] as $a ) {
-        if ( isset( $a['name'] ) && $a['name'] === $asset_name . '.sha256' ) {
-            $checksum_asset = $a;
-            break;
+    // 複数のサンプル画像アセットを探す（分割ZIPサポート）
+    $all_assets = noveltool_find_all_sample_images_assets( $release_data );
+    if ( empty( $all_assets ) ) {
+        // 後方互換: 単一アセット検索へフォールバック
+        $asset = noveltool_find_sample_images_asset( $release_data );
+        if ( ! $asset ) {
+            $error_msg = __( 'Sample images asset not found in the latest release. Please contact the plugin developer.', 'novel-game-plugin' );
+            noveltool_update_download_status( 'failed', $error_msg, 'ERR-ASSET-NOTFOUND', 'fetch_release' );
+            delete_option( 'noveltool_sample_images_download_lock' );
+            return array(
+                'success' => false,
+                'message' => $error_msg,
+                'code'    => 'ERR-ASSET-NOTFOUND',
+                'stage'   => 'fetch_release',
+            );
         }
+        $all_assets = array( $asset );
     }
     
-    // チェックサムを取得（バックグラウンド処理用）
-    if ( $checksum_asset ) {
-        $checksum_response = wp_remote_get(
-            $checksum_asset['browser_download_url'],
-            array(
-                'timeout' => 30,
-                'headers' => array(
-                    'User-Agent' => 'NovelGamePlugin/' . NOVEL_GAME_PLUGIN_VERSION . ' (+https://github.com/shokun0803/novel-game-plugin)',
-                ),
-            )
-        );
+    // 各アセットのチェックサムを取得
+    $assets_with_checksum = array();
+    foreach ( $all_assets as $asset ) {
+        $asset_name = $asset['name'];
+        $checksum = '';
         
-        if ( ! is_wp_error( $checksum_response ) && 200 === wp_remote_retrieve_response_code( $checksum_response ) ) {
-            $checksum_body = wp_remote_retrieve_body( $checksum_response );
-            if ( preg_match( '/\b([a-f0-9]{64})\b/i', $checksum_body, $matches ) ) {
-                $expected_checksum = $matches[1];
+        // 対応するチェックサムファイルを探す
+        $checksum_asset = null;
+        foreach ( $release_data['assets'] as $a ) {
+            if ( isset( $a['name'] ) && $a['name'] === $asset_name . '.sha256' ) {
+                $checksum_asset = $a;
+                break;
             }
         }
+        
+        // チェックサムを取得
+        if ( $checksum_asset ) {
+            $checksum_response = wp_remote_get(
+                $checksum_asset['browser_download_url'],
+                array(
+                    'timeout' => 30,
+                    'headers' => array(
+                        'User-Agent' => 'NovelGamePlugin/' . NOVEL_GAME_PLUGIN_VERSION . ' (+https://github.com/shokun0803/novel-game-plugin)',
+                    ),
+                )
+            );
+            
+            if ( ! is_wp_error( $checksum_response ) && 200 === wp_remote_retrieve_response_code( $checksum_response ) ) {
+                $checksum_body = wp_remote_retrieve_body( $checksum_response );
+                if ( preg_match( '/\b([a-f0-9]{64})\b/i', $checksum_body, $matches ) ) {
+                    $checksum = $matches[1];
+                } else {
+                    error_log( sprintf( 'NovelGamePlugin: Invalid checksum format for %s', $asset_name ) );
+                }
+            } else {
+                error_log( sprintf( 'NovelGamePlugin: Failed to fetch checksum for %s', $asset_name ) );
+            }
+        }
+        
+        $assets_with_checksum[] = array(
+            'asset'    => $asset,
+            'checksum' => $checksum,
+        );
     }
+    
+    // 後方互換: 単一アセットの場合は従来の変数も設定
+    $asset = $all_assets[0];
+    $asset_name = $asset['name'];
+    $download_url = $asset['browser_download_url'];
+    $expected_checksum = $assets_with_checksum[0]['checksum'];
     
     // 環境検出
     $capabilities = noveltool_detect_extraction_capabilities();
@@ -1707,7 +1816,13 @@ function noveltool_perform_sample_images_download() {
     
     if ( $use_background ) {
         // バックグラウンド処理で実行
-        $result = noveltool_perform_sample_images_download_background( $release_data, $asset, $expected_checksum );
+        if ( count( $all_assets ) > 1 ) {
+            // 複数アセット: 各アセットに対してジョブを作成
+            $result = noveltool_perform_multi_asset_download_background( $release_data, $assets_with_checksum );
+        } else {
+            // 単一アセット: 従来の処理
+            $result = noveltool_perform_sample_images_download_background( $release_data, $asset, $expected_checksum );
+        }
         delete_option( 'noveltool_sample_images_download_lock' );
         return $result;
     }
