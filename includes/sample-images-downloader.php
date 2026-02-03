@@ -855,7 +855,7 @@ function noveltool_delete_background_job( $job_id ) {
  * @return bool 成功した場合true
  * @since 1.4.0
  */
-function noveltool_schedule_background_job( $job_id ) {
+function noveltool_schedule_background_job( $job_id, $delay = 0 ) {
     // 既にスケジュール済みかチェック
     $timestamp = wp_next_scheduled( 'noveltool_process_background_job', array( $job_id ) );
     
@@ -873,14 +873,16 @@ function noveltool_schedule_background_job( $job_id ) {
          * Action Scheduler 等を使う場合はここでスケジュール
          * 
          * @param string $job_id ジョブID
+         * @param int $delay 遅延秒数
          * @since 1.4.0
          */
-        do_action( 'noveltool_schedule_custom_job', $job_id );
+        do_action( 'noveltool_schedule_custom_job', $job_id, $delay );
         return true;
     }
     
     // デフォルトは WP Cron を使用
-    return wp_schedule_single_event( time(), 'noveltool_process_background_job', array( $job_id ) );
+    $schedule_time = time() + absint( $delay );
+    return wp_schedule_single_event( $schedule_time, 'noveltool_process_background_job', array( $job_id ) );
 }
 
 /**
@@ -1268,11 +1270,15 @@ function noveltool_perform_sample_images_download_background( $release_data, $as
     noveltool_schedule_background_job( $download_job_id );
     
     // チェーンジョブを登録（ダウンロード完了後に実行）
-    wp_schedule_single_event(
-        time() + 10,
-        'noveltool_check_background_job_chain',
-        array( $download_job_id, $checksum )
-    );
+    // 二重スケジューリング防止チェック
+    $chain_scheduled = wp_next_scheduled( 'noveltool_check_background_job_chain', array( $download_job_id, $checksum ) );
+    if ( ! $chain_scheduled ) {
+        wp_schedule_single_event(
+            time() + 10,
+            'noveltool_check_background_job_chain',
+            array( $download_job_id, $checksum )
+        );
+    }
     
     return array(
         'success' => true,
@@ -1392,14 +1398,17 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
         // ダウンロードジョブをスケジュール（少しずつ時間をずらす）
         noveltool_schedule_background_job( $download_job_id, $index * 2 );
         
-        // 必須修正3: チェーンスケジューリング整合
+        // チェーンジョブを登録（ダウンロード完了後に実行）
         // noveltool_check_background_job_chain の引数: (job_id, checksum)
         // チェックサムが空の場合も空文字列として渡す（受け側で判定）
-        wp_schedule_single_event(
-            time() + 10 + ( $index * 2 ),
-            'noveltool_check_background_job_chain',
-            array( $download_job_id, $checksum )
-        );
+        $chain_scheduled = wp_next_scheduled( 'noveltool_check_background_job_chain', array( $download_job_id, $checksum ) );
+        if ( ! $chain_scheduled ) {
+            wp_schedule_single_event(
+                time() + 10 + ( $index * 2 ),
+                'noveltool_check_background_job_chain',
+                array( $download_job_id, $checksum )
+            );
+        }
     }
     
     // すべてのジョブ作成に失敗した場合はエラーを返す
