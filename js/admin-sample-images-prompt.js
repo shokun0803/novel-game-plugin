@@ -206,8 +206,34 @@
                     // ダウンロード中
                     var elapsed = Date.now() - startTime;
                     
-                    // バイト単位の進捗情報があれば使用
-                    if (
+                    // バックグラウンド処理の進捗情報を優先
+                    if (response.progress && typeof response.progress === 'number') {
+                        var statusText = novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...';
+                        
+                        // current_step に基づいてステータステキストを変更
+                        if (response.current_step) {
+                            switch (response.current_step) {
+                                case 'download':
+                                    statusText = novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...';
+                                    break;
+                                case 'verify':
+                                    statusText = novelToolSampleImages.strings.statusVerifying || '検証中...';
+                                    break;
+                                case 'extract':
+                                    statusText = novelToolSampleImages.strings.statusExtracting || '展開中...';
+                                    break;
+                            }
+                        }
+                        
+                        // バックグラウンド処理の場合は注記を追加
+                        if (response.use_background) {
+                            statusText += ' ' + (novelToolSampleImages.strings.backgroundNote || '(バックグラウンドで処理中)');
+                        }
+                        
+                        updateProgressBar(response.progress, statusText);
+                    }
+                    // バイト単位の進捗情報があれば使用（従来の方式）
+                    else if (
                         response.progress &&
                         typeof response.progress.current === 'number' &&
                         typeof response.progress.total === 'number' &&
@@ -220,7 +246,7 @@
                             formatBytes(response.progress.current) + ' / ' + formatBytes(response.progress.total);
                         updateProgressBar(percentage, statusText);
                     } else {
-                        // バイト情報がない場合はindeterminateモード + 段階的ステータス
+                        // 進捗情報がない場合はindeterminateモード + 段階的ステータス
                         var statusText = novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...';
                         if (elapsed > 30000) {
                             statusText = novelToolSampleImages.strings.statusVerifying || '検証中...';

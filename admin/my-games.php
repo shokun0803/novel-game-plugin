@@ -313,14 +313,15 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     'modalTitle'           => __( 'Download Sample Images', 'novel-game-plugin' ),
                     'modalMessage'         => sprintf(
                         /* translators: %s: estimated file size */
-                        __( 'Sample game images are not installed. Would you like to download them now? Download size: approximately %s.', 'novel-game-plugin' ),
+                        __( 'Sample game images are not installed. Would you like to download them now? Download size: approximately %s. The download will be processed in the background.', 'novel-game-plugin' ),
                         '15 MB'
                     ),
                     'downloadButton'       => __( 'Download', 'novel-game-plugin' ),
                     'laterButton'          => __( 'Later', 'novel-game-plugin' ),
                     'cancelButton'         => __( 'Cancel', 'novel-game-plugin' ),
                     'downloading'          => __( 'Downloading...', 'novel-game-plugin' ),
-                    'pleaseWait'           => __( 'Please wait while the sample images are being downloaded. This may take a few minutes.', 'novel-game-plugin' ),
+                    'pleaseWait'           => __( 'Please wait while the sample images are being downloaded. The download is processed in the background, so you can continue using other features.', 'novel-game-plugin' ),
+                    'backgroundNote'       => __( '(Processing in background)', 'novel-game-plugin' ),
                     'success'              => __( 'Success', 'novel-game-plugin' ),
                     'error'                => __( 'Error', 'novel-game-plugin' ),
                     'downloadSuccess'      => __( 'Sample images downloaded and installed successfully.', 'novel-game-plugin' ),
@@ -363,6 +364,10 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     'stageExtract'         => __( 'Extracting', 'novel-game-plugin' ),
                     'stageFilesystem'      => __( 'Filesystem operation', 'novel-game-plugin' ),
                     'stageOther'           => __( 'Other', 'novel-game-plugin' ),
+                    'stageEnvironmentCheck' => __( 'Environment check', 'novel-game-plugin' ),
+                    'stageBackground'      => __( 'Background processing', 'novel-game-plugin' ),
+                    'errorMemoryLimit'     => __( 'Server memory limit is too low. Please increase memory_limit to 256M or higher in php.ini.', 'novel-game-plugin' ),
+                    'errorNoExtension'     => __( 'Server does not support ZIP extraction. Please install PHP ZipArchive extension or unzip command.', 'novel-game-plugin' ),
                 ),
             )
         );
@@ -487,15 +492,56 @@ function noveltool_handle_download_diagnostic() {
         }
     }
 
-    // プラグイン本体と関連の 1〜2 ファイルを含める（情報収集用）
+    // プラグインのメタ情報のみを抽出（PHPファイルは含めない）
     $main_plugin = NOVEL_GAME_PLUGIN_PATH . 'novel-game-plugin.php';
     if ( file_exists( $main_plugin ) ) {
-        $zip->addFile( $main_plugin, 'plugin-novel-game-plugin.php' );
+        $plugin_headers = get_file_data(
+            $main_plugin,
+            array(
+                'Name'        => 'Plugin Name',
+                'PluginURI'   => 'Plugin URI',
+                'Version'     => 'Version',
+                'Description' => 'Description',
+                'Author'      => 'Author',
+                'AuthorURI'   => 'Author URI',
+                'TextDomain'  => 'Text Domain',
+                'DomainPath'  => 'Domain Path',
+                'Network'     => 'Network',
+                'RequiresWP'  => 'Requires at least',
+                'RequiresPHP' => 'Requires PHP',
+            )
+        );
+        
+        $plugin_info = array();
+        foreach ( $plugin_headers as $key => $value ) {
+            if ( ! empty( $value ) ) {
+                $plugin_info[] = $key . ': ' . $value;
+            }
+        }
+        
+        $zip->addFromString( 'plugin-info.txt', implode( PHP_EOL, $plugin_info ) );
     }
 
-    $downloader = NOVEL_GAME_PLUGIN_PATH . 'includes/sample-images-downloader.php';
-    if ( file_exists( $downloader ) ) {
-        $zip->addFile( $downloader, 'includes/sample-images-downloader.php' );
+    // noveltool_background_jobs と noveltool_job_log オプションを含める
+    $background_jobs = get_option( 'noveltool_background_jobs', array() );
+    if ( ! empty( $background_jobs ) ) {
+        $zip->addFromString( 'background-jobs.json', wp_json_encode( $background_jobs, JSON_PRETTY_PRINT ) );
+    }
+
+    $job_log = get_option( 'noveltool_job_log', array() );
+    if ( ! empty( $job_log ) ) {
+        $zip->addFromString( 'job-log.json', wp_json_encode( $job_log, JSON_PRETTY_PRINT ) );
+    }
+
+    // サンプル画像ダウンロードステータスを含める
+    $download_status = get_option( 'noveltool_sample_images_download_status_data', array() );
+    if ( ! empty( $download_status ) ) {
+        $zip->addFromString( 'download-status.json', wp_json_encode( $download_status, JSON_PRETTY_PRINT ) );
+    }
+
+    $download_error = get_option( 'noveltool_sample_images_download_error', '' );
+    if ( ! empty( $download_error ) ) {
+        $zip->addFromString( 'download-error.txt', $download_error );
     }
 
     $zip->close();
