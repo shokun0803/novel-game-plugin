@@ -19,6 +19,50 @@
 
 set -e
 
+# 必須コマンドチェック
+for cmd in zip find; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        echo "Error: $cmd is required but not installed." >&2
+        echo "Please install $cmd on the system." >&2
+        exit 1
+    fi
+done
+
+# SHA256 生成コマンドの確認
+if command -v sha256sum >/dev/null 2>&1; then
+    SHA256_CMD="sha256sum"
+elif command -v shasum >/dev/null 2>&1; then
+    SHA256_CMD="shasum -a 256"
+else
+    echo "Error: Neither sha256sum nor shasum is available." >&2
+    echo "Please install coreutils or perl on the system." >&2
+    exit 1
+fi
+
+# ファイルサイズ取得関数（互換性対応）
+get_file_size_bytes() {
+    local file="$1"
+    if stat -c%s "$file" >/dev/null 2>&1; then
+        # GNU stat
+        stat -c%s "$file"
+    elif stat -f%z "$file" >/dev/null 2>&1; then
+        # BSD stat
+        stat -f%z "$file"
+    elif python3 -c "import os; print(os.path.getsize('$file'))" 2>/dev/null; then
+        # Python fallback
+        python3 -c "import os; print(os.path.getsize('$file'))"
+    else
+        # 最後の手段: du -b（一部環境で動作しない可能性あり）
+        du -b "$file" 2>/dev/null | cut -f1 || echo "0"
+    fi
+}
+
+# チェックサム生成関数
+generate_checksum() {
+    local filename="$1"
+    $SHA256_CMD "$filename" > "${filename}.sha256"
+}
+
 # バージョン番号をパラメータから取得
 VERSION=${1:-v1.0.0}
 SPLIT_MODE="split"  # デフォルトは分割モード
@@ -91,7 +135,21 @@ generate_split_zips() {
     
     # ファイルをサイズでソートして取得（大きいファイルから先に処理）
     cd "$SAMPLE_IMAGES_DIR"
-    mapfile -t FILES < <(find . -type f ! -name "*.DS_Store" ! -name "._*" -exec du -b {} + | sort -rn | cut -f2-)
+    
+    # IFS を改行のみに設定して、ファイル名に空白があっても安全に扱う
+    local OLD_IFS="$IFS"
+    IFS=$'\n'
+    
+    # ファイルリストを取得（サイズ降順）
+    local file_list=()
+    while IFS= read -r line; do
+        file_list+=("$line")
+    done < <(find . -type f ! -name "*.DS_Store" ! -name "._*" -print0 | while IFS= read -r -d '' file; do
+        size=$(get_file_size_bytes "$file")
+        printf "%s\t%s\n" "$size" "$file"
+    done | sort -rn | cut -f2-)
+    
+    IFS="$OLD_IFS"
     
     # 分割設定（バイト単位）
     MAX_PART_SIZE=$((10 * 1024 * 1024))  # 10MB目標
@@ -99,14 +157,36 @@ generate_split_zips() {
     CURRENT_SIZE=0
     declare -a PART_FILES
     
+    echo "  総ファイル数: ${#file_list[@]}"
+    
     # ファイルを分割
-    for FILE in "${FILES[@]}"; do
-        FILE_SIZE=$(du -b "$SAMPLE_IMAGES_DIR/$FILE" | cut -f1)
+    for FILE in "${file_list[@]}"; do
+        FILE_SIZE=$(get_file_size_bytes "$SAMPLE_IMAGES_DIR/$FILE")
+        
+        # 単一ファイルが上限を超える場合の警告
+        if [ "$FILE_SIZE" -gt "$MAX_PART_SIZE" ]; then
+            echo -e "  ${YELLOW}警告: ファイル $FILE のサイズ ($FILE_SIZE bytes) が MAX_PART_SIZE を超えています${NC}"
+            echo -e "  ${YELLOW}      このファイルは単独で1パートに含めます${NC}"
+            
+            # 現在のパートに他のファイルがあれば先に出力
+            if [ ${#PART_FILES[@]} -gt 0 ]; then
+                create_part_zip "$PART_NUM" "${PART_FILES[@]}"
+                PART_NUM=$((PART_NUM + 1))
+                PART_FILES=()
+                CURRENT_SIZE=0
+            fi
+            
+            # 大きなファイルを単独でパートに追加
+            create_part_zip "$PART_NUM" "$FILE"
+            PART_NUM=$((PART_NUM + 1))
+            CURRENT_SIZE=0
+            continue
+        fi
         
         # 現在のパートが上限に達したら新しいパートを開始
-        if [ $CURRENT_SIZE -gt 0 ] && [ $(($CURRENT_SIZE + $FILE_SIZE)) -gt $MAX_PART_SIZE ]; then
+        if [ "$CURRENT_SIZE" -gt 0 ] && [ $((CURRENT_SIZE + FILE_SIZE)) -gt "$MAX_PART_SIZE" ]; then
             # 現在のパートを ZIP 化
-            create_part_zip $PART_NUM "${PART_FILES[@]}"
+            create_part_zip "$PART_NUM" "${PART_FILES[@]}"
             
             # 次のパート準備
             PART_NUM=$((PART_NUM + 1))
@@ -116,12 +196,12 @@ generate_split_zips() {
         
         # ファイルを現在のパートに追加
         PART_FILES+=("$FILE")
-        CURRENT_SIZE=$(($CURRENT_SIZE + $FILE_SIZE))
+        CURRENT_SIZE=$((CURRENT_SIZE + FILE_SIZE))
     done
     
     # 最後のパートを ZIP 化
     if [ ${#PART_FILES[@]} -gt 0 ]; then
-        create_part_zip $PART_NUM "${PART_FILES[@]}"
+        create_part_zip "$PART_NUM" "${PART_FILES[@]}"
     fi
     
     # 一時ディレクトリを削除
@@ -133,35 +213,46 @@ generate_split_zips() {
 
 # パート ZIP 作成関数
 create_part_zip() {
-    local part_num=$1
+    local part_num="$1"
     shift
     local files=("$@")
     
-    local part_name=$(printf "part%02d" $part_num)
+    local part_name
+    part_name=$(printf "part%02d" "$part_num")
     local zip_filename="novel-game-plugin-sample-images-${VERSION}-${part_name}.zip"
     local zip_path="${BUILD_DIR}/${zip_filename}"
     
-    echo "  パート ${part_num} を作成中..."
+    echo "  パート ${part_num} を作成中 (${#files[@]} ファイル)..."
     
-    # 一時ディレクトリにファイルをコピー
+    # 一時ディレクトリにファイルをコピー（パス構造を保持）
     local part_temp_dir="${TEMP_DIR}/${part_name}"
     mkdir -p "$part_temp_dir"
     
+    # ファイルのパス構造を保持してコピー
     for file in "${files[@]}"; do
-        cp "$SAMPLE_IMAGES_DIR/$file" "$part_temp_dir/"
+        # ファイル名に空白や特殊文字が含まれても安全に処理
+        local target_dir
+        target_dir=$(dirname "$file")
+        mkdir -p "$part_temp_dir/$target_dir"
+        cp "$SAMPLE_IMAGES_DIR/$file" "$part_temp_dir/$file"
     done
     
-    # ZIP 作成
+    # ZIP 作成（相対パスを保持）
     cd "$part_temp_dir"
-    zip -q -r "$zip_path" .
+    if ! zip -q -r "$zip_path" .; then
+        echo -e "${RED}エラー: ZIP ファイルの作成に失敗しました: $zip_filename${NC}" >&2
+        exit 1
+    fi
     
     # チェックサム生成
     cd "$BUILD_DIR"
-    sha256sum "$zip_filename" > "${zip_filename}.sha256"
+    generate_checksum "$zip_filename"
     
     # サイズ表示
-    local size=$(du -h "$zip_path" | cut -f1)
-    echo "    ${zip_filename} (${size})"
+    local size
+    size=$(du -h "$zip_path" | cut -f1)
+    local file_count=${#files[@]}
+    echo "    ${zip_filename} (${size}, ${file_count} ファイル)"
 }
 
 # 単一まとめ ZIP 生成関数
@@ -173,22 +264,21 @@ generate_single_zip() {
     
     # サンプル画像を ZIP 化
     cd "$ASSETS_DIR"
-    zip -q -r "$zip_path" sample-images/ -x "*.DS_Store" "*/._*"
-    
-    if [ $? -ne 0 ]; then
-        echo -e "${RED}エラー: ZIP ファイルの作成に失敗しました${NC}"
+    if ! zip -q -r "$zip_path" sample-images/ -x "*.DS_Store" "*/._*"; then
+        echo -e "${RED}エラー: ZIP ファイルの作成に失敗しました${NC}" >&2
         exit 1
     fi
     
     echo -e "${GREEN}✓ まとめ ZIP ファイルを作成しました: ${zip_filename}${NC}"
     
     # ファイルサイズを表示
-    local zip_size=$(du -h "$zip_path" | cut -f1)
+    local zip_size
+    zip_size=$(du -h "$zip_path" | cut -f1)
     echo "  ファイルサイズ: ${zip_size}"
     
     # チェックサムを生成
     cd "$BUILD_DIR"
-    sha256sum "$zip_filename" > "${zip_filename}.sha256"
+    generate_checksum "$zip_filename"
     
     echo ""
 }
