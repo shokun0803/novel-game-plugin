@@ -492,15 +492,56 @@ function noveltool_handle_download_diagnostic() {
         }
     }
 
-    // プラグイン本体と関連の 1〜2 ファイルを含める（情報収集用）
+    // プラグインのメタ情報のみを抽出（PHPファイルは含めない）
     $main_plugin = NOVEL_GAME_PLUGIN_PATH . 'novel-game-plugin.php';
     if ( file_exists( $main_plugin ) ) {
-        $zip->addFile( $main_plugin, 'plugin-novel-game-plugin.php' );
+        $plugin_headers = get_file_data(
+            $main_plugin,
+            array(
+                'Name'        => 'Plugin Name',
+                'PluginURI'   => 'Plugin URI',
+                'Version'     => 'Version',
+                'Description' => 'Description',
+                'Author'      => 'Author',
+                'AuthorURI'   => 'Author URI',
+                'TextDomain'  => 'Text Domain',
+                'DomainPath'  => 'Domain Path',
+                'Network'     => 'Network',
+                'RequiresWP'  => 'Requires at least',
+                'RequiresPHP' => 'Requires PHP',
+            )
+        );
+        
+        $plugin_info = array();
+        foreach ( $plugin_headers as $key => $value ) {
+            if ( ! empty( $value ) ) {
+                $plugin_info[] = $key . ': ' . $value;
+            }
+        }
+        
+        $zip->addFromString( 'plugin-info.txt', implode( PHP_EOL, $plugin_info ) );
     }
 
-    $downloader = NOVEL_GAME_PLUGIN_PATH . 'includes/sample-images-downloader.php';
-    if ( file_exists( $downloader ) ) {
-        $zip->addFile( $downloader, 'includes/sample-images-downloader.php' );
+    // noveltool_background_jobs と noveltool_job_log オプションを含める
+    $background_jobs = get_option( 'noveltool_background_jobs', array() );
+    if ( ! empty( $background_jobs ) ) {
+        $zip->addFromString( 'background-jobs.json', wp_json_encode( $background_jobs, JSON_PRETTY_PRINT ) );
+    }
+
+    $job_log = get_option( 'noveltool_job_log', array() );
+    if ( ! empty( $job_log ) ) {
+        $zip->addFromString( 'job-log.json', wp_json_encode( $job_log, JSON_PRETTY_PRINT ) );
+    }
+
+    // サンプル画像ダウンロードステータスを含める
+    $download_status = get_option( 'noveltool_sample_images_download_status_data', array() );
+    if ( ! empty( $download_status ) ) {
+        $zip->addFromString( 'download-status.json', wp_json_encode( $download_status, JSON_PRETTY_PRINT ) );
+    }
+
+    $download_error = get_option( 'noveltool_sample_images_download_error', '' );
+    if ( ! empty( $download_error ) ) {
+        $zip->addFromString( 'download-error.txt', $download_error );
     }
 
     $zip->close();
