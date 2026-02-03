@@ -47,6 +47,42 @@ else
     PYTHON3_AVAILABLE=false
 fi
 
+# ファイルサイズ取得関数（簡易版、互換性対応）
+get_file_size_bytes() {
+    local file="$1"
+    local size
+
+    if [ ! -f "$file" ]; then
+        echo ""  # 空文字を返して失敗を示す
+        return 1
+    fi
+
+    if size=$(stat -c%s "$file" 2>/dev/null); then
+        echo "$size"
+        return 0
+    fi
+
+    if size=$(stat -f%z "$file" 2>/dev/null); then
+        echo "$size"
+        return 0
+    fi
+
+    if [ "$PYTHON3_AVAILABLE" = true ]; then
+        if size=$(python3 -c "import os; print(os.path.getsize('$file'))" 2>/dev/null); then
+            echo "$size"
+            return 0
+        fi
+    fi
+
+    if size=$(du -b "$file" 2>/dev/null | cut -f1); then
+        echo "$size"
+        return 0
+    fi
+
+    echo ""
+    return 1
+}
+
 # バージョン引数の取得（必須）
 VERSION="${1:-}"
 if [ -z "$VERSION" ]; then
@@ -72,6 +108,18 @@ fi
 # create-sample-images-asset.sh を呼び出す
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 "${SCRIPT_DIR}/create-sample-images-asset.sh" "$VERSION" "$OPTION"
+
+# 生成された ZIP のサイズ検証（数値で取得できることを確認）
+echo "Verifying generated ZIP sizes..."
+for f in build/novel-game-plugin-sample-images-${VERSION}*.zip; do
+    [ -e "$f" ] || continue
+    size=$(get_file_size_bytes "$f") || true
+    if ! printf '%s' "$size" | grep -Eq '^[0-9]+$'; then
+        echo "Error: Failed to determine numeric size for: $f" >&2
+        exit 1
+    fi
+    echo "  $f -> ${size} bytes"
+done
 
 echo ""
 echo "Done!"
