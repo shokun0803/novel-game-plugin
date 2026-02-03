@@ -293,6 +293,9 @@ function noveltool_detect_unzip_command() {
     // unzip -v は通常 0 を返すか、エラーでも出力がある
     if ( ! empty( $output ) ) {
         $output_str = implode( ' ', $output );
+        // 長さ制限とサニタイズ（ログ用）
+        $output_str = substr( $output_str, 0, 500 );
+        
         // unzip のバージョン情報が含まれているか確認
         if ( stripos( $output_str, 'unzip' ) !== false || stripos( $output_str, 'info-zip' ) !== false ) {
             return true;
@@ -465,9 +468,35 @@ function noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_fi
     
     fclose( $fp );
     
-    // 一時ファイルを最終的な場所に移動
-    $move_result = $wp_filesystem->move( $temp_file, $target_path, true );
-    if ( ! $move_result ) {
+    // 一時ファイルを最終的な場所に移動（複数の方法を試行）
+    $move_success = false;
+    
+    // 方法1: WP_Filesystem の move() メソッド
+    if ( method_exists( $wp_filesystem, 'move' ) ) {
+        $move_result = $wp_filesystem->move( $temp_file, $target_path, true );
+        if ( $move_result ) {
+            $move_success = true;
+        }
+    }
+    
+    // 方法2: copy() + unlink() フォールバック
+    if ( ! $move_success && method_exists( $wp_filesystem, 'copy' ) ) {
+        if ( $wp_filesystem->copy( $temp_file, $target_path, true, FS_CHMOD_FILE ) ) {
+            @unlink( $temp_file );
+            $move_success = true;
+        }
+    }
+    
+    // 方法3: PHP の rename() フォールバック（direct method 限定）
+    if ( ! $move_success && isset( $wp_filesystem->method ) && $wp_filesystem->method === 'direct' ) {
+        if ( @rename( $temp_file, $target_path ) ) {
+            @chmod( $target_path, FS_CHMOD_FILE );
+            $move_success = true;
+        }
+    }
+    
+    // すべての方法が失敗した場合
+    if ( ! $move_success ) {
         @unlink( $temp_file );
         return new WP_Error(
             'move_error',
@@ -609,16 +638,21 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
         $return_var = 0;
         
         // unzip を実行（-o: 上書き, -q: サイレント）
-        exec( "unzip -o -q {$zip_file_escaped} -d {$destination_escaped} 2>&1", $output, $return_var );
+        @exec( "unzip -o -q {$zip_file_escaped} -d {$destination_escaped} 2>&1", $output, $return_var );
         
         if ( $return_var !== 0 ) {
+            // 詳細なエラー情報をログに記録（管理者向け）
+            $output_str = implode( "\n", $output );
+            error_log( sprintf(
+                'NovelGamePlugin: unzip command failed with exit code %d. Output: %s',
+                $return_var,
+                substr( $output_str, 0, 1000 ) // 最大1000文字まで
+            ) );
+            
+            // ユーザー向けには簡潔で非機密のメッセージを返す
             return new WP_Error(
                 'unzip_error',
-                sprintf(
-                    /* translators: %s: error message */
-                    __( 'Failed to extract ZIP using unzip command: %s', 'novel-game-plugin' ),
-                    implode( ' ', $output )
-                )
+                __( 'Failed to extract ZIP using unzip command. Please check server logs or install PHP ZipArchive extension.', 'novel-game-plugin' )
             );
         }
         
@@ -1810,6 +1844,57 @@ add_action( 'rest_api_init', 'noveltool_register_sample_images_api' );
 function noveltool_api_download_sample_images( $request ) {
     $result = noveltool_perform_sample_images_download();
     
+    // WP_Error が返された場合の処理
+    if ( is_wp_error( $result ) ) {
+        $error_code = $result->get_error_code();
+        $error_message = $result->get_error_message();
+        
+        // 詳細なエラー情報をログに記録
+        error_log( sprintf(
+            'NovelGamePlugin: Sample images download failed with WP_Error - Code: %s, Message: %s',
+            $error_code,
+            $error_message
+        ) );
+        
+        // ユーザー向けには簡潔で非機密のメッセージを返す
+        $response = array(
+            'success' => false,
+            'message' => __( 'Sample images download failed. Please check server logs for details.', 'novel-game-plugin' ),
+            'error'   => array(
+                'code'      => sanitize_text_field( $error_code ),
+                'message'   => __( 'An error occurred during download. Please try again.', 'novel-game-plugin' ),
+                'stage'     => 'download',
+                'timestamp' => time(),
+            ),
+        );
+        
+        return new WP_REST_Response( $response, 500 );
+    }
+    
+    // 配列でない場合の保護
+    if ( ! is_array( $result ) ) {
+        error_log( 'NovelGamePlugin: noveltool_perform_sample_images_download() returned non-array result' );
+        return new WP_REST_Response(
+            array(
+                'success' => false,
+                'message' => __( 'Invalid response format from download function.', 'novel-game-plugin' ),
+            ),
+            500
+        );
+    }
+    
+    // success キーの存在チェック
+    if ( ! isset( $result['success'] ) ) {
+        error_log( 'NovelGamePlugin: noveltool_perform_sample_images_download() returned array without success key' );
+        return new WP_REST_Response(
+            array(
+                'success' => false,
+                'message' => __( 'Invalid response format from download function.', 'novel-game-plugin' ),
+            ),
+            500
+        );
+    }
+    
     if ( $result['success'] ) {
         return new WP_REST_Response( $result, 200 );
     } else {
@@ -1818,8 +1903,9 @@ function noveltool_api_download_sample_images( $request ) {
         
         // エラーコードとステージから適切なHTTPステータスを決定
         $http_status = 400; // デフォルト
-        $error_code = isset( $result['code'] ) ? $result['code'] : 'download_failed';
-        $error_stage = isset( $result['stage'] ) ? $result['stage'] : 'other';
+        $error_code = isset( $result['code'] ) ? sanitize_text_field( $result['code'] ) : 'download_failed';
+        $error_stage = isset( $result['stage'] ) ? sanitize_text_field( $result['stage'] ) : 'other';
+        $error_message = isset( $result['message'] ) ? sanitize_text_field( $result['message'] ) : __( 'Download failed.', 'novel-game-plugin' );
         
         // ステージ/コード別のHTTPステータス
         if ( strpos( $error_code, 'ERR-PERM' ) === 0 || strpos( $error_code, 'ERR-FS-INIT' ) === 0 ) {
@@ -1836,18 +1922,27 @@ function noveltool_api_download_sample_images( $request ) {
         
         $response = array(
             'success' => false,
-            'message' => sanitize_text_field( $result['message'] ),
+            'message' => $error_message,
             'error'   => array(
-                'code'      => sanitize_text_field( $error_code ),
-                'message'   => sanitize_text_field( $result['message'] ),
-                'stage'     => sanitize_text_field( $error_stage ),
+                'code'      => $error_code,
+                'message'   => $error_message,
+                'stage'     => $error_stage,
                 'timestamp' => is_array( $error_data ) && isset( $error_data['timestamp'] ) ? intval( $error_data['timestamp'] ) : time(),
             ),
         );
         
         // メタ情報があれば追加（非機密のみ）
         if ( is_array( $error_data ) && isset( $error_data['meta'] ) && is_array( $error_data['meta'] ) ) {
-            $response['error']['meta'] = $error_data['meta'];
+            $safe_meta = array();
+            $allowed_meta_keys = array( 'http_code', 'stage_detail', 'retry_count' );
+            foreach ( $allowed_meta_keys as $key ) {
+                if ( isset( $error_data['meta'][ $key ] ) ) {
+                    $safe_meta[ $key ] = sanitize_text_field( $error_data['meta'][ $key ] );
+                }
+            }
+            if ( ! empty( $safe_meta ) ) {
+                $response['error']['meta'] = $safe_meta;
+            }
         }
         
         return new WP_REST_Response( $response, $http_status );
@@ -1886,7 +1981,7 @@ function noveltool_api_sample_images_status( $request ) {
         $response['use_background'] = (bool) $status_data['use_background'];
     }
     
-    // エラー情報があれば構造化して追加
+    // エラー情報があれば構造化して追加（非機密情報のみ）
     if ( ! empty( $error_data ) && is_array( $error_data ) ) {
         $response['error'] = array(
             'code'      => isset( $error_data['code'] ) ? sanitize_text_field( $error_data['code'] ) : 'ERR-UNKNOWN',
@@ -1895,9 +1990,18 @@ function noveltool_api_sample_images_status( $request ) {
             'timestamp' => isset( $error_data['timestamp'] ) ? intval( $error_data['timestamp'] ) : 0,
         );
         
-        // メタ情報があれば追加（非機密のみ）
+        // メタ情報があれば追加（非機密のみ、サニタイズ済み）
         if ( isset( $error_data['meta'] ) && is_array( $error_data['meta'] ) ) {
-            $response['error']['meta'] = $error_data['meta'];
+            $safe_meta = array();
+            $allowed_meta_keys = array( 'http_code', 'stage_detail', 'retry_count' );
+            foreach ( $allowed_meta_keys as $key ) {
+                if ( isset( $error_data['meta'][ $key ] ) ) {
+                    $safe_meta[ $key ] = sanitize_text_field( $error_data['meta'][ $key ] );
+                }
+            }
+            if ( ! empty( $safe_meta ) ) {
+                $response['error']['meta'] = $safe_meta;
+            }
         }
     }
     
