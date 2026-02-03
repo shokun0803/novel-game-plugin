@@ -21,7 +21,7 @@
 set -euo pipefail
 
 # 必須コマンドチェック
-for cmd in zip find; do
+for cmd in zip find rsync; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
         echo "Error: $cmd is required but not installed." >&2
         echo "Please install $cmd on the system." >&2
@@ -29,15 +29,22 @@ for cmd in zip find; do
     fi
 done
 
-# SHA256 生成コマンドの確認
+# SHA256 生成コマンドの確認（配列として保持）
 if command -v sha256sum >/dev/null 2>&1; then
-    SHA256_CMD="sha256sum"
+    SHA256_CMD=(sha256sum)
 elif command -v shasum >/dev/null 2>&1; then
-    SHA256_CMD="shasum -a 256"
+    SHA256_CMD=(shasum -a 256)
 else
     echo "Error: Neither sha256sum nor shasum is available." >&2
     echo "Please install coreutils or perl on the system." >&2
     exit 1
+fi
+
+# Python3 の確認（ファイルサイズ取得のフォールバックに使用される可能性）
+if command -v python3 >/dev/null 2>&1; then
+    PYTHON3_AVAILABLE=true
+else
+    PYTHON3_AVAILABLE=false
 fi
 
 # バージョン引数の取得（必須）

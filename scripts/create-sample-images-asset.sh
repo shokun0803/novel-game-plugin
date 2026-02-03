@@ -20,7 +20,7 @@
 set -e
 
 # 必須コマンドチェック
-for cmd in zip find; do
+for cmd in zip find rsync; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
         echo "Error: $cmd is required but not installed." >&2
         echo "Please install $cmd on the system." >&2
@@ -28,39 +28,64 @@ for cmd in zip find; do
     fi
 done
 
-# SHA256 生成コマンドの確認
+# SHA256 生成コマンドの確認（配列として保持）
 if command -v sha256sum >/dev/null 2>&1; then
-    SHA256_CMD="sha256sum"
+    SHA256_CMD=(sha256sum)
 elif command -v shasum >/dev/null 2>&1; then
-    SHA256_CMD="shasum -a 256"
+    SHA256_CMD=(shasum -a 256)
 else
     echo "Error: Neither sha256sum nor shasum is available." >&2
     echo "Please install coreutils or perl on the system." >&2
     exit 1
 fi
 
+# Python3 の確認（ファイルサイズ取得のフォールバックに使用）
+PYTHON3_AVAILABLE=false
+if command -v python3 >/dev/null 2>&1; then
+    PYTHON3_AVAILABLE=true
+fi
+
 # ファイルサイズ取得関数（互換性対応）
 get_file_size_bytes() {
     local file="$1"
-    if stat -c%s "$file" >/dev/null 2>&1; then
-        # GNU stat
-        stat -c%s "$file"
-    elif stat -f%z "$file" >/dev/null 2>&1; then
-        # BSD stat
-        stat -f%z "$file"
-    elif python3 -c "import os; print(os.path.getsize('$file'))" 2>/dev/null; then
-        # Python fallback
-        python3 -c "import os; print(os.path.getsize('$file'))"
-    else
-        # 最後の手段: du -b（一部環境で動作しない可能性あり）
-        du -b "$file" 2>/dev/null | cut -f1 || echo "0"
+    local size
+    
+    # GNU stat を試行
+    if size=$(stat -c%s "$file" 2>/dev/null); then
+        echo "$size"
+        return 0
     fi
+    
+    # BSD stat を試行
+    if size=$(stat -f%z "$file" 2>/dev/null); then
+        echo "$size"
+        return 0
+    fi
+    
+    # Python3 フォールバック
+    if [ "$PYTHON3_AVAILABLE" = true ]; then
+        if size=$(python3 -c "import os; print(os.path.getsize('$file'))" 2>/dev/null); then
+            echo "$size"
+            return 0
+        fi
+    fi
+    
+    # 最後の手段: du -b
+    if size=$(du -b "$file" 2>/dev/null | cut -f1); then
+        echo "$size"
+        return 0
+    fi
+    
+    # すべて失敗した場合
+    echo "Error: Cannot determine file size for: $file" >&2
+    echo "0"
+    return 1
 }
 
 # チェックサム生成関数
 generate_checksum() {
     local filename="$1"
-    $SHA256_CMD "$filename" > "${filename}.sha256"
+    "${SHA256_CMD[@]}" "$filename" > "${filename}.sha256"
 }
 
 # バージョン番号をパラメータから取得
@@ -228,13 +253,17 @@ create_part_zip() {
     local part_temp_dir="${TEMP_DIR}/${part_name}"
     mkdir -p "$part_temp_dir"
     
-    # ファイルのパス構造を保持してコピー
+    # rsync -R を使用して相対パス構造を保持してコピー
+    cd "$SAMPLE_IMAGES_DIR"
     for file in "${files[@]}"; do
-        # ファイル名に空白や特殊文字が含まれても安全に処理
-        local target_dir
-        target_dir=$(dirname "$file")
-        mkdir -p "$part_temp_dir/$target_dir"
-        cp "$SAMPLE_IMAGES_DIR/$file" "$part_temp_dir/$file"
+        # rsync -R は相対パスを保持してコピーする
+        if ! rsync -aR "$file" "$part_temp_dir/" 2>/dev/null; then
+            # rsync が失敗した場合は手動でディレクトリ構造を作成
+            local target_dir
+            target_dir=$(dirname "$file")
+            mkdir -p "$part_temp_dir/$target_dir"
+            cp "$SAMPLE_IMAGES_DIR/$file" "$part_temp_dir/$file"
+        fi
     done
     
     # ZIP 作成（相対パスを保持）
@@ -248,7 +277,7 @@ create_part_zip() {
     cd "$BUILD_DIR"
     generate_checksum "$zip_filename"
     
-    # サイズ表示
+    # サイズとファイル数を表示
     local size
     size=$(du -h "$zip_path" | cut -f1)
     local file_count=${#files[@]}
