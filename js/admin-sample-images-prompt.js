@@ -329,88 +329,138 @@
         // 初期進捗を表示（indeterminate）
         updateProgressBar(null, novelToolSampleImages.strings.statusConnecting || '接続中...');
 
-        // REST API でダウンロード開始
-        $.ajax({
-            url: novelToolSampleImages.apiDownload,
-            method: 'POST',
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('X-WP-Nonce', novelToolSampleImages.restNonce);
-            },
-            success: function (response) {
-                if (response.success) {
-                    // 成功レスポンスが即座に返る場合
-                    updateProgressBar(100, novelToolSampleImages.strings.statusCompleted || '完了');
-                    setTimeout(function() {
-                        showSuccessMessage(response.message);
-                    }, 500);
-                } else {
-                    // 失敗レスポンス - 必ず詳細エラーを取得
-                    var errorCode = 'ERR-API-FAILED';
-                    if (response.error && response.error.code) {
-                        errorCode = response.error.code;
-                    }
-                    fetchDetailedError(function(detailedError) {
-                        showErrorMessage(response.message, detailedError, errorCode);
-                    });
-                }
-            },
-            error: function (xhr) {
-                // ダウンロードが開始されているがレスポンスが遅い、または失敗
-                if (xhr.status === 0 || xhr.status === 504 || xhr.status === 502) {
-                    // タイムアウトまたはゲートウェイエラー - ポーリングで状態確認
-                    updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
-                    setTimeout(function() {
-                        pollDownloadStatus(3000, downloadStartTime);
-                    }, 2000);
-                } else {
-                    // その他のエラー - 即時レスポンスを優先表示
-                    var message = novelToolSampleImages.strings.downloadFailed || 'ダウンロードに失敗しました。';
-                    var errorDetail = null;
-                    var errorCode = 'ERR-HTTP-' + xhr.status;
-                    
-                    // レスポンスJSONを優先的に解析
-                    if (xhr.responseJSON) {
-                        // JSONレスポンスがある場合
-                        if (xhr.responseJSON.error) {
-                            errorDetail = xhr.responseJSON.error;
-                            message = errorDetail.message || xhr.responseJSON.message || message;
-                            errorCode = errorDetail.code || errorCode;
-                        } else if (xhr.responseJSON.message) {
-                            message = xhr.responseJSON.message;
-                        }
-                        // 即時エラー表示（詳細あり）
-                        showErrorMessage(message, errorDetail, errorCode);
-                    } else if (xhr.responseText) {
-                        // JSONパースを試みる
-                        try {
-                            var parsedResponse = JSON.parse(xhr.responseText);
-                            if (parsedResponse.error) {
-                                errorDetail = parsedResponse.error;
-                                message = errorDetail.message || parsedResponse.message || message;
-                                errorCode = errorDetail.code || errorCode;
-                            } else if (parsedResponse.message) {
-                                message = parsedResponse.message;
-                            }
-                            showErrorMessage(message, errorDetail, errorCode);
-                        } catch (e) {
-                            // JSONパース失敗 - HTTPステータスに基づくメッセージ
-                            message = getHttpStatusMessage(xhr.status);
-                            showErrorMessage(message, null, errorCode);
-                        }
+        // まずXHRでリアルタイム進捗を試みる
+        var xhr = new XMLHttpRequest();
+        var progressSupported = false;
+        var fallbackTimeout = null;
+        
+        // プログレスイベントのハンドラ
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                progressSupported = true;
+                var percentComplete = Math.floor((e.loaded / e.total) * 100);
+                updateProgressBar(percentComplete, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+            }
+        });
+        
+        // レスポンス受信中の進捗（ダウンロードではなくアップロード後）
+        xhr.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                progressSupported = true;
+                // サーバーが処理中の進捗を送信している場合
+                clearTimeout(fallbackTimeout);
+            }
+        });
+        
+        // 完了ハンドラ
+        xhr.addEventListener('load', function() {
+            clearTimeout(fallbackTimeout);
+            
+            if (xhr.status === 200) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        // 成功レスポンスが即座に返る場合
+                        updateProgressBar(100, novelToolSampleImages.strings.statusCompleted || '完了');
+                        setTimeout(function() {
+                            showSuccessMessage(response.message);
+                        }, 500);
                     } else {
-                        // レスポンスなし - HTTPステータスに基づくメッセージ
-                        message = getHttpStatusMessage(xhr.status);
-                        showErrorMessage(message, null, errorCode);
-                    }
-                    
-                    // フォールバック: サーバー保存のエラー情報も取得（追加情報として）
-                    fetchDetailedError(function(detailedError) {
-                        if (detailedError && !errorDetail) {
-                            // 即時レスポンスになかった場合のみ更新
-                            showErrorMessage(message, detailedError, errorCode);
+                        // 失敗レスポンス
+                        var errorCode = 'ERR-API-FAILED';
+                        if (response.error && response.error.code) {
+                            errorCode = response.error.code;
                         }
-                    });
+                        fetchDetailedError(function(detailedError) {
+                            showErrorMessage(response.message, detailedError, errorCode);
+                        });
+                    }
+                } catch (e) {
+                    // JSON パースエラー
+                    showErrorMessage(
+                        novelToolSampleImages.strings.downloadFailed || 'ダウンロードに失敗しました。',
+                        null,
+                        'ERR-PARSE-FAILED'
+                    );
                 }
+            } else if (xhr.status === 0 || xhr.status === 504 || xhr.status === 502) {
+                // タイムアウトまたはゲートウェイエラー - ポーリングで状態確認
+                updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+                setTimeout(function() {
+                    pollDownloadStatus(3000, downloadStartTime);
+                }, 2000);
+            } else {
+                // その他のエラー
+                handleXhrError(xhr);
+            }
+        });
+        
+        // エラーハンドラ
+        xhr.addEventListener('error', function() {
+            clearTimeout(fallbackTimeout);
+            // ネットワークエラー - ポーリングで状態確認
+            updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+            setTimeout(function() {
+                pollDownloadStatus(3000, downloadStartTime);
+            }, 2000);
+        });
+        
+        // タイムアウトハンドラ
+        xhr.addEventListener('timeout', function() {
+            clearTimeout(fallbackTimeout);
+            // タイムアウト - ポーリングで状態確認
+            updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+            setTimeout(function() {
+                pollDownloadStatus(3000, downloadStartTime);
+            }, 2000);
+        });
+        
+        // XHRを開始
+        xhr.open('POST', novelToolSampleImages.apiDownload, true);
+        xhr.setRequestHeader('X-WP-Nonce', novelToolSampleImages.restNonce);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.timeout = 10000; // 10秒のタイムアウト（APIレスポンス用）
+        
+        // プログレスがサポートされない場合のフォールバック（5秒後にポーリングへ切替）
+        fallbackTimeout = setTimeout(function() {
+            if (!progressSupported) {
+                // プログレスイベントが発生しない場合、バックグラウンド処理として扱う
+                updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+                pollDownloadStatus(3000, downloadStartTime);
+            }
+        }, 5000);
+        
+        xhr.send(JSON.stringify({}));
+    }
+    
+    /**
+     * XHRエラーを処理
+     */
+    function handleXhrError(xhr) {
+        var message = novelToolSampleImages.strings.downloadFailed || 'ダウンロードに失敗しました。';
+        var errorDetail = null;
+        var errorCode = 'ERR-HTTP-' + xhr.status;
+        
+        try {
+            var response = JSON.parse(xhr.responseText);
+            if (response.error) {
+                errorDetail = response.error;
+                message = errorDetail.message || response.message || message;
+                errorCode = errorDetail.code || errorCode;
+            } else if (response.message) {
+                message = response.message;
+            }
+            showErrorMessage(message, errorDetail, errorCode);
+        } catch (e) {
+            // JSONパース失敗 - HTTPステータスに基づくメッセージ
+            message = getHttpStatusMessage(xhr.status);
+            showErrorMessage(message, null, errorCode);
+        }
+        
+        // フォールバック: サーバー保存のエラー情報も取得
+        fetchDetailedError(function(detailedError) {
+            if (detailedError && !errorDetail) {
+                showErrorMessage(message, detailedError, errorCode);
             }
         });
     }
