@@ -137,19 +137,31 @@ function noveltool_get_latest_release_info() {
 }
 
 /**
- * リリースアセットからサンプル画像 ZIP を探す
+ * リリースアセットからサンプル画像 ZIP を探す（後方互換性のため、最初の1つを返す）
  *
  * @param array $release_data リリースデータ
  * @return array|null アセット情報またはnull
  * @since 1.3.0
  */
 function noveltool_find_sample_images_asset( $release_data ) {
+    $assets = noveltool_find_all_sample_images_assets( $release_data );
+    return ! empty( $assets ) ? $assets[0] : null;
+}
+
+/**
+ * リリースアセットからすべてのサンプル画像 ZIP を取得（複数アセット対応）
+ *
+ * @param array $release_data リリースデータ
+ * @return array アセット情報の配列（空配列の場合もあり）
+ * @since 1.4.0
+ */
+function noveltool_find_all_sample_images_assets( $release_data ) {
     if ( ! isset( $release_data['assets'] ) || ! is_array( $release_data['assets'] ) ) {
-        return null;
+        return array();
     }
     
     // サンプル画像アセット名のパターン
-    // 例: novel-game-plugin-sample-images-1.3.0.zip, novel-game-plugin-sample-images-v1.3.0.zip, novel-game-plugin-sample-images.zip
+    // 例: novel-game-plugin-sample-images-1.3.0.zip, novel-game-plugin-sample-images-part1.zip, novel-game-plugin-sample-images.zip
     $preferred_names = array(
         'novel-game-plugin-sample-images',
         'novel-game-plugin-sample-images-v',
@@ -165,12 +177,18 @@ function noveltool_find_sample_images_asset( $release_data ) {
         
         $name = $asset['name'];
         
+        // SHA256チェックサムファイルはスキップ
+        if ( substr( $name, -7 ) === '.sha256' ) {
+            continue;
+        }
+        
         // 命名規約に基づいて候補を収集
         foreach ( $preferred_names as $index => $pattern ) {
             if ( strpos( $name, $pattern ) === 0 && substr( $name, -4 ) === '.zip' ) {
                 $candidates[] = array(
                     'priority' => $index,
                     'asset'    => $asset,
+                    'name'     => $name,
                 );
                 break;
             }
@@ -178,18 +196,27 @@ function noveltool_find_sample_images_asset( $release_data ) {
     }
     
     if ( empty( $candidates ) ) {
-        return null;
+        return array();
     }
     
-    // 優先順位でソート
+    // 優先順位でソート、同じ優先順位の場合はアルファベット順
     usort(
         $candidates,
         function ( $a, $b ) {
-            return $a['priority'] - $b['priority'];
+            if ( $a['priority'] !== $b['priority'] ) {
+                return $a['priority'] - $b['priority'];
+            }
+            return strcmp( $a['name'], $b['name'] );
         }
     );
     
-    return $candidates[0]['asset'];
+    // アセット情報のみを返す
+    return array_map(
+        function ( $candidate ) {
+            return $candidate['asset'];
+        },
+        $candidates
+    );
 }
 
 /**
