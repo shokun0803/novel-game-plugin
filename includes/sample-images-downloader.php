@@ -1266,6 +1266,12 @@ function noveltool_perform_sample_images_download_background( $release_data, $as
         )
     );
     
+    // ジョブIDをuser_metaに保存（UI追跡用）
+    $user_id = get_current_user_id();
+    if ( $user_id ) {
+        update_user_meta( $user_id, 'noveltool_download_job_id', $download_job_id );
+    }
+    
     // ダウンロードジョブをスケジュール
     noveltool_schedule_background_job( $download_job_id );
     
@@ -1449,6 +1455,12 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
             'failed_jobs'      => count( $failed_assets ),
         )
     );
+    
+    // ジョブIDをuser_metaに保存（UI追跡用）
+    $user_id = get_current_user_id();
+    if ( $user_id && $representative_job_id ) {
+        update_user_meta( $user_id, 'noveltool_download_job_id', $representative_job_id );
+    }
     
     // 部分的な失敗がある場合は警告を含める
     $message = sprintf(
@@ -1711,6 +1723,12 @@ function noveltool_check_background_job_extract( $extract_job_id ) {
     noveltool_update_download_status( 'completed' );
     update_option( 'noveltool_sample_images_downloaded', true, false );
     delete_option( 'noveltool_sample_images_download_lock' );
+    
+    // ジョブIDをuser_metaからクリア
+    $user_id = get_current_user_id();
+    if ( $user_id ) {
+        delete_user_meta( $user_id, 'noveltool_download_job_id' );
+    }
     
     // 完了したジョブのログを保存（デバッグ・監査用）
     $job = noveltool_get_background_job( $extract_job_id );
@@ -2078,6 +2096,12 @@ function noveltool_perform_sample_images_download() {
     
     // ロックを解放
     delete_option( 'noveltool_sample_images_download_lock' );
+    
+    // ジョブIDをuser_metaからクリア
+    $user_id = get_current_user_id();
+    if ( $user_id ) {
+        delete_user_meta( $user_id, 'noveltool_download_job_id' );
+    }
     
     return array(
         'success' => true,

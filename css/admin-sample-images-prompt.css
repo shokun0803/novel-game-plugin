@@ -233,3 +233,29 @@
         font-size: 11px;
     }
 }
+
+/* ダウンロード進捗バナー */
+#noveltool-download-progress-banner {
+    position: relative;
+    border-left: 4px solid #2271b1;
+}
+
+#noveltool-download-progress-banner p {
+    margin: 0 0 10px 0;
+}
+
+.noveltool-banner-progress {
+    margin: 10px 0;
+}
+
+#noveltool-download-progress-banner .noveltool-progress-bar {
+    margin-bottom: 8px;
+}
+
+#noveltool-download-progress-banner .noveltool-progress-status {
+    font-size: 13px;
+}
+
+#noveltool-show-download-details {
+    margin-top: 10px;
+}

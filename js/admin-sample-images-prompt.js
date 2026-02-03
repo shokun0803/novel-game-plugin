@@ -710,6 +710,218 @@
             // モーダルを表示してダウンロードを開始
             showSampleImagesPrompt();
         });
+        
+        // ダウンロード進捗バナーの初期化
+        if (novelToolSampleImages.hasActiveDownload) {
+            initializeProgressBanner();
+        }
+        
+        // 詳細表示ボタンのハンドラ
+        $('#noveltool-show-download-details').on('click', function(e) {
+            e.preventDefault();
+            showDownloadDetailsModal();
+        });
     });
+    
+    /**
+     * 進捗バナーを初期化してポーリング開始
+     */
+    function initializeProgressBanner() {
+        var pollInterval = 3000; // 3秒ごと
+        var startTime = Date.now();
+        
+        function pollBannerStatus() {
+            $.ajax({
+                url: novelToolSampleImages.ajaxUrl,
+                method: 'GET',
+                data: {
+                    action: 'noveltool_check_download_status',
+                    nonce: novelToolSampleImages.nonce
+                },
+                success: function(response) {
+                    if (response.success && response.data) {
+                        updateBannerProgress(response.data);
+                        
+                        // 完了または失敗の場合はポーリング停止
+                        if (response.data.status === 'completed' || response.data.status === 'failed') {
+                            if (response.data.status === 'completed') {
+                                showBannerComplete();
+                            } else {
+                                showBannerError(response.data.error);
+                            }
+                        } else {
+                            // 継続してポーリング
+                            setTimeout(pollBannerStatus, pollInterval);
+                        }
+                    } else {
+                        // エラー時も継続（タイムアウトまで）
+                        if (Date.now() - startTime < 300000) { // 5分
+                            setTimeout(pollBannerStatus, pollInterval);
+                        }
+                    }
+                },
+                error: function() {
+                    // エラー時も継続（タイムアウトまで）
+                    if (Date.now() - startTime < 300000) { // 5分
+                        setTimeout(pollBannerStatus, pollInterval);
+                    }
+                }
+            });
+        }
+        
+        // 初回ポーリング開始
+        pollBannerStatus();
+    }
+    
+    /**
+     * バナーの進捗を更新
+     */
+    function updateBannerProgress(data) {
+        var banner = $('#noveltool-download-progress-banner');
+        if (banner.length === 0) return;
+        
+        var progressBar = banner.find('.noveltool-progress-bar');
+        var progressFill = banner.find('.noveltool-progress-fill');
+        var progressStatus = banner.find('.noveltool-progress-status');
+        
+        if (data.progress && typeof data.progress === 'number') {
+            // 確定的な進捗
+            progressBar.removeClass('indeterminate');
+            progressBar.attr('aria-valuenow', data.progress);
+            progressFill.css('width', data.progress + '%').text(data.progress + '%');
+            
+            var statusText = novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...';
+            if (data.current_step) {
+                switch (data.current_step) {
+                    case 'download':
+                        statusText = novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...';
+                        break;
+                    case 'verify':
+                        statusText = novelToolSampleImages.strings.statusVerifying || '検証中...';
+                        break;
+                    case 'extract':
+                        statusText = novelToolSampleImages.strings.statusExtracting || '展開中...';
+                        break;
+                }
+            }
+            
+            if (data.use_background) {
+                statusText += ' ' + (novelToolSampleImages.strings.backgroundNote || '(バックグラウンドで処理中)');
+            }
+            
+            progressStatus.text(statusText);
+        } else {
+            // indeterminateモード
+            progressBar.addClass('indeterminate');
+            progressBar.removeAttr('aria-valuenow');
+            progressFill.css('width', '100%').text('');
+            progressStatus.text(novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+        }
+    }
+    
+    /**
+     * バナーを完了状態に更新
+     */
+    function showBannerComplete() {
+        var banner = $('#noveltool-download-progress-banner');
+        if (banner.length === 0) return;
+        
+        banner.removeClass('notice-info').addClass('notice-success');
+        banner.find('p strong').text(novelToolSampleImages.strings.downloadSuccess || 'サンプル画像のダウンロードが完了しました。');
+        banner.find('.noveltool-banner-progress').html(
+            '<p style="margin: 0;">' + (novelToolSampleImages.strings.downloadSuccess || 'サンプル画像のダウンロードが完了しました。') + '</p>'
+        );
+        banner.find('#noveltool-show-download-details').text(novelToolSampleImages.strings.closeButton || '閉じる').off('click').on('click', function() {
+            banner.fadeOut(function() {
+                banner.remove();
+                // ページをリロードしてサンプル画像を反映
+                location.reload();
+            });
+        });
+    }
+    
+    /**
+     * バナーをエラー状態に更新
+     */
+    function showBannerError(error) {
+        var banner = $('#noveltool-download-progress-banner');
+        if (banner.length === 0) return;
+        
+        banner.removeClass('notice-info').addClass('notice-error');
+        var errorMsg = error && error.message ? error.message : (novelToolSampleImages.strings.downloadFailed || 'ダウンロードに失敗しました。');
+        banner.find('p strong').text(novelToolSampleImages.strings.error || 'エラー');
+        banner.find('.noveltool-banner-progress').html(
+            '<p style="margin: 0; color: #dc3232;">' + errorMsg + '</p>'
+        );
+        banner.find('#noveltool-show-download-details').text(novelToolSampleImages.strings.retryButton || '再試行').off('click').on('click', function() {
+            location.reload();
+        });
+    }
+    
+    /**
+     * ダウンロード詳細モーダルを表示
+     */
+    function showDownloadDetailsModal() {
+        // 既存のモーダルがあれば削除
+        $('#noveltool-download-details-modal').remove();
+        
+        var modal = $('<div>', {
+            id: 'noveltool-download-details-modal',
+            class: 'noveltool-modal-overlay show'
+        });
+        
+        var modalContent = $('<div>', {
+            class: 'noveltool-modal-content'
+        });
+        
+        var modalTitle = $('<h2>', {
+            text: novelToolSampleImages.strings.downloading || 'ダウンロード中'
+        });
+        
+        var modalMessage = $('<p>', {
+            html: novelToolSampleImages.strings.pleaseWait || 'サンプル画像をダウンロード中です。しばらくお待ちください。'
+        });
+        
+        var progressBar = showProgressBar();
+        
+        var modalButtons = $('<div>', {
+            class: 'noveltool-modal-buttons'
+        });
+        
+        var closeButton = $('<button>', {
+            class: 'button',
+            text: novelToolSampleImages.strings.closeButton || '閉じる',
+            click: function() {
+                modal.removeClass('show');
+                setTimeout(function() {
+                    modal.remove();
+                }, 300);
+            }
+        });
+        
+        modalButtons.append(closeButton);
+        modalContent.append(modalTitle).append(modalMessage).append(progressBar).append(modalButtons);
+        modal.append(modalContent);
+        $('body').append(modal);
+        
+        // 初期進捗を取得して表示
+        $.ajax({
+            url: novelToolSampleImages.ajaxUrl,
+            method: 'GET',
+            data: {
+                action: 'noveltool_check_download_status',
+                nonce: novelToolSampleImages.nonce
+            },
+            success: function(response) {
+                if (response.success && response.data) {
+                    if (response.data.progress && typeof response.data.progress === 'number') {
+                        updateProgressBar(response.data.progress, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+                    } else {
+                        updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+                    }
+                }
+            }
+        });
+    }
 
 })(jQuery);

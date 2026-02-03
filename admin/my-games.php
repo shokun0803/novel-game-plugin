@@ -91,6 +91,45 @@ function noveltool_my_games_page() {
     <div class="wrap">
         <h1><?php esc_html_e( 'My Games', 'novel-game-plugin' ); ?></h1>
 
+        <?php
+        // ダウンロード進捗バナー（進行中のダウンロードがある場合に表示）
+        $user_id = get_current_user_id();
+        $job_id = get_user_meta( $user_id, 'noveltool_download_job_id', true );
+        $download_status = get_option( 'noveltool_sample_images_download_status', 'not_started' );
+        
+        if ( current_user_can( 'manage_options' ) && $job_id && $download_status === 'in_progress' ) :
+        ?>
+            <div id="noveltool-download-progress-banner" class="notice notice-info" style="position: relative; padding: 15px; margin-top: 10px;">
+                <p style="margin: 0 0 10px 0;">
+                    <strong><?php esc_html_e( 'Sample Images Download in Progress', 'novel-game-plugin' ); ?></strong>
+                </p>
+                <div class="noveltool-banner-progress">
+                    <div class="noveltool-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                        <div class="noveltool-progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="noveltool-progress-status" aria-live="polite" aria-atomic="true">
+                        <?php esc_html_e( 'Checking status...', 'novel-game-plugin' ); ?>
+                    </div>
+                </div>
+                <button type="button" id="noveltool-show-download-details" class="button button-small" style="margin-top: 10px;">
+                    <?php esc_html_e( 'View Details', 'novel-game-plugin' ); ?>
+                </button>
+            </div>
+        <?php endif; ?>
+
+        <noscript>
+            <?php if ( current_user_can( 'manage_options' ) && ! noveltool_sample_images_exists() ) : ?>
+                <div class="notice notice-warning">
+                    <p><?php esc_html_e( 'JavaScript is disabled. Sample image download progress cannot be displayed in real-time.', 'novel-game-plugin' ); ?></p>
+                    <p>
+                        <a href="<?php echo esc_url( rest_url( 'novel-game-plugin/v1/sample-images/download' ) ); ?>" class="button button-primary" onclick="alert('<?php echo esc_js( __( 'Please enable JavaScript to download sample images.', 'novel-game-plugin' ) ); ?>'); return false;">
+                            <?php esc_html_e( 'Download Sample Images (requires JavaScript)', 'novel-game-plugin' ); ?>
+                        </a>
+                    </p>
+                </div>
+            <?php endif; ?>
+        </noscript>
+
         <?php if ( current_user_can( 'manage_options' ) ) : ?>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-left:12px;">
                 <?php wp_nonce_field( 'noveltool_download_diagnostic' ); ?>
@@ -309,6 +348,8 @@ function noveltool_my_games_admin_scripts( $hook ) {
                 'apiDownload'   => rest_url( 'novel-game-plugin/v1/sample-images/download' ),
                 'apiStatus'     => rest_url( 'novel-game-plugin/v1/sample-images/status' ),
                 'apiResetStatus' => rest_url( 'novel-game-plugin/v1/sample-images/reset-status' ),
+                'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+                'hasActiveDownload' => ( $user_id && get_user_meta( $user_id, 'noveltool_download_job_id', true ) && get_option( 'noveltool_sample_images_download_status', 'not_started' ) === 'in_progress' ),
                 'strings'       => array(
                     'modalTitle'           => __( 'Download Sample Images', 'novel-game-plugin' ),
                     'modalMessage'         => sprintf(
@@ -368,6 +409,10 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     'stageBackground'      => __( 'Background processing', 'novel-game-plugin' ),
                     'errorMemoryLimit'     => __( 'Server memory limit is too low. Please increase memory_limit to 256M or higher in php.ini.', 'novel-game-plugin' ),
                     'errorNoExtension'     => __( 'Server does not support ZIP extraction. Please install PHP ZipArchive extension or unzip command.', 'novel-game-plugin' ),
+                    'bannerTitle'          => __( 'Sample Images Download in Progress', 'novel-game-plugin' ),
+                    'checkingStatus'       => __( 'Checking status...', 'novel-game-plugin' ),
+                    'viewDetails'          => __( 'View Details', 'novel-game-plugin' ),
+                    'hideDetails'          => __( 'Hide Details', 'novel-game-plugin' ),
                 ),
             )
         );
@@ -435,6 +480,75 @@ function noveltool_dismiss_sample_images_prompt_ajax() {
     wp_send_json_success();
 }
 add_action( 'wp_ajax_noveltool_dismiss_sample_images_prompt', 'noveltool_dismiss_sample_images_prompt_ajax' );
+
+/**
+ * サンプル画像ダウンロードステータスを取得する Ajax ハンドラー
+ *
+ * @since 1.5.0
+ */
+function noveltool_check_download_status_ajax() {
+    // Nonce チェック
+    if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['nonce'] ) ), 'noveltool_sample_images_prompt' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Security check failed', 'novel-game-plugin' ) ) );
+    }
+    
+    // 権限チェック（REST API と同じ権限を使用）
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'novel-game-plugin' ) ) );
+    }
+    
+    // サンプル画像の存在チェック
+    $exists = noveltool_sample_images_exists();
+    $status = get_option( 'noveltool_sample_images_download_status', 'not_started' );
+    $status_data = get_option( 'noveltool_sample_images_download_status_data', array() );
+    $error_data = get_option( 'noveltool_sample_images_download_error', null );
+    
+    $response = array(
+        'exists' => $exists,
+        'status' => $status,
+    );
+    
+    // ジョブ情報を追加（バックグラウンド処理の場合）
+    if ( isset( $status_data['job_id'] ) ) {
+        $response['job_id'] = sanitize_text_field( $status_data['job_id'] );
+    }
+    if ( isset( $status_data['progress'] ) ) {
+        $response['progress'] = intval( $status_data['progress'] );
+    }
+    if ( isset( $status_data['current_step'] ) ) {
+        $response['current_step'] = sanitize_text_field( $status_data['current_step'] );
+    }
+    if ( isset( $status_data['use_background'] ) ) {
+        $response['use_background'] = (bool) $status_data['use_background'];
+    }
+    
+    // エラー情報があれば構造化して追加（非機密情報のみ）
+    if ( ! empty( $error_data ) && is_array( $error_data ) ) {
+        $response['error'] = array(
+            'code'      => isset( $error_data['code'] ) ? sanitize_text_field( $error_data['code'] ) : 'ERR-UNKNOWN',
+            'message'   => isset( $error_data['message'] ) ? sanitize_text_field( $error_data['message'] ) : '',
+            'stage'     => isset( $error_data['stage'] ) ? sanitize_text_field( $error_data['stage'] ) : 'other',
+            'timestamp' => isset( $error_data['timestamp'] ) ? intval( $error_data['timestamp'] ) : 0,
+        );
+        
+        // メタ情報があれば追加（非機密のみ、サニタイズ済み）
+        if ( isset( $error_data['meta'] ) && is_array( $error_data['meta'] ) ) {
+            $safe_meta = array();
+            $allowed_meta_keys = array( 'http_code', 'stage_detail', 'retry_count' );
+            foreach ( $allowed_meta_keys as $key ) {
+                if ( isset( $error_data['meta'][ $key ] ) ) {
+                    $safe_meta[ $key ] = sanitize_text_field( $error_data['meta'][ $key ] );
+                }
+            }
+            if ( ! empty( $safe_meta ) ) {
+                $response['error']['meta'] = $safe_meta;
+            }
+        }
+    }
+    
+    wp_send_json_success( $response );
+}
+add_action( 'wp_ajax_noveltool_check_download_status', 'noveltool_check_download_status_ajax' );
 
 /**
  * 管理者向け: 診断パッケージを生成してダウンロードさせるハンドラー
