@@ -1248,7 +1248,10 @@ function noveltool_perform_sample_images_download_background( $release_data, $as
     // ダウンロードジョブを作成
     $download_job_id = noveltool_create_background_job(
         NOVELTOOL_JOB_TYPE_DOWNLOAD,
-        array( 'download_url' => $download_url )
+        array(
+            'download_url' => $download_url,
+            'user_id'      => get_current_user_id(), // ユーザーIDを保存（バックグラウンド処理での削除用）
+        )
     );
     
     // ステータスを更新
@@ -1356,6 +1359,7 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
                 'total_assets' => count( $assets_with_checksum ),
                 'size'         => $size,
                 'checksum'     => $checksum,
+                'user_id'      => get_current_user_id(), // ユーザーIDを保存（バックグラウンド処理での削除用）
             )
         );
         
@@ -1724,10 +1728,13 @@ function noveltool_check_background_job_extract( $extract_job_id ) {
     update_option( 'noveltool_sample_images_downloaded', true, false );
     delete_option( 'noveltool_sample_images_download_lock' );
     
-    // ジョブIDをuser_metaからクリア
-    $user_id = get_current_user_id();
-    if ( $user_id ) {
-        delete_user_meta( $user_id, 'noveltool_download_job_id' );
+    // ジョブIDをuser_metaからクリア（バックグラウンド処理の場合はジョブから取得）
+    $job = noveltool_get_background_job( $extract_job_id );
+    if ( $job && isset( $job['data']['user_id'] ) ) {
+        $user_id = intval( $job['data']['user_id'] );
+        if ( $user_id > 0 ) {
+            delete_user_meta( $user_id, 'noveltool_download_job_id' );
+        }
     }
     
     // 完了したジョブのログを保存（デバッグ・監査用）
@@ -2097,7 +2104,7 @@ function noveltool_perform_sample_images_download() {
     // ロックを解放
     delete_option( 'noveltool_sample_images_download_lock' );
     
-    // ジョブIDをuser_metaからクリア
+    // ジョブIDをuser_metaからクリア（同期処理の場合）
     $user_id = get_current_user_id();
     if ( $user_id ) {
         delete_user_meta( $user_id, 'noveltool_download_job_id' );

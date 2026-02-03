@@ -334,20 +334,13 @@
         var progressSupported = false;
         var fallbackTimeout = null;
         
-        // プログレスイベントのハンドラ
-        xhr.upload.addEventListener('progress', function(e) {
+        // レスポンス受信中の進捗（実際のダウンロード進捗）
+        // 注: サーバーがストリーミングレスポンスを送信する場合のみ機能
+        xhr.addEventListener('progress', function(e) {
             if (e.lengthComputable) {
                 progressSupported = true;
                 var percentComplete = Math.floor((e.loaded / e.total) * 100);
                 updateProgressBar(percentComplete, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
-            }
-        });
-        
-        // レスポンス受信中の進捗（ダウンロードではなくアップロード後）
-        xhr.addEventListener('progress', function(e) {
-            if (e.lengthComputable) {
-                progressSupported = true;
-                // サーバーが処理中の進捗を送信している場合
                 clearTimeout(fallbackTimeout);
             }
         });
@@ -419,7 +412,7 @@
         xhr.open('POST', novelToolSampleImages.apiDownload, true);
         xhr.setRequestHeader('X-WP-Nonce', novelToolSampleImages.restNonce);
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 10000; // 10秒のタイムアウト（APIレスポンス用）
+        xhr.timeout = 120000; // 120秒のタイムアウト（初回接続/ハンドシェイク用。実際のダウンロードはバックグラウンドで継続）
         
         // プログレスがサポートされない場合のフォールバック（5秒後にポーリングへ切替）
         fallbackTimeout = setTimeout(function() {

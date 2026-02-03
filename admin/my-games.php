@@ -122,7 +122,7 @@ function noveltool_my_games_page() {
                 <div class="notice notice-warning">
                     <p><?php esc_html_e( 'JavaScript is disabled. Sample image download progress cannot be displayed in real-time.', 'novel-game-plugin' ); ?></p>
                     <p>
-                        <a href="<?php echo esc_url( rest_url( 'novel-game-plugin/v1/sample-images/download' ) ); ?>" class="button button-primary" onclick="alert('<?php echo esc_js( __( 'Please enable JavaScript to download sample images.', 'novel-game-plugin' ) ); ?>'); return false;">
+                        <a href="#" class="button button-primary" onclick="alert('<?php echo esc_js( __( 'Please enable JavaScript to download sample images.', 'novel-game-plugin' ) ); ?>'); return false;">
                             <?php esc_html_e( 'Download Sample Images (requires JavaScript)', 'novel-game-plugin' ); ?>
                         </a>
                     </p>
