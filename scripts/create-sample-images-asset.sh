@@ -46,9 +46,18 @@ if command -v python3 >/dev/null 2>&1; then
 fi
 
 # ファイルサイズ取得関数（互換性対応）
+# 成功時: ファイルサイズ（バイト数）を標準出力、exit code 0
+# 失敗時: エラーメッセージを stderr に出力、空文字を標準出力、exit code 1
 get_file_size_bytes() {
     local file="$1"
     local size
+    
+    # ファイルの存在確認
+    if [ ! -f "$file" ]; then
+        echo "Error: File does not exist: $file" >&2
+        echo ""
+        return 1
+    fi
     
     # GNU stat を試行
     if size=$(stat -c%s "$file" 2>/dev/null); then
@@ -72,13 +81,16 @@ get_file_size_bytes() {
     
     # 最後の手段: du -b
     if size=$(du -b "$file" 2>/dev/null | cut -f1); then
-        echo "$size"
-        return 0
+        if [ -n "$size" ] && [ "$size" != "0" ] || [ -s "$file" ]; then
+            echo "$size"
+            return 0
+        fi
     fi
     
     # すべて失敗した場合
     echo "Error: Cannot determine file size for: $file" >&2
-    echo "0"
+    echo "Error: All methods (stat, python3, du) failed to get file size" >&2
+    echo ""
     return 1
 }
 
@@ -170,7 +182,14 @@ generate_split_zips() {
     while IFS= read -r line; do
         file_list+=("$line")
     done < <(find . -type f ! -name "*.DS_Store" ! -name "._*" -print0 | while IFS= read -r -d '' file; do
-        size=$(get_file_size_bytes "$file")
+        if ! size=$(get_file_size_bytes "$file"); then
+            echo "Warning: Skipping file due to size detection failure: $file" >&2
+            continue
+        fi
+        if [ -z "$size" ]; then
+            echo "Warning: Empty size returned for file, skipping: $file" >&2
+            continue
+        fi
         printf "%s\t%s\n" "$size" "$file"
     done | sort -rn | cut -f2-)
     
@@ -186,7 +205,26 @@ generate_split_zips() {
     
     # ファイルを分割
     for FILE in "${file_list[@]}"; do
-        FILE_SIZE=$(get_file_size_bytes "$SAMPLE_IMAGES_DIR/$FILE")
+        # ファイルサイズを取得（エラーチェック付き）
+        if ! FILE_SIZE=$(get_file_size_bytes "$SAMPLE_IMAGES_DIR/$FILE"); then
+            echo -e "${RED}エラー: ファイルサイズの取得に失敗しました: $FILE${NC}" >&2
+            echo -e "${RED}      処理を中断します。ファイルの存在とアクセス権限を確認してください。${NC}" >&2
+            return 1
+        fi
+        
+        # 空のサイズが返された場合もエラー
+        if [ -z "$FILE_SIZE" ]; then
+            echo -e "${RED}エラー: ファイルサイズが空です: $FILE${NC}" >&2
+            echo -e "${RED}      処理を中断します。${NC}" >&2
+            return 1
+        fi
+        
+        # ファイルサイズが0の場合の警告
+        if [ "$FILE_SIZE" -eq 0 ]; then
+            echo -e "  ${YELLOW}警告: 空ファイルを検出しました: $FILE (0 bytes)${NC}"
+            echo -e "  ${YELLOW}      このファイルはスキップします${NC}"
+            continue
+        fi
         
         # 単一ファイルが上限を超える場合の警告
         if [ "$FILE_SIZE" -gt "$MAX_PART_SIZE" ]; then
