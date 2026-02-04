@@ -10,11 +10,11 @@
 (function ($) {
     'use strict';
     
-    // 定数定義
-    var FALLBACK_TIMEOUT_MS = 5000;      // プログレス検出失敗時のフォールバックタイムアウト（5秒）
-    var POLL_INTERVAL_MS = 3000;         // ポーリング間隔（3秒）
-    var MAX_POLL_TIME_MS = 300000;       // 最大ポーリング時間（5分）
-    var XHR_TIMEOUT_MS = 120000;         // XHR初回接続タイムアウト（120秒）
+    // 定数定義（サーバー側から調整可能）
+    var FALLBACK_TIMEOUT_MS = novelToolSampleImages.fallbackTimeoutMs || 5000;
+    var POLL_INTERVAL_MS = novelToolSampleImages.pollIntervalMs || 3000;
+    var MAX_POLL_TIME_MS = novelToolSampleImages.maxPollTimeMs || 300000;
+    var XHR_TIMEOUT_MS = novelToolSampleImages.xhrTimeoutMs || 120000;
 
     /**
      * モーダルを表示
@@ -772,10 +772,32 @@
      * 進捗バナーを初期化してポーリング開始
      */
     function initializeProgressBanner() {
-        var pollInterval = 3000; // 3秒ごと
+        var pollInterval = POLL_INTERVAL_MS;
         var startTime = Date.now();
+        var pollTimeoutId = null;
+        
+        // Page Visibility API でページ非表示時のポーリングを停止
+        var isPageVisible = true;
+        
+        if (typeof document.hidden !== 'undefined') {
+            // ページ表示状態の変更を監視
+            document.addEventListener('visibilitychange', function() {
+                isPageVisible = !document.hidden;
+                
+                if (isPageVisible && pollTimeoutId === null) {
+                    // ページが再表示されたら即座にポーリング再開
+                    pollBannerStatus();
+                }
+            });
+        }
         
         function pollBannerStatus() {
+            // ページが非表示の場合はスキップ
+            if (!isPageVisible) {
+                pollTimeoutId = setTimeout(pollBannerStatus, pollInterval);
+                return;
+            }
+            
             $.ajax({
                 url: novelToolSampleImages.ajaxUrl,
                 method: 'GET',
@@ -789,6 +811,7 @@
                         
                         // 完了または失敗の場合はポーリング停止
                         if (response.data.status === 'completed' || response.data.status === 'failed') {
+                            pollTimeoutId = null;
                             if (response.data.status === 'completed') {
                                 showBannerComplete();
                             } else {
@@ -796,19 +819,23 @@
                             }
                         } else {
                             // 継続してポーリング
-                            setTimeout(pollBannerStatus, pollInterval);
+                            pollTimeoutId = setTimeout(pollBannerStatus, pollInterval);
                         }
                     } else {
                         // エラー時も継続（タイムアウトまで）
-                        if (Date.now() - startTime < 300000) { // 5分
-                            setTimeout(pollBannerStatus, pollInterval);
+                        if (Date.now() - startTime < MAX_POLL_TIME_MS) {
+                            pollTimeoutId = setTimeout(pollBannerStatus, pollInterval);
+                        } else {
+                            pollTimeoutId = null;
                         }
                     }
                 },
                 error: function() {
                     // エラー時も継続（タイムアウトまで）
-                    if (Date.now() - startTime < 300000) { // 5分
-                        setTimeout(pollBannerStatus, pollInterval);
+                    if (Date.now() - startTime < MAX_POLL_TIME_MS) {
+                        pollTimeoutId = setTimeout(pollBannerStatus, pollInterval);
+                    } else {
+                        pollTimeoutId = null;
                     }
                 }
             });

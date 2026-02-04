@@ -351,6 +351,11 @@ function noveltool_my_games_admin_scripts( $hook ) {
                 'apiResetStatus' => rest_url( 'novel-game-plugin/v1/sample-images/reset-status' ),
                 'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
                 'hasActiveDownload' => ( $user_id && get_user_meta( $user_id, 'noveltool_download_job_id', true ) && get_option( 'noveltool_sample_images_download_status', 'not_started' ) === 'in_progress' ),
+                // ポーリング・タイムアウト設定（サーバー側で調整可能）
+                'fallbackTimeoutMs' => 5000,  // 5秒
+                'pollIntervalMs'    => 3000,  // 3秒
+                'maxPollTimeMs'     => 300000, // 5分
+                'xhrTimeoutMs'      => 120000, // 120秒
                 'strings'       => array(
                     'modalTitle'           => __( 'Download Sample Images', 'novel-game-plugin' ),
                     'modalMessage'         => sprintf(
@@ -488,6 +493,14 @@ add_action( 'wp_ajax_noveltool_dismiss_sample_images_prompt', 'noveltool_dismiss
  * 注: このエンドポイントはGETメソッドを使用します。これは読み取り専用の操作であり、
  * 状態を変更しないためです。nonceはGETパラメータで送信されますが、
  * これは管理画面内部でのみ使用され、外部に露出されません。
+ *
+ * 将来的な検討事項: より堅牢なセキュリティのため、POST + X-WP-Nonce ヘッダー方式への統一を検討。
+ * ただし、読み取り専用操作のため現在のGET方式でもセキュリティ上の問題はない。
+ *
+ * 返却仕様:
+ * - 成功時: { success: true, data: { exists: bool, status: string, job_id: string, progress: int, current_step: string, use_background: bool, error: object } }
+ * - 失敗時: { success: false, data: { message: string } }
+ * - エラー情報は非機密情報のみ含む（code, message, stage, timestamp, meta）
  *
  * @since 1.5.0
  */

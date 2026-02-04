@@ -1282,6 +1282,8 @@ function noveltool_perform_sample_images_download_background( $release_data, $as
     );
     
     // ジョブIDをuser_metaに保存（UI追跡用）
+    // 注: この関数は通常ユーザーリクエスト時に呼ばれるため get_current_user_id() を使用
+    // ジョブデータにもuser_idを保存済みなので、バックグラウンド処理時はそちらを参照
     $user_id = get_current_user_id();
     if ( $user_id ) {
         update_user_meta( $user_id, 'noveltool_download_job_id', $download_job_id );
@@ -1473,6 +1475,8 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
     );
     
     // ジョブIDをuser_metaに保存（UI追跡用）
+    // 注: この関数は通常ユーザーリクエスト時に呼ばれるため get_current_user_id() を使用
+    // ジョブデータにもuser_idを保存済みなので、バックグラウンド処理時はそちらを参照
     $user_id = get_current_user_id();
     if ( $user_id && $representative_job_id ) {
         update_user_meta( $user_id, 'noveltool_download_job_id', $representative_job_id );
@@ -2114,6 +2118,7 @@ function noveltool_perform_sample_images_download() {
     delete_option( 'noveltool_sample_images_download_lock' );
     
     // ジョブIDをuser_metaからクリア（同期処理の場合）
+    // 注: 同期実行時はユーザーセッション内なので get_current_user_id() を使用
     noveltool_clear_download_job_id( get_current_user_id() );
     
     return array(
