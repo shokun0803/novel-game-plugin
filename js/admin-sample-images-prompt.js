@@ -15,6 +15,7 @@
     var POLL_INTERVAL_MS = novelToolSampleImages.pollIntervalMs || 3000;
     var MAX_POLL_TIME_MS = novelToolSampleImages.maxPollTimeMs || 300000;
     var XHR_TIMEOUT_MS = novelToolSampleImages.xhrTimeoutMs || 120000;
+    var latestBannerStatusData = null;
 
     /**
      * モーダルを表示
@@ -68,6 +69,12 @@
         modalButtons.append(downloadButton).append(laterButton).append(cancelButton);
         modalContent.append(modalTitle).append(modalMessage).append(modalButtons);
         modal.append(modalContent);
+
+        modal.on('click', function (e) {
+            if (e.target === this) {
+                closeOnly();
+            }
+        });
 
         $('body').append(modal);
 
@@ -169,6 +176,23 @@
             }
         }
     }
+
+    function getByteProgress(data) {
+        if (!data) {
+            return null;
+        }
+
+        if (typeof data.total_bytes === 'number' && data.total_bytes > 0 && typeof data.downloaded_bytes_confirmed === 'number' && data.downloaded_bytes_confirmed >= 0) {
+            var confirmed = Math.max(0, Math.min(data.downloaded_bytes_confirmed, data.total_bytes));
+            return {
+                percentage: Math.floor((confirmed / data.total_bytes) * 100),
+                current: confirmed,
+                total: data.total_bytes
+            };
+        }
+
+        return null;
+    }
     
     /**
      * ダウンロード状態をポーリング
@@ -209,9 +233,13 @@
                 } else if (response.status === 'in_progress') {
                     // ダウンロード中
                     var elapsed = Date.now() - startTime;
+                    var byteProgress = getByteProgress(response);
                     
                     // バックグラウンド処理の進捗情報を優先
-                    if (typeof response.progress === 'number') {
+                    if (byteProgress) {
+                        var byteStatusText = (novelToolSampleImages.strings.statusDownloadingBytes || 'ダウンロード中: ') + formatBytes(byteProgress.current) + ' / ' + formatBytes(byteProgress.total);
+                        updateProgressBar(byteProgress.percentage, byteStatusText);
+                    } else if (typeof response.progress === 'number') {
                         var statusText = novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...';
                         
                         // current_step に基づいてステータステキストを変更
@@ -738,6 +766,52 @@
     }
 
     /**
+     * ステータスをリセットしてページを再読み込み
+     */
+    function resetStatusAndReload() {
+        $.ajax({
+            url: novelToolSampleImages.apiResetStatus,
+            method: 'POST',
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-WP-Nonce', novelToolSampleImages.restNonce);
+            },
+            complete: function () {
+                location.reload();
+            }
+        });
+    }
+
+    /**
+     * ダウンロードを中断して状態を初期化
+     */
+    function abortDownloadAndReload(button) {
+        if (!confirm(novelToolSampleImages.strings.abortDownloadConfirm || '現在のダウンロードを中断して初期化します。よろしいですか？')) {
+            return;
+        }
+
+        if (button && button.length) {
+            button.prop('disabled', true).text(novelToolSampleImages.strings.aborting || '中断しています...');
+        }
+
+        $.ajax({
+            url: novelToolSampleImages.apiResetStatus,
+            method: 'POST',
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-WP-Nonce', novelToolSampleImages.restNonce);
+            },
+            success: function () {
+                location.reload();
+            },
+            error: function () {
+                if (button && button.length) {
+                    button.prop('disabled', false).text(novelToolSampleImages.strings.abortDownloadButton || 'ダウンロードを中断');
+                }
+                alert(novelToolSampleImages.strings.abortFailed || '中断処理に失敗しました。ページを再読み込みして再試行してください。');
+            }
+        });
+    }
+
+    /**
      * 初期化
      */
     $(document).ready(function () {
@@ -754,6 +828,18 @@
             e.preventDefault();
             // モーダルを表示してダウンロードを開始
             showSampleImagesPrompt();
+        });
+
+        // 「今回はダウンロードしない」ボタン処理
+        $('#noveltool-skip-sample-images-download').on('click', function (e) {
+            e.preventDefault();
+
+            $.post(ajaxurl, {
+                action: 'noveltool_dismiss_sample_images_prompt',
+                nonce: novelToolSampleImages.nonce
+            }).always(function() {
+                $('#noveltool-skip-sample-images-download').closest('.notice').fadeOut();
+            });
         });
         
         // ダウンロード進捗バナーの初期化
@@ -775,6 +861,7 @@
         var pollInterval = POLL_INTERVAL_MS;
         var startTime = Date.now();
         var pollTimeoutId = null;
+        var ajaxErrorCount = 0;
         
         // Page Visibility API でページ非表示時のポーリングを停止
         var isPageVisible = true;
@@ -807,6 +894,8 @@
                 },
                 success: function(response) {
                     if (response.success && response.data) {
+                        ajaxErrorCount = 0;
+                        latestBannerStatusData = response.data;
                         updateBannerProgress(response.data);
                         
                         // 完了または失敗の場合はポーリング停止
@@ -815,27 +904,61 @@
                             if (response.data.status === 'completed') {
                                 showBannerComplete();
                             } else {
-                                showBannerError(response.data.error);
+                                showBannerError(response.data.error || response.data);
                             }
                         } else {
                             // 継続してポーリング
                             pollTimeoutId = setTimeout(pollBannerStatus, pollInterval);
                         }
                     } else {
-                        // エラー時も継続（タイムアウトまで）
+                        ajaxErrorCount += 1;
+
+                        // サーバーが失敗メッセージを返している場合は即時表示
+                        if (response && response.data && response.data.message) {
+                            pollTimeoutId = null;
+                            showBannerError({ message: response.data.message });
+                            return;
+                        }
+
+                        // 連続エラー時は固定表示を避けてエラー表示へ遷移
+                        if (ajaxErrorCount >= 3) {
+                            pollTimeoutId = null;
+                            showBannerError({
+                                message: novelToolSampleImages.strings.downloadFailed || 'ダウンロード状態の取得に失敗しました。ページを再読み込みして再試行してください。'
+                            });
+                            return;
+                        }
+
+                        // タイムアウトまでは継続
                         if (Date.now() - startTime < MAX_POLL_TIME_MS) {
                             pollTimeoutId = setTimeout(pollBannerStatus, pollInterval);
                         } else {
                             pollTimeoutId = null;
+                            showBannerError({
+                                message: novelToolSampleImages.strings.downloadTimeout || '状態確認がタイムアウトしました。再試行してください。'
+                            });
                         }
                     }
                 },
                 error: function() {
+                    ajaxErrorCount += 1;
+
+                    if (ajaxErrorCount >= 3) {
+                        pollTimeoutId = null;
+                        showBannerError({
+                            message: novelToolSampleImages.strings.downloadFailed || 'ダウンロード状態の取得に失敗しました。ページを再読み込みして再試行してください。'
+                        });
+                        return;
+                    }
+
                     // エラー時も継続（タイムアウトまで）
                     if (Date.now() - startTime < MAX_POLL_TIME_MS) {
                         pollTimeoutId = setTimeout(pollBannerStatus, pollInterval);
                     } else {
                         pollTimeoutId = null;
+                        showBannerError({
+                            message: novelToolSampleImages.strings.downloadTimeout || '状態確認がタイムアウトしました。再試行してください。'
+                        });
                     }
                 }
             });
@@ -856,7 +979,17 @@
         var progressFill = banner.find('.noveltool-progress-fill');
         var progressStatus = banner.find('.noveltool-progress-status');
         
-        if (typeof data.progress === 'number') {
+        var byteProgress = getByteProgress(data);
+
+        if (byteProgress) {
+            progressBar.removeClass('indeterminate');
+            progressBar.attr('aria-valuenow', byteProgress.percentage);
+            progressFill.css('width', byteProgress.percentage + '%').text(byteProgress.percentage + '%');
+
+            var byteStatus = (novelToolSampleImages.strings.statusDownloadingBytes || 'ダウンロード中: ') + formatBytes(byteProgress.current) + ' / ' + formatBytes(byteProgress.total);
+            progressStatus.text(byteStatus);
+            ensureRecoveryActionForInProgress(banner, data);
+        } else if (typeof data.progress === 'number') {
             // 確定的な進捗
             progressBar.removeClass('indeterminate');
             progressBar.attr('aria-valuenow', data.progress);
@@ -882,13 +1015,205 @@
             }
             
             progressStatus.text(statusText);
+            ensureRecoveryActionForInProgress(banner, data);
         } else {
             // indeterminateモード
             progressBar.addClass('indeterminate');
             progressBar.removeAttr('aria-valuenow');
             progressFill.css('width', '100%').text('');
             progressStatus.text(novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+            ensureRecoveryActionForInProgress(banner, data);
         }
+    }
+
+    function ensureRecoveryActionForInProgress(banner, data) {
+        if (!banner || banner.length === 0 || !data) {
+            return;
+        }
+
+        var lagSeconds = typeof data.job_update_lag_seconds === 'number' ? data.job_update_lag_seconds : 0;
+        var shouldShowRetry = data.status === 'in_progress' && lagSeconds >= 180;
+
+        if (!shouldShowRetry) {
+            return;
+        }
+
+        if (banner.find('#noveltool-retry-download').length === 0) {
+            banner.append('<button type="button" id="noveltool-retry-download" class="button button-secondary" style="margin-top: 10px; margin-left: 8px;">' + (novelToolSampleImages.strings.retryButton || '再試行') + '</button>');
+        }
+
+        banner.find('#noveltool-retry-download').off('click').on('click', function() {
+            resetStatusAndReload();
+        });
+    }
+
+    /**
+     * ステータス値を表示用ラベルへ変換
+     */
+    function getReadableStatus(data) {
+        if (!data || !data.status) {
+            return novelToolSampleImages.strings.checkingStatus || '状態確認中...';
+        }
+
+        if (data.status === 'failed') {
+            return novelToolSampleImages.strings.error || 'エラー';
+        }
+        if (data.status === 'completed') {
+            return novelToolSampleImages.strings.statusCompleted || '完了';
+        }
+
+        if (data.current_step === 'verify') {
+            return novelToolSampleImages.strings.statusVerifying || '検証中...';
+        }
+        if (data.current_step === 'extract') {
+            return novelToolSampleImages.strings.statusExtracting || '展開中...';
+        }
+
+        return novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...';
+    }
+
+    function getReadableStep(step) {
+        if (!step) {
+            return '-';
+        }
+
+        switch (step) {
+            case 'download':
+                return novelToolSampleImages.strings.stageDownload || 'ダウンロード';
+            case 'verify':
+                return novelToolSampleImages.strings.statusVerifying || '検証中...';
+            case 'extract':
+                return novelToolSampleImages.strings.stageExtract || '展開';
+            case 'background':
+                return novelToolSampleImages.strings.stageBackground || 'バックグラウンド処理';
+            default:
+                return step;
+        }
+    }
+
+    /**
+     * UNIX時刻を表示文字列へ変換
+     */
+    function formatStatusTimestamp(timestamp) {
+        if (!timestamp || typeof timestamp !== 'number') {
+            return '-';
+        }
+        try {
+            return new Date(timestamp * 1000).toLocaleString();
+        } catch (e) {
+            return '-';
+        }
+    }
+
+    function formatDuration(seconds) {
+        if (typeof seconds !== 'number' || seconds < 0) {
+            return '-';
+        }
+        var total = Math.floor(seconds);
+        var mins = Math.floor(total / 60);
+        var secs = total % 60;
+        if (mins <= 0) {
+            return secs + '秒';
+        }
+        return mins + '分' + secs + '秒';
+    }
+
+    /**
+     * 詳細情報のHTMLを生成
+     */
+    function buildDownloadDetailsHtml(data) {
+        if (!data) {
+            return '<p style="margin: 8px 0;">' + (novelToolSampleImages.strings.checkingStatus || '状態確認中...') + '</p>';
+        }
+
+        var html = '';
+        html += '<div style="margin-top: 12px; padding: 10px; background: #f6f7f7; border: 1px solid #dcdcde;">';
+        html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailStatusLabel || 'ステータス') + ':</strong> ' + getReadableStatus(data) + '</p>';
+        html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailProgressLabel || '進捗') + ':</strong> ' + (typeof data.progress === 'number' ? data.progress + '%' : '-') + ' <span style="color:#646970;">(フェーズ目安)</span></p>';
+        html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailStepLabel || 'ステップ') + ':</strong> ' + getReadableStep(data.current_step) + '</p>';
+        html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailJobIdLabel || 'ジョブID') + ':</strong> ' + (data.job_id || '-') + '</p>';
+
+        var ts = data.status_timestamp || (data.error && data.error.timestamp ? data.error.timestamp : 0);
+        html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailUpdatedLabel || '更新時刻') + ':</strong> ' + formatStatusTimestamp(ts) + '</p>';
+
+        if (typeof data.total_assets === 'number') {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailAssetsLabel || 'アセット数') + ':</strong> ' + data.total_assets + '</p>';
+        }
+        if (typeof data.total_files === 'number' || typeof data.downloaded_files === 'number') {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailTotalFilesLabel || '対象ファイル数') + ':</strong> '
+                + (typeof data.total_files === 'number' ? data.total_files : '-')
+                + ' / <strong>' + (novelToolSampleImages.strings.detailDownloadedFilesLabel || '完了ファイル数') + ':</strong> '
+                + (typeof data.downloaded_files === 'number' ? data.downloaded_files : '-')
+                + '</p>';
+        }
+        if (typeof data.total_bytes === 'number') {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailTotalBytesLabel || '総容量') + ':</strong> ' + formatBytes(data.total_bytes) + '</p>';
+        }
+        if (typeof data.downloaded_bytes_estimated === 'number') {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailDownloadedBytesLabel || 'ダウンロード済み容量（推定）') + ':</strong> ' + formatBytes(data.downloaded_bytes_estimated) + '</p>';
+        }
+        if (typeof data.downloaded_bytes_confirmed === 'number') {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailConfirmedBytesLabel || 'ダウンロード済み容量（確定）') + ':</strong> ' + formatBytes(data.downloaded_bytes_confirmed) + '</p>';
+        }
+        if (data.current_download_file) {
+            html += '<p style="margin: 4px 0;"><strong>現在のダウンロード:</strong> ' + data.current_download_file + '</p>';
+        }
+        if (typeof data.missing_jobs === 'number') {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailMissingJobsLabel || '未検出ジョブ数') + ':</strong> ' + data.missing_jobs + '</p>';
+        }
+        if (typeof data.active_jobs === 'number') {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailActiveJobsLabel || '処理中ジョブ数') + ':</strong> ' + data.active_jobs + '</p>';
+        }
+        if (typeof data.job_last_updated === 'number' && data.job_last_updated > 0) {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailJobLastUpdatedLabel || '最終ジョブ更新時刻') + ':</strong> ' + formatStatusTimestamp(data.job_last_updated) + '</p>';
+        }
+        if (typeof data.job_update_lag_seconds === 'number') {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailJobLagLabel || '最終更新からの経過') + ':</strong> ' + formatDuration(data.job_update_lag_seconds) + '</p>';
+        }
+        if (typeof data.next_process_event === 'number' && data.next_process_event > 0) {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailNextProcessLabel || '次回ジョブ実行予定') + ':</strong> ' + formatStatusTimestamp(data.next_process_event) + '</p>';
+        }
+        if (typeof data.next_related_event === 'number' && data.next_related_event > 0) {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailNextWatchLabel || '次回監視実行予定') + ':</strong> ' + formatStatusTimestamp(data.next_related_event) + '</p>';
+        }
+        if (data.auto_recovery && typeof data.auto_recovery === 'object') {
+            var recoveryText = (data.auto_recovery.scheduled ? '実行済み' : '未実行') + (data.auto_recovery.reason ? ' (' + data.auto_recovery.reason + ')' : '');
+            html += '<p style="margin: 4px 0;"><strong>自動復旧:</strong> ' + recoveryText + '</p>';
+        }
+        if (data.destination_dir) {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailDestinationLabel || '保存先ディレクトリ') + ':</strong> ' + data.destination_dir + '</p>';
+        }
+
+        html += '<p style="margin: 8px 0 4px; color:#646970;"><strong>' + (novelToolSampleImages.strings.detailProgressHintLabel || '進捗表示について') + ':</strong> ' + (novelToolSampleImages.strings.detailProgressHintText || 'この進捗%はフェーズの目安です。') + '</p>';
+        if (typeof data.successful_jobs === 'number' || typeof data.failed_jobs === 'number') {
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailQueuedLabel || '成功ジョブ') + ':</strong> '
+                + (typeof data.successful_jobs === 'number' ? data.successful_jobs : '-')
+                + ' / <strong>' + (novelToolSampleImages.strings.detailFailedQueuedLabel || '失敗ジョブ') + ':</strong> '
+                + (typeof data.failed_jobs === 'number' ? data.failed_jobs : '-')
+                + '</p>';
+        }
+
+        if (data.error) {
+            html += '<hr style="margin: 10px 0;" />';
+            html += '<p style="margin: 4px 0; color: #b32d2e;"><strong>' + (novelToolSampleImages.strings.error || 'エラー') + ':</strong> ' + (data.error.message || '-') + '</p>';
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.errorCode || 'エラーコード') + ':</strong> ' + (data.error.code || '-') + '</p>';
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.errorStage || 'エラー段階') + ':</strong> ' + (data.error.stage || '-') + '</p>';
+        }
+
+        if (Array.isArray(data.failed_assets) && data.failed_assets.length > 0) {
+            html += '<hr style="margin: 10px 0;" />';
+            html += '<p style="margin: 4px 0;"><strong>' + (novelToolSampleImages.strings.detailFailedAssetsLabel || '失敗したアセット') + ':</strong></p>';
+            html += '<ul style="margin: 4px 0 0 20px;">';
+            data.failed_assets.forEach(function(asset) {
+                var name = asset && asset.name ? asset.name : (novelToolSampleImages.strings.detailUnknownLabel || '不明');
+                var message = asset && asset.message ? asset.message : '';
+                html += '<li>' + name + (message ? ' - ' + message : '') + '</li>';
+            });
+            html += '</ul>';
+        }
+
+        html += '</div>';
+        return html;
     }
     
     /**
@@ -910,6 +1235,7 @@
                 location.reload();
             });
         });
+        banner.find('#noveltool-retry-download').remove();
     }
     
     /**
@@ -925,8 +1251,18 @@
         banner.find('.noveltool-banner-progress').html(
             '<p style="margin: 0; color: #dc3232;">' + errorMsg + '</p>'
         );
-        banner.find('#noveltool-show-download-details').text(novelToolSampleImages.strings.retryButton || '再試行').off('click').on('click', function() {
-            location.reload();
+
+        banner.find('#noveltool-show-download-details').text(novelToolSampleImages.strings.viewDetails || 'View Details').off('click').on('click', function(e) {
+            e.preventDefault();
+            showDownloadDetailsModal();
+        });
+
+        if (banner.find('#noveltool-retry-download').length === 0) {
+            banner.append('<button type="button" id="noveltool-retry-download" class="button button-secondary" style="margin-top: 10px; margin-left: 8px;">' + (novelToolSampleImages.strings.retryButton || '再試行') + '</button>');
+        }
+
+        banner.find('#noveltool-retry-download').off('click').on('click', function() {
+            resetStatusAndReload();
         });
     }
     
@@ -953,6 +1289,11 @@
         var modalMessage = $('<p>', {
             html: novelToolSampleImages.strings.pleaseWait || 'サンプル画像をダウンロード中です。しばらくお待ちください。'
         });
+
+        var detailsContainer = $('<div>', {
+            class: 'noveltool-download-details-container',
+            html: buildDownloadDetailsHtml(latestBannerStatusData)
+        });
         
         var progressBar = showProgressBar();
         
@@ -970,10 +1311,36 @@
                 }, 300);
             }
         });
+
+        var retryButton = $('<button>', {
+            class: 'button button-secondary',
+            text: novelToolSampleImages.strings.retryButton || '再試行',
+            click: function() {
+                resetStatusAndReload();
+            }
+        });
+
+        var abortButton = $('<button>', {
+            class: 'button button-link-delete',
+            text: novelToolSampleImages.strings.abortDownloadButton || 'ダウンロードを中断',
+            click: function() {
+                abortDownloadAndReload(abortButton);
+            }
+        });
         
-        modalButtons.append(closeButton);
-        modalContent.append(modalTitle).append(modalMessage).append(progressBar).append(modalButtons);
+        modalButtons.append(abortButton).append(retryButton).append(closeButton);
+        modalContent.append(modalTitle).append(modalMessage).append(progressBar).append(detailsContainer).append(modalButtons);
         modal.append(modalContent);
+
+        modal.on('click', function (e) {
+            if (e.target === this) {
+                modal.removeClass('show');
+                setTimeout(function() {
+                    modal.remove();
+                }, 300);
+            }
+        });
+
         $('body').append(modal);
         
         // 初期進捗を取得して表示
@@ -986,11 +1353,18 @@
             },
             success: function(response) {
                 if (response.success && response.data) {
-                    if (typeof response.data.progress === 'number') {
+                    latestBannerStatusData = response.data;
+                    var initialByteProgress = getByteProgress(response.data);
+                    if (initialByteProgress) {
+                        var initialByteStatus = (novelToolSampleImages.strings.statusDownloadingBytes || 'ダウンロード中: ') + formatBytes(initialByteProgress.current) + ' / ' + formatBytes(initialByteProgress.total);
+                        updateProgressBar(initialByteProgress.percentage, initialByteStatus, modal);
+                    } else if (typeof response.data.progress === 'number') {
                         updateProgressBar(response.data.progress, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...', modal);
                     } else {
                         updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...', modal);
                     }
+
+                    detailsContainer.html(buildDownloadDetailsHtml(response.data));
                 }
             }
         });

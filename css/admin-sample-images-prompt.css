@@ -19,6 +19,8 @@
     z-index: 100000;
     opacity: 0;
     transition: opacity 0.3s ease;
+    padding: 20px;
+    overflow-y: auto;
 }
 
 .noveltool-modal-overlay.show {
@@ -35,6 +37,8 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     transform: scale(0.9);
     transition: transform 0.3s ease;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
 }
 
 .noveltool-modal-overlay.show .noveltool-modal-content {
