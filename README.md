@@ -3,7 +3,7 @@
 **Version:** 1.3.0  
 **License:** GPLv2 or later  
 **Author:** shokun0803  
-**Requires:** WordPress 5.0+  
+**Requires:** WordPress 5.8+  
 **Tested up to:** WordPress 7.0  
 
 WordPressでサウンドノベル・ビジュアルノベルゲームを作成・公開できる包括的なプラグインです。「弟切草」や「かまいたちの夜」のような分岐型ノベルゲームを簡単に作成できます。
@@ -91,7 +91,7 @@ mv novel-game-plugin /path/to/wordpress/wp-content/plugins/
 - 詳細は [サンプル画像ダウンロードガイド](docs/SAMPLE_IMAGES_DOWNLOAD.md) を参照してください
 
 ### 2. 必要な環境
-- WordPress 5.0 以上
+- WordPress 5.8 以上
 - PHP 7.4 以上
 - MySQL 5.6 以上
 
