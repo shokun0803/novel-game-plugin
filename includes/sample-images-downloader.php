@@ -1378,8 +1378,36 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
         );
         
         // 必須修正2: 背景ジョブ作成の失敗ハンドリング
-        if ( is_wp_error( $download_job_id ) || false === $download_job_id ) {
-            $error_message = is_wp_error( $download_job_id ) ? $download_job_id->get_error_message() : __( 'Failed to create job', 'novel-game-plugin' );
+        if ( $download_job_id instanceof WP_Error ) {
+            $error_message = $download_job_id->get_error_message();
+            error_log( sprintf(
+                'NovelGamePlugin: Failed to create download job for %s: %s',
+                $asset_name,
+                $error_message
+            ) );
+            
+            // 失敗したアセット情報を記録
+            $assets_info[] = array(
+                'name'             => $asset_name,
+                'status'           => 'failed',
+                'progress'         => 0,
+                'job_id'           => '',
+                'total_bytes'      => $size,
+                'downloaded_bytes' => 0,
+                'message'          => sanitize_text_field( __( 'Failed to create background job', 'novel-game-plugin' ) ),
+            );
+            
+            $failed_assets[] = array(
+                'index'   => $index,
+                'name'    => $asset_name,
+                'reason'  => 'job_creation_failed',
+                'message' => sanitize_text_field( $error_message ),
+            );
+            continue;
+        }
+
+        if ( false === $download_job_id ) {
+            $error_message = __( 'Failed to create job', 'novel-game-plugin' );
             error_log( sprintf(
                 'NovelGamePlugin: Failed to create download job for %s: %s',
                 $asset_name,
@@ -1574,6 +1602,7 @@ function noveltool_check_background_job_chain( $previous_job_id, $checksum = '' 
     // ダウンロードジョブ完了 - 次は検証ジョブ
     $result = isset( $job['result'] ) ? $job['result'] : array();
     $temp_file = isset( $result['temp_file'] ) ? $result['temp_file'] : '';
+    $user_id = isset( $job['data']['user_id'] ) ? intval( $job['data']['user_id'] ) : 0;
     
     if ( empty( $temp_file ) ) {
         noveltool_update_download_status( 'failed', 'Temporary file not found', 'ERR-TEMPFILE', 'background' );
@@ -1589,6 +1618,7 @@ function noveltool_check_background_job_chain( $previous_job_id, $checksum = '' 
             array(
                 'temp_file' => $temp_file,
                 'checksum'  => $checksum,
+                'user_id'   => $user_id,
             )
         );
         
@@ -1617,7 +1647,7 @@ function noveltool_check_background_job_chain( $previous_job_id, $checksum = '' 
         noveltool_delete_background_job( $previous_job_id );
     } else {
         // チェックサムがない場合は直接抽出へ
-        noveltool_schedule_extract_job( $temp_file );
+        noveltool_schedule_extract_job( $temp_file, $user_id );
         noveltool_delete_background_job( $previous_job_id );
     }
 }
@@ -1663,7 +1693,8 @@ function noveltool_check_background_job_verify( $verify_job_id, $temp_file ) {
     }
     
     // 検証完了 - 抽出ジョブへ
-    noveltool_schedule_extract_job( $temp_file );
+    $user_id = isset( $job['data']['user_id'] ) ? intval( $job['data']['user_id'] ) : 0;
+    noveltool_schedule_extract_job( $temp_file, $user_id );
     noveltool_delete_background_job( $verify_job_id );
 }
 add_action( 'noveltool_check_background_job_verify', 'noveltool_check_background_job_verify', 10, 2 );
@@ -1672,12 +1703,17 @@ add_action( 'noveltool_check_background_job_verify', 'noveltool_check_background
  * 抽出ジョブをスケジュール
  *
  * @param string $temp_file 一時ファイル
+ * @param int    $user_id ユーザーID
  * @since 1.4.0
  */
-function noveltool_schedule_extract_job( $temp_file ) {
+function noveltool_schedule_extract_job( $temp_file, $user_id = 0 ) {
+    $user_id = intval( $user_id );
     $extract_job_id = noveltool_create_background_job(
         NOVELTOOL_JOB_TYPE_EXTRACT,
-        array( 'temp_file' => $temp_file )
+        array(
+            'temp_file' => $temp_file,
+            'user_id'   => $user_id,
+        )
     );
     
     noveltool_update_download_status(
@@ -2182,7 +2218,7 @@ function noveltool_api_download_sample_images( $request ) {
     $result = noveltool_perform_sample_images_download();
     
     // WP_Error が返された場合の処理
-    if ( is_wp_error( $result ) ) {
+    if ( $result instanceof WP_Error ) {
         $error_code = $result->get_error_code();
         $error_message = $result->get_error_message();
         

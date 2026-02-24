@@ -144,8 +144,8 @@
      * @param {number|null} percentage - 進捗パーセンテージ（0-100）。nullの場合はindeterminateモード
      * @param {string} statusText - 表示するステータステキスト
      */
-    function updateProgressBar(percentage, statusText) {
-        var modal = $('#noveltool-sample-images-modal');
+    function updateProgressBar(percentage, statusText, modal) {
+        modal = modal && modal.length ? modal : $('#noveltool-sample-images-modal');
         var progressBar = modal.find('.noveltool-progress-bar');
         var progressFill = modal.find('.noveltool-progress-fill');
         var progressStatus = modal.find('.noveltool-progress-status');
@@ -211,7 +211,7 @@
                     var elapsed = Date.now() - startTime;
                     
                     // バックグラウンド処理の進捗情報を優先
-                    if (response.progress && typeof response.progress === 'number') {
+                    if (typeof response.progress === 'number') {
                         var statusText = novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...';
                         
                         // current_step に基づいてステータステキストを変更
@@ -856,7 +856,7 @@
         var progressFill = banner.find('.noveltool-progress-fill');
         var progressStatus = banner.find('.noveltool-progress-status');
         
-        if (data.progress && typeof data.progress === 'number') {
+        if (typeof data.progress === 'number') {
             // 確定的な進捗
             progressBar.removeClass('indeterminate');
             progressBar.attr('aria-valuenow', data.progress);
@@ -986,10 +986,10 @@
             },
             success: function(response) {
                 if (response.success && response.data) {
-                    if (response.data.progress && typeof response.data.progress === 'number') {
-                        updateProgressBar(response.data.progress, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+                    if (typeof response.data.progress === 'number') {
+                        updateProgressBar(response.data.progress, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...', modal);
                     } else {
-                        updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...');
+                        updateProgressBar(null, novelToolSampleImages.strings.statusDownloading || 'ダウンロード中...', modal);
                     }
                 }
             }
