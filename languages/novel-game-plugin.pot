@@ -2160,3 +2160,67 @@ msgstr ""
 #: js/blocks.js:236
 msgid "Loading game data..."
 msgstr ""
+
+#: admin/export-import.php
+msgid "Include images as ZIP archive (file size may be larger)"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Check to download all images used in the game and include them in a ZIP file."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Select JSON or ZIP file"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Select JSON or ZIP file to import"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Export as ZIP"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Collecting images..."
+msgstr ""
+
+#: admin/export-import.php
+msgid "ZIP creation failed. The file was exported as JSON instead."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "ZipArchive is not available on this server."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Failed to create temporary ZIP file."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Failed to open ZIP archive for writing."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "ZIP creation failed. Falling back to JSON format."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Failed to read ZIP file."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Failed to open ZIP archive."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "game-data.json not found in ZIP archive."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Only JSON or ZIP files are allowed."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "File size exceeds 100MB limit."
+msgstr ""

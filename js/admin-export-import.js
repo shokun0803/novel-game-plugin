@@ -21,10 +21,25 @@
             }
         });
 
+        // ZIPチェックボックスの変更でボタン文言を切り替え
+        $('#noveltool-export-as-zip').on('change', function() {
+            var exportButton = $('.noveltool-export-button');
+            var label = $(this).is(':checked')
+                ? '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exportButtonZip
+                : '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exportButton;
+            if (!exportButton.prop('disabled')) {
+                exportButton.html(label);
+            } else {
+                // ボタンが無効でもラベルを更新
+                exportButton.html(label);
+            }
+        });
+
         // エクスポートボタンのクリック処理
         $('.noveltool-export-button').on('click', function() {
             var button = $(this);
             var gameId = button.data('game-id');
+            var exportAsZip = $('#noveltool-export-as-zip').is(':checked');
             
             // ドロップダウンからゲームIDを取得（専用画面の場合）
             var gameSelect = $('#noveltool-export-game-select');
@@ -41,7 +56,10 @@
             }
 
             // ボタンを無効化
-            button.prop('disabled', true).text(noveltoolExportImport.exporting);
+            var exportingLabel = exportAsZip
+                ? '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.collectingImages
+                : '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exporting;
+            button.prop('disabled', true).html(exportingLabel);
 
             $.ajax({
                 url: ajaxurl,
@@ -49,24 +67,51 @@
                 data: {
                     action: 'noveltool_export_game',
                     game_id: gameId,
+                    export_as_zip: exportAsZip ? 'true' : 'false',
                     nonce: noveltoolExportImport.exportNonce
                 },
                 success: function(response) {
                     if (response.success) {
-                        // JSONデータをダウンロード
-                        var dataStr = JSON.stringify(response.data.data, null, 2);
-                        var dataBlob = new Blob([dataStr], {type: 'application/json'});
-                        var url = URL.createObjectURL(dataBlob);
-                        var link = document.createElement('a');
-                        link.href = url;
-                        link.download = response.data.filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(url);
+                        var filename = response.data.filename;
+                        var format   = response.data.format || 'json';
 
-                        // 成功メッセージを表示
-                        showNotice('success', noveltoolExportImport.exportSuccess);
+                        if (format === 'zip' && response.data.zip_base64) {
+                            // base64デコードしてZIPをダウンロード
+                            var byteChars   = atob(response.data.zip_base64);
+                            var byteNumbers = new Array(byteChars.length);
+                            for (var i = 0; i < byteChars.length; i++) {
+                                byteNumbers[i] = byteChars.charCodeAt(i);
+                            }
+                            var byteArray = new Uint8Array(byteNumbers);
+                            var dataBlob  = new Blob([byteArray], {type: 'application/zip'});
+                            var url  = URL.createObjectURL(dataBlob);
+                            var link = document.createElement('a');
+                            link.href     = url;
+                            link.download = filename;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                        } else {
+                            // JSON形式でダウンロード
+                            var dataStr  = JSON.stringify(response.data.data, null, 2);
+                            var dataBlob = new Blob([dataStr], {type: 'application/json'});
+                            var url  = URL.createObjectURL(dataBlob);
+                            var link = document.createElement('a');
+                            link.href     = url;
+                            link.download = filename;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                        }
+
+                        // ZIP作成失敗フォールバック警告
+                        if (response.data.warning && noveltoolExportImport.zipFallbackWarning) {
+                            showNotice('error', noveltoolExportImport.zipFallbackWarning);
+                        } else {
+                            showNotice('success', noveltoolExportImport.exportSuccess);
+                        }
                     } else {
                         showNotice('error', response.data.message || noveltoolExportImport.exportError);
                     }
@@ -75,8 +120,12 @@
                     showNotice('error', noveltoolExportImport.exportError);
                 },
                 complete: function() {
-                    // ボタンを有効化
-                    button.prop('disabled', false).html('<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exportButton);
+                    // ボタンを有効化し文言を元に戻す
+                    var isZip = $('#noveltool-export-as-zip').is(':checked');
+                    var label = isZip
+                        ? '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exportButtonZip
+                        : '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exportButton;
+                    button.prop('disabled', false).html(label);
                 }
             });
         });
@@ -107,8 +156,10 @@
 
             var file = fileInput.files[0];
 
-            // ファイルサイズチェック（10MBまで）
-            if (file.size > 10 * 1024 * 1024) {
+            // ZIPの場合はサイズ上限を100MBに拡張
+            var isZipFile = file.name.toLowerCase().endsWith('.zip');
+            var maxSize   = isZipFile ? noveltoolExportImport.zipMaxSizeBytes : noveltoolExportImport.jsonMaxSizeBytes;
+            if (file.size > maxSize) {
                 showNotice('error', noveltoolExportImport.fileTooLarge);
                 return;
             }
