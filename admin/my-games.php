@@ -164,7 +164,11 @@ function noveltool_my_games_page() {
             && $shadow_detective_exists
             && ! noveltool_sample_images_exists()
             && 'in_progress' !== $download_status;
-        $should_show_banner = current_user_can( 'manage_options' ) && ! noveltool_sample_images_exists() && $is_dismissed && ! $shadow_detective_exists;
+        $should_show_banner = current_user_can( 'manage_options' )
+            && $shadow_detective_exists
+            && ! noveltool_sample_images_exists()
+            && $is_dismissed
+            && 'in_progress' !== $download_status;
         
         if ( $should_show_banner ) :
         ?>
@@ -328,19 +332,24 @@ function noveltool_my_games_admin_scripts( $hook ) {
     $user_show = get_user_meta( $user_id, 'noveltool_sample_images_prompt_show', true );
     $is_dismissed = get_user_meta( $user_id, 'noveltool_sample_images_prompt_dismissed', true );
     $download_status = get_option( 'noveltool_sample_images_download_status', 'not_started' );
+    $shadow_detective_exists = noveltool_get_game_by_machine_name( 'shadow_detective_v1' ) !== null;
     
     $should_prompt = current_user_can( 'manage_options' )
+        && $shadow_detective_exists
         && ! noveltool_sample_images_exists()
         && ! $is_dismissed
         && ( $pending || $user_show );
     
-    $shadow_detective_exists = noveltool_get_game_by_machine_name( 'shadow_detective_v1' ) !== null;
     $has_active_download = ( $user_id && get_user_meta( $user_id, 'noveltool_download_job_id', true ) && 'in_progress' === $download_status );
     $should_show_missing_images_decision = current_user_can( 'manage_options' )
         && $shadow_detective_exists
         && ! noveltool_sample_images_exists()
         && 'in_progress' !== $download_status;
-    $should_show_banner = current_user_can( 'manage_options' ) && ! noveltool_sample_images_exists() && $is_dismissed && ! $shadow_detective_exists;
+    $should_show_banner = current_user_can( 'manage_options' )
+        && $shadow_detective_exists
+        && ! noveltool_sample_images_exists()
+        && $is_dismissed
+        && 'in_progress' !== $download_status;
     
     // モーダルを表示する場合はフラグをクリアして一度だけ表示するようにする
     if ( $should_prompt ) {

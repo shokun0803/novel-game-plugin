@@ -16,6 +16,30 @@
     var MAX_POLL_TIME_MS = novelToolSampleImages.maxPollTimeMs || 300000;
     var XHR_TIMEOUT_MS = novelToolSampleImages.xhrTimeoutMs || 120000;
     var latestBannerStatusData = null;
+    var lastByteProgressState = {
+        current: 0,
+        total: 0,
+        percentage: 0
+    };
+
+    function resetByteProgressState() {
+        lastByteProgressState = {
+            current: 0,
+            total: 0,
+            percentage: 0
+        };
+    }
+
+    function getPrimaryModalParagraph(content) {
+        var paragraphs = content.find('p');
+        if (paragraphs.length > 0) {
+            return paragraphs.first();
+        }
+
+        var paragraph = $('<p>');
+        content.find('h2').first().after(paragraph);
+        return paragraph;
+    }
 
     /**
      * モーダルを表示
@@ -182,16 +206,57 @@
             return null;
         }
 
-        if (typeof data.total_bytes === 'number' && data.total_bytes > 0 && typeof data.downloaded_bytes_confirmed === 'number' && data.downloaded_bytes_confirmed >= 0) {
-            var confirmed = Math.max(0, Math.min(data.downloaded_bytes_confirmed, data.total_bytes));
-            return {
-                percentage: Math.floor((confirmed / data.total_bytes) * 100),
-                current: confirmed,
-                total: data.total_bytes
-            };
+        var total = 0;
+        if (typeof data.total_bytes === 'number' && data.total_bytes > 0) {
+            total = data.total_bytes;
         }
 
-        return null;
+        if (total <= 0 && lastByteProgressState.total > 0) {
+            total = lastByteProgressState.total;
+        }
+
+        if (total <= 0) {
+            return null;
+        }
+
+        if (data.status === 'in_progress' && lastByteProgressState.total > total) {
+            total = lastByteProgressState.total;
+        }
+
+        var candidates = [];
+        ['downloaded_bytes_confirmed', 'downloaded_bytes', 'downloaded_bytes_estimated'].forEach(function (key) {
+            if (typeof data[key] === 'number' && data[key] >= 0) {
+                candidates.push(data[key]);
+            }
+        });
+
+        var current = candidates.length > 0 ? Math.max.apply(null, candidates) : 0;
+        if (data.status === 'completed') {
+            current = total;
+        }
+
+        current = Math.max(0, Math.min(current, total));
+
+        if (data.status === 'in_progress' && total === lastByteProgressState.total && current < lastByteProgressState.current) {
+            current = lastByteProgressState.current;
+        }
+
+        var percentage = Math.floor((current / total) * 100);
+        if (data.status === 'in_progress' && total === lastByteProgressState.total && percentage < lastByteProgressState.percentage) {
+            percentage = lastByteProgressState.percentage;
+        }
+
+        percentage = Math.max(0, Math.min(100, percentage));
+
+        lastByteProgressState.current = current;
+        lastByteProgressState.total = total;
+        lastByteProgressState.percentage = percentage;
+
+        return {
+            percentage: percentage,
+            current: current,
+            total: total
+        };
     }
     
     /**
@@ -341,17 +406,20 @@
     function startDownload() {
         var modal = $('#noveltool-sample-images-modal');
         var content = modal.find('.noveltool-modal-content');
+        var primaryParagraph = getPrimaryModalParagraph(content);
+
+        resetByteProgressState();
 
         // ボタンを無効化
         content.find('button').prop('disabled', true);
 
         // プログレス表示に変更
         content.find('h2').text(novelToolSampleImages.strings.downloading);
-        content.find('p').empty();
+        primaryParagraph.empty();
         
         // プログレスバーを追加
         var progressBar = showProgressBar();
-        content.find('p').append(progressBar);
+        primaryParagraph.append(progressBar);
         
         content.find('.noveltool-modal-buttons').html('<div class="noveltool-spinner"></div>');
 
@@ -528,9 +596,10 @@
     function showSuccessMessage(message) {
         var modal = $('#noveltool-sample-images-modal');
         var content = modal.find('.noveltool-modal-content');
+        var primaryParagraph = getPrimaryModalParagraph(content);
 
         content.find('h2').text(novelToolSampleImages.strings.success);
-        content.find('p').html('<span style="color: #46b450;">' + message + '</span>');
+        primaryParagraph.html('<span style="color: #46b450;">' + message + '</span>');
         content.find('.noveltool-modal-buttons').html(
             $('<button>', {
                 class: 'button button-primary',
@@ -557,6 +626,7 @@
     function showErrorMessage(message, errorDetail, errorCode) {
         var modal = $('#noveltool-sample-images-modal');
         var content = modal.find('.noveltool-modal-content');
+        var primaryParagraph = getPrimaryModalParagraph(content);
 
         content.find('h2').text(novelToolSampleImages.strings.error);
         
@@ -695,7 +765,7 @@
         
         troubleshootingBox.append(stepsList);
         
-        content.find('p').empty().append(errorMessage).append(diagnosticCode).append(stageInfo).append(errorDetailsSection).append(troubleshootingBox);
+        primaryParagraph.empty().append(errorMessage).append(diagnosticCode).append(stageInfo).append(errorDetailsSection).append(troubleshootingBox);
 
         var buttons = $('<div>', {
             class: 'noveltool-modal-buttons'
@@ -728,13 +798,14 @@
     function resetStatusAndRetry() {
         var modal = $('#noveltool-sample-images-modal');
         var content = modal.find('.noveltool-modal-content');
+        var primaryParagraph = getPrimaryModalParagraph(content);
         
         // ボタンを無効化
         content.find('button').prop('disabled', true);
         
         // リセット中メッセージ
         content.find('h2').text(novelToolSampleImages.strings.resetting);
-        content.find('p').html(novelToolSampleImages.strings.pleaseWait);
+        primaryParagraph.html(novelToolSampleImages.strings.pleaseWait);
         content.find('.noveltool-modal-buttons').html('<div class="noveltool-spinner"></div>');
         
         // ステータスリセット API を呼び出し
@@ -751,7 +822,7 @@
             error: function () {
                 // リセット失敗時は手動再試行を促す
                 content.find('h2').text(novelToolSampleImages.strings.error);
-                content.find('p').html('<span style="color: #dc3232;">' + novelToolSampleImages.strings.resetFailed + '</span>');
+                primaryParagraph.html('<span style="color: #dc3232;">' + novelToolSampleImages.strings.resetFailed + '</span>');
                 content.find('.noveltool-modal-buttons').html(
                     $('<button>', {
                         class: 'button',
@@ -1222,9 +1293,11 @@
     function showBannerComplete() {
         var banner = $('#noveltool-download-progress-banner');
         if (banner.length === 0) return;
+
+        resetByteProgressState();
         
         banner.removeClass('notice-info').addClass('notice-success');
-        banner.find('p strong').text(novelToolSampleImages.strings.downloadSuccess || 'サンプル画像のダウンロードが完了しました。');
+        banner.find('p strong').text(novelToolSampleImages.strings.statusCompleted || '完了');
         banner.find('.noveltool-banner-progress').html(
             '<p style="margin: 0;">' + (novelToolSampleImages.strings.downloadSuccess || 'サンプル画像のダウンロードが完了しました。') + '</p>'
         );
@@ -1244,6 +1317,8 @@
     function showBannerError(error) {
         var banner = $('#noveltool-download-progress-banner');
         if (banner.length === 0) return;
+
+        resetByteProgressState();
         
         banner.removeClass('notice-info').addClass('notice-error');
         var errorMsg = error && error.message ? error.message : (novelToolSampleImages.strings.downloadFailed || 'ダウンロードに失敗しました。');
