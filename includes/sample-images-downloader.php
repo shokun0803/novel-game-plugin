@@ -2341,6 +2341,45 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
 }
 
 /**
+ * 監視イベントが現行ダウンロード状態に対して古いかどうかを判定する
+ *
+ * @param string $job_id 監視対象ジョブID
+ * @param string $expected_step 想定ステップ（download/verify/extract）
+ * @return bool 古いイベントの場合 true
+ * @since 1.5.0
+ */
+function noveltool_is_stale_watchdog_event( $job_id, $expected_step = '' ) {
+    $job_id = sanitize_text_field( $job_id );
+    if ( '' === $job_id ) {
+        return false;
+    }
+
+    $status_data = get_option( 'noveltool_sample_images_download_status_data', array() );
+    if ( ! is_array( $status_data ) ) {
+        return false;
+    }
+
+    $status = isset( $status_data['status'] ) ? sanitize_text_field( $status_data['status'] ) : '';
+    if ( 'in_progress' !== $status ) {
+        return true;
+    }
+
+    $active_job_id = isset( $status_data['job_id'] ) ? sanitize_text_field( $status_data['job_id'] ) : '';
+    if ( '' !== $active_job_id && $active_job_id !== $job_id ) {
+        return true;
+    }
+
+    if ( '' !== $expected_step ) {
+        $current_step = isset( $status_data['current_step'] ) ? sanitize_text_field( $status_data['current_step'] ) : '';
+        if ( '' !== $current_step && $current_step !== sanitize_text_field( $expected_step ) ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * バックグラウンドジョブチェーンをチェック
  *
  * @param string $previous_job_id 前のジョブID
@@ -2355,6 +2394,11 @@ function noveltool_check_background_job_chain( $previous_job_id, $checksum = '' 
     $job = noveltool_get_background_job( $previous_job_id );
     
     if ( ! $job ) {
+        if ( noveltool_is_stale_watchdog_event( $previous_job_id, 'download' ) ) {
+            error_log( sprintf( 'NovelGamePlugin: Ignore stale chain watcher for missing job: %s', sanitize_text_field( $previous_job_id ) ) );
+            return;
+        }
+
         $retry_key = 'noveltool_missing_job_retry_' . md5( sanitize_text_field( $previous_job_id ) );
         $retry_count = intval( get_transient( $retry_key ) );
         if ( $retry_count < 3 ) {
@@ -2557,6 +2601,11 @@ function noveltool_check_background_job_verify( $verify_job_id, $temp_file ) {
     $job = noveltool_get_background_job( $verify_job_id );
     
     if ( ! $job ) {
+        if ( noveltool_is_stale_watchdog_event( $verify_job_id, 'verify' ) ) {
+            error_log( sprintf( 'NovelGamePlugin: Ignore stale verify watcher for missing job: %s', sanitize_text_field( $verify_job_id ) ) );
+            return;
+        }
+
         $retry_key = 'noveltool_missing_job_retry_' . md5( sanitize_text_field( $verify_job_id ) );
         $retry_count = intval( get_transient( $retry_key ) );
         if ( $retry_count < 3 ) {
@@ -2665,6 +2714,11 @@ function noveltool_check_background_job_extract( $extract_job_id ) {
     $job = noveltool_get_background_job( $extract_job_id );
     
     if ( ! $job ) {
+        if ( noveltool_is_stale_watchdog_event( $extract_job_id, 'extract' ) ) {
+            error_log( sprintf( 'NovelGamePlugin: Ignore stale extract watcher for missing job: %s', sanitize_text_field( $extract_job_id ) ) );
+            return;
+        }
+
         $retry_key = 'noveltool_missing_job_retry_' . md5( sanitize_text_field( $extract_job_id ) );
         $retry_count = intval( get_transient( $retry_key ) );
         if ( $retry_count < 3 ) {
