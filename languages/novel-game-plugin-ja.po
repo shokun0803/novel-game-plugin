@@ -2186,4 +2186,8 @@ msgstr "バックグラウンドジョブが致命的エラーで終了しまし
 msgid "Download error data could not be serialized."
 msgstr "ダウンロードエラーデータをシリアライズできませんでした。"
 
+#: includes/sample-images-downloader.php:1021
+msgid "Failed to extract ZIP file."
+msgstr "ZIPファイルの展開に失敗しました。"
+
 

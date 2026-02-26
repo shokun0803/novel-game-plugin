@@ -913,30 +913,21 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
  * @since 1.3.0
  */
 function noveltool_extract_zip( $zip_file, $destination ) {
-    global $wp_filesystem;
-    
-    // WordPress Filesystem API を初期化
-    if ( ! function_exists( 'WP_Filesystem' ) ) {
-        require_once ABSPATH . 'wp-admin/includes/file.php';
-    }
-    
-    WP_Filesystem();
-    
-    if ( ! $wp_filesystem ) {
+    if ( ! file_exists( $zip_file ) ) {
         return new WP_Error(
-            'filesystem_error',
-            __( 'Could not initialize filesystem.', 'novel-game-plugin' )
+            'zip_not_found',
+            __( 'Failed to open ZIP file.', 'novel-game-plugin' )
         );
     }
-    
+
     // 親ディレクトリの書き込み権限をチェック（未作成ディレクトリにも対応）
     $parent_dir = dirname( $destination );
     $check_dir = $parent_dir;
-    while ( ! $wp_filesystem->is_dir( $check_dir ) && dirname( $check_dir ) !== $check_dir ) {
+    while ( ! is_dir( $check_dir ) && dirname( $check_dir ) !== $check_dir ) {
         $check_dir = dirname( $check_dir );
     }
 
-    if ( ! $wp_filesystem->is_writable( $check_dir ) ) {
+    if ( ! is_writable( $check_dir ) ) {
         return new WP_Error(
             'permission_error',
             sprintf(
@@ -946,9 +937,9 @@ function noveltool_extract_zip( $zip_file, $destination ) {
             )
         );
     }
-    
+
     // 展開先ディレクトリを作成
-    if ( ! $wp_filesystem->is_dir( $destination ) ) {
+    if ( ! is_dir( $destination ) ) {
         if ( ! wp_mkdir_p( $destination ) ) {
             return new WP_Error(
                 'mkdir_error',
@@ -956,35 +947,45 @@ function noveltool_extract_zip( $zip_file, $destination ) {
             );
         }
     }
-    
+
     $capabilities = noveltool_detect_extraction_capabilities();
 
-    // 互換性重視: 既定では WordPress 標準 unzip_file を優先し、必要時のみストリーミングを有効化する
-    $use_streaming = get_option( 'noveltool_use_streaming_extraction', false );
-
-    // 低メモリ環境では unzip コマンドを優先して展開
-    if ( ! $use_streaming && $capabilities['has_unzip'] && 'unzip_command' === $capabilities['recommended'] ) {
-        return noveltool_extract_zip_with_unzip_command( $zip_file, $destination );
-    }
-    
-    if ( $use_streaming ) {
-        $streaming_result = noveltool_extract_zip_streaming( $zip_file, $destination );
-        if ( ! is_wp_error( $streaming_result ) ) {
+    // FTPext 由来の TypeError 回避のため、可能なら WP_Filesystem を介さず unzip を優先
+    if ( $capabilities['has_unzip'] ) {
+        $unzip_result = noveltool_extract_zip_with_unzip_command( $zip_file, $destination );
+        if ( ! is_wp_error( $unzip_result ) ) {
             return true;
         }
-        
-        // ストリーミング失敗時は標準方式にフォールバック
-        error_log( 'NovelGamePlugin: Streaming extraction failed, falling back to standard method: ' . $streaming_result->get_error_message() );
+        error_log( 'NovelGamePlugin: unzip command extraction failed, fallback to ZipArchive: ' . $unzip_result->get_error_message() );
     }
-    
-    // ZIP を展開（標準方式）
-    $result = unzip_file( $zip_file, $destination );
-    
-    if ( is_wp_error( $result ) ) {
-        return $result;
+
+    if ( class_exists( 'ZipArchive' ) ) {
+        $zip = new ZipArchive();
+        $open_result = $zip->open( $zip_file );
+        if ( true !== $open_result ) {
+            return new WP_Error(
+                'zip_open_error',
+                __( 'Failed to open ZIP file.', 'novel-game-plugin' )
+            );
+        }
+
+        $extract_result = $zip->extractTo( $destination );
+        $zip->close();
+
+        if ( ! $extract_result ) {
+            return new WP_Error(
+                'zip_extract_error',
+                __( 'Failed to extract ZIP file.', 'novel-game-plugin' )
+            );
+        }
+
+        return true;
     }
-    
-    return true;
+
+    return new WP_Error(
+        'no_extraction_method',
+        __( 'No extraction method available. Please install PHP ZipArchive extension or unzip command.', 'novel-game-plugin' )
+    );
 }
 
 /**
