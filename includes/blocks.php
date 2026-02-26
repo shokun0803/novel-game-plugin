@@ -29,7 +29,7 @@ function noveltool_init_blocks() {
         array(
             'wp-blocks',
             'wp-element',
-            'wp-editor',
+            'wp-block-editor',
             'wp-components',
             'wp-i18n',
             'wp-data',

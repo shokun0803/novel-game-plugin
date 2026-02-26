@@ -13,6 +13,166 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * サンプル画像ディレクトリ（uploads）を取得
+ *
+ * @return string サンプル画像ディレクトリの絶対パス
+ * @since 1.5.0
+ */
+function noveltool_get_sample_images_directory() {
+    $upload_dir = wp_upload_dir();
+
+    if ( ! empty( $upload_dir['basedir'] ) ) {
+        return trailingslashit( $upload_dir['basedir'] ) . 'noveltool/sample-images';
+    }
+
+    return WP_CONTENT_DIR . '/uploads/noveltool/sample-images';
+}
+
+/**
+ * サンプル画像URLのベース（uploads）を取得
+ *
+ * @return string サンプル画像ベースURL
+ * @since 1.5.0
+ */
+function noveltool_get_sample_images_base_url() {
+    $upload_dir = wp_upload_dir();
+
+    if ( ! empty( $upload_dir['baseurl'] ) ) {
+        return trailingslashit( $upload_dir['baseurl'] ) . 'noveltool/sample-images/';
+    }
+
+    return trailingslashit( content_url( 'uploads/noveltool/sample-images' ) );
+}
+
+/**
+ * サンプル画像のURLをuploads基準へ変換
+ *
+ * @param string $url 元の画像URL
+ * @return string 変換後URL
+ * @since 1.5.0
+ */
+function noveltool_convert_sample_image_url_to_uploads( $url ) {
+    $url = (string) $url;
+    if ( '' === $url ) {
+        return '';
+    }
+
+    $uploads_prefix = trailingslashit( noveltool_get_sample_images_base_url() );
+    if ( strpos( $url, $uploads_prefix ) === 0 ) {
+        return $url;
+    }
+
+    $legacy_prefix = trailingslashit( NOVEL_GAME_PLUGIN_URL ) . 'assets/sample-images/';
+    if ( strpos( $url, $legacy_prefix ) === 0 ) {
+        $relative = ltrim( substr( $url, strlen( $legacy_prefix ) ), '/' );
+        return $uploads_prefix . $relative;
+    }
+
+    return $url;
+}
+
+/**
+ * 既存の Shadow Detective サンプルゲーム画像参照先をuploadsへ移行
+ *
+ * @param array $game ゲームデータ
+ * @return bool 更新が発生した場合true
+ * @since 1.5.0
+ */
+function noveltool_migrate_shadow_detective_image_references_to_uploads( $game ) {
+    if ( empty( $game ) || empty( $game['title'] ) ) {
+        return false;
+    }
+
+    $updated = false;
+
+    if ( ! empty( $game['title_image'] ) ) {
+        $new_title_image = noveltool_convert_sample_image_url_to_uploads( $game['title_image'] );
+        if ( $new_title_image !== $game['title_image'] ) {
+            $game['title_image'] = $new_title_image;
+            $updated = true;
+        }
+    }
+
+    if ( $updated ) {
+        noveltool_save_game( $game );
+    }
+
+    $scenes = noveltool_get_posts_by_game_title( $game['title'] );
+    if ( empty( $scenes ) || ! is_array( $scenes ) ) {
+        return $updated;
+    }
+
+    foreach ( $scenes as $scene ) {
+        $scene_updated = false;
+
+        $single_image_meta_keys = array(
+            '_background_image',
+            '_character_left',
+            '_character_center',
+            '_character_right',
+        );
+
+        foreach ( $single_image_meta_keys as $meta_key ) {
+            $old_value = get_post_meta( $scene->ID, $meta_key, true );
+            $new_value = noveltool_convert_sample_image_url_to_uploads( $old_value );
+            if ( $new_value !== $old_value ) {
+                update_post_meta( $scene->ID, $meta_key, esc_url_raw( $new_value ) );
+                $scene_updated = true;
+            }
+        }
+
+        $dialogue_backgrounds_raw = get_post_meta( $scene->ID, '_dialogue_backgrounds', true );
+        $dialogue_backgrounds = json_decode( $dialogue_backgrounds_raw, true );
+        if ( is_array( $dialogue_backgrounds ) ) {
+            $backgrounds_changed = false;
+            foreach ( $dialogue_backgrounds as $index => $background_url ) {
+                $new_background_url = noveltool_convert_sample_image_url_to_uploads( $background_url );
+                if ( $new_background_url !== $background_url ) {
+                    $dialogue_backgrounds[ $index ] = $new_background_url;
+                    $backgrounds_changed = true;
+                }
+            }
+
+            if ( $backgrounds_changed ) {
+                update_post_meta( $scene->ID, '_dialogue_backgrounds', wp_json_encode( $dialogue_backgrounds, JSON_UNESCAPED_UNICODE ) );
+                $scene_updated = true;
+            }
+        }
+
+        $dialogue_characters_raw = get_post_meta( $scene->ID, '_dialogue_characters', true );
+        $dialogue_characters = json_decode( $dialogue_characters_raw, true );
+        if ( is_array( $dialogue_characters ) ) {
+            $characters_changed = false;
+            foreach ( $dialogue_characters as $dialogue_index => $character_set ) {
+                if ( ! is_array( $character_set ) ) {
+                    continue;
+                }
+
+                foreach ( array( 'left', 'center', 'right' ) as $position ) {
+                    $old_character_url = isset( $character_set[ $position ] ) ? $character_set[ $position ] : '';
+                    $new_character_url = noveltool_convert_sample_image_url_to_uploads( $old_character_url );
+                    if ( $new_character_url !== $old_character_url ) {
+                        $dialogue_characters[ $dialogue_index ][ $position ] = $new_character_url;
+                        $characters_changed = true;
+                    }
+                }
+            }
+
+            if ( $characters_changed ) {
+                update_post_meta( $scene->ID, '_dialogue_characters', wp_json_encode( $dialogue_characters, JSON_UNESCAPED_UNICODE ) );
+                $scene_updated = true;
+            }
+        }
+
+        if ( $scene_updated ) {
+            $updated = true;
+        }
+    }
+
+    return $updated;
+}
+
 
 /**
  * 「影の探偵」本格推理ゲームのデータを取得
@@ -21,58 +181,57 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.3.0
  */
 function noveltool_get_shadow_detective_game_data() {
-    // プラグイン内のバンドル画像を使用（PNG形式）
-    // SVG placeholders から高品質PNG画像への切り替え
-    $plugin_url = NOVEL_GAME_PLUGIN_URL;
+    // uploads 内に展開されたサンプル画像を参照
+    $plugin_url = noveltool_get_sample_images_base_url();
     
     // 背景画像（プラグイン同梱PNG）
-    $bg_office = $plugin_url . 'assets/sample-images/bg-detective-office.png';
-    $bg_warehouse = $plugin_url . 'assets/sample-images/bg-warehouse.png';
-    $bg_mansion = $plugin_url . 'assets/sample-images/bg-mansion.png';
-    $bg_cafe = $plugin_url . 'assets/sample-images/bg-cafe.png';
-    $bg_study = $plugin_url . 'assets/sample-images/bg-study.png';
-    $bg_hidden_room = $plugin_url . 'assets/sample-images/bg-hidden-room.png';
-    $bg_alley = $plugin_url . 'assets/sample-images/bg-backstreet.png';
-    $bg_yakuza_office = $plugin_url . 'assets/sample-images/bg-underground-bar.png';
-    $bg_construction = $plugin_url . 'assets/sample-images/bg-abandoned-factory.png';
-    $bg_villa = $plugin_url . 'assets/sample-images/bg-confrontation.png';
+    $bg_office = $plugin_url . 'bg-detective-office.png';
+    $bg_warehouse = $plugin_url . 'bg-warehouse.png';
+    $bg_mansion = $plugin_url . 'bg-mansion.png';
+    $bg_cafe = $plugin_url . 'bg-cafe.png';
+    $bg_study = $plugin_url . 'bg-study.png';
+    $bg_hidden_room = $plugin_url . 'bg-hidden-room.png';
+    $bg_alley = $plugin_url . 'bg-backstreet.png';
+    $bg_yakuza_office = $plugin_url . 'bg-underground-bar.png';
+    $bg_construction = $plugin_url . 'bg-abandoned-factory.png';
+    $bg_villa = $plugin_url . 'bg-confrontation.png';
     
     // キャラクター画像（プラグイン同梱PNG、透過対応）
     
     // 主人公の表情差分
-    $char_protagonist_normal = $plugin_url . 'assets/sample-images/char-protagonist-normal.png';
-    $char_protagonist_thinking = $plugin_url . 'assets/sample-images/char-protagonist-thinking.png';
-    $char_protagonist_serious = $plugin_url . 'assets/sample-images/char-protagonist-serious.png';
-    $char_protagonist_determined = $plugin_url . 'assets/sample-images/char-protagonist-determined.png';
+    $char_protagonist_normal = $plugin_url . 'char-protagonist-normal.png';
+    $char_protagonist_thinking = $plugin_url . 'char-protagonist-thinking.png';
+    $char_protagonist_serious = $plugin_url . 'char-protagonist-serious.png';
+    $char_protagonist_determined = $plugin_url . 'char-protagonist-determined.png';
     
     // 美咲（Misaki）の表情差分
-    $char_misaki_normal = $plugin_url . 'assets/sample-images/char-misaki-normal.png';
-    $char_misaki_sad = $plugin_url . 'assets/sample-images/char-misaki-sad.png';
-    $char_misaki_worried = $plugin_url . 'assets/sample-images/char-misaki-worried.png';
-    $char_misaki_tense = $plugin_url . 'assets/sample-images/char-misaki-tense.png';
-    $char_misaki_smile = $plugin_url . 'assets/sample-images/char-misaki-smile.png';
+    $char_misaki_normal = $plugin_url . 'char-misaki-normal.png';
+    $char_misaki_sad = $plugin_url . 'char-misaki-sad.png';
+    $char_misaki_worried = $plugin_url . 'char-misaki-worried.png';
+    $char_misaki_tense = $plugin_url . 'char-misaki-tense.png';
+    $char_misaki_smile = $plugin_url . 'char-misaki-smile.png';
     
     // 誠（Makoto）の表情差分
-    $char_makoto_relief = $plugin_url . 'assets/sample-images/char-makoto-relief.png';
-    $char_makoto_tired = $plugin_url . 'assets/sample-images/char-makoto-tired.png';
+    $char_makoto_relief = $plugin_url . 'char-makoto-relief.png';
+    $char_makoto_tired = $plugin_url . 'char-makoto-tired.png';
     
     // 高木（Takagi）の表情差分
-    $char_takagi_calm = $plugin_url . 'assets/sample-images/char-takagi-calm.png';
-    $char_takagi_nervous = $plugin_url . 'assets/sample-images/char-takagi-nervous.png';
-    $char_takagi_angry = $plugin_url . 'assets/sample-images/char-takagi-angry.png';
-    $char_takagi_regret = $plugin_url . 'assets/sample-images/char-takagi-regret.png';
+    $char_takagi_calm = $plugin_url . 'char-takagi-calm.png';
+    $char_takagi_nervous = $plugin_url . 'char-takagi-nervous.png';
+    $char_takagi_angry = $plugin_url . 'char-takagi-angry.png';
+    $char_takagi_regret = $plugin_url . 'char-takagi-regret.png';
     
     // 佐藤（Sato）
-    $char_sato = $plugin_url . 'assets/sample-images/char-sato.png';
+    $char_sato = $plugin_url . 'char-sato.png';
     
     // 情報屋（Informant）
-    $char_informant = $plugin_url . 'assets/sample-images/char-informant.png';
+    $char_informant = $plugin_url . 'char-informant.png';
     
     // ヤクザ（Yakuza）
-    $char_yakuza = $plugin_url . 'assets/sample-images/char-yakuza.png';
+    $char_yakuza = $plugin_url . 'char-yakuza.png';
     
     // タイトル画面用画像
-    $title_image_file = $plugin_url . 'assets/sample-images/title-shadow-detective.png';
+    $title_image_file = $plugin_url . 'title-shadow-detective.png';
     
     // Shadow Detective ゲームの基本情報
     $game_data = array(
@@ -1376,6 +1535,16 @@ function noveltool_install_shadow_detective_game() {
                 ) );
                 return false;
             }
+
+            // 既存ゲーム再生成後に画像参照先をuploadsへ統一
+            noveltool_migrate_shadow_detective_image_references_to_uploads( $existing_game );
+            return true;
+        }
+
+        // 既存ゲームに対しても画像参照先をuploadsへ移行
+        $migrated = noveltool_migrate_shadow_detective_image_references_to_uploads( $existing_game );
+        if ( $migrated ) {
+            error_log( 'noveltool_install_shadow_detective_game: Existing game image references migrated to uploads' );
             return true;
         }
         
@@ -1402,6 +1571,12 @@ function noveltool_install_shadow_detective_game() {
         // 一部のシーンの作成に失敗した場合
         error_log( sprintf( 'noveltool_install_shadow_detective_game: Incomplete installation. Expected %d scenes, created %d', count( $scenes_data ), $created_scenes ) );
         return false;
+    }
+
+    // 新規作成時も画像参照先をuploadsへ統一
+    $created_game = noveltool_get_game_by_machine_name( 'shadow_detective_v1' );
+    if ( $created_game ) {
+        noveltool_migrate_shadow_detective_image_references_to_uploads( $created_game );
     }
     
     return true;
