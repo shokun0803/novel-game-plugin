@@ -131,7 +131,7 @@ function noveltool_my_games_page() {
             <?php endif; ?>
         </noscript>
 
-        <?php if ( current_user_can( 'manage_options' ) ) : ?>
+        <?php if ( current_user_can( 'manage_options' ) && in_array( $download_status, array( 'in_progress', 'failed' ), true ) ) : ?>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-left:12px;">
                 <?php wp_nonce_field( 'noveltool_download_diagnostic' ); ?>
                 <input type="hidden" name="action" value="noveltool_download_diagnostic" />
