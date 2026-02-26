@@ -2119,4 +2119,75 @@ msgstr "サンプル画像のダウンロードに失敗しました。後でも
 msgid "Retry"
 msgstr "再試行"
 
+#: admin/my-games.php:104 admin/my-games.php:454
+msgid "Sample Images Download in Progress"
+msgstr "サンプル画像をダウンロード中"
+
+#: admin/my-games.php:111
+msgid "Checking status..."
+msgstr "状態を確認中..."
+
+#: admin/my-games.php:115
+msgid "View Details"
+msgstr "詳細を見る"
+
+#: admin/my-games.php:126
+msgid "Download Sample Images (requires JavaScript)"
+msgstr "サンプル画像をダウンロード（JavaScriptが必要です）"
+
+#: admin/my-games.php:129
+msgid "Please enable JavaScript to download sample images."
+msgstr "サンプル画像をダウンロードするにはJavaScriptを有効にしてください。"
+
+#: admin/my-games.php:136
+msgid "Download Diagnostic Package"
+msgstr "診断パッケージをダウンロード"
+
+#: admin/my-games.php:190
+msgid "Sample game is installed, but sample images are missing in uploads. Download sample images now?"
+msgstr "サンプルゲームはインストール済みですが、uploads内にサンプル画像がありません。今すぐサンプル画像をダウンロードしますか？"
+
+#: admin/my-games.php:399
+#, php-format
+msgid "Sample game images are not installed. Would you like to download them now? Download size: approximately %s. The download will be processed in the background."
+msgstr "サンプルゲーム画像がインストールされていません。今すぐダウンロードしますか？ ダウンロードサイズは約%sです。ダウンロードはバックグラウンドで処理されます。"
+
+#: admin/my-games.php:406
+msgid "(Processing in background)"
+msgstr "（バックグラウンドで処理中）"
+
+#: admin/my-games.php:426
+msgid "Downloading: "
+msgstr "ダウンロード中: "
+
+#: includes/sample-images-downloader.php:2320
+#, php-format
+msgid "Download started for %d asset files in background. Please wait..."
+msgstr "%d件のアセットファイルのバックグラウンドダウンロードを開始しました。しばらくお待ちください..."
+
+#: includes/sample-images-downloader.php:2327
+#, php-format
+msgid "Warning: %d assets could not be queued."
+msgstr "警告: %d件のアセットをキューに追加できませんでした。"
+
+#: admin/my-games.php:443
+msgid "Extracting"
+msgstr "展開中"
+
+#: includes/sample-images-downloader.php:1189
+msgid "Exception occurred during background job processing."
+msgstr "バックグラウンドジョブ処理中に例外が発生しました。"
+
+#: includes/sample-images-downloader.php:1294
+msgid "Background job terminated by fatal error."
+msgstr "バックグラウンドジョブが致命的エラーで終了しました。"
+
+#: admin/my-games.php:809
+msgid "Download error data could not be serialized."
+msgstr "ダウンロードエラーデータをシリアライズできませんでした。"
+
+#: includes/sample-images-downloader.php:1021
+msgid "Failed to extract ZIP file."
+msgstr "ZIPファイルの展開に失敗しました。"
+
 
