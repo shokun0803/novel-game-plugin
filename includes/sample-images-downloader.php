@@ -733,6 +733,43 @@ function noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_fi
 }
 
 /**
+ * unzip コマンドで ZIP を展開
+ *
+ * @param string $zip_file ZIPファイルのパス
+ * @param string $destination 展開先ディレクトリ
+ * @return true|WP_Error 成功時 true / 失敗時 WP_Error
+ * @since 1.5.0
+ */
+function noveltool_extract_zip_with_unzip_command( $zip_file, $destination ) {
+    $zip_file_escaped = escapeshellarg( $zip_file );
+    $destination_escaped = escapeshellarg( $destination );
+
+    $output = array();
+    $return_var = 0;
+
+    @exec( "unzip -o -q {$zip_file_escaped} -d {$destination_escaped} 2>&1", $output, $return_var );
+
+    if ( 0 !== $return_var ) {
+        $output_str = implode( "\n", $output );
+        error_log(
+            sprintf(
+                'NovelGamePlugin: unzip command failed with exit code %d. Output: %s',
+                $return_var,
+                substr( $output_str, 0, 1000 )
+            )
+        );
+
+        return new WP_Error(
+            'unzip_error',
+            __( 'Failed to extract ZIP using unzip command. Please check server logs or install PHP ZipArchive extension.', 'novel-game-plugin' ),
+            array( 'unzip_exit_code' => $return_var )
+        );
+    }
+
+    return true;
+}
+
+/**
  * ZIP ファイルをストリーミング展開（メモリ効率重視）
  *
  * @param string $zip_file ZIPファイルのパス
@@ -768,6 +805,11 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
     }
     
     $capabilities = noveltool_detect_extraction_capabilities();
+
+    // 低メモリ環境では unzip コマンドを優先してメモリ圧迫を回避
+    if ( $capabilities['has_unzip'] && isset( $capabilities['recommended'] ) && 'unzip_command' === $capabilities['recommended'] ) {
+        return noveltool_extract_zip_with_unzip_command( $zip_file, $destination );
+    }
     
     // ZipArchive を使用したストリーミング抽出
     if ( $capabilities['has_ziparchive'] ) {
@@ -852,32 +894,7 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
     
     // フォールバック: unzip コマンド
     if ( $capabilities['has_unzip'] ) {
-        $zip_file_escaped = escapeshellarg( $zip_file );
-        $destination_escaped = escapeshellarg( $destination );
-        
-        $output = array();
-        $return_var = 0;
-        
-        // unzip を実行（-o: 上書き, -q: サイレント）
-        @exec( "unzip -o -q {$zip_file_escaped} -d {$destination_escaped} 2>&1", $output, $return_var );
-        
-        if ( $return_var !== 0 ) {
-            // 詳細なエラー情報をログに記録（管理者向け）
-            $output_str = implode( "\n", $output );
-            error_log( sprintf(
-                'NovelGamePlugin: unzip command failed with exit code %d. Output: %s',
-                $return_var,
-                substr( $output_str, 0, 1000 ) // 最大1000文字まで
-            ) );
-            
-            // ユーザー向けには簡潔で非機密のメッセージを返す
-            return new WP_Error(
-                'unzip_error',
-                __( 'Failed to extract ZIP using unzip command. Please check server logs or install PHP ZipArchive extension.', 'novel-game-plugin' )
-            );
-        }
-        
-        return true;
+        return noveltool_extract_zip_with_unzip_command( $zip_file, $destination );
     }
     
     // どの方法も利用できない場合
@@ -940,8 +957,15 @@ function noveltool_extract_zip( $zip_file, $destination ) {
         }
     }
     
+    $capabilities = noveltool_detect_extraction_capabilities();
+
     // 互換性重視: 既定では WordPress 標準 unzip_file を優先し、必要時のみストリーミングを有効化する
     $use_streaming = get_option( 'noveltool_use_streaming_extraction', false );
+
+    // 低メモリ環境では unzip コマンドを優先して展開
+    if ( ! $use_streaming && $capabilities['has_unzip'] && 'unzip_command' === $capabilities['recommended'] ) {
+        return noveltool_extract_zip_with_unzip_command( $zip_file, $destination );
+    }
     
     if ( $use_streaming ) {
         $streaming_result = noveltool_extract_zip_streaming( $zip_file, $destination );
@@ -1566,7 +1590,7 @@ function noveltool_update_download_status( $status, $error_message = '', $error_
         if ( ! empty( $error_meta ) && is_array( $error_meta ) ) {
             $safe_meta = array();
             // 許可されたメタキーのみ保存（機密情報を除外）
-            $allowed_keys = array( 'http_code', 'stage_detail', 'retry_count', 'stuck_seconds', 'fatal_message', 'fatal_file', 'fatal_line' );
+            $allowed_keys = array( 'http_code', 'stage_detail', 'retry_count', 'stuck_seconds', 'fatal_message', 'fatal_file', 'fatal_line', 'exception_class', 'exception_file', 'exception_line', 'unzip_exit_code' );
             foreach ( $allowed_keys as $key ) {
                 if ( isset( $error_meta[ $key ] ) ) {
                     $safe_meta[ $key ] = sanitize_text_field( $error_meta[ $key ] );
@@ -2475,6 +2499,18 @@ function noveltool_check_background_job_chain( $previous_job_id, $checksum = '' 
                 if ( isset( $error['detail']['fatal_line'] ) ) {
                     $error_context['fatal_line'] = intval( $error['detail']['fatal_line'] );
                 }
+                if ( isset( $error['detail']['exception_class'] ) ) {
+                    $error_context['exception_class'] = sanitize_text_field( $error['detail']['exception_class'] );
+                }
+                if ( isset( $error['detail']['exception_file'] ) ) {
+                    $error_context['exception_file'] = sanitize_text_field( $error['detail']['exception_file'] );
+                }
+                if ( isset( $error['detail']['exception_line'] ) ) {
+                    $error_context['exception_line'] = intval( $error['detail']['exception_line'] );
+                }
+                if ( isset( $error['detail']['unzip_exit_code'] ) ) {
+                    $error_context['unzip_exit_code'] = intval( $error['detail']['unzip_exit_code'] );
+                }
             }
             noveltool_update_download_status(
                 'failed',
@@ -2772,11 +2808,36 @@ function noveltool_check_background_job_extract( $extract_job_id ) {
     if ( $job['status'] !== NOVELTOOL_JOB_STATUS_COMPLETED ) {
         if ( $job['status'] === NOVELTOOL_JOB_STATUS_FAILED ) {
             $error = isset( $job['error'] ) ? $job['error'] : array( 'message' => 'Unknown error' );
+            $error_context = array();
+            if ( isset( $error['detail'] ) && is_array( $error['detail'] ) ) {
+                if ( isset( $error['detail']['fatal_message'] ) ) {
+                    $error_context['fatal_message'] = sanitize_text_field( $error['detail']['fatal_message'] );
+                }
+                if ( isset( $error['detail']['fatal_file'] ) ) {
+                    $error_context['fatal_file'] = sanitize_text_field( $error['detail']['fatal_file'] );
+                }
+                if ( isset( $error['detail']['fatal_line'] ) ) {
+                    $error_context['fatal_line'] = intval( $error['detail']['fatal_line'] );
+                }
+                if ( isset( $error['detail']['exception_class'] ) ) {
+                    $error_context['exception_class'] = sanitize_text_field( $error['detail']['exception_class'] );
+                }
+                if ( isset( $error['detail']['exception_file'] ) ) {
+                    $error_context['exception_file'] = sanitize_text_field( $error['detail']['exception_file'] );
+                }
+                if ( isset( $error['detail']['exception_line'] ) ) {
+                    $error_context['exception_line'] = intval( $error['detail']['exception_line'] );
+                }
+                if ( isset( $error['detail']['unzip_exit_code'] ) ) {
+                    $error_context['unzip_exit_code'] = intval( $error['detail']['unzip_exit_code'] );
+                }
+            }
             noveltool_update_download_status(
                 'failed',
                 isset( $error['message'] ) ? $error['message'] : 'Extraction failed',
                 isset( $error['code'] ) ? $error['code'] : 'ERR-EXTRACT-FAILED',
-                'extract'
+                'extract',
+                $error_context
             );
             delete_option( 'noveltool_sample_images_download_lock' );
             noveltool_delete_background_job( $extract_job_id );

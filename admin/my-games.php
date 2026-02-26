@@ -313,6 +313,48 @@ function noveltool_my_games_admin_styles( $hook ) {
 add_action( 'admin_enqueue_scripts', 'noveltool_my_games_admin_styles' );
 
 /**
+ * サンプル画像ダウンロードサイズの概算表示文字列を取得
+ *
+ * @return string サイズ表示（例: 21.6 MB）
+ * @since 1.5.0
+ */
+function noveltool_get_sample_images_estimated_size_label() {
+    $status_data = get_option( 'noveltool_sample_images_download_status_data', array() );
+    if ( is_array( $status_data ) && isset( $status_data['total_bytes'] ) ) {
+        $bytes = max( 0, intval( $status_data['total_bytes'] ) );
+        if ( $bytes > 0 ) {
+            return size_format( $bytes, 1 );
+        }
+    }
+
+    $cached_size = get_transient( 'noveltool_sample_images_estimated_size' );
+    if ( is_numeric( $cached_size ) && intval( $cached_size ) > 0 ) {
+        return size_format( intval( $cached_size ), 1 );
+    }
+
+    if ( function_exists( 'noveltool_get_latest_release_info' ) && function_exists( 'noveltool_find_all_sample_images_assets' ) ) {
+        $release_data = noveltool_get_latest_release_info();
+        if ( ! is_wp_error( $release_data ) ) {
+            $assets = noveltool_find_all_sample_images_assets( $release_data );
+            if ( ! empty( $assets ) && is_array( $assets ) ) {
+                $total_bytes = 0;
+                foreach ( $assets as $asset ) {
+                    if ( isset( $asset['size'] ) ) {
+                        $total_bytes += max( 0, intval( $asset['size'] ) );
+                    }
+                }
+                if ( $total_bytes > 0 ) {
+                    set_transient( 'noveltool_sample_images_estimated_size', $total_bytes, 6 * HOUR_IN_SECONDS );
+                    return size_format( $total_bytes, 1 );
+                }
+            }
+        }
+    }
+
+    return '--';
+}
+
+/**
  * マイゲームページ用のスクリプトを読み込み
  *
  * @param string $hook 現在のページフック
@@ -359,6 +401,8 @@ function noveltool_my_games_admin_scripts( $hook ) {
     
     // モーダルまたはバナーのいずれかを表示する場合はスクリプトを読み込む
     if ( $should_prompt || $should_show_banner || $should_show_missing_images_decision || $has_active_download ) {
+        $estimated_download_size = noveltool_get_sample_images_estimated_size_label();
+
         wp_enqueue_style(
             'noveltool-sample-images-prompt',
             NOVEL_GAME_PLUGIN_URL . 'css/admin-sample-images-prompt.css',
@@ -397,7 +441,7 @@ function noveltool_my_games_admin_scripts( $hook ) {
                     'modalMessage'         => sprintf(
                         /* translators: %s: estimated file size */
                         __( 'Sample game images are not installed. Would you like to download them now? Download size: approximately %s. The download will be processed in the background.', 'novel-game-plugin' ),
-                        '15 MB'
+                        $estimated_download_size
                     ),
                     'downloadButton'       => __( 'Download', 'novel-game-plugin' ),
                     'laterButton'          => __( 'Later', 'novel-game-plugin' ),
