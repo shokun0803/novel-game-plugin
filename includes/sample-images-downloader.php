@@ -940,8 +940,8 @@ function noveltool_extract_zip( $zip_file, $destination ) {
         }
     }
     
-    // ストリーミング抽出を試みる（オプションで制御可能）
-    $use_streaming = get_option( 'noveltool_use_streaming_extraction', true );
+    // 互換性重視: 既定では WordPress 標準 unzip_file を優先し、必要時のみストリーミングを有効化する
+    $use_streaming = get_option( 'noveltool_use_streaming_extraction', false );
     
     if ( $use_streaming ) {
         $streaming_result = noveltool_extract_zip_streaming( $zip_file, $destination );
@@ -1164,22 +1164,47 @@ function noveltool_process_background_job( $job_id ) {
     
     $result = null;
     
-    // ジョブタイプに応じて処理
-    switch ( $job['type'] ) {
-        case NOVELTOOL_JOB_TYPE_DOWNLOAD:
-            $result = noveltool_job_download_sample_images( $job );
-            break;
-            
-        case NOVELTOOL_JOB_TYPE_VERIFY:
-            $result = noveltool_job_verify_sample_images( $job );
-            break;
-            
-        case NOVELTOOL_JOB_TYPE_EXTRACT:
-            $result = noveltool_job_extract_sample_images( $job );
-            break;
-            
-        default:
-            $result = new WP_Error( 'invalid_job_type', 'Invalid job type' );
+    try {
+        // ジョブタイプに応じて処理
+        switch ( $job['type'] ) {
+            case NOVELTOOL_JOB_TYPE_DOWNLOAD:
+                $result = noveltool_job_download_sample_images( $job );
+                break;
+                
+            case NOVELTOOL_JOB_TYPE_VERIFY:
+                $result = noveltool_job_verify_sample_images( $job );
+                break;
+                
+            case NOVELTOOL_JOB_TYPE_EXTRACT:
+                $result = noveltool_job_extract_sample_images( $job );
+                break;
+                
+            default:
+                $result = new WP_Error( 'invalid_job_type', 'Invalid job type' );
+        }
+    } catch ( Throwable $throwable ) {
+        $result = new WP_Error(
+            'background_exception',
+            __( 'Exception occurred during background job processing.', 'novel-game-plugin' ),
+            array(
+                'exception_class' => get_class( $throwable ),
+                'exception_file'  => wp_normalize_path( $throwable->getFile() ),
+                'exception_line'  => intval( $throwable->getLine() ),
+                'message'         => wp_strip_all_tags( (string) $throwable->getMessage() ),
+            )
+        );
+
+        error_log(
+            sprintf(
+                'NovelGamePlugin: Background exception job_id=%s type=%s class=%s message=%s file=%s line=%d',
+                sanitize_text_field( $job_id ),
+                isset( $job['type'] ) ? sanitize_text_field( $job['type'] ) : 'unknown',
+                get_class( $throwable ),
+                wp_strip_all_tags( (string) $throwable->getMessage() ),
+                wp_normalize_path( $throwable->getFile() ),
+                intval( $throwable->getLine() )
+            )
+        );
     }
     
     // 結果に応じてジョブを更新
@@ -1191,6 +1216,7 @@ function noveltool_process_background_job( $job_id ) {
                 'error'  => array(
                     'code'    => $result->get_error_code(),
                     'message' => $result->get_error_message(),
+                    'detail'  => $result->get_error_data(),
                 ),
             )
         );
@@ -1260,7 +1286,7 @@ function noveltool_handle_background_job_shutdown( $job_id, $running_key ) {
                 'status' => NOVELTOOL_JOB_STATUS_FAILED,
                 'error'  => array(
                     'code'    => 'background_fatal',
-                    'message' => 'Background job terminated by fatal error.',
+                    'message' => __( 'Background job terminated by fatal error.', 'novel-game-plugin' ),
                     'detail'  => array(
                         'fatal_message' => $fatal_message,
                         'fatal_file'    => $fatal_file,

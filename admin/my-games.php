@@ -802,7 +802,15 @@ function noveltool_handle_download_diagnostic() {
 
     $download_error = get_option( 'noveltool_sample_images_download_error', '' );
     if ( ! empty( $download_error ) ) {
-        $zip->addFromString( 'download-error.txt', $download_error );
+        if ( is_array( $download_error ) || is_object( $download_error ) ) {
+            $serialized_error = wp_json_encode( $download_error, JSON_PRETTY_PRINT );
+            if ( false === $serialized_error || null === $serialized_error ) {
+                $serialized_error = __( 'Download error data could not be serialized.', 'novel-game-plugin' );
+            }
+            $zip->addFromString( 'download-error.json', $serialized_error );
+        } else {
+            $zip->addFromString( 'download-error.txt', sanitize_textarea_field( (string) $download_error ) );
+        }
     }
 
     $zip->close();

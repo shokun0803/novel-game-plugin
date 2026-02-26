@@ -2170,4 +2170,20 @@ msgstr "%d件のアセットファイルのバックグラウンドダウンロ�
 msgid "Warning: %d assets could not be queued."
 msgstr "警告: %d件のアセットをキューに追加できませんでした。"
 
+#: admin/my-games.php:443
+msgid "Extracting"
+msgstr "展開中"
+
+#: includes/sample-images-downloader.php:1189
+msgid "Exception occurred during background job processing."
+msgstr "バックグラウンドジョブ処理中に例外が発生しました。"
+
+#: includes/sample-images-downloader.php:1294
+msgid "Background job terminated by fatal error."
+msgstr "バックグラウンドジョブが致命的エラーで終了しました。"
+
+#: admin/my-games.php:809
+msgid "Download error data could not be serialized."
+msgstr "ダウンロードエラーデータをシリアライズできませんでした。"
+
 
