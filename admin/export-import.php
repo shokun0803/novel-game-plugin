@@ -251,11 +251,20 @@ function noveltool_export_import_admin_scripts( $hook ) {
             'importError'             => __( 'Failed to import game data.', 'novel-game-plugin' ),
             'noFileSelected'          => __( 'Please select a file to import.', 'novel-game-plugin' ),
             'noGameSelected'          => __( 'Please select a game to export.', 'novel-game-plugin' ),
-            'fileTooLarge'            => __( 'File size is too large. Maximum 10MB allowed.', 'novel-game-plugin' ),
             'imageDownloadFailures'   => __( 'Note: %d image(s) failed to download.', 'novel-game-plugin' ),
             'zipFallbackWarning'      => __( 'ZIP creation failed. The file was exported as JSON instead.', 'novel-game-plugin' ),
-            'jsonMaxSizeBytes'        => 10 * 1024 * 1024,
-            'zipMaxSizeBytes'         => 100 * 1024 * 1024,
+            'jsonMaxSizeBytes'        => noveltool_get_import_max_size( 'json' ),
+            'zipMaxSizeBytes'         => noveltool_get_import_max_size( 'zip' ),
+            /* translators: %d: maximum file size in megabytes */
+            'fileTooLargeJson'        => sprintf(
+                __( 'File size is too large. Maximum %dMB allowed for JSON files.', 'novel-game-plugin' ),
+                noveltool_get_import_max_size( 'json' ) / ( 1024 * 1024 )
+            ),
+            /* translators: %d: maximum file size in megabytes */
+            'fileTooLargeZip'         => sprintf(
+                __( 'File size is too large. Maximum %dMB allowed for ZIP files.', 'novel-game-plugin' ),
+                noveltool_get_import_max_size( 'zip' ) / ( 1024 * 1024 )
+            ),
         )
     );
 }

@@ -1249,6 +1249,64 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
 }
 
 /**
+ * インポートファイルの最大サイズを返す
+ *
+ * filter `noveltool_json_import_max_size` / `noveltool_zip_import_max_size` で上書き可能。
+ * デフォルト値は低スペック環境（共有レンタルサーバー等）でも問題ない保守的な値。
+ *
+ * @param string $type 'json' または 'zip'
+ * @return int バイト単位の最大サイズ
+ * @since 1.4.0
+ */
+function noveltool_get_import_max_size( $type = 'json' ) {
+    if ( 'zip' === $type ) {
+        return intval( apply_filters( 'noveltool_zip_import_max_size', 50 * 1024 * 1024 ) ); // 50MB
+    }
+    return intval( apply_filters( 'noveltool_json_import_max_size', 10 * 1024 * 1024 ) ); // 10MB
+}
+
+/**
+ * 外部画像URLの安全性を検証する（SSRF対策）
+ *
+ * 以下をブロックする:
+ * - http/https 以外のスキーム
+ * - ホスト名なし
+ * - localhost / loopback アドレス
+ * - プライベート IP アドレス範囲（RFC1918）
+ * - 予約済み IP アドレス
+ *
+ * @param string $url 検証するURL
+ * @return bool 安全な外部URLであれば true
+ * @since 1.4.0
+ */
+function noveltool_is_safe_external_url( $url ) {
+    $scheme = wp_parse_url( $url, PHP_URL_SCHEME );
+    if ( ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
+        return false;
+    }
+
+    $host = wp_parse_url( $url, PHP_URL_HOST );
+    if ( empty( $host ) ) {
+        return false;
+    }
+
+    // localhost・ loopback 名前を明示的にブロック
+    $blocked_hostnames = array( 'localhost', 'ip6-localhost', 'ip6-loopback' );
+    if ( in_array( strtolower( $host ), $blocked_hostnames, true ) ) {
+        return false;
+    }
+
+    // IPアドレスの場合: プライベート範囲・予約済み範囲をブロック
+    if ( filter_var( $host, FILTER_VALIDATE_IP ) ) {
+        if ( ! filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
  * ゲームで使用されている画像URLを収集する
  *
  * タイトル画像・背景画像・キャラクター画像など全フィールドから
@@ -1388,6 +1446,11 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
 
     // 画像を取得してZIPに追加
     foreach ( $url_to_file as $url => $zip_path ) {
+        // SSRF対策: 外部URLの安全性を検証
+        if ( ! noveltool_is_safe_external_url( $url ) ) {
+            error_log( '[noveltool] ZIP export: 安全でないURLをスキップしました: ' . $url );
+            continue;
+        }
         $response = wp_remote_get( $url, array(
             'timeout'  => 30,
             'sslverify' => apply_filters( 'https_ssl_verify', true ),
@@ -1413,12 +1476,14 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
  * AJAXハンドラー: ゲームデータのエクスポート
  *
  * エラーメッセージは静的文言のみ利用し外部入力を直接連結しない方針
+ * ZIP形式エクスポート時はバイナリを直接ストリーム出力してメモリ使用量を抑制する。
  *
  * @since 1.3.0
  */
 function noveltool_ajax_export_game() {
-    // 権限チェック
-    if ( ! current_user_can( 'edit_posts' ) ) {
+    // 権限チェック（filter で上書き可能、デフォルトは管理者権限）
+    $export_capability = apply_filters( 'noveltool_export_capability', 'manage_options' );
+    if ( ! current_user_can( $export_capability ) ) {
         wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'novel-game-plugin' ) ) );
     }
 
@@ -1442,7 +1507,7 @@ function noveltool_ajax_export_game() {
         wp_send_json_error( array( 'message' => $export_data->get_error_message() ) );
     }
 
-    // ZIP形式でエクスポート
+    // ZIP形式でエクスポート: バイナリを直接ストリーム出力（メモリ安全）
     if ( $export_as_zip ) {
         $game_title = isset( $export_data['game']['title'] ) ? $export_data['game']['title'] : 'game';
         $zip_path   = noveltool_export_game_data_as_zip( $export_data, $game_title );
@@ -1457,18 +1522,22 @@ function noveltool_ajax_export_game() {
             ) );
         }
 
-        // ZIPファイルをbase64エンコードしてJSONレスポンスで返す
-        $zip_contents = file_get_contents( $zip_path );
-        @unlink( $zip_path );
-        if ( false === $zip_contents ) {
-            wp_send_json_error( array( 'message' => __( 'Failed to read ZIP file.', 'novel-game-plugin' ) ) );
+        // 出力バッファをすべてクリアしてバイナリ直接送信
+        while ( ob_get_level() ) {
+            ob_end_clean();
         }
-
-        wp_send_json_success( array(
-            'zip_base64' => base64_encode( $zip_contents ),
-            'filename'   => sanitize_file_name( $game_title . '-export.zip' ),
-            'format'     => 'zip',
-        ) );
+        $filename = sanitize_file_name( $game_title . '-export.zip' );
+        $filesize = @filesize( $zip_path );
+        header( 'Content-Type: application/zip' );
+        header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+        if ( false !== $filesize ) {
+            header( 'Content-Length: ' . $filesize );
+        }
+        header( 'Cache-Control: no-store, no-cache, must-revalidate' );
+        header( 'Pragma: no-cache' );
+        readfile( $zip_path );
+        @unlink( $zip_path );
+        wp_die();
     }
 
     wp_send_json_success( array(
@@ -1486,6 +1555,7 @@ add_action( 'wp_ajax_noveltool_export_game', 'noveltool_ajax_export_game' );
  * JSON内の相対パス（images/ プレフィックス）の画像は WordPress メディアライブラリにアップロードし、
  * 絶対URLに変換してからゲームデータを作成する。
  * パストラバーサル対策として images/ プレフィックス以外のパスはスキップする。
+ * Zip bomb対策として展開前にファイル数・単一サイズ・総サイズを検証する。
  *
  * @param string $zip_path アップロードされたZIPファイルの一時パス
  * @return array|WP_Error インポート結果または WP_Error
@@ -1522,9 +1592,36 @@ function noveltool_import_from_zip( $zip_path ) {
         return new WP_Error( 'invalid_structure', __( 'Missing required "game" or "scenes" keys.', 'novel-game-plugin' ) );
     }
 
+    // --- Zip bomb対策: 展開前にサイズ・ファイル数を検証 ---
+    $zip_max_files       = intval( apply_filters( 'noveltool_zip_import_max_files', 100 ) );
+    $zip_max_single_size = intval( apply_filters( 'noveltool_zip_import_max_single_size', 10 * 1024 * 1024 ) ); // 10MB
+    $zip_max_total_size  = intval( apply_filters( 'noveltool_zip_import_max_total_size', 50 * 1024 * 1024 ) );  // 50MB
+
+    if ( $zip->numFiles > $zip_max_files ) {
+        $zip->close();
+        return new WP_Error( 'zip_too_many_files', __( 'ZIP archive contains too many files.', 'novel-game-plugin' ) );
+    }
+
+    $total_uncompressed = 0;
+    for ( $j = 0; $j < $zip->numFiles; $j++ ) {
+        $stat = $zip->statIndex( $j );
+        if ( false === $stat ) {
+            continue;
+        }
+        if ( $stat['size'] > $zip_max_single_size ) {
+            $zip->close();
+            return new WP_Error( 'zip_file_too_large', __( 'A file in the ZIP archive exceeds the size limit.', 'novel-game-plugin' ) );
+        }
+        $total_uncompressed += $stat['size'];
+        if ( $total_uncompressed > $zip_max_total_size ) {
+            $zip->close();
+            return new WP_Error( 'zip_total_too_large', __( 'Total extracted size of ZIP archive exceeds the limit.', 'novel-game-plugin' ) );
+        }
+    }
+    // --- Zip bomb対策ここまで ---
+
     // ZIP内の画像を収集し一時ディレクトリに解凍してメディアライブラリへアップロード
     $relative_to_url = array(); // 相対パス => メディアライブラリURL
-    $upload_dir      = wp_upload_dir();
     for ( $i = 0; $i < $zip->numFiles; $i++ ) {
         $zip_entry_name = $zip->getNameIndex( $i );
         // パストラバーサル対策: images/ で始まるエントリのみ許可
@@ -1658,14 +1755,13 @@ function noveltool_ajax_import_game() {
         }
     }
     
-    // ファイルサイズチェック（100MB制限: ZIP画像込みを考慮）
-    if ( isset( $_FILES['import_file']['size'] ) && $_FILES['import_file']['size'] > 100 * 1024 * 1024 ) {
-        wp_send_json_error( array( 'message' => __( 'File size exceeds 100MB limit.', 'novel-game-plugin' ) ) );
-    }
-
-    // ZIPファイルかどうかを判定
+    // ファイルサイズチェック（ファイル種別に応じた上限）
     $file_name = isset( $_FILES['import_file']['name'] ) ? $_FILES['import_file']['name'] : '';
     $is_zip    = ( substr( strtolower( $file_name ), -4 ) === '.zip' );
+    $max_size  = noveltool_get_import_max_size( $is_zip ? 'zip' : 'json' );
+    if ( isset( $_FILES['import_file']['size'] ) && $_FILES['import_file']['size'] > $max_size ) {
+        wp_send_json_error( array( 'message' => __( 'File size exceeds the allowed limit.', 'novel-game-plugin' ) ) );
+    }
 
     // ZIPインポート
     if ( $is_zip ) {

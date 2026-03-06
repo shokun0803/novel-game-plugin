@@ -2224,3 +2224,27 @@ msgstr ""
 #: admin/game-settings.php
 msgid "File size exceeds 100MB limit."
 msgstr ""
+
+#: admin/game-settings.php
+msgid "ZIP archive contains too many files."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "A file in the ZIP archive exceeds the size limit."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Total extracted size of ZIP archive exceeds the limit."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "File size exceeds the allowed limit."
+msgstr ""
+
+#: admin/export-import.php
+msgid "File size is too large. Maximum %dMB allowed for JSON files."
+msgstr ""
+
+#: admin/export-import.php
+msgid "File size is too large. Maximum %dMB allowed for ZIP files."
+msgstr ""
