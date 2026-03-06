@@ -1032,7 +1032,7 @@ function noveltool_enqueue_scripts() {
         'novel-game-frontend',
         NOVEL_GAME_PLUGIN_URL . 'js/frontend.js',
         array( 'jquery', 'novel-game-debug-log' ),
-        NOVEL_GAME_PLUGIN_VERSION,
+        filemtime( NOVEL_GAME_PLUGIN_PATH . 'js/frontend.js' ),
         true
     );
 
