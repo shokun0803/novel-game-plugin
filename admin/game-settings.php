@@ -1301,6 +1301,19 @@ function noveltool_is_safe_external_url( $url ) {
         if ( ! filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
             return false;
         }
+        // IPアドレスの場合はDNS解決不要
+        return true;
+    }
+
+    // ホスト名の場合: DNS解決後のIPも検証（DNS Rebinding / 内部DNS対策）
+    // gethostbynamel は IPv4 のみ返す。IPv6は検出できないが WordPress が主に利用する環境では許容範囲
+    $resolved_ips = gethostbynamel( $host );
+    if ( is_array( $resolved_ips ) ) {
+        foreach ( $resolved_ips as $ip ) {
+            if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+                return false;
+            }
+        }
     }
 
     return true;
@@ -1535,8 +1548,14 @@ function noveltool_ajax_export_game() {
         }
         header( 'Cache-Control: no-store, no-cache, must-revalidate' );
         header( 'Pragma: no-cache' );
-        readfile( $zip_path );
+        $bytes_sent = readfile( $zip_path );
         @unlink( $zip_path );
+        if ( false === $bytes_sent ) {
+            error_log( '[noveltool] ZIP export: readfile() failed to read ZIP file: ' . $zip_path );
+            if ( ! headers_sent() ) {
+                http_response_code( 500 );
+            }
+        }
         wp_die();
     }
 
