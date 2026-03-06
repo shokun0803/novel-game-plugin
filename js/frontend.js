@@ -109,6 +109,8 @@
 		
 		// 直前の選択肢シーンの記録用
 		var lastChoiceSceneUrl = '';
+		// 「最初から開始」が選択された場合、初期化時に対象ゲームを確実に初期化する
+		var forceFreshStartPending = false;
 		
 		// フラグデータキャッシュ（パフォーマンス最適化）
 		var flagsCache = {};
@@ -493,9 +495,10 @@
 			
 			if ( master && Array.isArray( master ) ) {
 				console.log( '=== フラグ名とID一覧 ===' );
-				master.forEach( function( flag ) {
-					var currentState = flags[ flag.id ] || 0;
-					console.log( `ID: ${flag.id}, 名前: ${flag.name}, 現在状態: ${currentState}` );
+				master.forEach( function( flag, index ) {
+					var storageKey = getFlagIdByName( flag.name, master );
+					var currentState = flags[ storageKey ] || 0;
+					console.log( `ID: ${flag.id}, INDEX: ${index}, 名前: ${flag.name}, 現在状態: ${currentState}` );
 				} );
 			}
 		};
@@ -903,22 +906,102 @@
 			
 			try {
 				var storageData = getGameStorageData( gameTitle );
+				var removedCount = 0;
 				
 				storageData.forEach( function( item ) {
 					localStorage.removeItem( item.key );
+					removedCount++;
 				} );
-				
-				// フラグキャッシュも無効化
-				if ( flagsCache[ gameTitle ] ) {
-					delete flagsCache[ gameTitle ];
-					delete flagsCacheTimestamp[ gameTitle ];
+
+				// 互換削除: 旧実装やタイトル揺れで生成されたキーを同一ゲームに限定して追加削除する
+				// （他ゲームには影響しない）
+				var titleCandidates = [];
+				var normalizedTitle = gameTitle.trim();
+				if ( normalizedTitle ) {
+					titleCandidates.push( normalizedTitle );
+					var separatorIndex = normalizedTitle.indexOf( ' - ' );
+					if ( separatorIndex > 0 ) {
+						var baseTitle = normalizedTitle.substring( 0, separatorIndex ).trim();
+						if ( baseTitle ) {
+							titleCandidates.push( baseTitle );
+						}
+					}
+				}
+
+				titleCandidates = titleCandidates.filter( function( title, index, arr ) {
+					return title && arr.indexOf( title ) === index;
+				} );
+
+				// 現在の localStorage を走査し、同一タイトル末尾の progress/flags キーを削除
+				// これにより、siteId 生成方式の差異（過去バージョン）を吸収する。
+				for ( var i = localStorage.length - 1; i >= 0; i-- ) {
+					var key = localStorage.key( i );
+					if ( ! key ) {
+						continue;
+					}
+
+					for ( var j = 0; j < titleCandidates.length; j++ ) {
+						var title = titleCandidates[ j ];
+						var encodedTitle = encodeBase64Unicode( title ).replace( /[^a-zA-Z0-9]/g, '' );
+						var expectedSuffix = '_' + encodedTitle;
+
+						var isProgressKey = key.indexOf( 'noveltool_progress_' ) === 0 && key.endsWith( expectedSuffix );
+						var isFlagKey = key.indexOf( 'novel_flags_' ) === 0 && key.endsWith( expectedSuffix );
+						var isLastChoiceKey = key === ( 'noveltool_last_choice_' + title );
+
+						if ( isProgressKey || isFlagKey || isLastChoiceKey ) {
+							localStorage.removeItem( key );
+							removedCount++;
+							break;
+						}
+					}
 				}
 				
-				debugLog( 'ゲームのすべてのストレージデータをクリアしました:', gameTitle );
+				// フラグキャッシュも無効化
+				titleCandidates.forEach( function( title ) {
+					if ( flagsCache[ title ] ) {
+						delete flagsCache[ title ];
+						delete flagsCacheTimestamp[ title ];
+					}
+				} );
+				
+				debugLog( 'ゲームのすべてのストレージデータをクリアしました:', gameTitle, 'removed:', removedCount );
 				return true;
 			} catch ( error ) {
 				debugLog( 'ゲームストレージデータのクリアに失敗しました:', error );
 				return false;
+			}
+		}
+
+		/**
+		 * 現在DOM上のシーン到達フラグを適用する
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.2
+		 */
+		function applyCurrentSceneArrivalFlags( gameTitle ) {
+			if ( ! gameTitle ) {
+				return;
+			}
+
+			try {
+				var sceneArrivalFlagsScript = $( '#novel-scene-arrival-flags' );
+				if ( sceneArrivalFlagsScript.length === 0 ) {
+					return;
+				}
+
+				var flagsDataText = sceneArrivalFlagsScript.text() || sceneArrivalFlagsScript.html();
+				if ( ! flagsDataText ) {
+					return;
+				}
+
+				var arrivalFlags = JSON.parse( flagsDataText );
+				if ( arrivalFlags && Object.keys( arrivalFlags ).length > 0 ) {
+					setSceneFlags( arrivalFlags, gameTitle );
+					debugLog( '現在シーンの到達フラグを再適用しました:', arrivalFlags, 'ゲーム:', gameTitle );
+				}
+			} catch ( error ) {
+				debugLog( 'warn', '現在シーンの到達フラグ再適用に失敗しました:', error );
 			}
 		}
 		
@@ -1582,6 +1665,36 @@
 		}
 
 		/**
+		 * 指定ゲームの全フラグを 0 にリセットする
+		 *
+		 * @param {string} gameTitle ゲームタイトル
+		 * @since 1.4.2
+		 */
+		function resetAllFlagsForGame( gameTitle ) {
+			if ( ! gameTitle ) {
+				return;
+			}
+
+			try {
+				var flagMaster = getGameFlagMaster( gameTitle );
+				if ( ! flagMaster || ! Array.isArray( flagMaster ) || flagMaster.length === 0 ) {
+					debugLog( 'resetAllFlagsForGame: フラグマスタが見つからないためスキップ', gameTitle );
+					return;
+				}
+
+				var clearedFlags = {};
+				for ( var i = 0; i < flagMaster.length; i++ ) {
+					clearedFlags[ i ] = 0;
+				}
+
+				saveFlagsToStorage( clearedFlags, gameTitle );
+				debugLog( 'ゲームフラグを全リセットしました:', gameTitle );
+			} catch ( error ) {
+				debugLog( 'warn', 'ゲームフラグ全リセットに失敗しました:', error );
+			}
+		}
+
+		/**
 		 * フラグ名からIDを取得する
 		 *
 		 * @param {string} flagName フラグ名
@@ -1599,8 +1712,11 @@
 			
 			for ( var i = 0; i < flagMaster.length; i++ ) {
 				if ( flagMaster[ i ].name === flagName ) {
-					debugLog( 'getFlagIdByName: フラグ見つかった', flagName, '-> ID:', flagMaster[ i ].id );
-					return flagMaster[ i ].id;
+					// 保存キーはマスタ配列インデックスを使用する。
+					// 背景: 既存データでは flag.id がすべて 0 にサニタイズされる場合があり、
+					// id ベースだと全フラグが同一キーに衝突して判定が壊れるため。
+					debugLog( 'getFlagIdByName: フラグ見つかった', flagName, '-> INDEX:', i, 'raw_id:', flagMaster[ i ].id );
+					return i;
 				}
 			}
 			
@@ -2538,8 +2654,14 @@
 						} );
 					} else {
 						debugLog( '最初から開始します' );
-						// 保存された進捗をクリア
-						clearGameProgress( currentGameTitle );
+						forceFreshStartPending = true;
+						// 保存されたデータをすべてクリア（進捗・フラグ・最後の選択）
+						var restartGameTitle = currentGameTitle || extractGameTitleFromPage();
+						if ( restartGameTitle ) {
+							clearAllGameStorageData( restartGameTitle );
+							resetAllFlagsForGame( restartGameTitle );
+							applyCurrentSceneArrivalFlags( restartGameTitle );
+						}
 						// 全ての状態とデータを完全にリセット（最初から開始のため）
 						resetGameDataAndState();
 						debugLog( 'ダイアログでの最初から開始選択で全ての状態をリセットしました' );
@@ -2979,12 +3101,7 @@
 				
 				if ( window.currentGameSelectionData && window.currentGameSelectionData.url ) {
 					var gameTitle = window.currentGameSelectionData.title;
-					
-					// 保存された進捗があれば削除（最初から開始のため）
-					if ( gameTitle ) {
-						clearGameProgress( gameTitle );
-						debugLog( '「最初から開始」のため、保存済み進捗を削除しました' );
-					}
+					forceFreshStartPending = true;
 					
 					// 全ての状態とデータを完全にリセット（最初から開始のため）
 					resetGameDataAndState();
@@ -2997,6 +3114,17 @@
 						if ( window.currentGameSelectionData.url ) {
 							loadGameData( window.currentGameSelectionData.url ).then( function() {
 								debugLog( '「最初から開始」用にゲームデータを再読み込みしました' );
+
+								// 読み込み後に確定したゲームタイトルのみを対象に保存データを削除
+								var canonicalGameTitle = extractGameTitleFromPage() || currentGameTitle || gameTitle;
+								if ( canonicalGameTitle ) {
+									clearAllGameStorageData( canonicalGameTitle );
+									resetAllFlagsForGame( canonicalGameTitle );
+									// クリア直後に現在シーンの到達フラグだけ再適用
+									applyCurrentSceneArrivalFlags( canonicalGameTitle );
+									debugLog( '「最初から開始」で対象ゲームの保存データを削除しました:', canonicalGameTitle );
+								}
+
 								// タイトル画面経由での開始のため、進捗チェックをスキップして直接初期化
 								initializeGameContent();
 							} ).catch( function( error ) {
@@ -4298,6 +4426,17 @@
 			debugLog( 'Game container exists:', $gameContainer.length > 0 );
 			debugLog( 'Dialogue data length:', dialogueData.length );
 			debugLog( 'Dialogues length:', dialogues.length );
+
+			if ( forceFreshStartPending ) {
+				var freshStartTitle = currentGameTitle || extractGameTitleFromPage();
+				if ( freshStartTitle ) {
+					clearAllGameStorageData( freshStartTitle );
+					resetAllFlagsForGame( freshStartTitle );
+					applyCurrentSceneArrivalFlags( freshStartTitle );
+					debugLog( 'initializeGameContent: 最初から開始によりデータを再初期化しました', freshStartTitle );
+				}
+				forceFreshStartPending = false;
+			}
 			
 			// ゲームコンテナが存在しない場合は処理を中断
 			if ( $gameContainer.length === 0 ) {
