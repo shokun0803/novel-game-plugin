@@ -257,7 +257,7 @@ function noveltool_get_shadow_detective_game_data() {
             'character_center_name' => '',
             'character_right_name' => __( 'Misaki', 'novel-game-plugin-sample' ),
             'dialogue_texts'  => array(
-                __( 'It was an autumn evening when she came to my office.', 'novel-game-plugin-sample' ),
+                __( 'On an autumn evening, a woman visited my office.', 'novel-game-plugin-sample' ),
                 __( 'Detective, please help me... My husband has been missing for three days.', 'novel-game-plugin-sample' ),
                 __( 'The police say there\'s no criminal activity, but my husband would never do this...', 'novel-game-plugin-sample' ),
                 __( 'The client\'s name is Misaki Kurosaki. Her husband is businessman Makoto Kurosaki.', 'novel-game-plugin-sample' ),
