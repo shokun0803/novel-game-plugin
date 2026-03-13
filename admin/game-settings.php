@@ -1457,7 +1457,10 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
             error_log( '[noveltool] ZIP export: 画像の本文が空です: ' . $url );
             continue;
         }
-        $zip->addFromString( $zip_path, $body );
+        if ( ! $zip->addFromString( $zip_path, $body ) ) {
+            error_log( '[noveltool] ZIP export: ZIPへの画像追加に失敗しました: ' . $url );
+            continue;
+        }
         $succeeded_url_to_file[ $url ] = $zip_path;
     }
 
