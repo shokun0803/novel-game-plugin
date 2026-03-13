@@ -73,8 +73,15 @@
                         // ZIPをそのままダウンロード
                         var contentDisposition = xhr.getResponseHeader('Content-Disposition') || '';
                         var zipFilename = 'export.zip';
-                        var fnMatch = contentDisposition.match(/filename="([^"]+)"/);
-                        if (fnMatch) { zipFilename = fnMatch[1]; }
+                        // RFC5987: filename*=UTF-8''<encoded> を優先し、なければ filename= を使用
+                        var fnStarMatch = contentDisposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+                        if (fnStarMatch) {
+                            try { zipFilename = decodeURIComponent(fnStarMatch[1].trim()); } catch (e) { /* fallback below */ }
+                        }
+                        if (zipFilename === 'export.zip') {
+                            var fnMatch = contentDisposition.match(/filename="([^"]+)"/);
+                            if (fnMatch) { zipFilename = fnMatch[1]; }
+                        }
                         var blobUrl = URL.createObjectURL(xhr.response);
                         var link = document.createElement('a');
                         link.href     = blobUrl;

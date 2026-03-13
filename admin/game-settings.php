@@ -1563,10 +1563,12 @@ function noveltool_ajax_export_game() {
         while ( ob_get_level() ) {
             ob_end_clean();
         }
-        $filename = sanitize_file_name( $game_title . '-export.zip' );
+        // ASCII フォールバック（非ASCII文字は除去）と UTF-8 filename*= の両方を設定して文字化けを防ぐ
+        $filename_ascii   = sanitize_file_name( $game_title . '-export.zip' );
+        $filename_encoded = rawurlencode( $game_title . '-export.zip' );
         $filesize = @filesize( $zip_path );
         header( 'Content-Type: application/zip' );
-        header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+        header( 'Content-Disposition: attachment; filename="' . $filename_ascii . '"; filename*=UTF-8\'\'' . $filename_encoded );
         if ( false !== $filesize ) {
             header( 'Content-Length: ' . $filesize );
         }
