@@ -1433,13 +1433,16 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
         $body = false;
 
         // 同一サイトの uploads ディレクトリ URL かチェック
-        // ホストが自サイトと一致し、かつパスが uploads ディレクトリ配下の場合のみローカルファイル扱いにする
-        // ホスト比較: home_url() ベースのホストと URL のホストが一致することを確認
-        $url_host       = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
-        $site_host      = strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
-        $url_path_part  = wp_parse_url( $url, PHP_URL_PATH );
-        $base_path_part = wp_parse_url( $upload_base_url, PHP_URL_PATH );
-        if ( ! empty( $url_host ) && $url_host === $site_host && ! empty( $url_path_part ) && ! empty( $base_path_part ) && 0 === strpos( $url_path_part, $base_path_part ) ) {
+        // ホストが自サイト（home_url() または wp_upload_dir()['baseurl']）と一致し、
+        // かつパスが uploads ディレクトリ配下の場合のみローカルファイル扱いにする
+        // wp_upload_dir()['baseurl'] が home_url() と別ホストの構成（別サブドメイン等）でも動作するよう両方を許可
+        $url_host         = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+        $site_host        = strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
+        $upload_base_host = strtolower( (string) wp_parse_url( $upload_base_url, PHP_URL_HOST ) );
+        $allowed_hosts    = array_filter( array_unique( array( $site_host, $upload_base_host ) ) );
+        $url_path_part    = wp_parse_url( $url, PHP_URL_PATH );
+        $base_path_part   = wp_parse_url( $upload_base_url, PHP_URL_PATH );
+        if ( ! empty( $url_host ) && in_array( $url_host, $allowed_hosts, true ) && ! empty( $url_path_part ) && ! empty( $base_path_part ) && 0 === strpos( $url_path_part, $base_path_part ) ) {
             // ローカルファイルパスへ変換して直接読み込む（wp_remote_get不使用）
             $relative   = substr( $url_path_part, strlen( $base_path_part ) );
             $local_path = $upload_base_path . DIRECTORY_SEPARATOR . ltrim( $relative, '/\\' );
