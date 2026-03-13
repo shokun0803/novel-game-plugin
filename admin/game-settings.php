@@ -682,6 +682,7 @@ function noveltool_export_game_data( $game_id ) {
             'dialogue_texts'          => get_post_meta( $scene->ID, '_dialogue_texts', true ),
             'dialogue_speakers'       => get_post_meta( $scene->ID, '_dialogue_speakers', true ),
             'dialogue_backgrounds'    => get_post_meta( $scene->ID, '_dialogue_backgrounds', true ),
+            'dialogue_characters'     => get_post_meta( $scene->ID, '_dialogue_characters', true ),
             'dialogue_flag_conditions' => get_post_meta( $scene->ID, '_dialogue_flag_conditions', true ),
             'choices'                 => get_post_meta( $scene->ID, '_choices', true ),
             'is_ending'               => get_post_meta( $scene->ID, '_is_ending', true ),
@@ -1039,6 +1040,7 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
             'dialogue_texts'          => '_dialogue_texts',
             'dialogue_speakers'       => '_dialogue_speakers',
             'dialogue_backgrounds'    => '_dialogue_backgrounds',
+            'dialogue_characters'     => '_dialogue_characters',
             'dialogue_flag_conditions' => '_dialogue_flag_conditions',
             'choices'                 => '_choices',
             'is_ending'               => '_is_ending',
@@ -1078,6 +1080,32 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
             } elseif ( $meta_key === '_is_ending' ) {
                 // Boolean型
                 $meta_value = (bool) $meta_value;
+            } elseif ( $meta_key === '_dialogue_characters' ) {
+                // セリフごとのキャラクター設定: 各位置の画像URLをサニタイズ
+                if ( is_string( $meta_value ) ) {
+                    $decoded = json_decode( $meta_value, true );
+                    if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+                        $meta_value = $decoded;
+                    } else {
+                        $meta_value = array();
+                    }
+                }
+                if ( is_array( $meta_value ) ) {
+                    $sanitized_dc = array();
+                    foreach ( $meta_value as $idx => $char_set ) {
+                        if ( ! is_array( $char_set ) ) {
+                            continue;
+                        }
+                        $sanitized_dc[ $idx ] = array(
+                            'left'   => isset( $char_set['left'] ) ? esc_url_raw( $char_set['left'] ) : '',
+                            'center' => isset( $char_set['center'] ) ? esc_url_raw( $char_set['center'] ) : '',
+                            'right'  => isset( $char_set['right'] ) ? esc_url_raw( $char_set['right'] ) : '',
+                        );
+                    }
+                    $meta_value = wp_json_encode( $sanitized_dc, JSON_UNESCAPED_UNICODE );
+                } else {
+                    $meta_value = '';
+                }
             } elseif ( in_array( $meta_key, array( '_dialogue_texts', '_dialogue_speakers', '_dialogue_backgrounds', '_dialogue_flag_conditions', '_choices' ), true ) ) {
                 // JSON配列/オブジェクト: デコード→サニタイズ→エンコード
                 $meta_value = noveltool_sanitize_json_meta_field( $meta_value, $meta_key );
@@ -1359,6 +1387,25 @@ function noveltool_collect_game_images( $export_data ) {
                 }
             }
         }
+        // dialogue_characters 配列（セリフごとの個別キャラクター画像）
+        if ( ! empty( $scene['dialogue_characters'] ) ) {
+            $dc_data = $scene['dialogue_characters'];
+            if ( is_string( $dc_data ) ) {
+                $dc_data = json_decode( $dc_data, true );
+            }
+            if ( is_array( $dc_data ) ) {
+                foreach ( $dc_data as $char_set ) {
+                    if ( ! is_array( $char_set ) ) {
+                        continue;
+                    }
+                    foreach ( array( 'left', 'center', 'right' ) as $pos ) {
+                        if ( ! empty( $char_set[ $pos ] ) && is_string( $char_set[ $pos ] ) ) {
+                            $urls[] = $char_set[ $pos ];
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // 重複排除 & http/https のみ許可
@@ -1526,6 +1573,27 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
                 }
                 unset( $bg );
                 $scene['dialogue_backgrounds'] = $bg_data;
+            }
+        }
+        // dialogue_characters 配列（セリフごとの個別キャラクター画像）の相対パス置換
+        if ( ! empty( $scene['dialogue_characters'] ) ) {
+            $dc_data = $scene['dialogue_characters'];
+            if ( is_string( $dc_data ) ) {
+                $dc_data = json_decode( $dc_data, true );
+            }
+            if ( is_array( $dc_data ) ) {
+                foreach ( $dc_data as &$char_set ) {
+                    if ( ! is_array( $char_set ) ) {
+                        continue;
+                    }
+                    foreach ( array( 'left', 'center', 'right' ) as $pos ) {
+                        if ( ! empty( $char_set[ $pos ] ) && isset( $succeeded_url_to_file[ $char_set[ $pos ] ] ) ) {
+                            $char_set[ $pos ] = $succeeded_url_to_file[ $char_set[ $pos ] ];
+                        }
+                    }
+                }
+                unset( $char_set );
+                $scene['dialogue_characters'] = $dc_data;
             }
         }
     }
@@ -1779,6 +1847,27 @@ function noveltool_import_from_zip( $zip_path ) {
                     }
                     unset( $bg );
                     $scene['dialogue_backgrounds'] = $bg_data;
+                }
+            }
+            // dialogue_characters 配列（セリフごとの個別キャラクター画像）の相対パス復元
+            if ( ! empty( $scene['dialogue_characters'] ) ) {
+                $dc_data = $scene['dialogue_characters'];
+                if ( is_string( $dc_data ) ) {
+                    $dc_data = json_decode( $dc_data, true );
+                }
+                if ( is_array( $dc_data ) ) {
+                    foreach ( $dc_data as &$char_set ) {
+                        if ( ! is_array( $char_set ) ) {
+                            continue;
+                        }
+                        foreach ( array( 'left', 'center', 'right' ) as $pos ) {
+                            if ( ! empty( $char_set[ $pos ] ) && isset( $relative_to_url[ $char_set[ $pos ] ] ) ) {
+                                $char_set[ $pos ] = $relative_to_url[ $char_set[ $pos ] ];
+                            }
+                        }
+                    }
+                    unset( $char_set );
+                    $scene['dialogue_characters'] = $dc_data;
                 }
             }
         }
