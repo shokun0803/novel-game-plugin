@@ -19,6 +19,15 @@
             } else {
                 exportButton.prop('disabled', true);
             }
+
+            // 分割ZIPダウンロードリストをリセット
+            $('#noveltool-split-zip-download-list').hide().empty();
+            $('#noveltool-export-size-info').hide().empty();
+
+            // ZIPが選択されている場合はサイズ情報を取得
+            if (select.val() && $('#noveltool-export-as-zip').is(':checked')) {
+                fetchExportSizeInfo(select.val());
+            }
         });
 
         // ZIPチェックボックスの変更でボタン文言を切り替え
@@ -27,13 +36,55 @@
             var label = $(this).is(':checked')
                 ? '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exportButtonZip
                 : '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exportButton;
-            if (!exportButton.prop('disabled')) {
-                exportButton.html(label);
+            exportButton.html(label);
+
+            var gameId = $('#noveltool-export-game-select').val();
+            if ($(this).is(':checked') && gameId) {
+                fetchExportSizeInfo(gameId);
             } else {
-                // ボタンが無効でもラベルを更新
-                exportButton.html(label);
+                $('#noveltool-export-size-info').hide().empty();
             }
         });
+
+        /**
+         * エクスポートサイズ情報を取得してサイズインジケーターを更新する
+         *
+         * @param {string} gameId ゲームID
+         */
+        function fetchExportSizeInfo(gameId) {
+            var infoDiv = $('#noveltool-export-size-info');
+            infoDiv.show().html('<span class="spinner is-active" style="float:none;"></span> ' + noveltoolExportImport.checkingExportSize);
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'noveltool_get_export_size_info',
+                    game_id: gameId,
+                    nonce: noveltoolExportImport.exportNonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var d = response.data;
+                        var msg;
+                        if (d.will_split) {
+                            msg = noveltoolExportImport.splitZipInfo
+                                .replace('%1$d', d.estimated_parts)
+                                .replace('%2$d', d.part_size_mb);
+                            infoDiv.html('<span class="dashicons dashicons-info" aria-hidden="true"></span> <strong>' + msg + '</strong>');
+                        } else {
+                            msg = noveltoolExportImport.singleZipInfo;
+                            infoDiv.html('<span class="dashicons dashicons-yes" aria-hidden="true"></span> ' + msg);
+                        }
+                    } else {
+                        infoDiv.hide().empty();
+                    }
+                },
+                error: function() {
+                    infoDiv.hide().empty();
+                }
+            });
+        }
 
         // エクスポートボタンのクリック処理
         $('.noveltool-export-button').on('click', function() {
@@ -61,6 +112,9 @@
                 : '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exporting;
             button.prop('disabled', true).html(exportingLabel);
 
+            // 分割ZIPダウンロードリストをリセット
+            $('#noveltool-split-zip-download-list').hide().empty();
+
             if (exportAsZip) {
                 // ZIP形式: XHRを使ってblobとして直接受信（メモリ安全、base64不使用）
                 var xhr = new XMLHttpRequest();
@@ -70,10 +124,9 @@
                 xhr.onload = function() {
                     var contentType = xhr.getResponseHeader('Content-Type') || '';
                     if (xhr.status === 200 && contentType.indexOf('application/zip') !== -1) {
-                        // ZIPをそのままダウンロード
+                        // ZIPをそのままダウンロード（単一ZIP）
                         var contentDisposition = xhr.getResponseHeader('Content-Disposition') || '';
                         var zipFilename = 'export.zip';
-                        // RFC5987: filename*=UTF-8''<encoded> を優先し、なければ filename= を使用
                         var fnStarMatch = contentDisposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
                         if (fnStarMatch) {
                             try { zipFilename = decodeURIComponent(fnStarMatch[1].trim()); } catch (e) { /* fallback below */ }
@@ -91,37 +144,50 @@
                         document.body.removeChild(link);
                         URL.revokeObjectURL(blobUrl);
                         showNotice('success', noveltoolExportImport.exportSuccess);
+                        var lbl = '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exportButtonZip;
+                        button.prop('disabled', false).html(lbl);
                     } else {
-                        // JSON フォールバック: blob → text → parse
+                        // JSONレスポンス（分割ZIP or フォールバック）を解析
                         var reader = new FileReader();
                         reader.onload = function() {
                             try {
                                 var data = JSON.parse(reader.result);
-                                if (data.success && data.data && data.data.data) {
-                                    var dataStr  = JSON.stringify(data.data.data, null, 2);
-                                    var dataBlob = new Blob([dataStr], {type: 'application/json'});
-                                    var url  = URL.createObjectURL(dataBlob);
-                                    var link = document.createElement('a');
-                                    link.href     = url;
-                                    link.download = data.data.filename;
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                    URL.revokeObjectURL(url);
-                                    showNotice('error', noveltoolExportImport.zipFallbackWarning);
+                                if (data.success && data.data) {
+                                    var d = data.data;
+                                    if (d.format === 'split_zip' && d.parts && d.parts.length > 0) {
+                                        // 分割ZIPダウンロードリストを表示
+                                        showSplitZipDownloadList(d.export_id, d.total_parts, d.parts);
+                                        showNotice('success', noveltoolExportImport.exportSuccess);
+                                    } else if (d.format === 'json' && d.data) {
+                                        // JSONフォールバック
+                                        var dataStr  = JSON.stringify(d.data, null, 2);
+                                        var dataBlob = new Blob([dataStr], {type: 'application/json'});
+                                        var url  = URL.createObjectURL(dataBlob);
+                                        var link2 = document.createElement('a');
+                                        link2.href     = url;
+                                        link2.download = d.filename;
+                                        document.body.appendChild(link2);
+                                        link2.click();
+                                        document.body.removeChild(link2);
+                                        URL.revokeObjectURL(url);
+                                        showNotice('error', noveltoolExportImport.zipFallbackWarning);
+                                    } else {
+                                        var msg = (d.message) || noveltoolExportImport.exportError;
+                                        showNotice('error', msg);
+                                    }
                                 } else {
-                                    var msg = (data.data && data.data.message) || noveltoolExportImport.exportError;
-                                    showNotice('error', msg);
+                                    var errMsg = (data.data && data.data.message) || noveltoolExportImport.exportError;
+                                    showNotice('error', errMsg);
                                 }
                             } catch (e) {
                                 showNotice('error', noveltoolExportImport.exportError);
                             }
+                            var lbl2 = '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exportButtonZip;
+                            button.prop('disabled', false).html(lbl2);
                         };
                         reader.readAsText(xhr.response);
+                        return; // ボタン復元は reader.onload 内で実施
                     }
-                    // ボタンを元に戻す
-                    var lbl = '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exportButtonZip;
-                    button.prop('disabled', false).html(lbl);
                 };
 
                 xhr.onerror = function() {
@@ -178,16 +244,209 @@
             });
         });
 
-        // ファイル選択時の処理
+        /**
+         * 分割ZIPダウンロードリストを表示する
+         *
+         * @param {string} exportId  エクスポートID
+         * @param {number} totalParts 総パート数
+         * @param {Array}  parts      パート情報の配列
+         */
+        function showSplitZipDownloadList(exportId, totalParts, parts) {
+            var listDiv = $('#noveltool-split-zip-download-list');
+            listDiv.empty();
+
+            var title = $('<p><strong>' + noveltoolExportImport.splitZipDownloadAll + ' (' + totalParts + ')</strong></p>');
+            listDiv.append(title);
+
+            var ul = $('<ul class="noveltool-split-zip-parts"></ul>');
+            $.each(parts, function(i, part) {
+                var sizeLabel = part.size ? ' (' + Math.round(part.size / 1024) + 'KB)' : '';
+                var label = noveltoolExportImport.splitZipPartLabel
+                    .replace('%1$d', part.part)
+                    .replace('%2$d', totalParts);
+                var btn = $('<button type="button" class="button noveltool-split-zip-part-btn"></button>')
+                    .text(label + sizeLabel)
+                    .attr('data-export-id', exportId)
+                    .attr('data-part', part.part)
+                    .attr('data-filename', part.filename);
+                var li = $('<li></li>').append(btn);
+                ul.append(li);
+            });
+            listDiv.append(ul);
+
+            // 一括ダウンロードボタン
+            var dlAllBtn = $('<button type="button" class="button button-primary noveltool-split-zip-download-all"></button>')
+                .html('<span class="dashicons dashicons-download" aria-hidden="true"></span> ' + noveltoolExportImport.splitZipDownloadAll);
+            listDiv.append($('<p></p>').append(dlAllBtn));
+
+            listDiv.show();
+
+            // 個別ダウンロードボタン
+            listDiv.on('click', '.noveltool-split-zip-part-btn', function() {
+                downloadSplitZipPart($(this));
+            });
+
+            // 一括ダウンロードボタン: 順番にダウンロード
+            dlAllBtn.on('click', function() {
+                var allBtns = listDiv.find('.noveltool-split-zip-part-btn');
+                downloadPartsSequentially(allBtns, 0);
+            });
+        }
+
+        /**
+         * 分割ZIPの1パートをダウンロードする
+         *
+         * @param {jQuery} btn ダウンロードボタン要素
+         */
+        function downloadSplitZipPart(btn) {
+            var exportId = btn.attr('data-export-id');
+            var part     = btn.attr('data-part');
+            var filename = btn.attr('data-filename');
+            var origHtml = btn.html();
+
+            btn.prop('disabled', true).text(noveltoolExportImport.splitZipDownloading);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', ajaxurl);
+            xhr.responseType = 'blob';
+
+            xhr.onload = function() {
+                var contentType = xhr.getResponseHeader('Content-Type') || '';
+                if (xhr.status === 200 && contentType.indexOf('application/zip') !== -1) {
+                    var blobUrl = URL.createObjectURL(xhr.response);
+                    var link = document.createElement('a');
+                    link.href     = blobUrl;
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(blobUrl);
+                    btn.prop('disabled', true).addClass('noveltool-part-done').html('<span class="dashicons dashicons-yes" aria-hidden="true"></span> ' + btn.text());
+                } else {
+                    var errMsg = noveltoolExportImport.splitZipDownloadError.replace('%d', part);
+                    btn.prop('disabled', false).html(origHtml);
+                    showNotice('error', errMsg);
+                }
+            };
+
+            xhr.onerror = function() {
+                btn.prop('disabled', false).html(origHtml);
+                showNotice('error', noveltoolExportImport.splitZipDownloadError.replace('%d', part));
+            };
+
+            var form = new FormData();
+            form.append('action', 'noveltool_download_split_zip_part');
+            form.append('export_id', exportId);
+            form.append('part', part);
+            form.append('nonce', noveltoolExportImport.exportNonce);
+            xhr.send(form);
+        }
+
+        /**
+         * 複数の分割ZIPパートを順番にダウンロードする
+         *
+         * @param {jQuery} buttons ダウンロードボタンのjQueryオブジェクト
+         * @param {number} index   現在のインデックス
+         */
+        function downloadPartsSequentially(buttons, index) {
+            if (index >= buttons.length) {
+                showNotice('success', noveltoolExportImport.splitZipAllDone);
+                return;
+            }
+            var btn = $(buttons[index]);
+            if (btn.hasClass('noveltool-part-done')) {
+                downloadPartsSequentially(buttons, index + 1);
+                return;
+            }
+            var exportId = btn.attr('data-export-id');
+            var part     = btn.attr('data-part');
+            var filename = btn.attr('data-filename');
+
+            btn.prop('disabled', true).text(noveltoolExportImport.splitZipDownloading);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', ajaxurl);
+            xhr.responseType = 'blob';
+
+            xhr.onload = function() {
+                var contentType = xhr.getResponseHeader('Content-Type') || '';
+                if (xhr.status === 200 && contentType.indexOf('application/zip') !== -1) {
+                    var blobUrl = URL.createObjectURL(xhr.response);
+                    var link = document.createElement('a');
+                    link.href     = blobUrl;
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(blobUrl);
+                    btn.prop('disabled', true).addClass('noveltool-part-done').html('<span class="dashicons dashicons-yes" aria-hidden="true"></span> ' + btn.text());
+                    // 次のパートを少し待ってからダウンロード（ブラウザのダウンロード制限対策）
+                    setTimeout(function() {
+                        downloadPartsSequentially(buttons, index + 1);
+                    }, 1000);
+                } else {
+                    btn.prop('disabled', false);
+                    showNotice('error', noveltoolExportImport.splitZipDownloadError.replace('%d', part));
+                }
+            };
+
+            xhr.onerror = function() {
+                btn.prop('disabled', false);
+                showNotice('error', noveltoolExportImport.splitZipDownloadError.replace('%d', part));
+            };
+
+            var form = new FormData();
+            form.append('action', 'noveltool_download_split_zip_part');
+            form.append('export_id', exportId);
+            form.append('part', part);
+            form.append('nonce', noveltoolExportImport.exportNonce);
+            xhr.send(form);
+        }
+
+        // ファイル選択時の処理（複数ファイル対応）
         $('#noveltool-import-file').on('change', function() {
             var fileInput = $(this);
             var importButton = $('.noveltool-import-button');
+            var files = fileInput[0].files;
 
-            if (fileInput[0].files.length > 0) {
-                importButton.prop('disabled', false);
-            } else {
+            if (files.length === 0) {
                 importButton.prop('disabled', true);
+                return;
             }
+
+            // 複数ファイル選択時の検証
+            if (files.length > 1) {
+                var allZips = true;
+                for (var i = 0; i < files.length; i++) {
+                    if (!files[i].name.toLowerCase().endsWith('.zip')) {
+                        allZips = false;
+                        break;
+                    }
+                }
+                if (!allZips) {
+                    showNotice('error', noveltoolExportImport.splitZipOnlyZips);
+                    fileInput.val('');
+                    importButton.prop('disabled', true);
+                    return;
+                }
+                // 複数ZIP選択時はすべてZIPファイルであることが確認済み
+            }
+
+            // サイズチェック
+            var maxSize = noveltoolExportImport.zipMaxSizeBytes;
+            for (var j = 0; j < files.length; j++) {
+                var isZip = files[j].name.toLowerCase().endsWith('.zip');
+                var limit = isZip ? maxSize : noveltoolExportImport.jsonMaxSizeBytes;
+                if (files[j].size > limit) {
+                    var msg = isZip ? noveltoolExportImport.fileTooLargeZip : noveltoolExportImport.fileTooLargeJson;
+                    showNotice('error', msg);
+                    fileInput.val('');
+                    importButton.prop('disabled', true);
+                    return;
+                }
+            }
+
+            importButton.prop('disabled', false);
         });
 
         // インポートボタンのクリック処理
@@ -202,23 +461,21 @@
                 return;
             }
 
-            var file = fileInput.files[0];
-
-            // ZIPの場合はサイズ上限を切り替え
-            var isZipFile = file.name.toLowerCase().endsWith('.zip');
-            var maxSize   = isZipFile ? noveltoolExportImport.zipMaxSizeBytes : noveltoolExportImport.jsonMaxSizeBytes;
-            if (file.size > maxSize) {
-                var tooLargeMsg = isZipFile ? noveltoolExportImport.fileTooLargeZip : noveltoolExportImport.fileTooLargeJson;
-                showNotice('error', tooLargeMsg);
-                return;
-            }
-
-            // フォームデータの作成
+            var files = fileInput.files;
             var formData = new FormData();
             formData.append('action', 'noveltool_import_game');
-            formData.append('import_file', file);
             formData.append('download_images', downloadImages ? 'true' : 'false');
             formData.append('nonce', noveltoolExportImport.importNonce);
+
+            if (files.length > 1) {
+                // 複数ファイル: 分割ZIPインポート
+                for (var k = 0; k < files.length; k++) {
+                    formData.append('import_files[]', files[k]);
+                }
+            } else {
+                // 単一ファイル: 既存の import_file キーを使用（後方互換性）
+                formData.append('import_file', files[0]);
+            }
 
             // ボタンを無効化し、進捗表示
             button.prop('disabled', true);

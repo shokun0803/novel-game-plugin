@@ -177,3 +177,62 @@
         max-width: 100%;
     }
 }
+
+/* エクスポートサイズ情報 */
+.noveltool-export-size-info {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f0f6fc;
+    border-left: 4px solid #0073aa;
+    border-radius: 0 3px 3px 0;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+.noveltool-export-size-info .dashicons {
+    vertical-align: middle;
+    margin-right: 4px;
+    color: #0073aa;
+}
+
+.noveltool-export-size-info .dashicons-yes {
+    color: #46b450;
+}
+
+/* 分割ZIPダウンロードリスト */
+.noveltool-split-zip-download-list {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.noveltool-split-zip-download-list p {
+    margin: 0 0 10px;
+}
+
+.noveltool-split-zip-parts {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+}
+
+.noveltool-split-zip-parts li {
+    margin-bottom: 6px;
+}
+
+.noveltool-split-zip-parts .noveltool-split-zip-part-btn {
+    min-width: 200px;
+    text-align: left;
+}
+
+.noveltool-split-zip-parts .noveltool-part-done {
+    color: #46b450;
+    border-color: #46b450;
+}
+
+.noveltool-split-zip-parts .noveltool-part-done .dashicons {
+    color: #46b450;
+    vertical-align: middle;
+}
