@@ -1433,10 +1433,13 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
         $body = false;
 
         // 同一サイトの uploads ディレクトリ URL かチェック
-        // URL のパス部分だけで比較することでスキームやホストの違い（http/https、localhost等）を吸収
+        // ホストが自サイトと一致し、かつパスが uploads ディレクトリ配下の場合のみローカルファイル扱いにする
+        // ホスト比較: home_url() ベースのホストと URL のホストが一致することを確認
+        $url_host       = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+        $site_host      = strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
         $url_path_part  = wp_parse_url( $url, PHP_URL_PATH );
         $base_path_part = wp_parse_url( $upload_base_url, PHP_URL_PATH );
-        if ( ! empty( $url_path_part ) && ! empty( $base_path_part ) && 0 === strpos( $url_path_part, $base_path_part ) ) {
+        if ( ! empty( $url_host ) && $url_host === $site_host && ! empty( $url_path_part ) && ! empty( $base_path_part ) && 0 === strpos( $url_path_part, $base_path_part ) ) {
             // ローカルファイルパスへ変換して直接読み込む（wp_remote_get不使用）
             $relative   = substr( $url_path_part, strlen( $base_path_part ) );
             $local_path = $upload_base_path . DIRECTORY_SEPARATOR . ltrim( $relative, '/\\' );
