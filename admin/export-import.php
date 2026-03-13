@@ -22,6 +22,10 @@ function noveltool_export_import_page() {
         wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
+    // エクスポート実行権限の判定（AJAX側と同じ filter を使用）
+    $export_capability = apply_filters( 'noveltool_export_capability', 'manage_options' );
+    $can_export        = current_user_can( $export_capability );
+
     // すべてのゲームを取得
     $games = noveltool_get_all_games();
     ?>
@@ -29,6 +33,7 @@ function noveltool_export_import_page() {
         <h1><?php esc_html_e( 'Export/Import', 'novel-game-plugin' ); ?></h1>
 
         <div class="noveltool-export-import-container">
+            <?php if ( $can_export ) : ?>
             <!-- エクスポートセクション -->
             <div class="noveltool-section noveltool-export-section">
                 <h2><?php esc_html_e( 'Export Game Data', 'novel-game-plugin' ); ?></h2>
@@ -47,6 +52,17 @@ function noveltool_export_import_page() {
                                 <option value="<?php echo esc_attr( $game['id'] ); ?>"><?php echo esc_html( $game['title'] ); ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <?php if ( class_exists( 'ZipArchive' ) ) : ?>
+                        <p>
+                            <label>
+                                <input type="checkbox"
+                                       id="noveltool-export-as-zip"
+                                       class="noveltool-export-as-zip" />
+                                <?php esc_html_e( 'Include images as ZIP archive (file size may be larger)', 'novel-game-plugin' ); ?>
+                            </label>
+                            <span class="description"><?php esc_html_e( 'Check to download all images used in the game and include them in a ZIP file.', 'novel-game-plugin' ); ?></span>
+                        </p>
+                        <?php endif; ?>
                         <p>
                             <button type="button" 
                                     class="button button-primary noveltool-export-button"
@@ -59,6 +75,7 @@ function noveltool_export_import_page() {
                     </div>
                 <?php endif; ?>
             </div>
+            <?php endif; ?>
 
             <!-- インポートセクション -->
             <div class="noveltool-section noveltool-import-section">
@@ -67,12 +84,12 @@ function noveltool_export_import_page() {
 
                 <div class="noveltool-import-form">
                     <p>
-                        <label for="noveltool-import-file"><?php esc_html_e( 'Select JSON file', 'novel-game-plugin' ); ?></label>
+                        <label for="noveltool-import-file"><?php esc_html_e( 'Select JSON or ZIP file', 'novel-game-plugin' ); ?></label>
                         <input type="file" 
                                id="noveltool-import-file" 
-                               accept=".json,application/json" 
+                               accept=".json,.zip,application/json,application/zip,application/x-zip-compressed" 
                                class="noveltool-import-file"
-                               aria-label="<?php esc_attr_e( 'Select JSON file to import', 'novel-game-plugin' ); ?>" />
+                               aria-label="<?php esc_attr_e( 'Select JSON or ZIP file to import', 'novel-game-plugin' ); ?>" />
                     </p>
                     <p>
                         <label>
@@ -231,15 +248,29 @@ function noveltool_export_import_admin_scripts( $hook ) {
             'myGamesUrl'              => admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ),
             'exportImportUrl'         => admin_url( 'edit.php?post_type=novel_game&page=novel-game-export-import' ),
             'exportButton'            => __( 'Export', 'novel-game-plugin' ),
+            'exportButtonZip'         => __( 'Export as ZIP', 'novel-game-plugin' ),
             'exporting'               => __( 'Exporting...', 'novel-game-plugin' ),
+            'collectingImages'        => __( 'Collecting images...', 'novel-game-plugin' ),
             'exportSuccess'           => __( 'Game data exported successfully.', 'novel-game-plugin' ),
             'exportError'             => __( 'Failed to export game data.', 'novel-game-plugin' ),
             'importSuccess'           => __( 'Game data imported successfully.', 'novel-game-plugin' ),
             'importError'             => __( 'Failed to import game data.', 'novel-game-plugin' ),
             'noFileSelected'          => __( 'Please select a file to import.', 'novel-game-plugin' ),
             'noGameSelected'          => __( 'Please select a game to export.', 'novel-game-plugin' ),
-            'fileTooLarge'            => __( 'File size is too large. Maximum 10MB allowed.', 'novel-game-plugin' ),
             'imageDownloadFailures'   => __( 'Note: %d image(s) failed to download.', 'novel-game-plugin' ),
+            'zipFallbackWarning'      => __( 'ZIP creation failed. The file was exported as JSON instead.', 'novel-game-plugin' ),
+            'jsonMaxSizeBytes'        => noveltool_get_import_max_size( 'json' ),
+            'zipMaxSizeBytes'         => noveltool_get_import_max_size( 'zip' ),
+            /* translators: %d: maximum file size in megabytes */
+            'fileTooLargeJson'        => sprintf(
+                __( 'File size is too large. Maximum %dMB allowed for JSON files.', 'novel-game-plugin' ),
+                noveltool_get_import_max_size( 'json' ) / ( 1024 * 1024 )
+            ),
+            /* translators: %d: maximum file size in megabytes */
+            'fileTooLargeZip'         => sprintf(
+                __( 'File size is too large. Maximum %dMB allowed for ZIP files.', 'novel-game-plugin' ),
+                noveltool_get_import_max_size( 'zip' ) / ( 1024 * 1024 )
+            ),
         )
     );
 }
