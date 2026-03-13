@@ -2248,3 +2248,7 @@ msgstr ""
 #: admin/export-import.php
 msgid "File size is too large. Maximum %dMB allowed for ZIP files."
 msgstr ""
+
+#: admin/game-settings.php
+msgid "Failed to write game-data.json to ZIP."
+msgstr ""

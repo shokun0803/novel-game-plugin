@@ -1496,7 +1496,13 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
     unset( $scene );
 
     // JSON追加（ダウンロード成功分のみ相対パス置換済み）
-    $zip->addFromString( 'game-data.json', wp_json_encode( $zip_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ) );
+    $json_content = wp_json_encode( $zip_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
+    if ( ! $zip->addFromString( 'game-data.json', $json_content ) ) {
+        error_log( '[noveltool] ZIP export: game-data.json のZIPへの追加に失敗しました。' );
+        $zip->close();
+        @unlink( $tmp_zip );
+        return new WP_Error( 'zip_json_write_failed', __( 'Failed to write game-data.json to ZIP.', 'novel-game-plugin' ) );
+    }
 
     $zip->close();
 
