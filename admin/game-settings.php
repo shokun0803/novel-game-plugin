@@ -2772,7 +2772,7 @@ function noveltool_ajax_import_game() {
             'renamed'          => isset( $result['renamed'] ) ? $result['renamed'] : false,
         ) );
     }
-    
+
     if ( ! isset( $_FILES['import_file'] ) ) {
         wp_send_json_error( array( 'message' => __( 'No file selected.', 'novel-game-plugin' ) ) );
     }
