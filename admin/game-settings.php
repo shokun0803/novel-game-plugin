@@ -1426,37 +1426,67 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
 
     // 画像を取得してZIPに追加し、成功したURLのみ相対パスマッピングに記録
     $succeeded_url_to_file = array(); // ダウンロード成功かつZIP追加に成功したURL => 相対パスのマッピング
+    $upload_dir_info  = wp_upload_dir();
+    $upload_base_url  = trailingslashit( $upload_dir_info['baseurl'] );
+    $upload_base_path = $upload_dir_info['basedir'];
     foreach ( $url_to_file as $url => $zip_path ) {
-        // SSRF対策: 外部URLの安全性を検証
-        if ( ! noveltool_is_safe_external_url( $url ) ) {
-            error_log( '[noveltool] ZIP export: 安全でないURLをスキップしました: ' . $url );
-            continue;
-        }
-        // リダイレクト無効化: リダイレクト先が内部IPに向く攻撃（SSRF via redirect）を防ぐ
-        $response = wp_remote_get( $url, array(
-            'timeout'     => 30,
-            'redirection' => 0,
-            'sslverify'   => apply_filters( 'https_ssl_verify', true ),
-        ) );
-        if ( is_wp_error( $response ) ) {
-            error_log( '[noveltool] ZIP export: 画像のダウンロードに失敗しました: ' . $url );
-            continue;
-        }
-        $response_code = wp_remote_retrieve_response_code( $response );
-        if ( 200 !== $response_code ) {
-            if ( $response_code >= 300 && $response_code < 400 ) {
-                // リダイレクト無効化のため 30x はセキュリティ上の理由で拒否
-                error_log( '[noveltool] ZIP export: リダイレクトを検出しセキュリティ上の理由でスキップしました (HTTP ' . $response_code . '): ' . $url );
-            } else {
-                error_log( '[noveltool] ZIP export: 画像のダウンロードに失敗しました (HTTP ' . $response_code . '): ' . $url );
+        $body = false;
+
+        // 同一サイトの uploads ディレクトリ URL かチェック
+        // URL のパス部分だけで比較することでスキームやホストの違い（http/https、localhost等）を吸収
+        $url_path_part  = wp_parse_url( $url, PHP_URL_PATH );
+        $base_path_part = wp_parse_url( $upload_base_url, PHP_URL_PATH );
+        if ( ! empty( $url_path_part ) && ! empty( $base_path_part ) && 0 === strpos( $url_path_part, $base_path_part ) ) {
+            // ローカルファイルパスへ変換して直接読み込む（wp_remote_get不使用）
+            $relative   = substr( $url_path_part, strlen( $base_path_part ) );
+            $local_path = $upload_base_path . DIRECTORY_SEPARATOR . ltrim( $relative, '/\\' );
+            // パストラバーサル対策: realpath で正規化して uploads ディレクトリ内であることを確認
+            $real_local = realpath( $local_path );
+            $real_base  = realpath( $upload_base_path );
+            if ( false === $real_local || false === $real_base || 0 !== strpos( $real_local, $real_base . DIRECTORY_SEPARATOR ) ) {
+                error_log( '[noveltool] ZIP export: パストラバーサルを検出しスキップしました: ' . $url );
+                continue;
             }
-            continue;
+            $file_body = @file_get_contents( $real_local ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+            if ( false === $file_body ) {
+                error_log( '[noveltool] ZIP export: ローカルファイルの読み込みに失敗しました: ' . $local_path );
+                continue;
+            }
+            $body = $file_body;
+        } else {
+            // 外部URL: SSRF対策を適用してから wp_remote_get() でダウンロード
+            if ( ! noveltool_is_safe_external_url( $url ) ) {
+                error_log( '[noveltool] ZIP export: 安全でないURLをスキップしました: ' . $url );
+                continue;
+            }
+            // リダイレクト無効化: リダイレクト先が内部IPに向く攻撃（SSRF via redirect）を防ぐ
+            $response = wp_remote_get( $url, array(
+                'timeout'     => 30,
+                'redirection' => 0,
+                'sslverify'   => apply_filters( 'https_ssl_verify', true ),
+            ) );
+            if ( is_wp_error( $response ) ) {
+                error_log( '[noveltool] ZIP export: 画像のダウンロードに失敗しました: ' . $url );
+                continue;
+            }
+            $response_code = wp_remote_retrieve_response_code( $response );
+            if ( 200 !== $response_code ) {
+                if ( $response_code >= 300 && $response_code < 400 ) {
+                    // リダイレクト無効化のため 30x はセキュリティ上の理由で拒否
+                    error_log( '[noveltool] ZIP export: リダイレクトを検出しセキュリティ上の理由でスキップしました (HTTP ' . $response_code . '): ' . $url );
+                } else {
+                    error_log( '[noveltool] ZIP export: 画像のダウンロードに失敗しました (HTTP ' . $response_code . '): ' . $url );
+                }
+                continue;
+            }
+            $resp_body = wp_remote_retrieve_body( $response );
+            if ( empty( $resp_body ) ) {
+                error_log( '[noveltool] ZIP export: 画像の本文が空です: ' . $url );
+                continue;
+            }
+            $body = $resp_body;
         }
-        $body = wp_remote_retrieve_body( $response );
-        if ( empty( $body ) ) {
-            error_log( '[noveltool] ZIP export: 画像の本文が空です: ' . $url );
-            continue;
-        }
+
         if ( ! $zip->addFromString( $zip_path, $body ) ) {
             error_log( '[noveltool] ZIP export: ZIPへの画像追加に失敗しました: ' . $url );
             continue;
