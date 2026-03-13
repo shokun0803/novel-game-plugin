@@ -2252,3 +2252,111 @@ msgstr ""
 #: admin/game-settings.php
 msgid "Failed to write game-data.json to ZIP."
 msgstr ""
+
+#: admin/export-import.php
+msgid "Select JSON or ZIP file(s)"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Select JSON or ZIP file(s) to import"
+msgstr ""
+
+#: admin/export-import.php
+msgid "For split ZIP export, select all part files at once."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "This game will be exported as %1$d ZIP files (up to %2$dMB each)."
+msgstr ""
+
+#: admin/export-import.php
+msgid "This game will be exported as a single ZIP file."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Download Part %1$d of %2$d"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Download All Parts"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Downloading..."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Failed to download part %d. Please try again."
+msgstr ""
+
+#: admin/export-import.php
+msgid "All parts downloaded successfully."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Cannot mix split ZIP parts with other file types."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Only ZIP files are allowed for split ZIP import."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Checking export size..."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Failed to write manifest.json to ZIP."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "manifest.json not found. This is not a split ZIP file."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Invalid manifest.json."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "manifest.json is missing required fields."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Duplicate part %d detected."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "No valid split ZIP parts found."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Files are from different exports. Please upload only parts from the same export."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Inconsistent total part count in manifests."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Missing parts: %s. Please upload all parts."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "game-data.json not found in part 1."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Total extracted size of split ZIP archives exceeds the limit."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Download link has expired. Please export again."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "ZIP file not found. Please export again."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Only ZIP files are allowed for split ZIP import."
+msgstr ""

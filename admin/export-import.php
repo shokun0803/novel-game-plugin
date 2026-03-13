@@ -62,6 +62,7 @@ function noveltool_export_import_page() {
                             </label>
                             <span class="description"><?php esc_html_e( 'Check to download all images used in the game and include them in a ZIP file.', 'novel-game-plugin' ); ?></span>
                         </p>
+                        <div id="noveltool-export-size-info" class="noveltool-export-size-info" style="display:none;"></div>
                         <?php endif; ?>
                         <p>
                             <button type="button" 
@@ -72,6 +73,7 @@ function noveltool_export_import_page() {
                                 <?php esc_html_e( 'Export', 'novel-game-plugin' ); ?>
                             </button>
                         </p>
+                        <div id="noveltool-split-zip-download-list" class="noveltool-split-zip-download-list" style="display:none;"></div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -84,12 +86,15 @@ function noveltool_export_import_page() {
 
                 <div class="noveltool-import-form">
                     <p>
-                        <label for="noveltool-import-file"><?php esc_html_e( 'Select JSON or ZIP file', 'novel-game-plugin' ); ?></label>
+                        <label for="noveltool-import-file"><?php esc_html_e( 'Select JSON or ZIP file(s)', 'novel-game-plugin' ); ?></label>
                         <input type="file" 
                                id="noveltool-import-file" 
-                               accept=".json,.zip,application/json,application/zip,application/x-zip-compressed" 
+                               name="import_files[]"
+                               accept=".json,.zip,application/json,application/zip,application/x-zip-compressed"
+                               multiple
                                class="noveltool-import-file"
-                               aria-label="<?php esc_attr_e( 'Select JSON or ZIP file to import', 'novel-game-plugin' ); ?>" />
+                               aria-label="<?php esc_attr_e( 'Select JSON or ZIP file(s) to import', 'novel-game-plugin' ); ?>" />
+                        <span class="description"><?php esc_html_e( 'For split ZIP export, select all part files at once.', 'novel-game-plugin' ); ?></span>
                     </p>
                     <p>
                         <label>
@@ -271,6 +276,19 @@ function noveltool_export_import_admin_scripts( $hook ) {
                 __( 'File size is too large. Maximum %dMB allowed for ZIP files.', 'novel-game-plugin' ),
                 noveltool_get_import_max_size( 'zip' ) / ( 1024 * 1024 )
             ),
+            // 分割ZIP関連
+            /* translators: %d: number of ZIP parts, %d: MB per part */
+            'splitZipInfo'            => __( 'This game will be exported as %1$d ZIP files (up to %2$dMB each).', 'novel-game-plugin' ),
+            'singleZipInfo'           => __( 'This game will be exported as a single ZIP file.', 'novel-game-plugin' ),
+            /* translators: %d: part number, %d: total parts */
+            'splitZipPartLabel'       => __( 'Download Part %1$d of %2$d', 'novel-game-plugin' ),
+            'splitZipDownloadAll'     => __( 'Download All Parts', 'novel-game-plugin' ),
+            'splitZipDownloading'     => __( 'Downloading...', 'novel-game-plugin' ),
+            'splitZipDownloadError'   => __( 'Failed to download part %d. Please try again.', 'novel-game-plugin' ),
+            'splitZipAllDone'         => __( 'All parts downloaded successfully.', 'novel-game-plugin' ),
+            'splitZipMixedError'      => __( 'Cannot mix split ZIP parts with other file types.', 'novel-game-plugin' ),
+            'splitZipOnlyZips'        => __( 'Only ZIP files are allowed for split ZIP import.', 'novel-game-plugin' ),
+            'checkingExportSize'      => __( 'Checking export size...', 'novel-game-plugin' ),
         )
     );
 }
