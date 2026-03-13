@@ -1200,7 +1200,7 @@ msgstr "エクスポート中..."
 
 #: admin/export-import.php:235
 msgid "Game data exported successfully."
-msgstr "ゲームが削除されました。"
+msgstr "ゲームデータをエクスポートしました。"
 
 #: admin/export-import.php:236
 msgid "Failed to export game data."
