@@ -22,6 +22,10 @@ function noveltool_export_import_page() {
         wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
+    // エクスポート実行権限の判定（AJAX側と同じ filter を使用）
+    $export_capability = apply_filters( 'noveltool_export_capability', 'manage_options' );
+    $can_export        = current_user_can( $export_capability );
+
     // すべてのゲームを取得
     $games = noveltool_get_all_games();
     ?>
@@ -29,6 +33,7 @@ function noveltool_export_import_page() {
         <h1><?php esc_html_e( 'Export/Import', 'novel-game-plugin' ); ?></h1>
 
         <div class="noveltool-export-import-container">
+            <?php if ( $can_export ) : ?>
             <!-- エクスポートセクション -->
             <div class="noveltool-section noveltool-export-section">
                 <h2><?php esc_html_e( 'Export Game Data', 'novel-game-plugin' ); ?></h2>
@@ -70,6 +75,7 @@ function noveltool_export_import_page() {
                     </div>
                 <?php endif; ?>
             </div>
+            <?php endif; ?>
 
             <!-- インポートセクション -->
             <div class="noveltool-section noveltool-import-section">

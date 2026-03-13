@@ -1392,7 +1392,7 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
     @ini_set( 'memory_limit', '256M' );
 
     $image_urls  = noveltool_collect_game_images( $export_data );
-    $url_to_file = array(); // 元URL => images/ファイル名 のマッピング
+    $url_to_file = array(); // 元URL => images/ファイル名 のファイル名候補マッピング
 
     // 画像ファイル名を決定（重複を避けるために連番付与）
     $used_names = array();
@@ -1413,36 +1413,6 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
         $url_to_file[ $url ]  = 'images/' . $basename;
     }
 
-    // JSON内のURLを相対パスに変換したコピーを作成
-    $zip_data = $export_data;
-    if ( ! empty( $zip_data['game']['title_image'] ) && isset( $url_to_file[ $zip_data['game']['title_image'] ] ) ) {
-        $zip_data['game']['title_image'] = $url_to_file[ $zip_data['game']['title_image'] ];
-    }
-    $image_fields = array( 'background_image', 'character_image', 'character_left', 'character_center', 'character_right' );
-    foreach ( $zip_data['scenes'] as &$scene ) {
-        foreach ( $image_fields as $field ) {
-            if ( ! empty( $scene[ $field ] ) && isset( $url_to_file[ $scene[ $field ] ] ) ) {
-                $scene[ $field ] = $url_to_file[ $scene[ $field ] ];
-            }
-        }
-        if ( ! empty( $scene['dialogue_backgrounds'] ) ) {
-            $bg_data = $scene['dialogue_backgrounds'];
-            if ( is_string( $bg_data ) ) {
-                $bg_data = json_decode( $bg_data, true );
-            }
-            if ( is_array( $bg_data ) ) {
-                foreach ( $bg_data as &$bg ) {
-                    if ( is_string( $bg ) && isset( $url_to_file[ $bg ] ) ) {
-                        $bg = $url_to_file[ $bg ];
-                    }
-                }
-                unset( $bg );
-                $scene['dialogue_backgrounds'] = $bg_data;
-            }
-        }
-    }
-    unset( $scene );
-
     // 一時ZIPファイルを作成
     $tmp_zip = wp_tempnam( sanitize_file_name( $game_title ) . '.zip' );
     if ( ! $tmp_zip ) {
@@ -1454,22 +1424,32 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
         return new WP_Error( 'zip_open_failed', __( 'Failed to open ZIP archive for writing.', 'novel-game-plugin' ) );
     }
 
-    // JSON追加
-    $zip->addFromString( 'game-data.json', wp_json_encode( $zip_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ) );
-
-    // 画像を取得してZIPに追加
+    // 画像を取得してZIPに追加し、成功したURLのみ相対パスマッピングに記録
+    $succeeded_url_to_file = array(); // ダウンロード成功かつZIP追加に成功したURL => 相対パスのマッピング
     foreach ( $url_to_file as $url => $zip_path ) {
         // SSRF対策: 外部URLの安全性を検証
         if ( ! noveltool_is_safe_external_url( $url ) ) {
             error_log( '[noveltool] ZIP export: 安全でないURLをスキップしました: ' . $url );
             continue;
         }
+        // リダイレクト無効化: リダイレクト先が内部IPに向く攻撃（SSRF via redirect）を防ぐ
         $response = wp_remote_get( $url, array(
-            'timeout'  => 30,
-            'sslverify' => apply_filters( 'https_ssl_verify', true ),
+            'timeout'     => 30,
+            'redirection' => 0,
+            'sslverify'   => apply_filters( 'https_ssl_verify', true ),
         ) );
-        if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+        if ( is_wp_error( $response ) ) {
             error_log( '[noveltool] ZIP export: 画像のダウンロードに失敗しました: ' . $url );
+            continue;
+        }
+        $response_code = wp_remote_retrieve_response_code( $response );
+        if ( 200 !== $response_code ) {
+            if ( $response_code >= 300 && $response_code < 400 ) {
+                // リダイレクト無効化のため 30x はセキュリティ上の理由で拒否
+                error_log( '[noveltool] ZIP export: リダイレクトを検出しセキュリティ上の理由でスキップしました (HTTP ' . $response_code . '): ' . $url );
+            } else {
+                error_log( '[noveltool] ZIP export: 画像のダウンロードに失敗しました (HTTP ' . $response_code . '): ' . $url );
+            }
             continue;
         }
         $body = wp_remote_retrieve_body( $response );
@@ -1478,7 +1458,42 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
             continue;
         }
         $zip->addFromString( $zip_path, $body );
+        $succeeded_url_to_file[ $url ] = $zip_path;
     }
+
+    // 実際にZIPへ追加できた画像のみ相対パスへ置換したJSONコピーを作成
+    // ダウンロード失敗した画像は元の絶対URLを維持する
+    $zip_data = $export_data;
+    if ( ! empty( $zip_data['game']['title_image'] ) && isset( $succeeded_url_to_file[ $zip_data['game']['title_image'] ] ) ) {
+        $zip_data['game']['title_image'] = $succeeded_url_to_file[ $zip_data['game']['title_image'] ];
+    }
+    $image_fields = array( 'background_image', 'character_image', 'character_left', 'character_center', 'character_right' );
+    foreach ( $zip_data['scenes'] as &$scene ) {
+        foreach ( $image_fields as $field ) {
+            if ( ! empty( $scene[ $field ] ) && isset( $succeeded_url_to_file[ $scene[ $field ] ] ) ) {
+                $scene[ $field ] = $succeeded_url_to_file[ $scene[ $field ] ];
+            }
+        }
+        if ( ! empty( $scene['dialogue_backgrounds'] ) ) {
+            $bg_data = $scene['dialogue_backgrounds'];
+            if ( is_string( $bg_data ) ) {
+                $bg_data = json_decode( $bg_data, true );
+            }
+            if ( is_array( $bg_data ) ) {
+                foreach ( $bg_data as &$bg ) {
+                    if ( is_string( $bg ) && isset( $succeeded_url_to_file[ $bg ] ) ) {
+                        $bg = $succeeded_url_to_file[ $bg ];
+                    }
+                }
+                unset( $bg );
+                $scene['dialogue_backgrounds'] = $bg_data;
+            }
+        }
+    }
+    unset( $scene );
+
+    // JSON追加（ダウンロード成功分のみ相対パス置換済み）
+    $zip->addFromString( 'game-data.json', wp_json_encode( $zip_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ) );
 
     $zip->close();
 
@@ -1593,24 +1608,6 @@ function noveltool_import_from_zip( $zip_path ) {
         return new WP_Error( 'zip_open_failed', __( 'Failed to open ZIP archive.', 'novel-game-plugin' ) );
     }
 
-    // game-data.json を取得
-    $json_content = $zip->getFromName( 'game-data.json' );
-    if ( false === $json_content ) {
-        $zip->close();
-        return new WP_Error( 'no_json', __( 'game-data.json not found in ZIP archive.', 'novel-game-plugin' ) );
-    }
-
-    $import_data = json_decode( $json_content, true );
-    if ( json_last_error() !== JSON_ERROR_NONE ) {
-        $zip->close();
-        return new WP_Error( 'invalid_json', __( 'Invalid JSON encoding.', 'novel-game-plugin' ) );
-    }
-
-    if ( ! is_array( $import_data ) || ! isset( $import_data['game'] ) || ! isset( $import_data['scenes'] ) ) {
-        $zip->close();
-        return new WP_Error( 'invalid_structure', __( 'Missing required "game" or "scenes" keys.', 'novel-game-plugin' ) );
-    }
-
     // --- Zip bomb対策: 展開前にサイズ・ファイル数を検証 ---
     $zip_max_files       = intval( apply_filters( 'noveltool_zip_import_max_files', 100 ) );
     $zip_max_single_size = intval( apply_filters( 'noveltool_zip_import_max_single_size', 10 * 1024 * 1024 ) ); // 10MB
@@ -1638,6 +1635,24 @@ function noveltool_import_from_zip( $zip_path ) {
         }
     }
     // --- Zip bomb対策ここまで ---
+
+    // game-data.json を取得
+    $json_content = $zip->getFromName( 'game-data.json' );
+    if ( false === $json_content ) {
+        $zip->close();
+        return new WP_Error( 'no_json', __( 'game-data.json not found in ZIP archive.', 'novel-game-plugin' ) );
+    }
+
+    $import_data = json_decode( $json_content, true );
+    if ( json_last_error() !== JSON_ERROR_NONE ) {
+        $zip->close();
+        return new WP_Error( 'invalid_json', __( 'Invalid JSON encoding.', 'novel-game-plugin' ) );
+    }
+
+    if ( ! is_array( $import_data ) || ! isset( $import_data['game'] ) || ! isset( $import_data['scenes'] ) ) {
+        $zip->close();
+        return new WP_Error( 'invalid_structure', __( 'Missing required "game" or "scenes" keys.', 'novel-game-plugin' ) );
+    }
 
     // ZIP内の画像を収集し一時ディレクトリに解凍してメディアライブラリへアップロード
     $relative_to_url = array(); // 相対パス => メディアライブラリURL
