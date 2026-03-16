@@ -809,13 +809,25 @@ msgstr ""
 msgid "Downloaded file is not a valid image."
 msgstr ""
 
-#: admin/game-settings.php:1261
-#: admin/game-settings.php:1299
+#: admin/game-settings.php:1198
+msgid "Imported image file was not found."
+msgstr ""
+
+#: admin/game-settings.php:1208
+msgid "Failed to read imported image file size."
+msgstr ""
+
+#: admin/game-settings.php:1213
+msgid "Failed to calculate imported image hash."
+msgstr ""
+
+#: admin/game-settings.php:1435
+#: admin/game-settings.php:1473
 msgid "Insufficient permissions."
 msgstr ""
 
-#: admin/game-settings.php:1309
-#: admin/game-settings.php:1322
+#: admin/game-settings.php:1483
+#: admin/game-settings.php:1496
 msgid "No file selected."
 msgstr ""
 

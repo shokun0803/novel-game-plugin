@@ -1183,6 +1183,180 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
 }
 
 /**
+ * インポート画像のシグネチャ情報を生成する
+ *
+ * 同一画像の再利用判定に必要なファイル名・MIME type・ファイルサイズ・SHA-256 を返す。
+ *
+ * @param string $tmp_path 一時ファイルパス
+ * @param string $file_name 元のファイル名
+ * @return array|WP_Error シグネチャ配列またはエラー
+ * @since 1.5.0
+ */
+function noveltool_get_import_image_signature( $tmp_path, $file_name ) {
+    if ( ! is_string( $tmp_path ) || ! file_exists( $tmp_path ) ) {
+        return new WP_Error( 'missing_tmp_file', __( 'Imported image file was not found.', 'novel-game-plugin' ) );
+    }
+
+    $image_info = @getimagesize( $tmp_path );
+    if ( false === $image_info || empty( $image_info['mime'] ) ) {
+        return new WP_Error( 'invalid_image', __( 'Downloaded file is not a valid image.', 'novel-game-plugin' ) );
+    }
+
+    $file_size = filesize( $tmp_path );
+    if ( false === $file_size ) {
+        return new WP_Error( 'invalid_image_size', __( 'Failed to read imported image file size.', 'novel-game-plugin' ) );
+    }
+
+    $file_hash = hash_file( 'sha256', $tmp_path );
+    if ( false === $file_hash ) {
+        return new WP_Error( 'invalid_image_hash', __( 'Failed to calculate imported image hash.', 'novel-game-plugin' ) );
+    }
+
+    return array(
+        'file_name' => sanitize_file_name( $file_name ),
+        'mime_type' => sanitize_mime_type( $image_info['mime'] ),
+        'file_size' => intval( $file_size ),
+        'sha256'    => $file_hash,
+    );
+}
+
+/**
+ * 添付ファイルにインポート画像のシグネチャ情報を保存する
+ *
+ * @param int   $attachment_id 添付ファイルID
+ * @param array $signature     シグネチャ配列
+ * @since 1.5.0
+ */
+function noveltool_store_import_image_signature( $attachment_id, $signature ) {
+    update_post_meta( $attachment_id, '_noveltool_import_file_name', $signature['file_name'] );
+    update_post_meta( $attachment_id, '_noveltool_import_mime_type', $signature['mime_type'] );
+    update_post_meta( $attachment_id, '_noveltool_import_file_size', (string) $signature['file_size'] );
+    update_post_meta( $attachment_id, '_noveltool_import_sha256', $signature['sha256'] );
+}
+
+/**
+ * シグネチャ一致する既存画像添付を検索する
+ *
+ * ファイル名・MIME type・ファイルサイズで候補を絞り込み、
+ * 最後に SHA-256 で内容一致を確認して再利用可能な添付ファイルを返す。
+ *
+ * @param array $signature シグネチャ配列
+ * @return int 添付ファイルID。一致しない場合は 0
+ * @since 1.5.0
+ */
+function noveltool_find_existing_import_image_attachment( $signature ) {
+    global $wpdb;
+
+    $sanitized_file_name = sanitize_file_name( $signature['file_name'] );
+    $file_name_like      = '%/' . $wpdb->esc_like( $sanitized_file_name );
+    $candidate_ids  = $wpdb->get_col(
+        $wpdb->prepare(
+            "SELECT DISTINCT p.ID
+            FROM {$wpdb->posts} p
+            INNER JOIN {$wpdb->postmeta} file_meta
+                ON p.ID = file_meta.post_id
+                AND file_meta.meta_key = '_wp_attached_file'
+            LEFT JOIN {$wpdb->postmeta} size_meta
+                ON p.ID = size_meta.post_id
+                AND size_meta.meta_key = '_noveltool_import_file_size'
+            WHERE p.post_type = 'attachment'
+                AND p.post_status = 'inherit'
+                AND p.post_mime_type = %s
+                AND ( file_meta.meta_value = %s OR file_meta.meta_value LIKE %s )
+                AND ( size_meta.meta_value = %s OR size_meta.post_id IS NULL )
+            ORDER BY p.ID ASC",
+            $signature['mime_type'],
+            $sanitized_file_name,
+            $file_name_like,
+            (string) $signature['file_size']
+        )
+    );
+
+    foreach ( $candidate_ids as $candidate_id ) {
+        $candidate_id = intval( $candidate_id );
+        if ( $candidate_id < 1 ) {
+            continue;
+        }
+
+        $attached_file = get_attached_file( $candidate_id );
+        if ( ! is_string( $attached_file ) || ! file_exists( $attached_file ) ) {
+            continue;
+        }
+
+        $candidate_size = filesize( $attached_file );
+        if ( false === $candidate_size || intval( $candidate_size ) !== intval( $signature['file_size'] ) ) {
+            continue;
+        }
+
+        $candidate_hash = hash_file( 'sha256', $attached_file );
+        if ( false === $candidate_hash || $candidate_hash !== $signature['sha256'] ) {
+            continue;
+        }
+
+        noveltool_store_import_image_signature( $candidate_id, $signature );
+
+        return $candidate_id;
+    }
+
+    return 0;
+}
+
+/**
+ * 一時画像ファイルから既存添付の再利用または新規添付作成を行う
+ *
+ * 同一リクエスト内では SHA-256 をキーに結果をキャッシュし、
+ * 同じ画像が複数回参照されても media_handle_sideload() を 1 回だけ実行する。
+ *
+ * @param string $tmp_path        一時ファイルパス
+ * @param string $file_name       元のファイル名
+ * @param int    $parent_post_id  親投稿ID
+ * @return int|WP_Error 添付ファイルIDまたはエラー
+ * @since 1.5.0
+ */
+function noveltool_get_or_create_import_image_attachment( $tmp_path, $file_name, $parent_post_id = 0 ) {
+    static $request_cache = array();
+
+    $signature = noveltool_get_import_image_signature( $tmp_path, $file_name );
+    if ( is_wp_error( $signature ) ) {
+        return $signature;
+    }
+
+    if ( isset( $request_cache[ $signature['sha256'] ] ) ) {
+        $cached_attachment_id = intval( $request_cache[ $signature['sha256'] ] );
+        if ( $cached_attachment_id > 0 && get_post( $cached_attachment_id ) ) {
+            return $cached_attachment_id;
+        }
+    }
+
+    $existing_attachment_id = noveltool_find_existing_import_image_attachment( $signature );
+    if ( $existing_attachment_id > 0 ) {
+        $request_cache[ $signature['sha256'] ] = $existing_attachment_id;
+        return $existing_attachment_id;
+    }
+
+    if ( ! function_exists( 'media_handle_sideload' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+    }
+
+    $file_array = array(
+        'name'     => $signature['file_name'],
+        'tmp_name' => $tmp_path,
+    );
+
+    $attachment_id = media_handle_sideload( $file_array, $parent_post_id );
+    if ( is_wp_error( $attachment_id ) ) {
+        return $attachment_id;
+    }
+
+    noveltool_store_import_image_signature( $attachment_id, $signature );
+    $request_cache[ $signature['sha256'] ] = $attachment_id;
+
+    return $attachment_id;
+}
+
+/**
  * 外部画像URLをメディアライブラリにダウンロード
  *
  * セキュリティ強化: URLスキーム検証、Content-Type確認、画像検証を実施
@@ -1193,8 +1367,16 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
  * @since 1.3.0
  */
 function noveltool_download_image_to_media_library( $image_url, $parent_post_id = 0 ) {
+    static $download_cache = array();
+
     if ( ! filter_var( $image_url, FILTER_VALIDATE_URL ) ) {
         return new WP_Error( 'invalid_url', __( 'Invalid image URL.', 'novel-game-plugin' ) );
+    }
+
+    // 同一URLが同一インポート処理内で複数回参照されるケースでは、
+    // 既存添付の再検索だけでなく HTTP リクエスト自体も省略する
+    if ( isset( $download_cache[ $image_url ] ) ) {
+        return $download_cache[ $image_url ];
     }
     
     // URLスキーム検証: httpまたはhttpsのみ許可
@@ -1208,13 +1390,16 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
     $response = wp_remote_head( $image_url, array( 'timeout' => 10 ) );
     if ( is_wp_error( $response ) ) {
         error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $response->get_error_message() );
+        $download_cache[ $image_url ] = $response;
         return $response;
     }
     
     $content_type = wp_remote_retrieve_header( $response, 'content-type' );
     if ( $content_type && strpos( $content_type, 'image/' ) !== 0 ) {
         error_log( '[noveltool] Image download failed: Invalid Content-Type for ' . $image_url . ' (got: ' . $content_type . ')' );
-        return new WP_Error( 'invalid_content_type', __( 'URL does not point to an image.', 'novel-game-plugin' ) );
+        $error = new WP_Error( 'invalid_content_type', __( 'URL does not point to an image.', 'novel-game-plugin' ) );
+        $download_cache[ $image_url ] = $error;
+        return $error;
     }
 
     // WordPress HTTP APIを使用して画像をダウンロード
@@ -1225,6 +1410,7 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
     $temp_file = download_url( $image_url, 10 );
     if ( is_wp_error( $temp_file ) ) {
         error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $temp_file->get_error_message() );
+        $download_cache[ $image_url ] = $temp_file;
         return $temp_file;
     }
     
@@ -1235,7 +1421,9 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
             unlink( $temp_file );
         }
         error_log( '[noveltool] Image download failed: File is not a valid image ' . $image_url );
-        return new WP_Error( 'invalid_image', __( 'Downloaded file is not a valid image.', 'novel-game-plugin' ) );
+        $error = new WP_Error( 'invalid_image', __( 'Downloaded file is not a valid image.', 'novel-game-plugin' ) );
+        $download_cache[ $image_url ] = $error;
+        return $error;
     }
 
     // MIMEタイプに基づいて拡張子を決定
@@ -1261,7 +1449,7 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
         'tmp_name' => $temp_file,
     );
 
-    $attachment_id = media_handle_sideload( $file_array, $parent_post_id );
+    $attachment_id = noveltool_get_or_create_import_image_attachment( $file_array['tmp_name'], $file_array['name'], $parent_post_id );
     
     // 一時ファイルを削除
     if ( file_exists( $temp_file ) ) {
@@ -1270,10 +1458,14 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
 
     if ( is_wp_error( $attachment_id ) ) {
         error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $attachment_id->get_error_message() );
+        $download_cache[ $image_url ] = $attachment_id;
         return $attachment_id;
     }
 
-    return wp_get_attachment_url( $attachment_id );
+    $attachment_url = wp_get_attachment_url( $attachment_id );
+    $download_cache[ $image_url ] = $attachment_url;
+
+    return $attachment_url;
 }
 
 /**
@@ -2426,11 +2618,11 @@ function noveltool_import_from_zip( $zip_path ) {
             continue;
         }
 
-        $file_array = array(
-            'name'     => sanitize_file_name( $basename ),
-            'tmp_name' => $tmp,
+        $attachment_id = noveltool_get_or_create_import_image_attachment(
+            $tmp,
+            sanitize_file_name( $basename ),
+            0
         );
-        $attachment_id = media_handle_sideload( $file_array, 0 );
         @unlink( $tmp );
 
         if ( ! is_wp_error( $attachment_id ) ) {
@@ -2702,11 +2894,11 @@ function noveltool_import_from_split_zips( $zip_paths ) {
                 continue;
             }
 
-            $file_array    = array(
-                'name'     => sanitize_file_name( $basename ),
-                'tmp_name' => $tmp,
+            $attachment_id = noveltool_get_or_create_import_image_attachment(
+                $tmp,
+                sanitize_file_name( $basename ),
+                0
             );
-            $attachment_id = media_handle_sideload( $file_array, 0 );
             @unlink( $tmp );
 
             if ( ! is_wp_error( $attachment_id ) ) {
@@ -3108,11 +3300,11 @@ function noveltool_finalize_split_zip_import( $staging_key ) {
             continue;
         }
         $basename      = basename( $entry_name );
-        $file_array    = array(
-            'name'     => sanitize_file_name( $basename ),
-            'tmp_name' => $tmp_path,
+        $attachment_id = noveltool_get_or_create_import_image_attachment(
+            $tmp_path,
+            sanitize_file_name( $basename ),
+            0
         );
-        $attachment_id = media_handle_sideload( $file_array, 0 );
 
         if ( is_wp_error( $attachment_id ) ) {
             // ロールバック: 作成済みの添付ファイルを削除し、一時ファイルをクリーンアップ
