@@ -669,6 +669,7 @@ function noveltool_export_game_data( $game_id ) {
         $scene_meta = array(
             'original_index'          => $i,
             'original_post_id'        => $scene->ID,
+            'is_start_scene'          => (bool) get_post_meta( $scene->ID, '_is_start_scene', true ),
             'title'                   => $scene->post_title,
             'background_image'        => get_post_meta( $scene->ID, '_background_image', true ),
             'character_image'         => get_post_meta( $scene->ID, '_character_image', true ),
@@ -705,6 +706,7 @@ function noveltool_export_game_data( $game_id ) {
             'title'         => $game['title'],
             'description'   => isset( $game['description'] ) ? $game['description'] : '',
             'title_image'   => isset( $game['title_image'] ) ? $game['title_image'] : '',
+            'start_scene_id' => isset( $game['start_scene_id'] ) ? intval( $game['start_scene_id'] ) : 0,
             'game_over_text' => isset( $game['game_over_text'] ) ? $game['game_over_text'] : 'Game Over',
         ),
         'flags'          => $flag_master,
@@ -951,6 +953,8 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
         }
     }
 
+    $imported_start_scene_old_id = isset( $game_data['start_scene_id'] ) ? intval( $game_data['start_scene_id'] ) : 0;
+
     $game_id = noveltool_save_game( $new_game_data );
     if ( ! $game_id ) {
         return new WP_Error( 'save_failed', __( 'Failed to save game data.', 'novel-game-plugin' ) );
@@ -992,6 +996,7 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
     $imported_scenes = 0;
     $old_post_id_to_new_map = array();
     $first_scene_post_id = null; // 画像ダウンロード時の親関連付け用
+    $imported_start_scene_new_id = null;
     $image_download_failures = 0; // 画像ダウンロード失敗件数
     
     foreach ( $import_data['scenes'] as $scene_index => $scene_data ) {
@@ -1025,6 +1030,13 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
 
         // ゲームタイトルを設定
         update_post_meta( $post_id, '_game_title', $new_game_data['title'] );
+
+        if ( ! empty( $scene_data['is_start_scene'] ) ) {
+            update_post_meta( $post_id, '_is_start_scene', '1' );
+            if ( null === $imported_start_scene_new_id ) {
+                $imported_start_scene_new_id = $post_id;
+            }
+        }
 
         // 各メタデータの保存（サニタイズ強化）
         $meta_fields = array(
@@ -1166,6 +1178,15 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
                 $remapped_choices++;
             }
         }
+    }
+
+    if ( $imported_start_scene_old_id > 0 && isset( $old_post_id_to_new_map[ $imported_start_scene_old_id ] ) ) {
+        $imported_start_scene_new_id = $old_post_id_to_new_map[ $imported_start_scene_old_id ];
+    }
+
+    if ( $imported_start_scene_new_id ) {
+        update_post_meta( $imported_start_scene_new_id, '_is_start_scene', '1' );
+        noveltool_update_game_start_scene( $new_game_data['title'], $imported_start_scene_new_id );
     }
 
     // インポート履歴を記録
