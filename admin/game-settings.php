@@ -2827,11 +2827,14 @@ function noveltool_stage_split_zip_part( $zip_path ) {
 
     // manifest.files と実際の ZIP 内容を照合（欠落・不整合の検出）
     // 全パート検証前の media_handle_sideload 実行を防ぐため、ここで先行チェックする
+    // manifest.files に宣言されていない余分な images/ ファイルも拒否する（完全一致）
+    $expected_image_set = array();
     foreach ( $expected_files_in_part as $expected_file ) {
         $safe_file = sanitize_text_field( $expected_file );
         if ( empty( $safe_file ) || strpos( $safe_file, 'images/' ) !== 0 || false !== strpos( $safe_file, '..' ) ) {
             continue;
         }
+        // 宣言済みファイルが ZIP 内に存在することを確認
         if ( false === $zip->locateName( $safe_file ) ) {
             $zip->close();
             return new WP_Error(
@@ -2840,6 +2843,34 @@ function noveltool_stage_split_zip_part( $zip_path ) {
                     /* translators: %s: ファイル名 */
                     __( 'File declared in manifest not found in ZIP: %s', 'novel-game-plugin' ),
                     basename( $safe_file )
+                )
+            );
+        }
+        $expected_image_set[ $safe_file ] = true;
+    }
+
+    // ZIP 内の images/ ファイルが manifest.files に存在することを確認（余分ファイルの拒否）
+    for ( $idx = 0; $idx < $zip->numFiles; $idx++ ) {
+        $entry_name = $zip->getNameIndex( $idx );
+        if ( strpos( $entry_name, 'images/' ) !== 0 || false !== strpos( $entry_name, '..' ) ) {
+            continue;
+        }
+        $basename = basename( $entry_name );
+        if ( empty( $basename ) ) {
+            continue;
+        }
+        $ext = strtolower( pathinfo( $basename, PATHINFO_EXTENSION ) );
+        if ( ! in_array( $ext, array( 'jpg', 'jpeg', 'png', 'gif', 'webp' ), true ) ) {
+            continue;
+        }
+        if ( ! isset( $expected_image_set[ $entry_name ] ) ) {
+            $zip->close();
+            return new WP_Error(
+                'extra_file_in_zip',
+                sprintf(
+                    /* translators: %s: ファイル名 */
+                    __( 'ZIP contains a file not declared in manifest: %s', 'novel-game-plugin' ),
+                    basename( $entry_name )
                 )
             );
         }
@@ -2891,20 +2922,16 @@ function noveltool_stage_split_zip_part( $zip_path ) {
     }
 
     // 画像を一時ファイルに展開してステージングに追加
+    // $expected_image_set は検証済みの images/ エントリのみを含むため、余分なファイルは既に拒否済み
     for ( $idx = 0; $idx < $zip->numFiles; $idx++ ) {
         $entry_name = $zip->getNameIndex( $idx );
-        // パストラバーサル対策: images/ で始まるエントリのみ許可し、'..' を含むパスを拒否
-        if ( strpos( $entry_name, 'images/' ) !== 0 || false !== strpos( $entry_name, '..' ) ) {
+        // manifest.files に宣言されていないエントリはスキップ（パストラバーサル対策も兼ねる）
+        if ( ! isset( $expected_image_set[ $entry_name ] ) ) {
             continue;
         }
+        // $expected_image_set に含まれるエントリは検証済みで basename が空になることはないが
+        // $basename は後続のパスで使用するため代入する
         $basename = basename( $entry_name );
-        if ( empty( $basename ) ) {
-            continue;
-        }
-        $ext = strtolower( pathinfo( $basename, PATHINFO_EXTENSION ) );
-        if ( ! in_array( $ext, array( 'jpg', 'jpeg', 'png', 'gif', 'webp' ), true ) ) {
-            continue;
-        }
 
         // Zip bomb 対策: サイズチェック
         $stat = $zip->statIndex( $idx );
@@ -2946,6 +2973,14 @@ function noveltool_stage_split_zip_part( $zip_path ) {
     // ステージングトランジェントを更新（フィルターで上書き可能なTTL）
     $staging_ttl = intval( apply_filters( 'noveltool_split_zip_staging_ttl', DAY_IN_SECONDS ) );
     set_transient( $staging_key, $staging, $staging_ttl );
+
+    // TTL 切れや離脱時に一時ファイルが残らないよう、クリーンアップキューに登録する
+    // expires_at はステージング TTL + フィルターで設定可能な余裕時間
+    $cleanup_grace = intval( apply_filters( 'noveltool_staging_cleanup_grace', 10 * MINUTE_IN_SECONDS ) );
+    noveltool_enqueue_tmp_cleanup(
+        array_values( $staging['staged_images'] ),
+        time() + $staging_ttl + $cleanup_grace
+    );
 
     // 全パートが揃ったかチェック
     if ( count( $staging['staged_parts'] ) >= $total_parts ) {

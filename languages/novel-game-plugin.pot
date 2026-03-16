@@ -2419,3 +2419,8 @@ msgstr ""
 #: admin/game-settings.php
 msgid "Failed to create media attachment. Import aborted."
 msgstr ""
+
+#. translators: %s: ファイル名
+#: admin/game-settings.php
+msgid "ZIP contains a file not declared in manifest: %s"
+msgstr ""
