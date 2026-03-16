@@ -1424,16 +1424,41 @@ function noveltool_collect_game_images( $export_data ) {
  * クリーンアップキューは `noveltool_tmp_cleanup_queue` オプションに保存され、
  * 日次 cron （`noveltool_daily_cleanup`）により削除される。
  *
- * @param array $paths      削除する一時ファイルパスの配列
- * @param int   $expires_at 削除基準時刻（Unixタイムスタンプ）
+ * $session_key を指定すると同一キーを持つ既存エントリを削除してから追加する（upsert）。
+ * これにより、同一ステージングセッションのパートを複数回アップロードしても
+ * 古いキューエントリが有効な一時ファイルを早期削除しない。
+ *
+ * @param array  $paths                        削除する一時ファイルパスの配列
+ * @param int    $expires_at                   削除基準時刻（Unixタイムスタンプ）
+ * @param string $session_key Optional.        セッション識別子。指定時は同一キーの既存エントリを新エントリで置き換える
  * @since 1.5.0
  */
-function noveltool_enqueue_tmp_cleanup( $paths, $expires_at ) {
-    $queue   = get_option( 'noveltool_tmp_cleanup_queue', array() );
-    $queue[] = array(
+function noveltool_enqueue_tmp_cleanup( $paths, $expires_at, $session_key = '' ) {
+    $queue = get_option( 'noveltool_tmp_cleanup_queue', array() );
+
+    // 同一 session_key を持つ既存エントリを削除（upsert）
+    // session_key が未設定のエントリ、または指定キーと異なるエントリを残し、
+    // 同一セッションの古いエントリのみを除去して再登録する
+    if ( '' !== $session_key ) {
+        $queue = array_values(
+            array_filter(
+                $queue,
+                function ( $item ) use ( $session_key ) {
+                    return ! isset( $item['session_key'] ) || $item['session_key'] !== $session_key;
+                }
+            )
+        );
+    }
+
+    $entry = array(
         'paths'      => array_values( (array) $paths ),
         'expires_at' => intval( $expires_at ),
     );
+    if ( '' !== $session_key ) {
+        $entry['session_key'] = $session_key;
+    }
+
+    $queue[] = $entry;
     update_option( 'noveltool_tmp_cleanup_queue', $queue, false );
 }
 
@@ -2975,11 +3000,13 @@ function noveltool_stage_split_zip_part( $zip_path ) {
     set_transient( $staging_key, $staging, $staging_ttl );
 
     // TTL 切れや離脱時に一時ファイルが残らないよう、クリーンアップキューに登録する
-    // expires_at はステージング TTL + フィルターで設定可能な余裕時間
+    // $staging_key を session_key として渡すことで、同一セッションの古いエントリを
+    // 置き換え（upsert）し、先行パートの tmp が早期削除される競合を防ぐ
     $cleanup_grace = intval( apply_filters( 'noveltool_staging_cleanup_grace', 10 * MINUTE_IN_SECONDS ) );
     noveltool_enqueue_tmp_cleanup(
         array_values( $staging['staged_images'] ),
-        time() + $staging_ttl + $cleanup_grace
+        time() + $staging_ttl + $cleanup_grace,
+        $staging_key  // セッション単位で最新エントリに置き換え（upsert）
     );
 
     // 全パートが揃ったかチェック
