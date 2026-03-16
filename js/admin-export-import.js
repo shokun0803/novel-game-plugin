@@ -9,6 +9,214 @@
     'use strict';
 
     $(document).ready(function() {
+        var SERVER_PROCESSING_DELAY_MS = 1200;
+        var splitImportState = {
+            active: false,
+            totalParts: 0,
+            stagedParts: [],
+            missingParts: [],
+            exportId: '',
+            gameTitle: '',
+            currentUploadPart: 0,
+            currentUploadTotal: 0,
+            processingTimer: null
+        };
+
+        /**
+         * 分割ZIPの状態保持をリセットする
+         */
+        function resetSplitImportState() {
+            clearSplitProcessingTimer();
+
+            splitImportState = {
+                active: false,
+                totalParts: 0,
+                stagedParts: [],
+                missingParts: [],
+                exportId: '',
+                gameTitle: '',
+                currentUploadPart: 0,
+                currentUploadTotal: 0,
+                processingTimer: null
+            };
+        }
+
+        /**
+         * 分割ZIPの処理中タイマーを停止する
+         */
+        function clearSplitProcessingTimer() {
+            if (splitImportState.processingTimer) {
+                clearTimeout(splitImportState.processingTimer);
+                splitImportState.processingTimer = null;
+            }
+        }
+
+        /**
+         * 文字列内のパート番号を推定する
+         *
+         * @param {string} fileName ファイル名
+         * @returns {{part: number, totalParts: number}|null}
+         */
+        function parseSplitZipPartInfo(fileName) {
+            if (!fileName) {
+                return null;
+            }
+
+            var match = fileName.match(/part(\d+)-of-(\d+)/i);
+            if (!match) {
+                return null;
+            }
+
+            return {
+                part: parseInt(match[1], 10),
+                totalParts: parseInt(match[2], 10)
+            };
+        }
+
+        /**
+         * 配列を昇順ソートした数値配列にする
+         *
+         * @param {Array} values 値の配列
+         * @returns {Array}
+         */
+        function normalizePartList(values) {
+            return (values || []).map(function(value) {
+                return parseInt(value, 10);
+            }).filter(function(value) {
+                return !isNaN(value) && value > 0;
+            }).sort(function(a, b) {
+                return a - b;
+            });
+        }
+
+        /**
+         * 進捗バーUIを更新する
+         *
+         * @param {Object} options 表示オプション
+         */
+        function updateImportProgress(options) {
+            var progressDiv = $('.noveltool-import-progress');
+            var progressBar = progressDiv.find('.noveltool-progress-bar');
+            var barInner = progressDiv.find('.noveltool-progress-bar-inner');
+            var percent = Math.max(0, Math.min(100, parseInt(options.percent || 0, 10)));
+
+            progressDiv.removeClass('is-indeterminate is-determinate');
+            progressDiv.addClass(options.indeterminate ? 'is-indeterminate' : 'is-determinate');
+            progressDiv.show();
+
+            progressDiv.find('.noveltool-import-progress-title').text(options.title || noveltoolExportImport.importing);
+            progressDiv.find('.noveltool-import-progress-status').text(options.status || '');
+            progressDiv.find('.noveltool-import-progress-detail').text(options.detail || '');
+            progressDiv.find('.noveltool-progress-count').text(options.countText || '');
+            progressDiv.find('.noveltool-progress-percent').text(options.indeterminate ? '' : (percent + '%'));
+
+            if (options.indeterminate) {
+                barInner.css('width', '0');
+            } else {
+                barInner.css('width', percent + '%');
+            }
+
+            progressBar.attr('aria-valuenow', percent);
+        }
+
+        /**
+         * 進捗UIを非表示にする
+         */
+        function hideImportProgress() {
+            var progressDiv = $('.noveltool-import-progress');
+            progressDiv.hide().removeClass('is-indeterminate is-determinate');
+            progressDiv.find('.noveltool-import-progress-title').text(noveltoolExportImport.importing);
+            progressDiv.find('.noveltool-import-progress-status').text('');
+            progressDiv.find('.noveltool-import-progress-detail').text('');
+            progressDiv.find('.noveltool-progress-count').text('');
+            progressDiv.find('.noveltool-progress-percent').text('0%');
+            progressDiv.find('.noveltool-progress-bar').attr('aria-valuenow', 0);
+            progressDiv.find('.noveltool-progress-bar-inner').css('width', '0');
+        }
+
+        /**
+         * 通常のJSON/単一ZIPインポート進捗を表示する
+         */
+        function showGenericImportProgress() {
+            updateImportProgress({
+                title: noveltoolExportImport.importing,
+                status: '',
+                detail: '',
+                countText: '',
+                percent: 0,
+                indeterminate: true
+            });
+        }
+
+        /**
+         * 分割ZIPの全体進捗を表示する
+         *
+         * @param {number} receivedCount 受信済みパート数
+         * @param {number} totalParts    総パート数
+         * @param {string} statusText    状態文言
+         * @param {string} detailText    補足文言
+         */
+        function showSplitOverallProgress(receivedCount, totalParts, statusText, detailText) {
+            var percent = totalParts > 0 ? Math.round((receivedCount / totalParts) * 100) : 0;
+            var countText = noveltoolExportImport.splitZipPartsReceivedCount
+                .replace('%1$d', receivedCount)
+                .replace('%2$d', totalParts);
+
+            updateImportProgress({
+                title: noveltoolExportImport.splitZipOverallProgress,
+                status: statusText,
+                detail: detailText,
+                countText: countText,
+                percent: percent,
+                indeterminate: false
+            });
+        }
+
+        /**
+         * 分割ZIPのサーバー処理中表示へ切り替える
+         *
+         * @param {number} totalParts 総パート数
+         */
+        function showSplitServerProcessing(totalParts) {
+            showSplitOverallProgress(
+                totalParts,
+                totalParts,
+                noveltoolExportImport.splitZipUploadCompleted,
+                noveltoolExportImport.splitZipServerProcessing
+            );
+
+            clearSplitProcessingTimer();
+
+            // 最終パート送信直後は「アップロード完了」と「サーバー処理中」を分けて見せる。
+            // 短い待機時間を入れることで、アップロード完了直後に表示が切り替わったことを認識しやすくする。
+            var processingTimerId = window.setTimeout(function() {
+                if (splitImportState.processingTimer !== processingTimerId) {
+                    return;
+                }
+                showSplitOverallProgress(
+                    totalParts,
+                    totalParts,
+                    noveltoolExportImport.splitZipAllPartsReceived,
+                    noveltoolExportImport.splitZipGameImporting
+                );
+            }, SERVER_PROCESSING_DELAY_MS);
+            splitImportState.processingTimer = processingTimerId;
+        }
+
+        /**
+         * サーバーレスポンスから分割ZIP状態を更新する
+         *
+         * @param {Object} data split_zip_staging のレスポンス
+         */
+        function applySplitImportState(data) {
+            splitImportState.active = true;
+            splitImportState.totalParts = parseInt(data.total_parts, 10) || 0;
+            splitImportState.stagedParts = normalizePartList(data.staged_parts);
+            splitImportState.missingParts = normalizePartList(data.missing_parts);
+            splitImportState.exportId = data.export_id || '';
+            splitImportState.gameTitle = data.game_title || '';
+        }
+
         // ゲーム選択ドロップダウンの変更処理
         $('#noveltool-export-game-select').on('change', function() {
             var select = $(this);
@@ -437,21 +645,53 @@
             var button = $(this);
             var fileInput = $('#noveltool-import-file')[0];
             var downloadImages = $('#noveltool-download-images').is(':checked');
-            var progressDiv = $('.noveltool-import-progress');
+            var selectedFile;
+            var parsedPartInfo;
+            var requestContext;
 
             if (fileInput.files.length === 0) {
                 showNotice('error', noveltoolExportImport.noFileSelected);
                 return;
             }
 
+            selectedFile = fileInput.files[0];
+            parsedPartInfo = parseSplitZipPartInfo(selectedFile.name);
+            requestContext = {
+                isSplitRequest: splitImportState.active || parsedPartInfo !== null,
+                part: parsedPartInfo ? parsedPartInfo.part : (splitImportState.missingParts[0] || 0),
+                totalParts: parsedPartInfo ? parsedPartInfo.totalParts : splitImportState.totalParts,
+                isFinalPart: false,
+                finished: false,
+                succeeded: false,
+                serverProcessingShown: false
+            };
+
+            if (requestContext.isSplitRequest && requestContext.totalParts > 0) {
+                splitImportState.currentUploadPart = requestContext.part;
+                splitImportState.currentUploadTotal = requestContext.totalParts;
+                requestContext.isFinalPart = splitImportState.active &&
+                    splitImportState.missingParts.length === 1 &&
+                    splitImportState.missingParts[0] === requestContext.part;
+
+                showSplitOverallProgress(
+                    splitImportState.stagedParts.length,
+                    requestContext.totalParts,
+                    noveltoolExportImport.splitZipUploadingPart
+                        .replace('%1$d', requestContext.part)
+                        .replace('%2$d', requestContext.totalParts),
+                    noveltoolExportImport.splitZipWaitingNext
+                );
+            } else {
+                showGenericImportProgress();
+            }
+
             var formData = new FormData();
             formData.append('action', 'noveltool_import_game');
             formData.append('download_images', downloadImages ? 'true' : 'false');
             formData.append('nonce', noveltoolExportImport.importNonce);
-            formData.append('import_file', fileInput.files[0]);
+            formData.append('import_file', selectedFile);
 
             button.prop('disabled', true);
-            progressDiv.show();
 
             $.ajax({
                 url: ajaxurl,
@@ -459,13 +699,33 @@
                 data: formData,
                 processData: false,
                 contentType: false,
+                xhr: function() {
+                    var xhr = $.ajaxSettings.xhr();
+
+                    if (xhr.upload && requestContext.isSplitRequest && requestContext.isFinalPart) {
+                        xhr.upload.addEventListener('load', function() {
+                            if (requestContext.finished || requestContext.serverProcessingShown) {
+                                return;
+                            }
+                            requestContext.serverProcessingShown = true;
+                            showSplitServerProcessing(requestContext.totalParts);
+                        });
+                    }
+
+                    return xhr;
+                },
                 success: function(response) {
+                    requestContext.finished = true;
+                    clearSplitProcessingTimer();
+
                     if (response.success) {
+                        requestContext.succeeded = true;
                         var d = response.data;
 
                         if (d.format === 'split_zip_staging') {
                             // 分割ZIPステージング進行中: 進捗パネルを更新して次パートを促す
-                            showStagingProgress(d);
+                            applySplitImportState(d);
+                            showSplitZipStagingProgress(d, requestContext.part);
                             fileInput.value = '';
                             button.prop('disabled', true); // 次ファイル選択まで無効
                         } else {
@@ -478,17 +738,46 @@
                             showNotice('success', message);
                             fileInput.value = '';
                             button.prop('disabled', true);
+                            hideImportProgress();
+                            resetSplitImportState();
                         }
                     } else {
+                        if (requestContext.isSplitRequest && requestContext.totalParts > 0) {
+                            showSplitOverallProgress(
+                                splitImportState.stagedParts.length,
+                                requestContext.totalParts,
+                                noveltoolExportImport.importError,
+                                response.data.message || noveltoolExportImport.importError
+                            );
+                        } else {
+                            hideImportProgress();
+                        }
                         showNotice('error', response.data.message || noveltoolExportImport.importError);
                     }
                 },
                 error: function() {
+                    requestContext.finished = true;
+                    clearSplitProcessingTimer();
+
+                    if (requestContext.isSplitRequest && requestContext.totalParts > 0) {
+                        showSplitOverallProgress(
+                            splitImportState.stagedParts.length,
+                            requestContext.totalParts,
+                            noveltoolExportImport.importError,
+                            noveltoolExportImport.importError
+                        );
+                    } else {
+                        hideImportProgress();
+                    }
                     showNotice('error', noveltoolExportImport.importError);
                 },
                 complete: function() {
-                    progressDiv.hide();
-                    // ファイルが選択されている場合はボタンを再有効化
+                    // 通常のJSON/単一ZIPのみここで進捗パネルを閉じる
+                    if (!requestContext.isSplitRequest && !requestContext.succeeded) {
+                        hideImportProgress();
+                    }
+
+                    // ファイルが選択されている場合はボタンを再有効化（split staging 成功直後は value を空にしている）
                     if (fileInput.files.length > 0) {
                         button.prop('disabled', false);
                     }
@@ -500,17 +789,42 @@
          * 分割ZIPステージングの進捗パネルを表示する
          *
          * @param {Object} data サーバーレスポンスの data オブジェクト（split_zip_staging）
+         * @param {number} lastUploadedPart 直前に受信したパート番号
          */
-        function showStagingProgress(data) {
+        function showSplitZipStagingProgress(data, lastUploadedPart) {
             var panel = $('#noveltool-split-zip-staging');
+            var stagedParts = normalizePartList(data.staged_parts);
+            var missingParts = normalizePartList(data.missing_parts);
+            var receivedCount = stagedParts.length;
+            var totalParts = parseInt(data.total_parts, 10) || 0;
+            var nextPart = missingParts.length > 0 ? missingParts[0] : 0;
+            var receivedStatus;
+            var nextHint;
+
             panel.empty();
 
             var title = $('<p><strong>' + noveltoolExportImport.splitZipStagingTitle + '</strong></p>');
             panel.append(title);
 
+            panel.append(
+                $('<p class="noveltool-staging-summary"></p>').text(
+                    noveltoolExportImport.splitZipPartsReceivedCount
+                        .replace('%1$d', receivedCount)
+                        .replace('%2$d', totalParts) +
+                    ' (' + (totalParts > 0 ? Math.round((receivedCount / totalParts) * 100) : 0) + '%)'
+                )
+            );
+
+            if (lastUploadedPart && totalParts > 0) {
+                receivedStatus = noveltoolExportImport.splitZipReceivedPart
+                    .replace('%1$d', lastUploadedPart)
+                    .replace('%2$d', totalParts);
+                panel.append($('<p class="noveltool-staging-status"></p>').text(receivedStatus));
+            }
+
             var ul = $('<ul class="noveltool-staging-parts"></ul>');
-            for (var i = 1; i <= data.total_parts; i++) {
-                var isDone = data.staged_parts.indexOf(i) >= 0;
+            for (var i = 1; i <= totalParts; i++) {
+                var isDone = stagedParts.indexOf(i) >= 0;
                 var iconCls = isDone ? 'dashicons-yes' : 'dashicons-clock';
                 var statusTxt = isDone
                     ? noveltoolExportImport.splitZipPartUploaded
@@ -525,13 +839,27 @@
             }
             panel.append(ul);
 
-            if (data.missing_parts && data.missing_parts.length > 0) {
-                var nextPart = data.missing_parts[0];
-                var hint = noveltoolExportImport.splitZipUploadNext
+            if (nextPart > 0) {
+                nextHint = noveltoolExportImport.splitZipUploadNext
                     .replace('%1$d', nextPart)
-                    .replace('%2$d', data.total_parts);
-                panel.append('<p class="description">' + hint + '</p>');
+                    .replace('%2$d', totalParts);
+                panel.append($('<p class="noveltool-staging-next description"></p>').text(nextHint));
             }
+
+            showSplitOverallProgress(
+                receivedCount,
+                totalParts,
+                lastUploadedPart && totalParts > 0
+                    ? noveltoolExportImport.splitZipReceivedPart
+                        .replace('%1$d', lastUploadedPart)
+                        .replace('%2$d', totalParts)
+                    : noveltoolExportImport.splitZipWaitingNext,
+                nextPart > 0
+                    ? noveltoolExportImport.splitZipUploadNext
+                        .replace('%1$d', nextPart)
+                        .replace('%2$d', totalParts)
+                    : noveltoolExportImport.splitZipWaitingNext
+            );
 
             panel.show();
         }

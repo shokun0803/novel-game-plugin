@@ -2322,6 +2322,10 @@ msgid "Split ZIP upload progress"
 msgstr ""
 
 #: admin/export-import.php
+msgid "Overall progress"
+msgstr ""
+
+#: admin/export-import.php
 msgid "Part %1$d of %2$d"
 msgstr ""
 
@@ -2333,13 +2337,44 @@ msgstr ""
 msgid "Waiting"
 msgstr ""
 
+#. translators: %1$d: 受信済みパート数, %2$d: 総パート数
+#: admin/export-import.php
+msgid "%1$d of %2$d parts received"
+msgstr ""
+
+#. translators: %1$d: アップロード中のパート番号, %2$d: 総パート数
+#: admin/export-import.php
+msgid "Uploading Part %1$d of %2$d..."
+msgstr ""
+
+#. translators: %1$d: 受信済みのパート番号, %2$d: 総パート数
+#: admin/export-import.php
+msgid "Received Part %1$d of %2$d."
+msgstr ""
+
 #. translators: %1$d: 次にアップロードするパート番号, %2$d: 総パート数
 #: admin/export-import.php
 msgid "Please select Part %1$d of %2$d and click Import."
 msgstr ""
 
 #: admin/export-import.php
+msgid "Waiting for the next ZIP part upload."
+msgstr ""
+
+#: admin/export-import.php
 msgid "All parts received. Importing..."
+msgstr ""
+
+#: admin/export-import.php
+msgid "All ZIP parts have been uploaded."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Upload complete. Server-side verification and import are still running."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Server-side processing is in progress. Please wait while the game data is being imported."
 msgstr ""
 
 #: admin/game-settings.php

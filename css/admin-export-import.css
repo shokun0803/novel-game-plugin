@@ -102,6 +102,27 @@
     border-radius: 4px;
 }
 
+.noveltool-import-progress-title,
+.noveltool-import-progress-status,
+.noveltool-import-progress-detail {
+    margin: 0;
+}
+
+.noveltool-import-progress-title {
+    font-weight: 600;
+}
+
+.noveltool-import-progress-status {
+    margin-top: 6px;
+    color: #1d2327;
+}
+
+.noveltool-import-progress-detail {
+    margin-top: 4px;
+    color: #646970;
+    font-size: 13px;
+}
+
 .noveltool-progress-bar {
     width: 100%;
     height: 20px;
@@ -116,6 +137,9 @@
     height: 100%;
     background: linear-gradient(90deg, #0073aa, #00a0d2);
     transition: width 0.3s ease;
+}
+
+.noveltool-import-progress.is-indeterminate .noveltool-progress-bar-inner {
     animation: progress-animation 1.5s ease-in-out infinite;
 }
 
@@ -129,6 +153,29 @@
     100% {
         width: 100%;
     }
+}
+
+.noveltool-import-progress.is-determinate .noveltool-progress-bar-inner {
+    animation: none;
+}
+
+.noveltool-import-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #50575e;
+}
+
+.noveltool-progress-count {
+    font-weight: 600;
+}
+
+.noveltool-progress-percent {
+    font-weight: 700;
+    color: #0073aa;
 }
 
 /* ゲームなしメッセージ */
@@ -252,6 +299,19 @@
 
 .noveltool-split-zip-staging p:last-child {
     margin-bottom: 0;
+}
+
+.noveltool-split-zip-staging .noveltool-staging-summary {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.noveltool-split-zip-staging .noveltool-staging-status {
+    color: #1d2327;
+}
+
+.noveltool-split-zip-staging .noveltool-staging-next {
+    color: #50575e;
 }
 
 .noveltool-staging-parts {
