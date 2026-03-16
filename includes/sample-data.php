@@ -1670,3 +1670,141 @@ function noveltool_install_shadow_detective_game() {
     
     return true;
 }
+
+/**
+ * サンプル画像ディレクトリ（uploads/noveltool/sample-images）を削除する
+ *
+ * プラグインが管理するサンプル画像保存領域のみを削除対象とし、
+ * ユーザーの uploads 配下のファイルには一切触れない。
+ * パストラバーサル対策として、削除前に厳密なパス検証を実施する。
+ *
+ * @return array {
+ *     @type bool     $success       削除処理全体の成否
+ *     @type int      $deleted_count 削除したファイル数
+ *     @type string[] $errors        エラーメッセージの配列
+ * }
+ * @since 1.6.0
+ */
+function noveltool_delete_sample_images() {
+    $result = array(
+        'success'       => false,
+        'deleted_count' => 0,
+        'errors'        => array(),
+    );
+
+    $sample_dir = noveltool_get_sample_images_directory();
+
+    // ディレクトリが存在しない場合は既に削除済みとみなし成功を返す
+    if ( ! is_dir( $sample_dir ) ) {
+        $result['success'] = true;
+        return $result;
+    }
+
+    // uploads ベースディレクトリの取得
+    $upload_dir   = wp_upload_dir();
+    $uploads_base = isset( $upload_dir['basedir'] ) ? $upload_dir['basedir'] : '';
+
+    if ( empty( $uploads_base ) ) {
+        $result['errors'][] = __( 'Failed to resolve uploads directory.', 'novel-game-plugin' );
+        return $result;
+    }
+
+    // realpath でシンボリックリンクとパストラバーサルを解決
+    $real_sample_dir = realpath( $sample_dir );
+    $real_uploads    = realpath( $uploads_base );
+
+    if ( false === $real_sample_dir || false === $real_uploads ) {
+        $result['errors'][] = __( 'Failed to resolve directory path.', 'novel-game-plugin' );
+        return $result;
+    }
+
+    // 厳密パス検証: uploads/noveltool/sample-images と完全一致することを確認
+    $expected_dir = rtrim( $real_uploads, DIRECTORY_SEPARATOR )
+        . DIRECTORY_SEPARATOR . 'noveltool'
+        . DIRECTORY_SEPARATOR . 'sample-images';
+
+    if ( $real_sample_dir !== $expected_dir ) {
+        $result['errors'][] = __( 'Unexpected sample images directory path. Deletion aborted for safety.', 'novel-game-plugin' );
+        return $result;
+    }
+
+    // 再帰的にディレクトリを削除
+    $all_ok            = noveltool_delete_sample_images_recursive( $real_sample_dir, $result );
+    $result['success'] = $all_ok && empty( $result['errors'] );
+
+    // 削除結果を監査ログとして記録
+    if ( $result['success'] ) {
+        error_log( sprintf( '[NovelGamePlugin] Sample images deletion completed: %d file(s) deleted.', $result['deleted_count'] ) );
+    } else {
+        error_log( sprintf(
+            '[NovelGamePlugin] Sample images deletion partially failed: %d file(s) deleted. Errors: %s',
+            $result['deleted_count'],
+            implode( '; ', $result['errors'] )
+        ) );
+    }
+
+    return $result;
+}
+
+/**
+ * ディレクトリを再帰的に削除する内部ヘルパー
+ *
+ * @param string $dir    削除対象ディレクトリの絶対パス
+ * @param array  $result 結果配列（参照渡し）
+ * @return bool 全削除に成功した場合 true
+ * @since 1.6.0
+ */
+function noveltool_delete_sample_images_recursive( $dir, &$result ) {
+    if ( ! is_dir( $dir ) ) {
+        return true;
+    }
+
+    $items = scandir( $dir );
+    if ( false === $items ) {
+        $result['errors'][] = sprintf(
+            /* translators: %s: directory name */
+            __( 'Failed to read directory: %s', 'novel-game-plugin' ),
+            basename( $dir )
+        );
+        return false;
+    }
+
+    $all_deleted = true;
+    foreach ( $items as $item ) {
+        if ( '.' === $item || '..' === $item ) {
+            continue;
+        }
+
+        $path = $dir . DIRECTORY_SEPARATOR . $item;
+
+        if ( is_dir( $path ) ) {
+            $sub_ok = noveltool_delete_sample_images_recursive( $path, $result );
+            if ( $sub_ok ) {
+                if ( ! rmdir( $path ) ) {
+                    $result['errors'][] = sprintf(
+                        /* translators: %s: directory name */
+                        __( 'Failed to delete directory: %s', 'novel-game-plugin' ),
+                        $item
+                    );
+                    $all_deleted = false;
+                }
+            } else {
+                $all_deleted = false;
+            }
+        } else {
+            // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+            if ( @unlink( $path ) ) {
+                $result['deleted_count']++;
+            } else {
+                $result['errors'][] = sprintf(
+                    /* translators: %s: file name */
+                    __( 'Failed to delete file: %s', 'novel-game-plugin' ),
+                    $item
+                );
+                $all_deleted = false;
+            }
+        }
+    }
+
+    return $all_deleted;
+}
