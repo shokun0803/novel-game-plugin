@@ -73,6 +73,13 @@
     margin-bottom: 10px;
 }
 
+.noveltool-import-help {
+    margin-top: 0;
+    margin-bottom: 12px;
+    max-width: 400px;
+    line-height: 1.6;
+}
+
 /* ボタン */
 .noveltool-export-button,
 .noveltool-import-button {
@@ -102,6 +109,27 @@
     border-radius: 4px;
 }
 
+.noveltool-import-progress-title,
+.noveltool-import-progress-status,
+.noveltool-import-progress-detail {
+    margin: 0;
+}
+
+.noveltool-import-progress-title {
+    font-weight: 600;
+}
+
+.noveltool-import-progress-status {
+    margin-top: 6px;
+    color: #1d2327;
+}
+
+.noveltool-import-progress-detail {
+    margin-top: 4px;
+    color: #646970;
+    font-size: 13px;
+}
+
 .noveltool-progress-bar {
     width: 100%;
     height: 20px;
@@ -116,6 +144,9 @@
     height: 100%;
     background: linear-gradient(90deg, #0073aa, #00a0d2);
     transition: width 0.3s ease;
+}
+
+.noveltool-import-progress.is-indeterminate .noveltool-progress-bar-inner {
     animation: progress-animation 1.5s ease-in-out infinite;
 }
 
@@ -129,6 +160,29 @@
     100% {
         width: 100%;
     }
+}
+
+.noveltool-import-progress.is-determinate .noveltool-progress-bar-inner {
+    animation: none;
+}
+
+.noveltool-import-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #50575e;
+}
+
+.noveltool-progress-count {
+    font-weight: 600;
+}
+
+.noveltool-progress-percent {
+    font-weight: 700;
+    color: #0073aa;
 }
 
 /* ゲームなしメッセージ */
@@ -176,4 +230,112 @@
     .noveltool-import-file {
         max-width: 100%;
     }
+}
+
+/* エクスポートサイズ情報 */
+.noveltool-export-size-info {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f0f6fc;
+    border-left: 4px solid #0073aa;
+    border-radius: 0 3px 3px 0;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+.noveltool-export-size-info .dashicons {
+    vertical-align: middle;
+    margin-right: 4px;
+    color: #0073aa;
+}
+
+.noveltool-export-size-info .dashicons-yes {
+    color: #46b450;
+}
+
+/* 分割ZIPダウンロードリスト */
+.noveltool-split-zip-download-list {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.noveltool-split-zip-download-list p {
+    margin: 0 0 10px;
+}
+
+.noveltool-split-zip-parts {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+}
+
+.noveltool-split-zip-parts li {
+    margin-bottom: 6px;
+}
+
+.noveltool-split-zip-parts .noveltool-split-zip-part-btn {
+    min-width: 200px;
+    text-align: left;
+}
+
+.noveltool-split-zip-parts .noveltool-part-done {
+    color: #46b450;
+    border-color: #46b450;
+}
+
+.noveltool-split-zip-parts .noveltool-part-done .dashicons {
+    color: #46b450;
+    vertical-align: middle;
+}
+
+/* 分割ZIPステージング進捗パネル */
+.noveltool-split-zip-staging {
+    margin: 8px 0 12px;
+    padding: 10px 14px;
+    background: #f0f6fc;
+    border-left: 4px solid #2271b1;
+    border-radius: 0 2px 2px 0;
+}
+
+.noveltool-split-zip-staging p {
+    margin: 0 0 8px;
+}
+
+.noveltool-split-zip-staging p:last-child {
+    margin-bottom: 0;
+}
+
+.noveltool-split-zip-staging .noveltool-staging-summary {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.noveltool-split-zip-staging .noveltool-staging-status {
+    color: #1d2327;
+}
+
+.noveltool-split-zip-staging .noveltool-staging-next {
+    color: #50575e;
+}
+
+.noveltool-staging-parts {
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+}
+
+.noveltool-staging-parts li {
+    margin-bottom: 4px;
+    line-height: 1.6;
+}
+
+.noveltool-staging-parts .dashicons-yes {
+    color: #46b450;
+}
+
+.noveltool-staging-parts .dashicons-clock {
+    color: #999;
 }

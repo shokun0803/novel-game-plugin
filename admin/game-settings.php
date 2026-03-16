@@ -669,6 +669,7 @@ function noveltool_export_game_data( $game_id ) {
         $scene_meta = array(
             'original_index'          => $i,
             'original_post_id'        => $scene->ID,
+            'is_start_scene'          => (bool) get_post_meta( $scene->ID, '_is_start_scene', true ),
             'title'                   => $scene->post_title,
             'background_image'        => get_post_meta( $scene->ID, '_background_image', true ),
             'character_image'         => get_post_meta( $scene->ID, '_character_image', true ),
@@ -705,6 +706,7 @@ function noveltool_export_game_data( $game_id ) {
             'title'         => $game['title'],
             'description'   => isset( $game['description'] ) ? $game['description'] : '',
             'title_image'   => isset( $game['title_image'] ) ? $game['title_image'] : '',
+            'start_scene_id' => isset( $game['start_scene_id'] ) ? intval( $game['start_scene_id'] ) : 0,
             'game_over_text' => isset( $game['game_over_text'] ) ? $game['game_over_text'] : 'Game Over',
         ),
         'flags'          => $flag_master,
@@ -951,6 +953,8 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
         }
     }
 
+    $imported_start_scene_old_id = isset( $game_data['start_scene_id'] ) ? intval( $game_data['start_scene_id'] ) : 0;
+
     $game_id = noveltool_save_game( $new_game_data );
     if ( ! $game_id ) {
         return new WP_Error( 'save_failed', __( 'Failed to save game data.', 'novel-game-plugin' ) );
@@ -992,6 +996,7 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
     $imported_scenes = 0;
     $old_post_id_to_new_map = array();
     $first_scene_post_id = null; // 画像ダウンロード時の親関連付け用
+    $imported_start_scene_new_id = null;
     $image_download_failures = 0; // 画像ダウンロード失敗件数
     
     foreach ( $import_data['scenes'] as $scene_index => $scene_data ) {
@@ -1025,6 +1030,13 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
 
         // ゲームタイトルを設定
         update_post_meta( $post_id, '_game_title', $new_game_data['title'] );
+
+        if ( ! empty( $scene_data['is_start_scene'] ) ) {
+            update_post_meta( $post_id, '_is_start_scene', '1' );
+            if ( null === $imported_start_scene_new_id ) {
+                $imported_start_scene_new_id = $post_id;
+            }
+        }
 
         // 各メタデータの保存（サニタイズ強化）
         $meta_fields = array(
@@ -1168,6 +1180,15 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
         }
     }
 
+    if ( $imported_start_scene_old_id > 0 && isset( $old_post_id_to_new_map[ $imported_start_scene_old_id ] ) ) {
+        $imported_start_scene_new_id = $old_post_id_to_new_map[ $imported_start_scene_old_id ];
+    }
+
+    if ( $imported_start_scene_new_id ) {
+        update_post_meta( $imported_start_scene_new_id, '_is_start_scene', '1' );
+        noveltool_update_game_start_scene( $new_game_data['title'], $imported_start_scene_new_id );
+    }
+
     // インポート履歴を記録
     noveltool_log_transfer_operation( 'import', $new_game_data['title'], $imported_scenes, isset( $import_data['flags'] ) ? count( $import_data['flags'] ) : 0 );
 
@@ -1183,6 +1204,195 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
 }
 
 /**
+ * インポート画像のシグネチャ情報を生成する
+ *
+ * 同一画像の再利用判定に必要なファイル名・MIME type・ファイルサイズ・SHA-256 を返す。
+ *
+ * @param string $tmp_path 一時ファイルパス
+ * @param string $file_name 元のファイル名
+ * @return array|WP_Error シグネチャ配列またはエラー
+ * @since 1.5.0
+ */
+function noveltool_get_import_image_signature( $tmp_path, $file_name ) {
+    if ( ! is_string( $tmp_path ) || ! file_exists( $tmp_path ) ) {
+        return new WP_Error( 'missing_tmp_file', __( 'Imported image file was not found.', 'novel-game-plugin' ) );
+    }
+
+    $image_info = @getimagesize( $tmp_path );
+    if ( false === $image_info || empty( $image_info['mime'] ) ) {
+        return new WP_Error( 'invalid_image', __( 'Downloaded file is not a valid image.', 'novel-game-plugin' ) );
+    }
+
+    $file_size = filesize( $tmp_path );
+    if ( false === $file_size ) {
+        return new WP_Error( 'invalid_image_size', __( 'Failed to read imported image file size.', 'novel-game-plugin' ) );
+    }
+
+    $file_hash = hash_file( 'sha256', $tmp_path );
+    if ( false === $file_hash ) {
+        return new WP_Error( 'invalid_image_hash', __( 'Failed to calculate imported image hash.', 'novel-game-plugin' ) );
+    }
+
+    return array(
+        'file_name' => sanitize_file_name( $file_name ),
+        'mime_type' => sanitize_mime_type( $image_info['mime'] ),
+        'file_size' => intval( $file_size ),
+        'sha256'    => $file_hash,
+    );
+}
+
+/**
+ * 添付ファイルにインポート画像のシグネチャ情報を保存する
+ *
+ * @param int   $attachment_id 添付ファイルID
+ * @param array $signature     シグネチャ配列
+ * @since 1.5.0
+ */
+function noveltool_store_import_image_signature( $attachment_id, $signature ) {
+    update_post_meta( $attachment_id, '_noveltool_import_file_name', $signature['file_name'] );
+    update_post_meta( $attachment_id, '_noveltool_import_mime_type', $signature['mime_type'] );
+    update_post_meta( $attachment_id, '_noveltool_import_file_size', (string) $signature['file_size'] );
+    update_post_meta( $attachment_id, '_noveltool_import_sha256', $signature['sha256'] );
+}
+
+/**
+ * シグネチャ一致する既存画像添付を検索する
+ *
+ * ファイル名・MIME type・ファイルサイズで候補を絞り込み、
+ * 最後に SHA-256 で内容一致を確認して再利用可能な添付ファイルを返す。
+ *
+ * @param array $signature シグネチャ配列
+ * @return int 添付ファイルID。一致しない場合は 0
+ * @since 1.5.0
+ */
+function noveltool_find_existing_import_image_attachment( $signature ) {
+    global $wpdb;
+
+    $sanitized_file_name = sanitize_file_name( $signature['file_name'] );
+    $file_name_like      = '%/' . $wpdb->esc_like( $sanitized_file_name );
+    $candidate_ids  = $wpdb->get_col(
+        $wpdb->prepare(
+            "SELECT DISTINCT p.ID
+            FROM {$wpdb->posts} p
+            INNER JOIN {$wpdb->postmeta} file_meta
+                ON p.ID = file_meta.post_id
+                AND file_meta.meta_key = '_wp_attached_file'
+            LEFT JOIN {$wpdb->postmeta} size_meta
+                ON p.ID = size_meta.post_id
+                AND size_meta.meta_key = '_noveltool_import_file_size'
+            WHERE p.post_type = 'attachment'
+                AND p.post_status = 'inherit'
+                AND p.post_mime_type = %s
+                AND ( file_meta.meta_value = %s OR file_meta.meta_value LIKE %s )
+                AND ( size_meta.meta_value = %s OR size_meta.post_id IS NULL )
+            ORDER BY p.ID ASC",
+            $signature['mime_type'],
+            $sanitized_file_name,
+            $file_name_like,
+            (string) $signature['file_size']
+        )
+    );
+
+    foreach ( $candidate_ids as $candidate_id ) {
+        $candidate_id = intval( $candidate_id );
+        if ( $candidate_id < 1 ) {
+            continue;
+        }
+
+        $attached_file = get_attached_file( $candidate_id );
+        if ( ! is_string( $attached_file ) || ! file_exists( $attached_file ) ) {
+            continue;
+        }
+
+        $candidate_size = filesize( $attached_file );
+        if ( false === $candidate_size || intval( $candidate_size ) !== intval( $signature['file_size'] ) ) {
+            continue;
+        }
+
+        $candidate_hash = hash_file( 'sha256', $attached_file );
+        if ( false === $candidate_hash || $candidate_hash !== $signature['sha256'] ) {
+            continue;
+        }
+
+        noveltool_store_import_image_signature( $candidate_id, $signature );
+
+        return $candidate_id;
+    }
+
+    return 0;
+}
+
+/**
+ * 一時画像ファイルから既存添付の再利用または新規添付作成を行う
+ *
+ * 同一リクエスト内では SHA-256 をキーに結果をキャッシュし、
+ * 同じ画像が複数回参照されても media_handle_sideload() を 1 回だけ実行する。
+ *
+ * @param string $tmp_path         一時ファイルパス
+ * @param string $file_name        元のファイル名
+ * @param int    $parent_post_id   親投稿ID
+ * @param bool   $return_metadata  true の場合はメタデータ配列を返す
+ * @return int|array|WP_Error 添付ファイルID、メタ情報付き配列、またはエラー
+ * @since 1.5.0
+ */
+function noveltool_get_or_create_import_image_attachment( $tmp_path, $file_name, $parent_post_id = 0, $return_metadata = false ) {
+    static $request_cache = array();
+
+    $signature = noveltool_get_import_image_signature( $tmp_path, $file_name );
+    if ( is_wp_error( $signature ) ) {
+        return $signature;
+    }
+
+    if ( isset( $request_cache[ $signature['sha256'] ] ) ) {
+        $cached_attachment = $request_cache[ $signature['sha256'] ];
+        $cached_attachment_id = isset( $cached_attachment['attachment_id'] ) ? intval( $cached_attachment['attachment_id'] ) : 0;
+        $cached_created       = ! empty( $cached_attachment['created'] );
+
+        if ( $cached_attachment_id > 0 && get_post( $cached_attachment_id ) ) {
+            $result = array(
+                'attachment_id' => $cached_attachment_id,
+                'created'       => $cached_created,
+            );
+            return $return_metadata ? $result : $result['attachment_id'];
+        }
+    }
+
+    $existing_attachment_id = noveltool_find_existing_import_image_attachment( $signature );
+    if ( $existing_attachment_id > 0 ) {
+        $result = array(
+            'attachment_id' => $existing_attachment_id,
+            'created'       => false,
+        );
+        $request_cache[ $signature['sha256'] ] = $result;
+        return $return_metadata ? $result : $result['attachment_id'];
+    }
+
+    if ( ! function_exists( 'media_handle_sideload' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+    }
+
+    $file_array = array(
+        'name'     => $signature['file_name'],
+        'tmp_name' => $tmp_path,
+    );
+
+    $attachment_id = media_handle_sideload( $file_array, $parent_post_id );
+    if ( is_wp_error( $attachment_id ) ) {
+        return $attachment_id;
+    }
+
+    noveltool_store_import_image_signature( $attachment_id, $signature );
+    $result = array(
+        'attachment_id' => $attachment_id,
+        'created'       => true,
+    );
+    $request_cache[ $signature['sha256'] ] = $result;
+    return $return_metadata ? $result : $result['attachment_id'];
+}
+
+/**
  * 外部画像URLをメディアライブラリにダウンロード
  *
  * セキュリティ強化: URLスキーム検証、Content-Type確認、画像検証を実施
@@ -1193,8 +1403,16 @@ function noveltool_import_game_data( $import_data, $download_images = false ) {
  * @since 1.3.0
  */
 function noveltool_download_image_to_media_library( $image_url, $parent_post_id = 0 ) {
+    static $download_cache = array();
+
     if ( ! filter_var( $image_url, FILTER_VALIDATE_URL ) ) {
         return new WP_Error( 'invalid_url', __( 'Invalid image URL.', 'novel-game-plugin' ) );
+    }
+
+    // 同一URLが同一インポート処理内で複数回参照されるケースでは、
+    // 既存添付の再検索だけでなく HTTP リクエスト自体も省略する
+    if ( isset( $download_cache[ $image_url ] ) ) {
+        return $download_cache[ $image_url ];
     }
     
     // URLスキーム検証: httpまたはhttpsのみ許可
@@ -1208,13 +1426,16 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
     $response = wp_remote_head( $image_url, array( 'timeout' => 10 ) );
     if ( is_wp_error( $response ) ) {
         error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $response->get_error_message() );
+        $download_cache[ $image_url ] = $response;
         return $response;
     }
     
     $content_type = wp_remote_retrieve_header( $response, 'content-type' );
     if ( $content_type && strpos( $content_type, 'image/' ) !== 0 ) {
         error_log( '[noveltool] Image download failed: Invalid Content-Type for ' . $image_url . ' (got: ' . $content_type . ')' );
-        return new WP_Error( 'invalid_content_type', __( 'URL does not point to an image.', 'novel-game-plugin' ) );
+        $error = new WP_Error( 'invalid_content_type', __( 'URL does not point to an image.', 'novel-game-plugin' ) );
+        $download_cache[ $image_url ] = $error;
+        return $error;
     }
 
     // WordPress HTTP APIを使用して画像をダウンロード
@@ -1225,6 +1446,7 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
     $temp_file = download_url( $image_url, 10 );
     if ( is_wp_error( $temp_file ) ) {
         error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $temp_file->get_error_message() );
+        $download_cache[ $image_url ] = $temp_file;
         return $temp_file;
     }
     
@@ -1235,7 +1457,9 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
             unlink( $temp_file );
         }
         error_log( '[noveltool] Image download failed: File is not a valid image ' . $image_url );
-        return new WP_Error( 'invalid_image', __( 'Downloaded file is not a valid image.', 'novel-game-plugin' ) );
+        $error = new WP_Error( 'invalid_image', __( 'Downloaded file is not a valid image.', 'novel-game-plugin' ) );
+        $download_cache[ $image_url ] = $error;
+        return $error;
     }
 
     // MIMEタイプに基づいて拡張子を決定
@@ -1261,7 +1485,7 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
         'tmp_name' => $temp_file,
     );
 
-    $attachment_id = media_handle_sideload( $file_array, $parent_post_id );
+    $attachment_id = noveltool_get_or_create_import_image_attachment( $file_array['tmp_name'], $file_array['name'], $parent_post_id );
     
     // 一時ファイルを削除
     if ( file_exists( $temp_file ) ) {
@@ -1270,10 +1494,14 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
 
     if ( is_wp_error( $attachment_id ) ) {
         error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $attachment_id->get_error_message() );
+        $download_cache[ $image_url ] = $attachment_id;
         return $attachment_id;
     }
 
-    return wp_get_attachment_url( $attachment_id );
+    $attachment_url = wp_get_attachment_url( $attachment_id );
+    $download_cache[ $image_url ] = $attachment_url;
+
+    return $attachment_url;
 }
 
 /**
@@ -1416,6 +1644,311 @@ function noveltool_collect_game_images( $export_data ) {
     } ) );
 
     return $urls;
+}
+
+/**
+ * 一時ファイルのクリーンアップキューにパスを追加する
+ *
+ * クリーンアップキューは `noveltool_tmp_cleanup_queue` オプションに保存され、
+ * 日次 cron （`noveltool_daily_cleanup`）により削除される。
+ *
+ * $session_key を指定すると同一キーを持つ既存エントリを削除してから追加する（upsert）。
+ * これにより、同一ステージングセッションのパートを複数回アップロードしても
+ * 古いキューエントリが有効な一時ファイルを早期削除しない。
+ *
+ * @param array  $paths                        削除する一時ファイルパスの配列
+ * @param int    $expires_at                   削除基準時刻（Unixタイムスタンプ）
+ * @param string $session_key Optional.        セッション識別子。指定時は同一キーの既存エントリを新エントリで置き換える
+ * @since 1.5.0
+ */
+function noveltool_enqueue_tmp_cleanup( $paths, $expires_at, $session_key = '' ) {
+    $queue = get_option( 'noveltool_tmp_cleanup_queue', array() );
+
+    // 同一 session_key を持つ既存エントリを削除（upsert）
+    // session_key が未設定のエントリ、または指定キーと異なるエントリを残し、
+    // 同一セッションの古いエントリのみを除去して再登録する
+    if ( '' !== $session_key ) {
+        $queue = array_values(
+            array_filter(
+                $queue,
+                function ( $item ) use ( $session_key ) {
+                    return ! isset( $item['session_key'] ) || $item['session_key'] !== $session_key;
+                }
+            )
+        );
+    }
+
+    $entry = array(
+        'paths'      => array_values( (array) $paths ),
+        'expires_at' => intval( $expires_at ),
+    );
+    if ( '' !== $session_key ) {
+        $entry['session_key'] = $session_key;
+    }
+
+    $queue[] = $entry;
+    update_option( 'noveltool_tmp_cleanup_queue', $queue, false );
+}
+
+/**
+ * 期限切れの一時ファイルをクリーンアップする
+ *
+ * `noveltool_daily_cleanup` cron アクションにフックして呼ばれる。
+ *
+ * @since 1.5.0
+ */
+function noveltool_run_tmp_cleanup() {
+    $queue = get_option( 'noveltool_tmp_cleanup_queue', array() );
+    if ( empty( $queue ) ) {
+        return;
+    }
+    $now       = time();
+    $remaining = array();
+    foreach ( $queue as $item ) {
+        if ( ! isset( $item['expires_at'] ) || $item['expires_at'] < $now ) {
+            foreach ( (array) $item['paths'] as $path ) {
+                if ( is_string( $path ) && file_exists( $path ) ) {
+                    @unlink( $path );
+                }
+            }
+        } else {
+            $remaining[] = $item;
+        }
+    }
+    update_option( 'noveltool_tmp_cleanup_queue', $remaining, false );
+}
+add_action( 'noveltool_daily_cleanup', 'noveltool_run_tmp_cleanup' );
+
+/**
+ * 日次クリーンアップの cron スケジュールを登録する
+ *
+ * @since 1.5.0
+ */
+function noveltool_maybe_schedule_daily_cleanup() {
+    if ( ! wp_next_scheduled( 'noveltool_daily_cleanup' ) ) {
+        wp_schedule_event( time(), 'daily', 'noveltool_daily_cleanup' );
+    }
+}
+add_action( 'init', 'noveltool_maybe_schedule_daily_cleanup' );
+
+/**
+ * 分割ZIPの1パートあたりのサイズ上限を返す
+ *
+ * フィルター `noveltool_split_zip_part_size` で上書き可能。
+ * デフォルトは共有レンタルサーバーの upload_max_filesize 制約（一般的に 8MB）を
+ * 考慮した保守的な 5MB。逐次アップロードで 1 リクエスト 1 ファイルを前提とする。
+ *
+ * @return int バイト単位の上限サイズ
+ * @since 1.5.0
+ */
+function noveltool_get_split_zip_part_size() {
+    return intval( apply_filters( 'noveltool_split_zip_part_size', 5 * 1024 * 1024 ) ); // 5MB
+}
+
+/**
+ * 分割ZIPを使用するかどうかの閾値を返す
+ *
+ * フィルター `noveltool_split_zip_threshold` で上書き可能。
+ * デフォルトはパートサイズと同値（推定画像合計がパートサイズを超えると分割開始）。
+ * 推定画像合計がこの値を超える場合、分割ZIPエクスポートが使用される。
+ *
+ * @return int バイト単位の閾値
+ * @since 1.5.0
+ */
+function noveltool_get_split_zip_threshold() {
+    return intval( apply_filters( 'noveltool_split_zip_threshold', noveltool_get_split_zip_part_size() ) );
+}
+
+/**
+ * エクスポート用に1枚の画像をバイナリとして取得する
+ *
+ * ローカル uploads 配下のファイルは直接読み込み、
+ * 外部URLは wp_remote_get() で取得する。
+ * セキュリティ: パストラバーサル対策・SSRF対策・リダイレクト無効化を実施。
+ *
+ * @param string $url 画像URL
+ * @return string|false バイナリデータ、取得失敗時は false
+ * @since 1.5.0
+ */
+function noveltool_fetch_image_for_export( $url ) {
+    $upload_dir_info  = wp_upload_dir();
+    $upload_base_url  = trailingslashit( $upload_dir_info['baseurl'] );
+    $upload_base_path = $upload_dir_info['basedir'];
+
+    $url_host         = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+    $site_host        = strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
+    $upload_base_host = strtolower( (string) wp_parse_url( $upload_base_url, PHP_URL_HOST ) );
+    $allowed_hosts    = array_filter( array_unique( array( $site_host, $upload_base_host ) ) );
+    $url_path_part    = wp_parse_url( $url, PHP_URL_PATH );
+    $base_path_part   = wp_parse_url( $upload_base_url, PHP_URL_PATH );
+
+    if ( ! empty( $url_host ) && in_array( $url_host, $allowed_hosts, true )
+        && ! empty( $url_path_part ) && ! empty( $base_path_part )
+        && 0 === strpos( $url_path_part, $base_path_part ) ) {
+        // ローカルファイルを直接読み込む
+        $relative   = substr( $url_path_part, strlen( $base_path_part ) );
+        $local_path = $upload_base_path . DIRECTORY_SEPARATOR . ltrim( $relative, '/\\' );
+        $real_local = realpath( $local_path );
+        $real_base  = realpath( $upload_base_path );
+        if ( false === $real_local || false === $real_base || 0 !== strpos( $real_local, $real_base . DIRECTORY_SEPARATOR ) ) {
+            error_log( '[noveltool] fetch_image_for_export: パストラバーサルを検出しスキップしました: ' . $url );
+            return false;
+        }
+        $body = @file_get_contents( $real_local ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+        if ( false === $body ) {
+            error_log( '[noveltool] fetch_image_for_export: ローカルファイルの読み込みに失敗しました: ' . $local_path );
+            return false;
+        }
+        return $body;
+    }
+
+    // 外部URL: SSRF対策を適用して wp_remote_get() でダウンロード
+    if ( ! noveltool_is_safe_external_url( $url ) ) {
+        error_log( '[noveltool] fetch_image_for_export: 安全でないURLをスキップしました: ' . $url );
+        return false;
+    }
+    $response = wp_remote_get( $url, array(
+        'timeout'     => 30,
+        'redirection' => 0,
+        'sslverify'   => apply_filters( 'https_ssl_verify', true ),
+    ) );
+    if ( is_wp_error( $response ) ) {
+        error_log( '[noveltool] fetch_image_for_export: 画像のダウンロードに失敗しました: ' . $url );
+        return false;
+    }
+    $response_code = wp_remote_retrieve_response_code( $response );
+    if ( 200 !== $response_code ) {
+        if ( $response_code >= 300 && $response_code < 400 ) {
+            error_log( '[noveltool] fetch_image_for_export: リダイレクトを検出しスキップしました (HTTP ' . $response_code . '): ' . $url );
+        } else {
+            error_log( '[noveltool] fetch_image_for_export: ダウンロードに失敗しました (HTTP ' . $response_code . '): ' . $url );
+        }
+        return false;
+    }
+    $resp_body = wp_remote_retrieve_body( $response );
+    if ( empty( $resp_body ) ) {
+        error_log( '[noveltool] fetch_image_for_export: 画像の本文が空です: ' . $url );
+        return false;
+    }
+    return $resp_body;
+}
+
+/**
+ * ゲームデータの画像合計サイズを推定する
+ *
+ * ローカル uploads 配下の画像は filesize() で実測値を取得する。
+ * 外部URLは保守的な推定値 (512KB) を加算する。
+ * エクスポート前の分割判定に使用する。
+ *
+ * @param array $export_data noveltool_export_game_data() が返すエクスポートデータ
+ * @return int 推定合計サイズ（バイト）
+ * @since 1.5.0
+ */
+function noveltool_estimate_game_images_size( $export_data ) {
+    $image_urls = noveltool_collect_game_images( $export_data );
+    if ( empty( $image_urls ) ) {
+        return 0;
+    }
+
+    $total_size      = 0;
+    $upload_dir_info = wp_upload_dir();
+    $upload_base_url = trailingslashit( $upload_dir_info['baseurl'] );
+    $upload_base_path = $upload_dir_info['basedir'];
+
+    foreach ( $image_urls as $url ) {
+        $url_host         = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+        $site_host        = strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
+        $upload_base_host = strtolower( (string) wp_parse_url( $upload_base_url, PHP_URL_HOST ) );
+        $allowed_hosts    = array_filter( array_unique( array( $site_host, $upload_base_host ) ) );
+        $url_path_part    = wp_parse_url( $url, PHP_URL_PATH );
+        $base_path_part   = wp_parse_url( $upload_base_url, PHP_URL_PATH );
+
+        if ( ! empty( $url_host ) && in_array( $url_host, $allowed_hosts, true )
+            && ! empty( $url_path_part ) && ! empty( $base_path_part )
+            && 0 === strpos( $url_path_part, $base_path_part ) ) {
+            $relative   = substr( $url_path_part, strlen( $base_path_part ) );
+            $local_path = $upload_base_path . DIRECTORY_SEPARATOR . ltrim( $relative, '/\\' );
+            $real_local = realpath( $local_path );
+            $real_base  = realpath( $upload_base_path );
+            if ( $real_local && $real_base && 0 === strpos( $real_local, $real_base . DIRECTORY_SEPARATOR ) ) {
+                $size = @filesize( $real_local );
+                if ( false !== $size ) {
+                    $total_size += $size;
+                    continue;
+                }
+            }
+        }
+        // 外部または不明なURLは保守的な推定値 (512KB) を加算
+        $total_size += 512 * 1024;
+    }
+
+    return $total_size;
+}
+
+/**
+ * エクスポートデータ内の画像URLを相対パスに置換したコピーを返す
+ *
+ * ZIP内の相対パス（images/xxx.jpg 等）への置換を行う。
+ * ダウンロード失敗した画像は元の絶対URLを維持する。
+ *
+ * @param array $export_data       noveltool_export_game_data() が返すエクスポートデータ
+ * @param array $url_to_zip_path   成功したURL => ZIPパス のマッピング配列
+ * @return array 相対パス置換済みのエクスポートデータ
+ * @since 1.5.0
+ */
+function noveltool_build_export_data_with_relative_paths( $export_data, $url_to_zip_path ) {
+    $zip_data = $export_data;
+
+    if ( ! empty( $zip_data['game']['title_image'] ) && isset( $url_to_zip_path[ $zip_data['game']['title_image'] ] ) ) {
+        $zip_data['game']['title_image'] = $url_to_zip_path[ $zip_data['game']['title_image'] ];
+    }
+
+    $image_fields = array( 'background_image', 'character_image', 'character_left', 'character_center', 'character_right' );
+    foreach ( $zip_data['scenes'] as &$scene ) {
+        foreach ( $image_fields as $field ) {
+            if ( ! empty( $scene[ $field ] ) && isset( $url_to_zip_path[ $scene[ $field ] ] ) ) {
+                $scene[ $field ] = $url_to_zip_path[ $scene[ $field ] ];
+            }
+        }
+        if ( ! empty( $scene['dialogue_backgrounds'] ) ) {
+            $bg_data = $scene['dialogue_backgrounds'];
+            if ( is_string( $bg_data ) ) {
+                $bg_data = json_decode( $bg_data, true );
+            }
+            if ( is_array( $bg_data ) ) {
+                foreach ( $bg_data as &$bg ) {
+                    if ( is_string( $bg ) && isset( $url_to_zip_path[ $bg ] ) ) {
+                        $bg = $url_to_zip_path[ $bg ];
+                    }
+                }
+                unset( $bg );
+                $scene['dialogue_backgrounds'] = $bg_data;
+            }
+        }
+        if ( ! empty( $scene['dialogue_characters'] ) ) {
+            $dc_data = $scene['dialogue_characters'];
+            if ( is_string( $dc_data ) ) {
+                $dc_data = json_decode( $dc_data, true );
+            }
+            if ( is_array( $dc_data ) ) {
+                foreach ( $dc_data as &$char_set ) {
+                    if ( ! is_array( $char_set ) ) {
+                        continue;
+                    }
+                    foreach ( array( 'left', 'center', 'right' ) as $pos ) {
+                        if ( ! empty( $char_set[ $pos ] ) && isset( $url_to_zip_path[ $char_set[ $pos ] ] ) ) {
+                            $char_set[ $pos ] = $url_to_zip_path[ $char_set[ $pos ] ];
+                        }
+                    }
+                }
+                unset( $char_set );
+                $scene['dialogue_characters'] = $dc_data;
+            }
+        }
+    }
+    unset( $scene );
+
+    return $zip_data;
 }
 
 /**
@@ -1614,6 +2147,160 @@ function noveltool_export_game_data_as_zip( $export_data, $game_title ) {
 }
 
 /**
+ * ゲームデータを分割ZIPアーカイブとして作成する
+ *
+ * 画像合計サイズが単一ZIPの上限を超える場合に使用する。
+ * 各パートに manifest.json を含む。Part 1 のみ game-data.json を含む。
+ * manifest には export_id・part_number・total_parts・files 一覧等を含む。
+ *
+ * @param array  $export_data noveltool_export_game_data() が返すエクスポートデータ
+ * @param string $game_title  ゲームタイトル（ファイル名用）
+ * @return array|WP_Error 成功時: array( 'export_id', 'total_parts', 'zip_paths', 'game_title' ) / 失敗時: WP_Error
+ * @since 1.5.0
+ */
+function noveltool_export_game_data_as_split_zips( $export_data, $game_title ) {
+    if ( ! class_exists( 'ZipArchive' ) ) {
+        return new WP_Error( 'no_ziparchive', __( 'ZipArchive is not available on this server.', 'novel-game-plugin' ) );
+    }
+
+    @set_time_limit( 300 );
+    @ini_set( 'memory_limit', '256M' );
+
+    $part_size_limit = noveltool_get_split_zip_part_size();
+    $export_id       = 'ng-' . substr( md5( uniqid( '', true ) ), 0, 16 );
+    $export_date     = current_time( 'mysql' );
+
+    // 画像URLを収集し、ZIP内パス候補（images/ファイル名）を決定
+    $image_urls  = noveltool_collect_game_images( $export_data );
+    $url_to_file = array();
+    $used_names  = array();
+    foreach ( $image_urls as $url ) {
+        $basename = sanitize_file_name( basename( wp_parse_url( $url, PHP_URL_PATH ) ) );
+        if ( empty( $basename ) || strpos( $basename, '.' ) === false ) {
+            $basename = 'image-' . md5( $url ) . '.jpg';
+        }
+        $original = $basename;
+        $counter  = 1;
+        while ( in_array( $basename, $used_names, true ) ) {
+            $info     = pathinfo( $original );
+            $basename = $info['filename'] . '-' . $counter . '.' . $info['extension'];
+            $counter++;
+        }
+        $used_names[]        = $basename;
+        $url_to_file[ $url ] = 'images/' . $basename;
+    }
+
+    // 画像バイナリをダウンロード
+    $succeeded_url_to_file = array();
+    $image_bodies          = array(); // zip_path => binary
+    foreach ( $url_to_file as $url => $zip_path ) {
+        $body = noveltool_fetch_image_for_export( $url );
+        if ( false === $body ) {
+            continue;
+        }
+        $succeeded_url_to_file[ $url ] = $zip_path;
+        $image_bodies[ $zip_path ]     = $body;
+    }
+
+    // 相対パス置換済みの game-data.json コンテンツを生成
+    $zip_data     = noveltool_build_export_data_with_relative_paths( $export_data, $succeeded_url_to_file );
+    $json_content = wp_json_encode( $zip_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
+
+    // 画像をパートに分割（Part 1 は game-data.json + manifest 分を加算）
+    $parts        = array();
+    $current_part = array();
+    $current_size = strlen( $json_content ) + 2048; // JSON + manifest オーバーヘッド
+
+    foreach ( $image_bodies as $zip_path => $body ) {
+        $image_size = strlen( $body );
+        if ( ! empty( $current_part ) && ( $current_size + $image_size ) > $part_size_limit ) {
+            $parts[]      = $current_part;
+            $current_part = array();
+            $current_size = 2048; // manifest オーバーヘッドのみ
+        }
+        $current_part[ $zip_path ] = $body;
+        $current_size             += $image_size;
+    }
+    $parts[] = $current_part; // 最後のパート（画像なしでも最低1パート確保）
+
+    $total_parts   = count( $parts );
+    $zip_tmp_paths = array();
+
+    for ( $i = 0; $i < $total_parts; $i++ ) {
+        $part_number = $i + 1;
+        $part_files  = $parts[ $i ];
+
+        $manifest = array(
+            'version'       => '1.0',
+            'export_id'     => $export_id,
+            'game_title'    => $game_title,
+            'export_date'   => $export_date,
+            'part_number'   => $part_number,
+            'total_parts'   => $total_parts,
+            'has_game_data' => ( 1 === $part_number ),
+            'files'         => array_keys( $part_files ),
+        );
+
+        $tmp_zip = wp_tempnam( sanitize_file_name( $game_title ) . '-part' . $part_number . '.zip' );
+        if ( ! $tmp_zip ) {
+            foreach ( $zip_tmp_paths as $path ) {
+                @unlink( $path );
+            }
+            return new WP_Error( 'tempnam_failed', __( 'Failed to create temporary ZIP file.', 'novel-game-plugin' ) );
+        }
+
+        $zip = new ZipArchive();
+        if ( true !== $zip->open( $tmp_zip, ZipArchive::OVERWRITE ) ) {
+            @unlink( $tmp_zip );
+            foreach ( $zip_tmp_paths as $path ) {
+                @unlink( $path );
+            }
+            return new WP_Error( 'zip_open_failed', __( 'Failed to open ZIP archive for writing.', 'novel-game-plugin' ) );
+        }
+
+        // manifest.json を追加
+        $manifest_json = wp_json_encode( $manifest, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
+        if ( ! $zip->addFromString( 'manifest.json', $manifest_json ) ) {
+            $zip->close();
+            @unlink( $tmp_zip );
+            foreach ( $zip_tmp_paths as $path ) {
+                @unlink( $path );
+            }
+            return new WP_Error( 'zip_manifest_write_failed', __( 'Failed to write manifest.json to ZIP.', 'novel-game-plugin' ) );
+        }
+
+        // Part 1 のみ game-data.json を追加
+        if ( 1 === $part_number ) {
+            if ( ! $zip->addFromString( 'game-data.json', $json_content ) ) {
+                $zip->close();
+                @unlink( $tmp_zip );
+                foreach ( $zip_tmp_paths as $path ) {
+                    @unlink( $path );
+                }
+                return new WP_Error( 'zip_json_write_failed', __( 'Failed to write game-data.json to ZIP.', 'novel-game-plugin' ) );
+            }
+        }
+
+        // 画像を追加
+        foreach ( $part_files as $zip_path => $body ) {
+            if ( ! $zip->addFromString( $zip_path, $body ) ) {
+                error_log( '[noveltool] 分割ZIPエクスポート: ZIPへの画像追加に失敗しました: ' . $zip_path );
+            }
+        }
+
+        $zip->close();
+        $zip_tmp_paths[] = $tmp_zip;
+    }
+
+    return array(
+        'export_id'   => $export_id,
+        'total_parts' => $total_parts,
+        'zip_paths'   => $zip_tmp_paths,
+        'game_title'  => $game_title,
+    );
+}
+
+/**
  * AJAXハンドラー: ゲームデータのエクスポート
  *
  * エラーメッセージは静的文言のみ利用し外部入力を直接連結しない方針
@@ -1651,7 +2338,57 @@ function noveltool_ajax_export_game() {
     // ZIP形式でエクスポート: バイナリを直接ストリーム出力（メモリ安全）
     if ( $export_as_zip ) {
         $game_title = isset( $export_data['game']['title'] ) ? $export_data['game']['title'] : 'game';
-        $zip_path   = noveltool_export_game_data_as_zip( $export_data, $game_title );
+
+        // 分割判定: 推定画像サイズが閾値を超える場合は分割ZIPを使用
+        $split_threshold = noveltool_get_split_zip_threshold();
+        $estimated_size  = noveltool_estimate_game_images_size( $export_data );
+
+        if ( $estimated_size > $split_threshold ) {
+            // 分割ZIPエクスポート
+            $split_result = noveltool_export_game_data_as_split_zips( $export_data, $game_title );
+            if ( is_wp_error( $split_result ) ) {
+                error_log( '[noveltool] 分割ZIPエクスポート失敗: ' . $split_result->get_error_message() . ' – JSONにフォールバック。' );
+                wp_send_json_success( array(
+                    'data'     => $export_data,
+                    'filename' => sanitize_file_name( $game_title . '-export.json' ),
+                    'format'   => 'json',
+                    'warning'  => __( 'ZIP creation failed. Falling back to JSON format.', 'novel-game-plugin' ),
+                ) );
+            }
+
+            // 各パートをトランジェントに保存しメタ情報を返す
+            $parts_info = array();
+            foreach ( $split_result['zip_paths'] as $i => $part_zip_path ) {
+                $part_number   = $i + 1;
+                $transient_key = 'noveltool_szp_' . md5( $split_result['export_id'] ) . '_' . $part_number;
+                set_transient(
+                    $transient_key,
+                    array(
+                        'path'        => $part_zip_path,
+                        'game_title'  => $game_title,
+                        'total_parts' => $split_result['total_parts'],
+                    ),
+                    HOUR_IN_SECONDS
+                );
+                $parts_info[] = array(
+                    'part'     => $part_number,
+                    'filename' => sanitize_file_name( $game_title . '-export-part' . $part_number . '-of-' . $split_result['total_parts'] . '.zip' ),
+                    'size'     => @filesize( $part_zip_path ),
+                );
+            }
+
+            // クリーンアップキューにエクスポートZIPパスを登録（トランジェント（1時間）+余裕時間後に削除）
+            noveltool_enqueue_tmp_cleanup( $split_result['zip_paths'], time() + HOUR_IN_SECONDS + 10 * MINUTE_IN_SECONDS );
+
+            wp_send_json_success( array(
+                'format'      => 'split_zip',
+                'export_id'   => $split_result['export_id'],
+                'total_parts' => $split_result['total_parts'],
+                'parts'       => $parts_info,
+            ) );
+        }
+
+        $zip_path = noveltool_export_game_data_as_zip( $export_data, $game_title );
         if ( is_wp_error( $zip_path ) ) {
             // ZIP作成失敗時はJSON形式にフォールバック
             error_log( '[noveltool] ZIP export failed: ' . $zip_path->get_error_message() . ' – falling back to JSON.' );
@@ -1696,6 +2433,114 @@ function noveltool_ajax_export_game() {
     ) );
 }
 add_action( 'wp_ajax_noveltool_export_game', 'noveltool_ajax_export_game' );
+
+/**
+ * AJAXハンドラー: エクスポートサイズ情報の取得
+ *
+ * ゲーム選択時にエクスポートが単一ZIPか分割ZIPかを事前に通知するための情報を返す。
+ * 実際の画像ダウンロードを行わず、ローカルファイルサイズのみで推定する。
+ *
+ * @since 1.5.0
+ */
+function noveltool_ajax_get_export_size_info() {
+    $export_capability = apply_filters( 'noveltool_export_capability', 'manage_options' );
+    if ( ! current_user_can( $export_capability ) ) {
+        wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'novel-game-plugin' ) ) );
+    }
+
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'noveltool_export_game' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Security check failed.', 'novel-game-plugin' ) ) );
+    }
+
+    $game_id = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
+    if ( ! $game_id ) {
+        wp_send_json_error( array( 'message' => __( 'Invalid game ID.', 'novel-game-plugin' ) ) );
+    }
+
+    $export_data = noveltool_export_game_data( $game_id );
+    if ( is_wp_error( $export_data ) ) {
+        wp_send_json_error( array( 'message' => $export_data->get_error_message() ) );
+    }
+
+    $image_urls      = noveltool_collect_game_images( $export_data );
+    $image_count     = count( $image_urls );
+    $estimated_size  = noveltool_estimate_game_images_size( $export_data );
+    $split_threshold = noveltool_get_split_zip_threshold();
+    $part_size_limit = noveltool_get_split_zip_part_size();
+    $will_split      = ( $estimated_size > $split_threshold );
+    $estimated_parts = $will_split ? max( 1, (int) ceil( $estimated_size / $part_size_limit ) ) : 1;
+
+    wp_send_json_success( array(
+        'image_count'     => $image_count,
+        'estimated_size'  => $estimated_size,
+        'estimated_parts' => $estimated_parts,
+        'will_split'      => $will_split,
+        'part_size_mb'    => round( $part_size_limit / ( 1024 * 1024 ) ),
+    ) );
+}
+add_action( 'wp_ajax_noveltool_get_export_size_info', 'noveltool_ajax_get_export_size_info' );
+
+/**
+ * AJAXハンドラー: 分割ZIPパートのダウンロード
+ *
+ * noveltool_ajax_export_game() がトランジェントに保存した分割ZIPをストリーム出力する。
+ * ダウンロード完了後にトランジェントと一時ファイルを削除する。
+ *
+ * @since 1.5.0
+ */
+function noveltool_ajax_download_split_zip_part() {
+    $export_capability = apply_filters( 'noveltool_export_capability', 'manage_options' );
+    if ( ! current_user_can( $export_capability ) ) {
+        wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'novel-game-plugin' ) ) );
+    }
+
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'noveltool_export_game' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Security check failed.', 'novel-game-plugin' ) ) );
+    }
+
+    $export_id   = isset( $_POST['export_id'] ) ? sanitize_text_field( wp_unslash( $_POST['export_id'] ) ) : '';
+    $part_number = isset( $_POST['part'] ) ? intval( wp_unslash( $_POST['part'] ) ) : 0;
+
+    if ( empty( $export_id ) || $part_number < 1 ) {
+        wp_send_json_error( array( 'message' => __( 'Invalid parameters.', 'novel-game-plugin' ) ) );
+    }
+
+    $transient_key = 'noveltool_szp_' . md5( $export_id ) . '_' . $part_number;
+    $part_data     = get_transient( $transient_key );
+
+    if ( false === $part_data || empty( $part_data['path'] ) ) {
+        wp_send_json_error( array( 'message' => __( 'Download link has expired. Please export again.', 'novel-game-plugin' ) ) );
+    }
+
+    $zip_path = $part_data['path'];
+    if ( ! file_exists( $zip_path ) ) {
+        delete_transient( $transient_key );
+        wp_send_json_error( array( 'message' => __( 'ZIP file not found. Please export again.', 'novel-game-plugin' ) ) );
+    }
+
+    $filename_ascii   = sanitize_file_name( $part_data['game_title'] . '-export-part' . $part_number . '-of-' . $part_data['total_parts'] . '.zip' );
+    $filename_encoded = rawurlencode( $part_data['game_title'] . '-export-part' . $part_number . '-of-' . $part_data['total_parts'] . '.zip' );
+    $filesize         = @filesize( $zip_path );
+
+    while ( ob_get_level() ) {
+        ob_end_clean();
+    }
+    header( 'Content-Type: application/zip' );
+    header( 'Content-Disposition: attachment; filename="' . $filename_ascii . '"; filename*=UTF-8\'\'' . $filename_encoded );
+    if ( false !== $filesize ) {
+        header( 'Content-Length: ' . $filesize );
+    }
+    header( 'Cache-Control: no-store, no-cache, must-revalidate' );
+    header( 'Pragma: no-cache' );
+    readfile( $zip_path );
+
+    // 一時ファイルとトランジェントを削除
+    @unlink( $zip_path );
+    delete_transient( $transient_key );
+
+    wp_die();
+}
+add_action( 'wp_ajax_noveltool_download_split_zip_part', 'noveltool_ajax_download_split_zip_part' );
 
 /**
  * ZIPアーカイブからゲームデータをインポートする
@@ -1809,11 +2654,11 @@ function noveltool_import_from_zip( $zip_path ) {
             continue;
         }
 
-        $file_array = array(
-            'name'     => sanitize_file_name( $basename ),
-            'tmp_name' => $tmp,
+        $attachment_id = noveltool_get_or_create_import_image_attachment(
+            $tmp,
+            sanitize_file_name( $basename ),
+            0
         );
-        $attachment_id = media_handle_sideload( $file_array, 0 );
         @unlink( $tmp );
 
         if ( ! is_wp_error( $attachment_id ) ) {
@@ -1878,10 +2723,733 @@ function noveltool_import_from_zip( $zip_path ) {
 }
 
 /**
+ * 複数の分割ZIPファイルからゲームデータをインポートする
+ *
+ * すべてのパートの manifest を検証した後に images と game-data.json を結合し、
+ * noveltool_import_game_data() に引き渡す。
+ * manifest 不整合・欠落パート・重複パート・別エクスポート混在はエラーとして中断する。
+ *
+ * @param string[] $zip_paths 分割ZIPファイルの一時パスの配列
+ * @return array|WP_Error インポート結果または WP_Error
+ * @since 1.5.0
+ */
+function noveltool_import_from_split_zips( $zip_paths ) {
+    if ( ! class_exists( 'ZipArchive' ) ) {
+        return new WP_Error( 'no_ziparchive', __( 'ZipArchive is not available on this server.', 'novel-game-plugin' ) );
+    }
+
+    @set_time_limit( 300 );
+    @ini_set( 'memory_limit', '256M' );
+
+    // Zip bomb 対策パラメータ
+    $zip_max_files       = intval( apply_filters( 'noveltool_zip_import_max_files', 100 ) );
+    $zip_max_single_size = intval( apply_filters( 'noveltool_zip_import_max_single_size', 10 * 1024 * 1024 ) );
+    $zip_max_total_size  = intval( apply_filters( 'noveltool_split_zip_import_max_total_size', 200 * 1024 * 1024 ) ); // 分割ZIP総量: 200MB
+
+    $manifests   = array(); // part_number => manifest 配列
+    $zip_handles = array(); // part_number => ZipArchive
+
+    // Step 1: 各ZIPを開いて manifest を読み込み基本検証
+    foreach ( $zip_paths as $zip_path ) {
+        $zip = new ZipArchive();
+        if ( true !== $zip->open( $zip_path ) ) {
+            foreach ( $zip_handles as $z ) {
+                $z->close();
+            }
+            return new WP_Error( 'zip_open_failed', __( 'Failed to open ZIP archive.', 'novel-game-plugin' ) );
+        }
+
+        // Zip bomb 対策: ファイル数チェック
+        if ( $zip->numFiles > $zip_max_files ) {
+            $zip->close();
+            foreach ( $zip_handles as $z ) {
+                $z->close();
+            }
+            return new WP_Error( 'zip_too_many_files', __( 'ZIP archive contains too many files.', 'novel-game-plugin' ) );
+        }
+
+        $manifest_json = $zip->getFromName( 'manifest.json' );
+        if ( false === $manifest_json ) {
+            $zip->close();
+            foreach ( $zip_handles as $z ) {
+                $z->close();
+            }
+            return new WP_Error( 'no_manifest', __( 'manifest.json not found. This is not a split ZIP file.', 'novel-game-plugin' ) );
+        }
+
+        $manifest = json_decode( $manifest_json, true );
+        if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $manifest ) ) {
+            $zip->close();
+            foreach ( $zip_handles as $z ) {
+                $z->close();
+            }
+            return new WP_Error( 'invalid_manifest', __( 'Invalid manifest.json.', 'novel-game-plugin' ) );
+        }
+
+        if ( ! isset( $manifest['export_id'], $manifest['part_number'], $manifest['total_parts'], $manifest['version'] ) ) {
+            $zip->close();
+            foreach ( $zip_handles as $z ) {
+                $z->close();
+            }
+            return new WP_Error( 'manifest_missing_fields', __( 'manifest.json is missing required fields.', 'novel-game-plugin' ) );
+        }
+
+        $part_number = intval( $manifest['part_number'] );
+        if ( isset( $manifests[ $part_number ] ) ) {
+            $zip->close();
+            foreach ( $zip_handles as $z ) {
+                $z->close();
+            }
+            /* translators: %d: 重複しているパート番号 */
+            return new WP_Error( 'duplicate_part', sprintf( __( 'Duplicate part %d detected.', 'novel-game-plugin' ), $part_number ) );
+        }
+
+        $manifests[ $part_number ]   = $manifest;
+        $zip_handles[ $part_number ] = $zip;
+    }
+
+    // Step 2: 整合性検証
+    if ( empty( $manifests ) ) {
+        return new WP_Error( 'no_parts', __( 'No valid split ZIP parts found.', 'novel-game-plugin' ) );
+    }
+
+    $first_manifest       = reset( $manifests );
+    $expected_export_id   = $first_manifest['export_id'];
+    $expected_total_parts = intval( $first_manifest['total_parts'] );
+
+    foreach ( $manifests as $manifest ) {
+        if ( $manifest['export_id'] !== $expected_export_id ) {
+            foreach ( $zip_handles as $z ) {
+                $z->close();
+            }
+            return new WP_Error( 'export_id_mismatch', __( 'Files are from different exports. Please upload only parts from the same export.', 'novel-game-plugin' ) );
+        }
+        if ( intval( $manifest['total_parts'] ) !== $expected_total_parts ) {
+            foreach ( $zip_handles as $z ) {
+                $z->close();
+            }
+            return new WP_Error( 'total_parts_mismatch', __( 'Inconsistent total part count in manifests.', 'novel-game-plugin' ) );
+        }
+    }
+
+    // 欠落パートの確認
+    $missing_parts = array();
+    for ( $i = 1; $i <= $expected_total_parts; $i++ ) {
+        if ( ! isset( $manifests[ $i ] ) ) {
+            $missing_parts[] = $i;
+        }
+    }
+    if ( ! empty( $missing_parts ) ) {
+        foreach ( $zip_handles as $z ) {
+            $z->close();
+        }
+        /* translators: %s: 欠落しているパート番号のカンマ区切りリスト */
+        return new WP_Error( 'missing_parts', sprintf( __( 'Missing parts: %s. Please upload all parts.', 'novel-game-plugin' ), implode( ', ', $missing_parts ) ) );
+    }
+
+    // Step 3: Part 1 から game-data.json を取得
+    $json_content = $zip_handles[1]->getFromName( 'game-data.json' );
+    if ( false === $json_content ) {
+        foreach ( $zip_handles as $z ) {
+            $z->close();
+        }
+        return new WP_Error( 'no_json', __( 'game-data.json not found in part 1.', 'novel-game-plugin' ) );
+    }
+
+    $import_data = json_decode( $json_content, true );
+    if ( json_last_error() !== JSON_ERROR_NONE ) {
+        foreach ( $zip_handles as $z ) {
+            $z->close();
+        }
+        return new WP_Error( 'invalid_json', __( 'Invalid JSON encoding.', 'novel-game-plugin' ) );
+    }
+
+    if ( ! is_array( $import_data ) || ! isset( $import_data['game'] ) || ! isset( $import_data['scenes'] ) ) {
+        foreach ( $zip_handles as $z ) {
+            $z->close();
+        }
+        return new WP_Error( 'invalid_structure', __( 'Missing required "game" or "scenes" keys.', 'novel-game-plugin' ) );
+    }
+
+    // Step 4: 全パートから画像を取得してメディアライブラリへアップロード
+    $total_uncompressed = 0;
+    $relative_to_url    = array();
+
+    foreach ( $zip_handles as $zip ) {
+        for ( $idx = 0; $idx < $zip->numFiles; $idx++ ) {
+            $zip_entry_name = $zip->getNameIndex( $idx );
+            // パストラバーサル対策: images/ で始まるエントリのみ許可し、'..' を含むパスを拒否
+            if ( strpos( $zip_entry_name, 'images/' ) !== 0 || false !== strpos( $zip_entry_name, '..' ) ) {
+                continue;
+            }
+            $basename = basename( $zip_entry_name );
+            if ( empty( $basename ) ) {
+                continue;
+            }
+            $ext = strtolower( pathinfo( $basename, PATHINFO_EXTENSION ) );
+            if ( ! in_array( $ext, array( 'jpg', 'jpeg', 'png', 'gif', 'webp' ), true ) ) {
+                continue;
+            }
+
+            // Zip bomb 対策: ファイルサイズ・総サイズチェック
+            $stat = $zip->statIndex( $idx );
+            if ( false !== $stat ) {
+                if ( $stat['size'] > $zip_max_single_size ) {
+                    foreach ( $zip_handles as $z ) {
+                        $z->close();
+                    }
+                    return new WP_Error( 'zip_file_too_large', __( 'A file in the ZIP archive exceeds the size limit.', 'novel-game-plugin' ) );
+                }
+                $total_uncompressed += $stat['size'];
+                if ( $total_uncompressed > $zip_max_total_size ) {
+                    foreach ( $zip_handles as $z ) {
+                        $z->close();
+                    }
+                    return new WP_Error( 'zip_total_too_large', __( 'Total extracted size of split ZIP archives exceeds the limit.', 'novel-game-plugin' ) );
+                }
+            }
+
+            $image_content = $zip->getFromIndex( $idx );
+            if ( false === $image_content || empty( $image_content ) ) {
+                continue;
+            }
+
+            $tmp = wp_tempnam( $basename );
+            if ( ! $tmp ) {
+                continue;
+            }
+            if ( false === file_put_contents( $tmp, $image_content ) ) {
+                @unlink( $tmp );
+                continue;
+            }
+
+            // MIMEタイプの検証
+            $image_info = @getimagesize( $tmp );
+            if ( false === $image_info ) {
+                @unlink( $tmp );
+                continue;
+            }
+
+            $attachment_id = noveltool_get_or_create_import_image_attachment(
+                $tmp,
+                sanitize_file_name( $basename ),
+                0
+            );
+            @unlink( $tmp );
+
+            if ( ! is_wp_error( $attachment_id ) ) {
+                $relative_to_url[ $zip_entry_name ] = wp_get_attachment_url( $attachment_id );
+            }
+        }
+    }
+
+    foreach ( $zip_handles as $z ) {
+        $z->close();
+    }
+
+    // Step 5: JSON内の相対パスをメディアライブラリURLに置換（noveltool_import_from_zip と同じロジック）
+    if ( ! empty( $relative_to_url ) ) {
+        if ( isset( $import_data['game']['title_image'] ) && isset( $relative_to_url[ $import_data['game']['title_image'] ] ) ) {
+            $import_data['game']['title_image'] = $relative_to_url[ $import_data['game']['title_image'] ];
+        }
+        $image_fields = array( 'background_image', 'character_image', 'character_left', 'character_center', 'character_right' );
+        foreach ( $import_data['scenes'] as &$scene ) {
+            foreach ( $image_fields as $field ) {
+                if ( ! empty( $scene[ $field ] ) && isset( $relative_to_url[ $scene[ $field ] ] ) ) {
+                    $scene[ $field ] = $relative_to_url[ $scene[ $field ] ];
+                }
+            }
+            if ( ! empty( $scene['dialogue_backgrounds'] ) ) {
+                $bg_data = $scene['dialogue_backgrounds'];
+                if ( is_string( $bg_data ) ) {
+                    $bg_data = json_decode( $bg_data, true );
+                }
+                if ( is_array( $bg_data ) ) {
+                    foreach ( $bg_data as &$bg ) {
+                        if ( is_string( $bg ) && isset( $relative_to_url[ $bg ] ) ) {
+                            $bg = $relative_to_url[ $bg ];
+                        }
+                    }
+                    unset( $bg );
+                    $scene['dialogue_backgrounds'] = $bg_data;
+                }
+            }
+            if ( ! empty( $scene['dialogue_characters'] ) ) {
+                $dc_data = $scene['dialogue_characters'];
+                if ( is_string( $dc_data ) ) {
+                    $dc_data = json_decode( $dc_data, true );
+                }
+                if ( is_array( $dc_data ) ) {
+                    foreach ( $dc_data as &$char_set ) {
+                        if ( ! is_array( $char_set ) ) {
+                            continue;
+                        }
+                        foreach ( array( 'left', 'center', 'right' ) as $pos ) {
+                            if ( ! empty( $char_set[ $pos ] ) && isset( $relative_to_url[ $char_set[ $pos ] ] ) ) {
+                                $char_set[ $pos ] = $relative_to_url[ $char_set[ $pos ] ];
+                            }
+                        }
+                    }
+                    unset( $char_set );
+                    $scene['dialogue_characters'] = $dc_data;
+                }
+            }
+        }
+        unset( $scene );
+    }
+
+    return noveltool_import_game_data( $import_data, false );
+}
+
+/**
+ * 分割ZIPステージングの一時ファイルをクリーンアップする
+ *
+ * @param array $staging ステージング配列（staged_images キーを含む）
+ * @since 1.5.0
+ */
+function noveltool_cleanup_split_zip_staging( $staging ) {
+    if ( ! is_array( $staging ) || empty( $staging['staged_images'] ) ) {
+        return;
+    }
+    foreach ( $staging['staged_images'] as $tmp_path ) {
+        if ( is_string( $tmp_path ) && file_exists( $tmp_path ) ) {
+            @unlink( $tmp_path );
+        }
+    }
+}
+
+/**
+ * 分割ZIPパートをステージングエリアに追加する
+ *
+ * 単一の分割ZIPパートを受け取り、manifest を検証し、
+ * manifest.files と実際の ZIP 内容を照合する。
+ * 問題がなければ画像を一時ファイルに展開してステージングトランジェントに保存する。
+ * 全パートが揃った時点で noveltool_finalize_split_zip_import() を呼んでインポートを完結させる。
+ *
+ * @param string $zip_path アップロードされた分割ZIPパートの一時ファイルパス
+ * @return array|WP_Error ステージング状態の配列（status='staging'）またはインポート結果、あるいは WP_Error
+ * @since 1.5.0
+ */
+function noveltool_stage_split_zip_part( $zip_path ) {
+    if ( ! class_exists( 'ZipArchive' ) ) {
+        return new WP_Error( 'no_ziparchive', __( 'ZipArchive is not available on this server.', 'novel-game-plugin' ) );
+    }
+
+    $zip_max_files       = intval( apply_filters( 'noveltool_zip_import_max_files', 100 ) );
+    $zip_max_single_size = intval( apply_filters( 'noveltool_zip_import_max_single_size', 10 * 1024 * 1024 ) );
+
+    // ZIPを開く
+    $zip = new ZipArchive();
+    if ( true !== $zip->open( $zip_path ) ) {
+        return new WP_Error( 'zip_open_failed', __( 'Failed to open ZIP archive.', 'novel-game-plugin' ) );
+    }
+
+    // Zip bomb 対策: ファイル数チェック
+    if ( $zip->numFiles > $zip_max_files ) {
+        $zip->close();
+        return new WP_Error( 'zip_too_many_files', __( 'ZIP archive contains too many files.', 'novel-game-plugin' ) );
+    }
+
+    // manifest.json を読み込む
+    $manifest_json = $zip->getFromName( 'manifest.json' );
+    if ( false === $manifest_json ) {
+        $zip->close();
+        return new WP_Error( 'no_manifest', __( 'manifest.json not found. This is not a split ZIP file.', 'novel-game-plugin' ) );
+    }
+
+    $manifest = json_decode( $manifest_json, true );
+    if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $manifest ) ) {
+        $zip->close();
+        return new WP_Error( 'invalid_manifest', __( 'Invalid manifest.json.', 'novel-game-plugin' ) );
+    }
+
+    if ( ! isset( $manifest['export_id'], $manifest['part_number'], $manifest['total_parts'], $manifest['version'], $manifest['files'] ) ) {
+        $zip->close();
+        return new WP_Error( 'manifest_missing_fields', __( 'manifest.json is missing required fields.', 'novel-game-plugin' ) );
+    }
+
+    $export_id              = sanitize_text_field( $manifest['export_id'] );
+    $part_number            = intval( $manifest['part_number'] );
+    $total_parts            = intval( $manifest['total_parts'] );
+    $expected_files_in_part = is_array( $manifest['files'] ) ? $manifest['files'] : array();
+
+    if ( $part_number < 1 || $total_parts < 1 || $part_number > $total_parts ) {
+        $zip->close();
+        return new WP_Error( 'invalid_manifest_numbers', __( 'Invalid part number or total parts in manifest.', 'novel-game-plugin' ) );
+    }
+
+    // manifest.files と実際の ZIP 内容を照合（欠落・不整合の検出）
+    // 全パート検証前の media_handle_sideload 実行を防ぐため、ここで先行チェックする
+    // manifest.files に宣言されていない余分な images/ ファイルも拒否する（完全一致）
+    $expected_image_set = array();
+    foreach ( $expected_files_in_part as $expected_file ) {
+        $safe_file = sanitize_text_field( $expected_file );
+        if ( empty( $safe_file ) || strpos( $safe_file, 'images/' ) !== 0 || false !== strpos( $safe_file, '..' ) ) {
+            continue;
+        }
+        // 宣言済みファイルが ZIP 内に存在することを確認
+        if ( false === $zip->locateName( $safe_file ) ) {
+            $zip->close();
+            return new WP_Error(
+                'manifest_file_missing',
+                sprintf(
+                    /* translators: %s: ファイル名 */
+                    __( 'File declared in manifest not found in ZIP: %s', 'novel-game-plugin' ),
+                    basename( $safe_file )
+                )
+            );
+        }
+        $expected_image_set[ $safe_file ] = true;
+    }
+
+    // ZIP 内の images/ ファイルが manifest.files に存在することを確認（余分ファイルの拒否）
+    for ( $idx = 0; $idx < $zip->numFiles; $idx++ ) {
+        $entry_name = $zip->getNameIndex( $idx );
+        if ( strpos( $entry_name, 'images/' ) !== 0 || false !== strpos( $entry_name, '..' ) ) {
+            continue;
+        }
+        $basename = basename( $entry_name );
+        if ( empty( $basename ) ) {
+            continue;
+        }
+        $ext = strtolower( pathinfo( $basename, PATHINFO_EXTENSION ) );
+        if ( ! in_array( $ext, array( 'jpg', 'jpeg', 'png', 'gif', 'webp' ), true ) ) {
+            continue;
+        }
+        if ( ! isset( $expected_image_set[ $entry_name ] ) ) {
+            $zip->close();
+            return new WP_Error(
+                'extra_file_in_zip',
+                sprintf(
+                    /* translators: %s: ファイル名 */
+                    __( 'ZIP contains a file not declared in manifest: %s', 'novel-game-plugin' ),
+                    basename( $entry_name )
+                )
+            );
+        }
+    }
+
+    // ステージングトランジェントを取得または作成
+    $staging_key = 'noveltool_szstage_' . md5( $export_id );
+    $staging     = get_transient( $staging_key );
+
+    if ( false === $staging ) {
+        $staging = array(
+            'export_id'      => $export_id,
+            'total_parts'    => $total_parts,
+            'game_title'     => isset( $manifest['game_title'] ) ? sanitize_text_field( $manifest['game_title'] ) : '',
+            'created_at'     => time(),
+            'staged_parts'   => array(),
+            'game_data_json' => null,
+            'staged_images'  => array(), // zip_entry_name => tmp_file_path
+            'expected_files' => array(), // part_number => array of file names
+        );
+    } else {
+        // 既存ステージングの整合性チェック
+        if ( $staging['export_id'] !== $export_id ) {
+            $zip->close();
+            return new WP_Error( 'export_id_mismatch', __( 'Files are from different exports. Please start a new import.', 'novel-game-plugin' ) );
+        }
+        if ( intval( $staging['total_parts'] ) !== $total_parts ) {
+            $zip->close();
+            return new WP_Error( 'total_parts_mismatch', __( 'Inconsistent total part count in manifests.', 'novel-game-plugin' ) );
+        }
+        if ( in_array( $part_number, $staging['staged_parts'], true ) ) {
+            $zip->close();
+            /* translators: %d: パート番号 */
+            return new WP_Error( 'duplicate_part', sprintf( __( 'Part %d has already been uploaded.', 'novel-game-plugin' ), $part_number ) );
+        }
+    }
+
+    // このパートの期待ファイルリストを記録
+    $staging['expected_files'][ $part_number ] = $expected_files_in_part;
+
+    // Part 1 から game-data.json を取得
+    if ( 1 === $part_number ) {
+        $json_content = $zip->getFromName( 'game-data.json' );
+        if ( false === $json_content ) {
+            $zip->close();
+            return new WP_Error( 'no_json', __( 'game-data.json not found in part 1.', 'novel-game-plugin' ) );
+        }
+        $staging['game_data_json'] = $json_content;
+    }
+
+    // 画像を一時ファイルに展開してステージングに追加
+    // $expected_image_set は検証済みの images/ エントリのみを含むため、余分なファイルは既に拒否済み
+    for ( $idx = 0; $idx < $zip->numFiles; $idx++ ) {
+        $entry_name = $zip->getNameIndex( $idx );
+        // manifest.files に宣言されていないエントリはスキップ（パストラバーサル対策も兼ねる）
+        if ( ! isset( $expected_image_set[ $entry_name ] ) ) {
+            continue;
+        }
+        // $expected_image_set に含まれるエントリは検証済みで basename が空になることはないが
+        // $basename は後続のパスで使用するため代入する
+        $basename = basename( $entry_name );
+
+        // Zip bomb 対策: サイズチェック
+        $stat = $zip->statIndex( $idx );
+        if ( false !== $stat && $stat['size'] > $zip_max_single_size ) {
+            $zip->close();
+            noveltool_cleanup_split_zip_staging( $staging );
+            return new WP_Error( 'zip_file_too_large', __( 'A file in the ZIP archive exceeds the size limit.', 'novel-game-plugin' ) );
+        }
+
+        $image_content = $zip->getFromIndex( $idx );
+        if ( false === $image_content || empty( $image_content ) ) {
+            continue;
+        }
+
+        $tmp = wp_tempnam( $basename );
+        if ( ! $tmp ) {
+            continue;
+        }
+        if ( false === file_put_contents( $tmp, $image_content ) ) {
+            @unlink( $tmp );
+            continue;
+        }
+
+        // MIMEタイプ検証
+        $image_info = @getimagesize( $tmp );
+        if ( false === $image_info ) {
+            @unlink( $tmp );
+            continue;
+        }
+
+        $staging['staged_images'][ $entry_name ] = $tmp;
+    }
+
+    $zip->close();
+
+    // このパートをステージング済みとしてマーク
+    $staging['staged_parts'][] = $part_number;
+
+    // ステージングトランジェントを更新（フィルターで上書き可能なTTL）
+    $staging_ttl = intval( apply_filters( 'noveltool_split_zip_staging_ttl', DAY_IN_SECONDS ) );
+    set_transient( $staging_key, $staging, $staging_ttl );
+
+    // TTL 切れや離脱時に一時ファイルが残らないよう、クリーンアップキューに登録する
+    // $staging_key を session_key として渡すことで、同一セッションの古いエントリを
+    // 置き換え（upsert）し、先行パートの tmp が早期削除される競合を防ぐ
+    $cleanup_grace = intval( apply_filters( 'noveltool_staging_cleanup_grace', 10 * MINUTE_IN_SECONDS ) );
+    noveltool_enqueue_tmp_cleanup(
+        array_values( $staging['staged_images'] ),
+        time() + $staging_ttl + $cleanup_grace,
+        $staging_key  // セッション単位で最新エントリに置き換え（upsert）
+    );
+
+    // 全パートが揃ったかチェック
+    if ( count( $staging['staged_parts'] ) >= $total_parts ) {
+        // ファイナライズ: 全パート検証完了後に初めてメディア登録・ゲーム作成を実行
+        return noveltool_finalize_split_zip_import( $staging_key );
+    }
+
+    // まだパートが足りない: ステージング状態を返す
+    sort( $staging['staged_parts'] );
+    $missing_parts = array();
+    for ( $i = 1; $i <= $total_parts; $i++ ) {
+        if ( ! in_array( $i, $staging['staged_parts'], true ) ) {
+            $missing_parts[] = $i;
+        }
+    }
+
+    return array(
+        'status'        => 'staging',
+        'staged_parts'  => $staging['staged_parts'],
+        'total_parts'   => $total_parts,
+        'missing_parts' => $missing_parts,
+        'export_id'     => $export_id,
+        'game_title'    => $staging['game_title'],
+    );
+}
+
+/**
+ * ステージングエリアからゲームデータのインポートを完結させる
+ *
+ * 全パートが揃った後に noveltool_stage_split_zip_part() から呼ばれる。
+ * staged_images と expected_files の完全照合を行い、問題がなければ
+ * media_handle_sideload() でメディア登録、noveltool_import_game_data() でゲーム作成。
+ * 失敗時は作成済みの添付ファイルをロールバックし、ステージングを消去する。
+ *
+ * @param string $staging_key ステージングトランジェントのキー
+ * @return array|WP_Error インポート結果またはWP_Error
+ * @since 1.5.0
+ */
+function noveltool_finalize_split_zip_import( $staging_key ) {
+    $staging = get_transient( $staging_key );
+    if ( false === $staging ) {
+        return new WP_Error( 'staging_not_found', __( 'Import session expired. Please upload all parts again.', 'novel-game-plugin' ) );
+    }
+
+    // staged_images と expected_files の完全照合
+    // manifest.files で宣言されたすべてのファイルがステージングされているか確認
+    foreach ( $staging['expected_files'] as $part_num => $expected_list ) {
+        foreach ( $expected_list as $expected_entry ) {
+            $safe_entry = sanitize_text_field( $expected_entry );
+            if ( empty( $safe_entry ) || strpos( $safe_entry, 'images/' ) !== 0 ) {
+                continue;
+            }
+            if ( ! isset( $staging['staged_images'][ $safe_entry ] ) ) {
+                noveltool_cleanup_split_zip_staging( $staging );
+                delete_transient( $staging_key );
+                return new WP_Error(
+                    'staged_file_missing',
+                    sprintf(
+                        /* translators: %s: ファイル名 */
+                        __( 'Expected file not found in staging: %s. Import aborted.', 'novel-game-plugin' ),
+                        basename( $safe_entry )
+                    )
+                );
+            }
+        }
+    }
+
+    // game-data.json の検証
+    if ( empty( $staging['game_data_json'] ) ) {
+        noveltool_cleanup_split_zip_staging( $staging );
+        delete_transient( $staging_key );
+        return new WP_Error( 'no_json', __( 'game-data.json not found in staging. Please upload part 1 again.', 'novel-game-plugin' ) );
+    }
+
+    $import_data = json_decode( $staging['game_data_json'], true );
+    if ( json_last_error() !== JSON_ERROR_NONE ) {
+        noveltool_cleanup_split_zip_staging( $staging );
+        delete_transient( $staging_key );
+        return new WP_Error( 'invalid_json', __( 'Invalid JSON encoding.', 'novel-game-plugin' ) );
+    }
+
+    if ( ! is_array( $import_data ) || ! isset( $import_data['game'] ) || ! isset( $import_data['scenes'] ) ) {
+        noveltool_cleanup_split_zip_staging( $staging );
+        delete_transient( $staging_key );
+        return new WP_Error( 'invalid_structure', __( 'Missing required "game" or "scenes" keys.', 'novel-game-plugin' ) );
+    }
+
+    @set_time_limit( 300 );
+    @ini_set( 'memory_limit', '256M' );
+
+    // メディアライブラリに画像を登録
+    // 注意: 全パートの検証が完了した後に初めて実行される
+    $relative_to_url         = array();
+    $created_attachment_id_set = array();
+
+    // split ZIP import 中に作成した添付ファイルだけを削除する。
+    $rollback_created_attachments = static function( $attachment_id_set ) {
+        foreach ( array_keys( $attachment_id_set ) as $att_id ) {
+            wp_delete_attachment( $att_id, true );
+        }
+    };
+
+    foreach ( $staging['staged_images'] as $entry_name => $tmp_path ) {
+        if ( ! file_exists( $tmp_path ) ) {
+            continue;
+        }
+        $basename      = basename( $entry_name );
+        $attachment_result = noveltool_get_or_create_import_image_attachment(
+            $tmp_path,
+            sanitize_file_name( $basename ),
+            0,
+            true
+        );
+
+        if ( is_wp_error( $attachment_result ) ) {
+            // ロールバック: 作成済みの添付ファイルを削除し、一時ファイルをクリーンアップ
+            $rollback_created_attachments( $created_attachment_id_set );
+            noveltool_cleanup_split_zip_staging( $staging );
+            delete_transient( $staging_key );
+            return new WP_Error( 'attachment_failed', __( 'Failed to create media attachment. Import aborted.', 'novel-game-plugin' ) );
+        }
+
+        $attachment_id      = isset( $attachment_result['attachment_id'] ) ? intval( $attachment_result['attachment_id'] ) : 0;
+        $attachment_created = ! empty( $attachment_result['created'] );
+
+        if ( $attachment_id < 1 ) {
+            // 防御的チェック: 想定外の戻り値構造でも既存添付の巻き添え削除を避けつつ安全に中断する。
+            $rollback_created_attachments( $created_attachment_id_set );
+            noveltool_cleanup_split_zip_staging( $staging );
+            delete_transient( $staging_key );
+            return new WP_Error( 'attachment_failed', __( 'Failed to create media attachment. Import aborted.', 'novel-game-plugin' ) );
+        }
+
+        if ( $attachment_created ) {
+            $created_attachment_id_set[ $attachment_id ] = true;
+        }
+
+        $relative_to_url[ $entry_name ] = wp_get_attachment_url( $attachment_id );
+    }
+
+    // 一時ファイルを明示的に削除（media_handle_sideload は tmp_name を保持するため）
+    foreach ( $staging['staged_images'] as $tmp_path ) {
+        @unlink( $tmp_path );
+    }
+    delete_transient( $staging_key );
+
+    // JSON内の相対パスをメディアライブラリURLに置換
+    if ( ! empty( $relative_to_url ) ) {
+        if ( isset( $import_data['game']['title_image'] ) && isset( $relative_to_url[ $import_data['game']['title_image'] ] ) ) {
+            $import_data['game']['title_image'] = $relative_to_url[ $import_data['game']['title_image'] ];
+        }
+        $image_fields = array( 'background_image', 'character_image', 'character_left', 'character_center', 'character_right' );
+        foreach ( $import_data['scenes'] as &$scene ) {
+            foreach ( $image_fields as $field ) {
+                if ( ! empty( $scene[ $field ] ) && isset( $relative_to_url[ $scene[ $field ] ] ) ) {
+                    $scene[ $field ] = $relative_to_url[ $scene[ $field ] ];
+                }
+            }
+            if ( ! empty( $scene['dialogue_backgrounds'] ) ) {
+                $bg_data = $scene['dialogue_backgrounds'];
+                if ( is_string( $bg_data ) ) {
+                    $bg_data = json_decode( $bg_data, true );
+                }
+                if ( is_array( $bg_data ) ) {
+                    foreach ( $bg_data as &$bg ) {
+                        if ( is_string( $bg ) && isset( $relative_to_url[ $bg ] ) ) {
+                            $bg = $relative_to_url[ $bg ];
+                        }
+                    }
+                    unset( $bg );
+                    $scene['dialogue_backgrounds'] = $bg_data;
+                }
+            }
+            if ( ! empty( $scene['dialogue_characters'] ) ) {
+                $dc_data = $scene['dialogue_characters'];
+                if ( is_string( $dc_data ) ) {
+                    $dc_data = json_decode( $dc_data, true );
+                }
+                if ( is_array( $dc_data ) ) {
+                    foreach ( $dc_data as &$char_set ) {
+                        if ( ! is_array( $char_set ) ) {
+                            continue;
+                        }
+                        foreach ( array( 'left', 'center', 'right' ) as $pos ) {
+                            if ( ! empty( $char_set[ $pos ] ) && isset( $relative_to_url[ $char_set[ $pos ] ] ) ) {
+                                $char_set[ $pos ] = $relative_to_url[ $char_set[ $pos ] ];
+                            }
+                        }
+                    }
+                    unset( $char_set );
+                    $scene['dialogue_characters'] = $dc_data;
+                }
+            }
+        }
+        unset( $scene );
+    }
+
+    // ゲームデータをインポート
+    $result = noveltool_import_game_data( $import_data, false );
+    if ( is_wp_error( $result ) ) {
+        // ゲーム作成失敗: 作成済みの添付ファイルをロールバック
+        $rollback_created_attachments( $created_attachment_id_set );
+        return $result;
+    }
+
+    return $result;
+}
+
+/**
  * AJAXハンドラー: ゲームデータのインポート
  *
  * セキュリティ強化: ファイルサイズ、MIME、アップロードエラーの詳細チェックを実施
  * エラーメッセージは静的文言のみ利用し外部入力を直接連結しない方針
+ * 分割ZIP: manifest.json が含まれる ZIP を検出し、逐次ステージング方式で処理する
  *
  * @since 1.3.0
  */
@@ -1900,7 +3468,7 @@ function noveltool_ajax_import_game() {
     if ( ! isset( $_FILES['import_file'] ) ) {
         wp_send_json_error( array( 'message' => __( 'No file selected.', 'novel-game-plugin' ) ) );
     }
-    
+
     if ( isset( $_FILES['import_file']['error'] ) && $_FILES['import_file']['error'] !== UPLOAD_ERR_OK ) {
         switch ( $_FILES['import_file']['error'] ) {
             case UPLOAD_ERR_INI_SIZE:
@@ -1924,7 +3492,7 @@ function noveltool_ajax_import_game() {
                 wp_send_json_error( array( 'message' => __( 'File upload failed.', 'novel-game-plugin' ) ) );
         }
     }
-    
+
     // ファイルサイズチェック（ファイル種別に応じた上限）
     $file_name = isset( $_FILES['import_file']['name'] ) ? $_FILES['import_file']['name'] : '';
     $is_zip    = ( substr( strtolower( $file_name ), -4 ) === '.zip' );
@@ -1933,9 +3501,45 @@ function noveltool_ajax_import_game() {
         wp_send_json_error( array( 'message' => __( 'File size exceeds the allowed limit.', 'novel-game-plugin' ) ) );
     }
 
-    // ZIPインポート
+    // ZIPインポート: manifest.json の有無で分割ZIP（ステージング）か通常ZIPかを判定
     if ( $is_zip ) {
-        $result = noveltool_import_from_zip( $_FILES['import_file']['tmp_name'] );
+        $zip_tmp     = $_FILES['import_file']['tmp_name'];
+        $has_manifest = false;
+
+        if ( class_exists( 'ZipArchive' ) ) {
+            $zip_peek = new ZipArchive();
+            if ( true === $zip_peek->open( $zip_tmp ) ) {
+                $has_manifest = ( false !== $zip_peek->locateName( 'manifest.json' ) );
+                $zip_peek->close();
+            }
+        }
+
+        if ( $has_manifest ) {
+            // 分割ZIPパート: 逐次ステージング方式で処理
+            $stage_result = noveltool_stage_split_zip_part( $zip_tmp );
+            if ( is_wp_error( $stage_result ) ) {
+                wp_send_json_error( array( 'message' => $stage_result->get_error_message() ) );
+            }
+
+            if ( isset( $stage_result['status'] ) && 'staging' === $stage_result['status'] ) {
+                // まだ全パートが揃っていない: ステージング進捗を返す
+                wp_send_json_success( array(
+                    'format'        => 'split_zip_staging',
+                    'staged_parts'  => $stage_result['staged_parts'],
+                    'total_parts'   => $stage_result['total_parts'],
+                    'missing_parts' => $stage_result['missing_parts'],
+                    'export_id'     => $stage_result['export_id'],
+                    'game_title'    => $stage_result['game_title'],
+                ) );
+            }
+
+            // 全パート揃ってファイナライズ完了: 通常のインポート結果として扱う
+            $result = $stage_result;
+        } else {
+            // 通常の単一ZIPインポート（後方互換性を維持）
+            $result = noveltool_import_from_zip( $zip_tmp );
+        }
+
         if ( is_wp_error( $result ) ) {
             wp_send_json_error( array( 'message' => $result->get_error_message() ) );
         }
@@ -1960,14 +3564,14 @@ function noveltool_ajax_import_game() {
             'renamed'          => isset( $result['renamed'] ) ? $result['renamed'] : false,
         ) );
     }
-    
+
     // MIMEタイプ検証（JSONの場合）
     $file_type = wp_check_filetype_and_ext( $_FILES['import_file']['tmp_name'], $_FILES['import_file']['name'] );
-    
+
     // JSONファイルかどうかを確認
     $allowed_types = array( 'application/json', 'text/plain' );
     $is_json = false;
-    
+
     if ( isset( $file_type['type'] ) && in_array( $file_type['type'], $allowed_types, true ) ) {
         $is_json = true;
     } elseif ( isset( $_FILES['import_file']['type'] ) && in_array( $_FILES['import_file']['type'], $allowed_types, true ) ) {
@@ -1975,7 +3579,7 @@ function noveltool_ajax_import_game() {
     } elseif ( isset( $_FILES['import_file']['name'] ) && substr( $_FILES['import_file']['name'], -5 ) === '.json' ) {
         $is_json = true;
     }
-    
+
     if ( ! $is_json ) {
         wp_send_json_error( array( 'message' => __( 'Only JSON or ZIP files are allowed.', 'novel-game-plugin' ) ) );
     }
@@ -1991,7 +3595,7 @@ function noveltool_ajax_import_game() {
     if ( json_last_error() !== JSON_ERROR_NONE ) {
         wp_send_json_error( array( 'message' => __( 'Invalid JSON encoding.', 'novel-game-plugin' ) ) );
     }
-    
+
     // JSON構造の検証
     if ( ! is_array( $import_data ) || ! isset( $import_data['game'] ) || ! isset( $import_data['scenes'] ) ) {
         wp_send_json_error( array( 'message' => __( 'Missing required "game" or "scenes" keys.', 'novel-game-plugin' ) ) );
@@ -2005,21 +3609,21 @@ function noveltool_ajax_import_game() {
     if ( is_wp_error( $result ) ) {
         wp_send_json_error( array( 'message' => $result->get_error_message() ) );
     }
-    
+
     // 成功メッセージの構築（自動リネーム情報を含む）
     $message = sprintf(
         __( 'Successfully imported game with %d scenes (%d choices remapped).', 'novel-game-plugin' ),
         $result['imported_scenes'],
         isset( $result['remapped_choices'] ) ? $result['remapped_choices'] : 0
     );
-    
+
     if ( isset( $result['renamed'] ) && $result['renamed'] ) {
         $message .= ' ' . sprintf(
             __( 'Game title was auto-renamed from "%s" to avoid duplication.', 'novel-game-plugin' ),
             $result['original_title']
         );
     }
-    
+
     // 画像ダウンロード失敗件数を通知
     if ( isset( $result['image_download_failures'] ) && $result['image_download_failures'] > 0 ) {
         $message .= ' ' . sprintf(

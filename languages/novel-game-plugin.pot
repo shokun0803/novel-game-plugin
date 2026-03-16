@@ -809,13 +809,25 @@ msgstr ""
 msgid "Downloaded file is not a valid image."
 msgstr ""
 
-#: admin/game-settings.php:1261
-#: admin/game-settings.php:1299
+#: admin/game-settings.php:1198
+msgid "Imported image file was not found."
+msgstr ""
+
+#: admin/game-settings.php:1208
+msgid "Failed to read imported image file size."
+msgstr ""
+
+#: admin/game-settings.php:1213
+msgid "Failed to calculate imported image hash."
+msgstr ""
+
+#: admin/game-settings.php:1435
+#: admin/game-settings.php:1473
 msgid "Insufficient permissions."
 msgstr ""
 
-#: admin/game-settings.php:1309
-#: admin/game-settings.php:1322
+#: admin/game-settings.php:1483
+#: admin/game-settings.php:1496
 msgid "No file selected."
 msgstr ""
 
@@ -2251,4 +2263,211 @@ msgstr ""
 
 #: admin/game-settings.php
 msgid "Failed to write game-data.json to ZIP."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Select JSON or ZIP file"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Select JSON or ZIP file to import"
+msgstr ""
+
+#: admin/export-import.php
+msgid "For split ZIP import, upload one part file at a time in order (Part 1, then Part 2, etc.)."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "This game will be exported as %1$d ZIP files (up to %2$dMB each)."
+msgstr ""
+
+#: admin/export-import.php
+msgid "This game will be exported as a single ZIP file."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Download Part %1$d of %2$d"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Download All Parts"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Downloading..."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Failed to download part %d. Please try again."
+msgstr ""
+
+#: admin/export-import.php
+msgid "All parts downloaded successfully."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Cannot mix split ZIP parts with other file types."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Only ZIP files are allowed for split ZIP import."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Checking export size..."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Split ZIP upload progress"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Overall progress"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Part %1$d of %2$d"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Uploaded"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Waiting"
+msgstr ""
+
+#. translators: %1$d: 受信済みパート数, %2$d: 総パート数
+#: admin/export-import.php
+msgid "%1$d of %2$d parts received"
+msgstr ""
+
+#. translators: %1$d: アップロード中のパート番号, %2$d: 総パート数
+#: admin/export-import.php
+msgid "Uploading Part %1$d of %2$d..."
+msgstr ""
+
+#. translators: %1$d: 受信済みのパート番号, %2$d: 総パート数
+#: admin/export-import.php
+msgid "Received Part %1$d of %2$d."
+msgstr ""
+
+#. translators: %1$d: 次にアップロードするパート番号, %2$d: 総パート数
+#: admin/export-import.php
+msgid "Please select Part %1$d of %2$d and click Import."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Waiting for the next ZIP part upload."
+msgstr ""
+
+#: admin/export-import.php
+msgid "All parts received. Importing..."
+msgstr ""
+
+#: admin/export-import.php
+msgid "All ZIP parts have been uploaded."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Upload complete. Server-side verification and import are still running."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Server-side processing is in progress. Please wait while the game data is being imported."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Failed to write manifest.json to ZIP."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "manifest.json not found. This is not a split ZIP file."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Invalid manifest.json."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "manifest.json is missing required fields."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Duplicate part %d detected."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "No valid split ZIP parts found."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Files are from different exports. Please upload only parts from the same export."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Inconsistent total part count in manifests."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Missing parts: %s. Please upload all parts."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "game-data.json not found in part 1."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Total extracted size of split ZIP archives exceeds the limit."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Download link has expired. Please export again."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "ZIP file not found. Please export again."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Only ZIP files are allowed for split ZIP import."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Invalid part number or total parts in manifest."
+msgstr ""
+
+#. translators: %s: ファイル名
+#: admin/game-settings.php
+msgid "File declared in manifest not found in ZIP: %s"
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Files are from different exports. Please start a new import."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Part %d has already been uploaded."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Import session expired. Please upload all parts again."
+msgstr ""
+
+#. translators: %s: ファイル名
+#: admin/game-settings.php
+msgid "Expected file not found in staging: %s. Import aborted."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "game-data.json not found in staging. Please upload part 1 again."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Failed to create media attachment. Import aborted."
+msgstr ""
+
+#. translators: %s: ファイル名
+#: admin/game-settings.php
+msgid "ZIP contains a file not declared in manifest: %s"
 msgstr ""

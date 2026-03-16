@@ -62,6 +62,7 @@ function noveltool_export_import_page() {
                             </label>
                             <span class="description"><?php esc_html_e( 'Check to download all images used in the game and include them in a ZIP file.', 'novel-game-plugin' ); ?></span>
                         </p>
+                        <div id="noveltool-export-size-info" class="noveltool-export-size-info" style="display:none;"></div>
                         <?php endif; ?>
                         <p>
                             <button type="button" 
@@ -72,6 +73,7 @@ function noveltool_export_import_page() {
                                 <?php esc_html_e( 'Export', 'novel-game-plugin' ); ?>
                             </button>
                         </p>
+                        <div id="noveltool-split-zip-download-list" class="noveltool-split-zip-download-list" style="display:none;"></div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -87,10 +89,12 @@ function noveltool_export_import_page() {
                         <label for="noveltool-import-file"><?php esc_html_e( 'Select JSON or ZIP file', 'novel-game-plugin' ); ?></label>
                         <input type="file" 
                                id="noveltool-import-file" 
-                               accept=".json,.zip,application/json,application/zip,application/x-zip-compressed" 
+                               accept=".json,.zip,application/json,application/zip,application/x-zip-compressed"
                                class="noveltool-import-file"
                                aria-label="<?php esc_attr_e( 'Select JSON or ZIP file to import', 'novel-game-plugin' ); ?>" />
                     </p>
+                    <p class="description noveltool-import-help"><?php esc_html_e( 'For split ZIP import, upload one part file at a time in order (Part 1, then Part 2, etc.).', 'novel-game-plugin' ); ?></p>
+                    <div id="noveltool-split-zip-staging" class="noveltool-split-zip-staging" style="display:none;" aria-live="polite"></div>
                     <p>
                         <label>
                             <input type="checkbox" 
@@ -108,10 +112,16 @@ function noveltool_export_import_page() {
                             <?php esc_html_e( 'Import', 'novel-game-plugin' ); ?>
                         </button>
                     </p>
-                    <div class="noveltool-import-progress" style="display: none;">
-                        <p><?php esc_html_e( 'Importing...', 'novel-game-plugin' ); ?></p>
-                        <div class="noveltool-progress-bar">
+                    <div class="noveltool-import-progress" style="display: none;" aria-live="polite" aria-atomic="true">
+                        <p class="noveltool-import-progress-title"><?php esc_html_e( 'Importing...', 'novel-game-plugin' ); ?></p>
+                        <p class="noveltool-import-progress-status"></p>
+                        <p class="noveltool-import-progress-detail"></p>
+                        <div class="noveltool-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                             <div class="noveltool-progress-bar-inner"></div>
+                        </div>
+                        <div class="noveltool-import-progress-meta">
+                            <span class="noveltool-progress-count"></span>
+                            <span class="noveltool-progress-percent">0%</span>
                         </div>
                     </div>
                 </div>
@@ -271,6 +281,37 @@ function noveltool_export_import_admin_scripts( $hook ) {
                 __( 'File size is too large. Maximum %dMB allowed for ZIP files.', 'novel-game-plugin' ),
                 noveltool_get_import_max_size( 'zip' ) / ( 1024 * 1024 )
             ),
+            // 分割ZIP関連
+            /* translators: %1$d: 分割ZIP数, %2$d: パートサイズ(MB) */
+            'splitZipInfo'            => __( 'This game will be exported as %1$d ZIP files (up to %2$dMB each).', 'novel-game-plugin' ),
+            'singleZipInfo'           => __( 'This game will be exported as a single ZIP file.', 'novel-game-plugin' ),
+            /* translators: %1$d: パート番号, %2$d: 総パート数 */
+            'splitZipPartLabel'       => __( 'Download Part %1$d of %2$d', 'novel-game-plugin' ),
+            'splitZipDownloadAll'     => __( 'Download All Parts', 'novel-game-plugin' ),
+            'splitZipDownloading'     => __( 'Downloading...', 'novel-game-plugin' ),
+            'splitZipDownloadError'   => __( 'Failed to download part %d. Please try again.', 'novel-game-plugin' ),
+            'splitZipAllDone'         => __( 'All parts downloaded successfully.', 'novel-game-plugin' ),
+            'checkingExportSize'      => __( 'Checking export size...', 'novel-game-plugin' ),
+            // 分割ZIPインポート・ステージング関連
+            'splitZipStagingTitle'    => __( 'Split ZIP upload progress', 'novel-game-plugin' ),
+            'splitZipOverallProgress' => __( 'Overall progress', 'novel-game-plugin' ),
+            /* translators: %1$d: パート番号, %2$d: 総パート数 */
+            'splitZipPartNOfM'        => __( 'Part %1$d of %2$d', 'novel-game-plugin' ),
+            'splitZipPartUploaded'    => __( 'Uploaded', 'novel-game-plugin' ),
+            'splitZipPartWaiting'     => __( 'Waiting', 'novel-game-plugin' ),
+            /* translators: %1$d: 受信済みパート数, %2$d: 総パート数 */
+            'splitZipPartsReceivedCount' => __( '%1$d of %2$d parts received', 'novel-game-plugin' ),
+            /* translators: %1$d: アップロード中のパート番号, %2$d: 総パート数 */
+            'splitZipUploadingPart'   => __( 'Uploading Part %1$d of %2$d...', 'novel-game-plugin' ),
+            /* translators: %1$d: 受信済みのパート番号, %2$d: 総パート数 */
+            'splitZipReceivedPart'    => __( 'Received Part %1$d of %2$d.', 'novel-game-plugin' ),
+            /* translators: %1$d: 次にアップロードするパート番号, %2$d: 総パート数 */
+            'splitZipUploadNext'      => __( 'Please select Part %1$d of %2$d and click Import.', 'novel-game-plugin' ),
+            'splitZipWaitingNext'     => __( 'Waiting for the next ZIP part upload.', 'novel-game-plugin' ),
+            'splitZipAllPartsReceived' => __( 'All parts received. Importing...', 'novel-game-plugin' ),
+            'splitZipUploadCompleted' => __( 'All ZIP parts have been uploaded.', 'novel-game-plugin' ),
+            'splitZipServerProcessing' => __( 'Upload complete. Server-side verification and import are still running.', 'novel-game-plugin' ),
+            'splitZipGameImporting'   => __( 'Server-side processing is in progress. Please wait while the game data is being imported.', 'novel-game-plugin' ),
         )
     );
 }

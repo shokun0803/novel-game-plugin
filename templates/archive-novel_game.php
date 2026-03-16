@@ -53,6 +53,27 @@
                         );
                     }
                 }
+
+                // start_scene_id が無効な場合は _is_start_scene メタを優先する
+                if ( ! $first_scene ) {
+                    $start_scene_query = $wpdb->prepare(
+                        "SELECT p.ID, p.post_title
+                        FROM {$wpdb->posts} p
+                        INNER JOIN {$wpdb->postmeta} game_pm ON p.ID = game_pm.post_id
+                        INNER JOIN {$wpdb->postmeta} start_pm ON p.ID = start_pm.post_id
+                        WHERE p.post_type = 'novel_game'
+                        AND p.post_status = 'publish'
+                        AND game_pm.meta_key = '_game_title'
+                        AND game_pm.meta_value = %s
+                        AND start_pm.meta_key = '_is_start_scene'
+                        AND start_pm.meta_value = '1'
+                        ORDER BY p.post_date ASC
+                        LIMIT 1",
+                        $game_data['title']
+                    );
+
+                    $first_scene = $wpdb->get_row( $start_scene_query );
+                }
                 
                 // start_scene_idがない、または取得失敗した場合は最初のシーンを取得
                 if ( ! $first_scene ) {
