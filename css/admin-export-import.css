@@ -73,6 +73,13 @@
     margin-bottom: 10px;
 }
 
+.noveltool-import-help {
+    margin-top: 0;
+    margin-bottom: 12px;
+    max-width: 400px;
+    line-height: 1.6;
+}
+
 /* ボタン */
 .noveltool-export-button,
 .noveltool-import-button {

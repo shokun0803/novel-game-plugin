@@ -92,8 +92,8 @@ function noveltool_export_import_page() {
                                accept=".json,.zip,application/json,application/zip,application/x-zip-compressed"
                                class="noveltool-import-file"
                                aria-label="<?php esc_attr_e( 'Select JSON or ZIP file to import', 'novel-game-plugin' ); ?>" />
-                        <span class="description"><?php esc_html_e( 'For split ZIP import, upload one part file at a time in order (Part 1, then Part 2, etc.).', 'novel-game-plugin' ); ?></span>
                     </p>
+                    <p class="description noveltool-import-help"><?php esc_html_e( 'For split ZIP import, upload one part file at a time in order (Part 1, then Part 2, etc.).', 'novel-game-plugin' ); ?></p>
                     <div id="noveltool-split-zip-staging" class="noveltool-split-zip-staging" style="display:none;" aria-live="polite"></div>
                     <p>
                         <label>
