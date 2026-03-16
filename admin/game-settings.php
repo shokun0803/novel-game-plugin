@@ -1307,13 +1307,14 @@ function noveltool_find_existing_import_image_attachment( $signature ) {
  * 同一リクエスト内では SHA-256 をキーに結果をキャッシュし、
  * 同じ画像が複数回参照されても media_handle_sideload() を 1 回だけ実行する。
  *
- * @param string $tmp_path        一時ファイルパス
- * @param string $file_name       元のファイル名
- * @param int    $parent_post_id  親投稿ID
- * @return int|WP_Error 添付ファイルIDまたはエラー
+ * @param string $tmp_path         一時ファイルパス
+ * @param string $file_name        元のファイル名
+ * @param int    $parent_post_id   親投稿ID
+ * @param bool   $return_metadata  true の場合はメタデータ配列を返す
+ * @return int|array|WP_Error 添付ファイルID、メタ情報付き配列、またはエラー
  * @since 1.5.0
  */
-function noveltool_get_or_create_import_image_attachment( $tmp_path, $file_name, $parent_post_id = 0 ) {
+function noveltool_get_or_create_import_image_attachment( $tmp_path, $file_name, $parent_post_id = 0, $return_metadata = false ) {
     static $request_cache = array();
 
     $signature = noveltool_get_import_image_signature( $tmp_path, $file_name );
@@ -1322,16 +1323,27 @@ function noveltool_get_or_create_import_image_attachment( $tmp_path, $file_name,
     }
 
     if ( isset( $request_cache[ $signature['sha256'] ] ) ) {
-        $cached_attachment_id = intval( $request_cache[ $signature['sha256'] ] );
+        $cached_attachment = $request_cache[ $signature['sha256'] ];
+        $cached_attachment_id = isset( $cached_attachment['attachment_id'] ) ? intval( $cached_attachment['attachment_id'] ) : 0;
+        $cached_created       = ! empty( $cached_attachment['created'] );
+
         if ( $cached_attachment_id > 0 && get_post( $cached_attachment_id ) ) {
-            return $cached_attachment_id;
+            $result = array(
+                'attachment_id' => $cached_attachment_id,
+                'created'       => $cached_created,
+            );
+            return $return_metadata ? $result : $result['attachment_id'];
         }
     }
 
     $existing_attachment_id = noveltool_find_existing_import_image_attachment( $signature );
     if ( $existing_attachment_id > 0 ) {
-        $request_cache[ $signature['sha256'] ] = $existing_attachment_id;
-        return $existing_attachment_id;
+        $result = array(
+            'attachment_id' => $existing_attachment_id,
+            'created'       => false,
+        );
+        $request_cache[ $signature['sha256'] ] = $result;
+        return $return_metadata ? $result : $result['attachment_id'];
     }
 
     if ( ! function_exists( 'media_handle_sideload' ) ) {
@@ -1351,9 +1363,12 @@ function noveltool_get_or_create_import_image_attachment( $tmp_path, $file_name,
     }
 
     noveltool_store_import_image_signature( $attachment_id, $signature );
-    $request_cache[ $signature['sha256'] ] = $attachment_id;
-
-    return $attachment_id;
+    $result = array(
+        'attachment_id' => $attachment_id,
+        'created'       => true,
+    );
+    $request_cache[ $signature['sha256'] ] = $result;
+    return $return_metadata ? $result : $result['attachment_id'];
 }
 
 /**
@@ -3292,31 +3307,51 @@ function noveltool_finalize_split_zip_import( $staging_key ) {
 
     // メディアライブラリに画像を登録
     // 注意: 全パートの検証が完了した後に初めて実行される
-    $relative_to_url        = array();
-    $created_attachment_ids = array();
+    $relative_to_url         = array();
+    $created_attachment_id_set = array();
+
+    // split ZIP import 中に作成した添付ファイルだけを削除する。
+    $rollback_created_attachments = static function( $attachment_id_set ) {
+        foreach ( array_keys( $attachment_id_set ) as $att_id ) {
+            wp_delete_attachment( $att_id, true );
+        }
+    };
 
     foreach ( $staging['staged_images'] as $entry_name => $tmp_path ) {
         if ( ! file_exists( $tmp_path ) ) {
             continue;
         }
         $basename      = basename( $entry_name );
-        $attachment_id = noveltool_get_or_create_import_image_attachment(
+        $attachment_result = noveltool_get_or_create_import_image_attachment(
             $tmp_path,
             sanitize_file_name( $basename ),
-            0
+            0,
+            true
         );
 
-        if ( is_wp_error( $attachment_id ) ) {
+        if ( is_wp_error( $attachment_result ) ) {
             // ロールバック: 作成済みの添付ファイルを削除し、一時ファイルをクリーンアップ
-            foreach ( $created_attachment_ids as $att_id ) {
-                wp_delete_attachment( $att_id, true );
-            }
+            $rollback_created_attachments( $created_attachment_id_set );
             noveltool_cleanup_split_zip_staging( $staging );
             delete_transient( $staging_key );
             return new WP_Error( 'attachment_failed', __( 'Failed to create media attachment. Import aborted.', 'novel-game-plugin' ) );
         }
 
-        $created_attachment_ids[]           = $attachment_id;
+        $attachment_id      = isset( $attachment_result['attachment_id'] ) ? intval( $attachment_result['attachment_id'] ) : 0;
+        $attachment_created = ! empty( $attachment_result['created'] );
+
+        if ( $attachment_id < 1 ) {
+            // 防御的チェック: 想定外の戻り値構造でも既存添付の巻き添え削除を避けつつ安全に中断する。
+            $rollback_created_attachments( $created_attachment_id_set );
+            noveltool_cleanup_split_zip_staging( $staging );
+            delete_transient( $staging_key );
+            return new WP_Error( 'attachment_failed', __( 'Failed to create media attachment. Import aborted.', 'novel-game-plugin' ) );
+        }
+
+        if ( $attachment_created ) {
+            $created_attachment_id_set[ $attachment_id ] = true;
+        }
+
         $relative_to_url[ $entry_name ] = wp_get_attachment_url( $attachment_id );
     }
 
@@ -3381,9 +3416,7 @@ function noveltool_finalize_split_zip_import( $staging_key ) {
     $result = noveltool_import_game_data( $import_data, false );
     if ( is_wp_error( $result ) ) {
         // ゲーム作成失敗: 作成済みの添付ファイルをロールバック
-        foreach ( $created_attachment_ids as $att_id ) {
-            wp_delete_attachment( $att_id, true );
-        }
+        $rollback_created_attachments( $created_attachment_id_set );
         return $result;
     }
 
