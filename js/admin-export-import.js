@@ -730,7 +730,6 @@
                             button.prop('disabled', true); // 次ファイル選択まで無効
                         } else {
                             // インポート完了（通常ZIP/JSON または分割ZIPファイナライズ完了）
-                            hideStagingProgress();
                             var message = d.message;
                             if (d.image_download_failures && d.image_download_failures > 0) {
                                 message += ' ' + noveltoolExportImport.imageDownloadFailures.replace('%d', d.image_download_failures);
@@ -738,17 +737,19 @@
                             showNotice('success', message);
                             fileInput.value = '';
                             button.prop('disabled', true);
-                            hideImportProgress();
-                            resetSplitImportState();
+                            if (requestContext.isSplitRequest) {
+                                // 分割ZIP完了時はステージング一覧と全体進捗の両方を閉じる。
+                                resetSplitImportSessionUi();
+                            } else {
+                                // 通常インポートでは split 用ステージングパネルを開いていないため、
+                                // 既存の完了表示を保ったまま進捗UIと内部状態だけを既定値へ戻す。
+                                hideImportProgress();
+                                resetSplitImportState();
+                            }
                         }
                     } else {
                         if (requestContext.isSplitRequest && requestContext.totalParts > 0) {
-                            showSplitOverallProgress(
-                                splitImportState.stagedParts.length,
-                                requestContext.totalParts,
-                                noveltoolExportImport.importError,
-                                response.data.message || noveltoolExportImport.importError
-                            );
+                            resetSplitImportSessionUi();
                         } else {
                             hideImportProgress();
                         }
@@ -760,12 +761,7 @@
                     clearSplitProcessingTimer();
 
                     if (requestContext.isSplitRequest && requestContext.totalParts > 0) {
-                        showSplitOverallProgress(
-                            splitImportState.stagedParts.length,
-                            requestContext.totalParts,
-                            noveltoolExportImport.importError,
-                            noveltoolExportImport.importError
-                        );
+                        resetSplitImportSessionUi();
                     } else {
                         hideImportProgress();
                     }
@@ -869,6 +865,23 @@
          */
         function hideStagingProgress() {
             $('#noveltool-split-zip-staging').hide().empty();
+        }
+
+        /**
+         * 分割ZIPセッションのUI状態をリセットする
+         *
+         * 分割ZIPインポートの完了時・継続不能なエラー時に呼び出し、
+         * ステージング表示・進捗表示・内部状態をまとめて初期化する。
+         * 先に表示を閉じ、その後に内部状態を初期化することで、
+         * タイマー停止後のコールバックや後続操作が古い split 情報を参照せず、
+         * 次回の JSON / 単一 ZIP / 別 split セッションへ状態が漏れないようにする。
+         *
+         * @since 1.5.0
+         */
+        function resetSplitImportSessionUi() {
+            hideStagingProgress();
+            hideImportProgress();
+            resetSplitImportState();
         }
 
         /**
