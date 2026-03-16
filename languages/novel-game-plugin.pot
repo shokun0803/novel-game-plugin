@@ -2254,15 +2254,15 @@ msgid "Failed to write game-data.json to ZIP."
 msgstr ""
 
 #: admin/export-import.php
-msgid "Select JSON or ZIP file(s)"
+msgid "Select JSON or ZIP file"
 msgstr ""
 
 #: admin/export-import.php
-msgid "Select JSON or ZIP file(s) to import"
+msgid "Select JSON or ZIP file to import"
 msgstr ""
 
 #: admin/export-import.php
-msgid "For split ZIP export, select all part files at once."
+msgid "For split ZIP import, upload one part file at a time in order (Part 1, then Part 2, etc.)."
 msgstr ""
 
 #: admin/game-settings.php
@@ -2303,6 +2303,31 @@ msgstr ""
 
 #: admin/export-import.php
 msgid "Checking export size..."
+msgstr ""
+
+#: admin/export-import.php
+msgid "Split ZIP upload progress"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Part %1$d of %2$d"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Uploaded"
+msgstr ""
+
+#: admin/export-import.php
+msgid "Waiting"
+msgstr ""
+
+#. translators: %1$d: 次にアップロードするパート番号, %2$d: 総パート数
+#: admin/export-import.php
+msgid "Please select Part %1$d of %2$d and click Import."
+msgstr ""
+
+#: admin/export-import.php
+msgid "All parts received. Importing..."
 msgstr ""
 
 #: admin/game-settings.php
@@ -2359,4 +2384,38 @@ msgstr ""
 
 #: admin/game-settings.php
 msgid "Only ZIP files are allowed for split ZIP import."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Invalid part number or total parts in manifest."
+msgstr ""
+
+#. translators: %s: ファイル名
+#: admin/game-settings.php
+msgid "File declared in manifest not found in ZIP: %s"
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Files are from different exports. Please start a new import."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Part %d has already been uploaded."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Import session expired. Please upload all parts again."
+msgstr ""
+
+#. translators: %s: ファイル名
+#: admin/game-settings.php
+msgid "Expected file not found in staging: %s. Import aborted."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "game-data.json not found in staging. Please upload part 1 again."
+msgstr ""
+
+#: admin/game-settings.php
+msgid "Failed to create media attachment. Import aborted."
 msgstr ""

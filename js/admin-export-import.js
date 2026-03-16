@@ -112,8 +112,8 @@
                 : '<span class="dashicons dashicons-download"></span> ' + noveltoolExportImport.exporting;
             button.prop('disabled', true).html(exportingLabel);
 
-            // 分割ZIPダウンロードリストをリセット
-            $('#noveltool-split-zip-download-list').hide().empty();
+            // 分割ZIPダウンロードリストをリセット（再エクスポート時のイベントリスナー積み重ね防止）
+            $('#noveltool-split-zip-download-list').off('click.noveltool').hide().empty();
 
             if (exportAsZip) {
                 // ZIP形式: XHRを使ってblobとして直接受信（メモリ安全、base64不使用）
@@ -247,13 +247,17 @@
         /**
          * 分割ZIPダウンロードリストを表示する
          *
+         * 再エクスポート時にイベントリスナーが積み重ならないよう、
+         * listDiv.off('click.noveltool') で既存リスナーをクリアしてから登録する。
+         *
          * @param {string} exportId  エクスポートID
          * @param {number} totalParts 総パート数
          * @param {Array}  parts      パート情報の配列
          */
         function showSplitZipDownloadList(exportId, totalParts, parts) {
             var listDiv = $('#noveltool-split-zip-download-list');
-            listDiv.empty();
+            // 再エクスポート時にイベントリスナーが積み重ならないよう先にオフにしてから再構築
+            listDiv.off('click.noveltool').empty();
 
             var title = $('<p><strong>' + noveltoolExportImport.splitZipDownloadAll + ' (' + totalParts + ')</strong></p>');
             listDiv.append(title);
@@ -281,12 +285,12 @@
 
             listDiv.show();
 
-            // 個別ダウンロードボタン
-            listDiv.on('click', '.noveltool-split-zip-part-btn', function() {
+            // 個別ダウンロードボタン（委譲。.off('click.noveltool') 済みなので多重登録なし）
+            listDiv.on('click.noveltool', '.noveltool-split-zip-part-btn', function() {
                 downloadSplitZipPart($(this));
             });
 
-            // 一括ダウンロードボタン: 順番にダウンロード
+            // 一括ダウンロードボタン: dlAllBtn は新しい要素なので直接 .on で問題なし
             dlAllBtn.on('click', function() {
                 var allBtns = listDiv.find('.noveltool-split-zip-part-btn');
                 downloadPartsSequentially(allBtns, 0);
@@ -403,7 +407,7 @@
             xhr.send(form);
         }
 
-        // ファイル選択時の処理（複数ファイル対応）
+        // ファイル選択時の処理（単一ファイル、逐次アップロード方式）
         $('#noveltool-import-file').on('change', function() {
             var fileInput = $(this);
             var importButton = $('.noveltool-import-button');
@@ -414,42 +418,21 @@
                 return;
             }
 
-            // 複数ファイル選択時の検証
-            if (files.length > 1) {
-                var allZips = true;
-                for (var i = 0; i < files.length; i++) {
-                    if (!files[i].name.toLowerCase().endsWith('.zip')) {
-                        allZips = false;
-                        break;
-                    }
-                }
-                if (!allZips) {
-                    showNotice('error', noveltoolExportImport.splitZipOnlyZips);
-                    fileInput.val('');
-                    importButton.prop('disabled', true);
-                    return;
-                }
-                // 複数ZIP選択時はすべてZIPファイルであることが確認済み
-            }
-
-            // サイズチェック
-            var maxSize = noveltoolExportImport.zipMaxSizeBytes;
-            for (var j = 0; j < files.length; j++) {
-                var isZip = files[j].name.toLowerCase().endsWith('.zip');
-                var limit = isZip ? maxSize : noveltoolExportImport.jsonMaxSizeBytes;
-                if (files[j].size > limit) {
-                    var msg = isZip ? noveltoolExportImport.fileTooLargeZip : noveltoolExportImport.fileTooLargeJson;
-                    showNotice('error', msg);
-                    fileInput.val('');
-                    importButton.prop('disabled', true);
-                    return;
-                }
+            // サイズチェック（1ファイル）
+            var isZip = files[0].name.toLowerCase().endsWith('.zip');
+            var limit = isZip ? noveltoolExportImport.zipMaxSizeBytes : noveltoolExportImport.jsonMaxSizeBytes;
+            if (files[0].size > limit) {
+                var msg = isZip ? noveltoolExportImport.fileTooLargeZip : noveltoolExportImport.fileTooLargeJson;
+                showNotice('error', msg);
+                fileInput.val('');
+                importButton.prop('disabled', true);
+                return;
             }
 
             importButton.prop('disabled', false);
         });
 
-        // インポートボタンのクリック処理
+        // インポートボタンのクリック処理（単一ファイル逐次アップロード）
         $('.noveltool-import-button').on('click', function() {
             var button = $(this);
             var fileInput = $('#noveltool-import-file')[0];
@@ -461,23 +444,12 @@
                 return;
             }
 
-            var files = fileInput.files;
             var formData = new FormData();
             formData.append('action', 'noveltool_import_game');
             formData.append('download_images', downloadImages ? 'true' : 'false');
             formData.append('nonce', noveltoolExportImport.importNonce);
+            formData.append('import_file', fileInput.files[0]);
 
-            if (files.length > 1) {
-                // 複数ファイル: 分割ZIPインポート
-                for (var k = 0; k < files.length; k++) {
-                    formData.append('import_files[]', files[k]);
-                }
-            } else {
-                // 単一ファイル: 既存の import_file キーを使用（後方互換性）
-                formData.append('import_file', files[0]);
-            }
-
-            // ボタンを無効化し、進捗表示
             button.prop('disabled', true);
             progressDiv.show();
 
@@ -489,18 +461,24 @@
                 contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        var message = response.data.message;
-                        
-                        // 画像ダウンロード失敗件数を追加
-                        if (response.data.image_download_failures && response.data.image_download_failures > 0) {
-                            message += ' ' + noveltoolExportImport.imageDownloadFailures.replace('%d', response.data.image_download_failures);
+                        var d = response.data;
+
+                        if (d.format === 'split_zip_staging') {
+                            // 分割ZIPステージング進行中: 進捗パネルを更新して次パートを促す
+                            showStagingProgress(d);
+                            fileInput.value = '';
+                            button.prop('disabled', true); // 次ファイル選択まで無効
+                        } else {
+                            // インポート完了（通常ZIP/JSON または分割ZIPファイナライズ完了）
+                            hideStagingProgress();
+                            var message = d.message;
+                            if (d.image_download_failures && d.image_download_failures > 0) {
+                                message += ' ' + noveltoolExportImport.imageDownloadFailures.replace('%d', d.image_download_failures);
+                            }
+                            showNotice('success', message);
+                            fileInput.value = '';
+                            button.prop('disabled', true);
                         }
-                        
-                        showNotice('success', message);
-                        
-                        // ファイル入力をクリア
-                        fileInput.value = '';
-                        button.prop('disabled', true);
                     } else {
                         showNotice('error', response.data.message || noveltoolExportImport.importError);
                     }
@@ -509,12 +487,61 @@
                     showNotice('error', noveltoolExportImport.importError);
                 },
                 complete: function() {
-                    // 進捗非表示
                     progressDiv.hide();
-                    button.prop('disabled', false);
+                    // ファイルが選択されている場合はボタンを再有効化
+                    if (fileInput.files.length > 0) {
+                        button.prop('disabled', false);
+                    }
                 }
             });
         });
+
+        /**
+         * 分割ZIPステージングの進捗パネルを表示する
+         *
+         * @param {Object} data サーバーレスポンスの data オブジェクト（split_zip_staging）
+         */
+        function showStagingProgress(data) {
+            var panel = $('#noveltool-split-zip-staging');
+            panel.empty();
+
+            var title = $('<p><strong>' + noveltoolExportImport.splitZipStagingTitle + '</strong></p>');
+            panel.append(title);
+
+            var ul = $('<ul class="noveltool-staging-parts"></ul>');
+            for (var i = 1; i <= data.total_parts; i++) {
+                var isDone = data.staged_parts.indexOf(i) >= 0;
+                var iconCls = isDone ? 'dashicons-yes' : 'dashicons-clock';
+                var statusTxt = isDone
+                    ? noveltoolExportImport.splitZipPartUploaded
+                    : noveltoolExportImport.splitZipPartWaiting;
+                var partLabel = noveltoolExportImport.splitZipPartNOfM
+                    .replace('%1$d', i)
+                    .replace('%2$d', data.total_parts);
+                ul.append(
+                    '<li><span class="dashicons ' + iconCls + '" aria-hidden="true"></span> ' +
+                    partLabel + ': <em>' + statusTxt + '</em></li>'
+                );
+            }
+            panel.append(ul);
+
+            if (data.missing_parts && data.missing_parts.length > 0) {
+                var nextPart = data.missing_parts[0];
+                var hint = noveltoolExportImport.splitZipUploadNext
+                    .replace('%1$d', nextPart)
+                    .replace('%2$d', data.total_parts);
+                panel.append('<p class="description">' + hint + '</p>');
+            }
+
+            panel.show();
+        }
+
+        /**
+         * ステージング進捗パネルを非表示にする
+         */
+        function hideStagingProgress() {
+            $('#noveltool-split-zip-staging').hide().empty();
+        }
 
         /**
          * 通知メッセージを表示
