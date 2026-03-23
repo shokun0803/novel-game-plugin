@@ -1337,6 +1337,14 @@ msgstr ""
 msgid "Game and all associated scenes have been permanently deleted."
 msgstr ""
 
+#: admin/my-games.php:88
+msgid "Game and all associated scenes have been permanently deleted. Sample images have also been deleted."
+msgstr ""
+
+#: admin/my-games.php:91
+msgid "Game and all associated scenes have been permanently deleted. However, some sample images could not be deleted."
+msgstr ""
+
 #: admin/my-games.php:115
 msgid "Sample images are not installed. You can download them to use with sample games."
 msgstr ""
@@ -1381,6 +1389,18 @@ msgstr ""
 
 #: admin/my-games.php:200
 msgid "Are you sure you want to delete this game? This action cannot be undone."
+msgstr ""
+
+#: admin/my-games.php:201
+msgid "Are you sure you want to delete this game and its sample images? This action cannot be undone."
+msgstr ""
+
+#: admin/my-games.php:210
+msgid "Also delete sample images"
+msgstr ""
+
+#: admin/my-games.php:215
+msgid "Your own uploaded images will not be affected."
 msgstr ""
 
 #. translators: %s: estimated file size
@@ -2470,4 +2490,41 @@ msgstr ""
 #. translators: %s: ファイル名
 #: admin/game-settings.php
 msgid "ZIP contains a file not declared in manifest: %s"
+msgstr ""
+
+#: includes/sample-data.php
+msgid "Failed to resolve uploads directory."
+msgstr ""
+
+#: includes/sample-data.php
+msgid "Failed to resolve directory path."
+msgstr ""
+
+#: includes/sample-data.php
+msgid "Unexpected sample images directory path. Deletion aborted for safety."
+msgstr ""
+
+#. translators: %s: directory name
+#: includes/sample-data.php
+msgid "Failed to read directory: %s"
+msgstr ""
+
+#. translators: %s: directory name
+#: includes/sample-data.php
+msgid "Failed to delete directory: %s"
+msgstr ""
+
+#. translators: %s: file name
+#: includes/sample-data.php
+msgid "Failed to delete file: %s"
+msgstr ""
+
+#. translators: %s: file or directory name
+#: includes/sample-data.php
+msgid "Failed to resolve path, skipped for safety: %s"
+msgstr ""
+
+#. translators: %s: file or directory name
+#: includes/sample-data.php
+msgid "Path is outside the allowed directory, skipped for safety: %s"
 msgstr ""

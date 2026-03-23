@@ -84,6 +84,12 @@ function noveltool_my_games_page() {
             case 'deleted':
                 $success_message = __( 'Game and all associated scenes have been permanently deleted.', 'novel-game-plugin' );
                 break;
+            case 'deleted_with_images':
+                $success_message = __( 'Game and all associated scenes have been permanently deleted. Sample images have also been deleted.', 'novel-game-plugin' );
+                break;
+            case 'deleted_images_failed':
+                $success_message = __( 'Game and all associated scenes have been permanently deleted. However, some sample images could not be deleted.', 'novel-game-plugin' );
+                break;
         }
     }
 
@@ -266,13 +272,40 @@ function noveltool_my_games_page() {
                                 <a href="<?php echo esc_url( noveltool_get_game_manager_url( $game['id'], 'scenes', array( '_wpnonce' => wp_create_nonce( 'select_game' ) ) ) ); ?>" class="button button-primary">
                                     <?php esc_html_e( 'Manage', 'novel-game-plugin' ); ?>
                                 </a>
+                                <?php
+                                $is_sample_game      = isset( $game['machine_name'] ) && 'shadow_detective_v1' === $game['machine_name'];
+                                // サンプル画像削除オプションは manage_options ユーザーにのみ表示する（サーバー側の権限チェックと一致）
+                                $sample_images_exist = $is_sample_game && current_user_can( 'manage_options' ) && noveltool_sample_images_exists();
+                                $confirm_default     = __( 'Are you sure you want to delete this game? This action cannot be undone.', 'novel-game-plugin' );
+                                $confirm_with_images = __( 'Are you sure you want to delete this game and its sample images? This action cannot be undone.', 'novel-game-plugin' );
+                                $checkbox_id         = 'noveltool-delete-images-' . $game['id'];
+                                ?>
                                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;" class="noveltool-delete-game-form">
                                     <?php wp_nonce_field( 'manage_games' ); ?>
                                     <input type="hidden" name="action" value="noveltool_delete_game" />
                                     <input type="hidden" name="game_id" value="<?php echo esc_attr( $game['id'] ); ?>" />
-                                    <button type="submit" class="button noveltool-delete-button" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete this game? This action cannot be undone.', 'novel-game-plugin' ) ); ?>');">
-                                        <?php esc_html_e( 'Delete', 'novel-game-plugin' ); ?>
-                                    </button>
+                                    <?php if ( $sample_images_exist ) : ?>
+                                        <div class="noveltool-delete-images-option" style="margin-bottom: 6px;">
+                                            <label for="<?php echo esc_attr( $checkbox_id ); ?>" style="display: flex; align-items: flex-start; gap: 6px; cursor: pointer;">
+                                                <input type="checkbox" id="<?php echo esc_attr( $checkbox_id ); ?>" name="delete_sample_images" value="1" style="margin-top: 3px; flex-shrink: 0;" />
+                                                <span><?php esc_html_e( 'Also delete sample images', 'novel-game-plugin' ); ?></span>
+                                            </label>
+                                            <p class="description" style="margin: 2px 0 0 22px; font-size: 12px;">
+                                                <?php esc_html_e( 'Your own uploaded images will not be affected.', 'novel-game-plugin' ); ?>
+                                            </p>
+                                        </div>
+                                        <button type="submit" class="button noveltool-delete-button"
+                                            data-confirm="<?php echo esc_attr( $confirm_default ); ?>"
+                                            data-confirm-with-images="<?php echo esc_attr( $confirm_with_images ); ?>"
+                                            data-checkbox-id="<?php echo esc_attr( $checkbox_id ); ?>"
+                                            onclick="return noveltoolConfirmDeleteGame(this);">
+                                            <?php esc_html_e( 'Delete', 'novel-game-plugin' ); ?>
+                                        </button>
+                                    <?php else : ?>
+                                        <button type="submit" class="button noveltool-delete-button" onclick="return confirm('<?php echo esc_js( $confirm_default ); ?>');">
+                                            <?php esc_html_e( 'Delete', 'novel-game-plugin' ); ?>
+                                        </button>
+                                    <?php endif; ?>
                                 </form>
                             </div>
                         </div>
@@ -288,6 +321,22 @@ function noveltool_my_games_page() {
             </div>
         <?php endif; ?>
     </div>
+    <script>
+    /**
+     * サンプルゲーム削除時の確認ダイアログ（画像削除チェックボックス対応）
+     *
+     * @param {HTMLElement} btn 削除ボタン要素
+     * @return {boolean} ユーザーが確認した場合 true
+     */
+    function noveltoolConfirmDeleteGame( btn ) {
+        var checkboxId = btn.getAttribute( 'data-checkbox-id' );
+        var cb         = checkboxId ? document.getElementById( checkboxId ) : null;
+        var msg        = ( cb && cb.checked )
+            ? btn.getAttribute( 'data-confirm-with-images' )
+            : btn.getAttribute( 'data-confirm' );
+        return confirm( msg );
+    }
+    </script>
     <?php
 }
 
