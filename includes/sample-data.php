@@ -1554,7 +1554,7 @@ function noveltool_generate_scenes_for_game( $game_id, $target_title, $scenes_da
  * Shadow Detectiveゲームをインストール
  *
  * 本格推理ゲーム「影の探偵」をインストールする
- * 機械識別子（machine_name）とタイトルベースで既存チェックを行い、存在しない場合のみインストール
+ * 機械識別子（machine_name）で既存チェックを行い、存在しない場合のみインストール
  * 
  * ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
  * 既存ゲームが見つかった場合は何も変更せずに false を返します
@@ -1573,16 +1573,9 @@ function noveltool_install_shadow_detective_game() {
     $flag_master = $detective_data['flag_master'];
     
     // Shadow Detectiveが既に存在するかチェック
-    // 1. 機械識別子（machine_name）で検索（優先）
     $existing_game = null;
     if ( isset( $game_data['machine_name'] ) ) {
         $existing_game = noveltool_get_game_by_machine_name( $game_data['machine_name'] );
-    }
-    
-    // 2. machine_name が見つからない場合、タイトルベースでチェック（後方互換）
-    if ( ! $existing_game ) {
-        $game_title = __( 'Shadow Detective', 'novel-game-plugin-sample' );
-        $existing_game = noveltool_get_game_by_title( $game_title );
     }
     
     // ⚠️ 重要: 既存インストール済みのゲームは自動で削除/上書きされません
