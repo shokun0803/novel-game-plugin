@@ -194,6 +194,10 @@ add_action( 'admin_post_noveltool_update_game', 'noveltool_admin_post_update_gam
  * サンプル画像ディレクトリも同時に削除する。
  * 画像削除の失敗はゲーム削除本体の成否に影響しない（局所化）。
  *
+ * ファイルシステム上の実ファイル削除（delete_sample_images）は、
+ * サンプル画像のダウンロード・管理と同等の manage_options 権限を要求する。
+ * ゲームデータ（シーン・メタ）の削除は既存どおり edit_posts で実行する。
+ *
  * @since 1.2.0
  */
 function noveltool_admin_post_delete_game() {
@@ -211,6 +215,13 @@ function noveltool_admin_post_delete_game() {
 
     $game_id              = isset( $_POST['game_id'] ) ? intval( wp_unslash( $_POST['game_id'] ) ) : 0;
     $delete_sample_images = isset( $_POST['delete_sample_images'] ) && '1' === sanitize_text_field( wp_unslash( $_POST['delete_sample_images'] ) );
+
+    // サンプル画像のファイル削除はダウンロード管理と同様に manage_options 権限を要求する
+    if ( $delete_sample_images && ! current_user_can( 'manage_options' ) ) {
+        $redirect_url = add_query_arg( 'error', 'security', admin_url( 'edit.php?post_type=novel_game&page=novel-game-my-games' ) );
+        wp_safe_redirect( $redirect_url );
+        exit;
+    }
 
     if ( $game_id ) {
         // 削除前にゲームのメタ情報（machine_name）を取得しておく

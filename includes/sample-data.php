@@ -1729,7 +1729,7 @@ function noveltool_delete_sample_images() {
     }
 
     // 再帰的にディレクトリを削除
-    $all_ok            = noveltool_delete_sample_images_recursive( $real_sample_dir, $result );
+    $all_ok            = noveltool_delete_sample_images_recursive( $real_sample_dir, $real_sample_dir, $result );
     $result['success'] = $all_ok && empty( $result['errors'] );
 
     // 削除結果を監査ログとして記録
@@ -1749,12 +1749,17 @@ function noveltool_delete_sample_images() {
 /**
  * ディレクトリを再帰的に削除する内部ヘルパー
  *
- * @param string $dir    削除対象ディレクトリの絶対パス
- * @param array  $result 結果配列（参照渡し）
+ * 各エントリごとに is_link() / realpath() を検証し、$root_dir 配下に収まるものだけを処理する。
+ * シンボリックリンクはリンク先を辿らず、リンク自体のみを削除対象とする。
+ * 境界外と判定されたエントリは削除せず error_log に記録して安全側フォールバックする。
+ *
+ * @param string $dir      削除対象ディレクトリの絶対パス
+ * @param string $root_dir 削除を許可する最上位ディレクトリの realpath（境界）
+ * @param array  $result   結果配列（参照渡し）
  * @return bool 全削除に成功した場合 true
  * @since 1.6.0
  */
-function noveltool_delete_sample_images_recursive( $dir, &$result ) {
+function noveltool_delete_sample_images_recursive( $dir, $root_dir, &$result ) {
     if ( ! is_dir( $dir ) ) {
         return true;
     }
@@ -1777,10 +1782,58 @@ function noveltool_delete_sample_images_recursive( $dir, &$result ) {
 
         $path = $dir . DIRECTORY_SEPARATOR . $item;
 
-        if ( is_dir( $path ) ) {
-            $sub_ok = noveltool_delete_sample_images_recursive( $path, $result );
+        // シンボリックリンクはリンク先を辿らずリンク自体のみを削除する
+        if ( is_link( $path ) ) {
+            // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+            if ( @unlink( $path ) ) {
+                $result['deleted_count']++;
+            } else {
+                $msg = sprintf(
+                    '[NovelGamePlugin] Failed to delete symlink: %s',
+                    $path
+                );
+                error_log( $msg );
+                $result['errors'][] = sprintf(
+                    /* translators: %s: file name */
+                    __( 'Failed to delete file: %s', 'novel-game-plugin' ),
+                    $item
+                );
+                $all_deleted = false;
+            }
+            continue;
+        }
+
+        // 通常エントリ: realpath で正規化し、root_dir 配下に留まることを確認
+        $real_path = realpath( $path );
+        if ( false === $real_path ) {
+            // realpath が失敗した場合は安全側フォールバック（スキップ）
+            error_log( sprintf( '[NovelGamePlugin] Could not resolve path, skipping for safety: %s', $path ) );
+            $result['errors'][] = sprintf(
+                /* translators: %s: file or directory name */
+                __( 'Failed to resolve path, skipped for safety: %s', 'novel-game-plugin' ),
+                $item
+            );
+            $all_deleted = false;
+            continue;
+        }
+
+        // root_dir 配下に収まっているか確認（境界チェック）
+        $root_prefix = rtrim( $root_dir, DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR;
+        if ( 0 !== strpos( $real_path, $root_prefix ) && $real_path !== rtrim( $root_dir, DIRECTORY_SEPARATOR ) ) {
+            error_log( sprintf( '[NovelGamePlugin] Path escaped root boundary, skipping for safety: %s', $real_path ) );
+            $result['errors'][] = sprintf(
+                /* translators: %s: file or directory name */
+                __( 'Path is outside the allowed directory, skipped for safety: %s', 'novel-game-plugin' ),
+                $item
+            );
+            $all_deleted = false;
+            continue;
+        }
+
+        if ( is_dir( $real_path ) ) {
+            $sub_ok = noveltool_delete_sample_images_recursive( $real_path, $root_dir, $result );
             if ( $sub_ok ) {
-                if ( ! rmdir( $path ) ) {
+                if ( ! rmdir( $real_path ) ) {
                     $result['errors'][] = sprintf(
                         /* translators: %s: directory name */
                         __( 'Failed to delete directory: %s', 'novel-game-plugin' ),
@@ -1793,7 +1846,7 @@ function noveltool_delete_sample_images_recursive( $dir, &$result ) {
             }
         } else {
             // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-            if ( @unlink( $path ) ) {
+            if ( @unlink( $real_path ) ) {
                 $result['deleted_count']++;
             } else {
                 $result['errors'][] = sprintf(
