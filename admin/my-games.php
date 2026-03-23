@@ -274,7 +274,8 @@ function noveltool_my_games_page() {
                                 </a>
                                 <?php
                                 $is_sample_game      = isset( $game['machine_name'] ) && 'shadow_detective_v1' === $game['machine_name'];
-                                $sample_images_exist = $is_sample_game && noveltool_sample_images_exists();
+                                // サンプル画像削除オプションは manage_options ユーザーにのみ表示する（サーバー側の権限チェックと一致）
+                                $sample_images_exist = $is_sample_game && current_user_can( 'manage_options' ) && noveltool_sample_images_exists();
                                 $confirm_default     = __( 'Are you sure you want to delete this game? This action cannot be undone.', 'novel-game-plugin' );
                                 $confirm_with_images = __( 'Are you sure you want to delete this game and its sample images? This action cannot be undone.', 'novel-game-plugin' );
                                 $checkbox_id         = 'noveltool-delete-images-' . $game['id'];
