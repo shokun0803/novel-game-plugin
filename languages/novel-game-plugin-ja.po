@@ -2380,4 +2380,61 @@ msgstr "ダウンロードエラーデータをシリアライズできません
 msgid "Failed to extract ZIP file."
 msgstr "ZIPファイルの展開に失敗しました。"
 
+#: admin/my-games.php:88
+msgid "Game and all associated scenes have been permanently deleted. Sample images have also been deleted."
+msgstr "ゲームと関連するすべてのシーンを完全に削除しました。サンプル画像も削除しました。"
+
+#: admin/my-games.php:91
+msgid "Game and all associated scenes have been permanently deleted. However, some sample images could not be deleted."
+msgstr "ゲームと関連するすべてのシーンを完全に削除しました。ただし、一部のサンプル画像は削除できませんでした。"
+
+#: admin/my-games.php:201
+msgid "Are you sure you want to delete this game and its sample images? This action cannot be undone."
+msgstr "このゲームとサンプル画像を削除してもよろしいですか？この操作は元に戻せません。"
+
+#: admin/my-games.php:210
+msgid "Also delete sample images"
+msgstr "サンプル画像も削除する"
+
+#: admin/my-games.php:215
+msgid "Your own uploaded images will not be affected."
+msgstr "ご自身がアップロードした画像には影響しません。"
+
+#: includes/sample-data.php
+msgid "Failed to resolve uploads directory."
+msgstr "uploads ディレクトリを解決できませんでした。"
+
+#: includes/sample-data.php
+msgid "Failed to resolve directory path."
+msgstr "ディレクトリパスを解決できませんでした。"
+
+#: includes/sample-data.php
+msgid "Unexpected sample images directory path. Deletion aborted for safety."
+msgstr "想定外のサンプル画像ディレクトリパスです。安全のため削除を中止しました。"
+
+#. translators: %s: directory name
+#: includes/sample-data.php
+msgid "Failed to read directory: %s"
+msgstr "ディレクトリを読み取れませんでした: %s"
+
+#. translators: %s: directory name
+#: includes/sample-data.php
+msgid "Failed to delete directory: %s"
+msgstr "ディレクトリを削除できませんでした: %s"
+
+#. translators: %s: file name
+#: includes/sample-data.php
+msgid "Failed to delete file: %s"
+msgstr "ファイルを削除できませんでした: %s"
+
+#. translators: %s: file or directory name
+#: includes/sample-data.php
+msgid "Failed to resolve path, skipped for safety: %s"
+msgstr "パスを解決できなかったため、安全のためスキップしました: %s"
+
+#. translators: %s: file or directory name
+#: includes/sample-data.php
+msgid "Path is outside the allowed directory, skipped for safety: %s"
+msgstr "パスが許可されたディレクトリ外のため、安全のためスキップしました: %s"
+
 
