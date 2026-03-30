@@ -33,6 +33,7 @@ function noveltool_init_blocks() {
             'wp-components',
             'wp-i18n',
             'wp-data',
+            'wp-api-fetch',
         ),
         NOVEL_GAME_PLUGIN_VERSION,
         true
