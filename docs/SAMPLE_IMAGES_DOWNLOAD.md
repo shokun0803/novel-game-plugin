@@ -92,9 +92,9 @@
 
 ダウンロードが何度も失敗する場合は、手動でインストールすることもできます：
 
-1. [GitHubリリースページ](https://github.com/shokun0803/novel-game-plugin/releases/latest)から `novel-game-plugin-sample-images-vX.X.X.zip` をダウンロード
-2. ZIPファイルを展開
-3. 展開したファイルを `wp-content/plugins/novel-game-plugin/assets/sample-images/` ディレクトリに配置
+1. [GitHubリリースページ](https://github.com/shokun0803/novel-game-plugin/releases/latest)から `novel-game-plugin-sample-images-vX.X.X-all.zip` を優先してダウンロードします
+2. `-all.zip` がない場合は、`novel-game-plugin-sample-images-vX.X.X-partNN.zip` をすべてダウンロードして順に展開します
+3. 展開したファイルを `wp-content/uploads/noveltool/sample-images/` ディレクトリに配置します
 
 ## 開発者向け情報
 
@@ -178,13 +178,16 @@ POST /wp-json/novel-game-plugin/v1/sample-images/reset-status
 
 リリース時には以下の命名規約でアセットを作成してください：
 
-1. **ZIPファイル**: `novel-game-plugin-sample-images-vX.X.X.zip`
-2. **チェックサムファイル（オプション）**: `novel-game-plugin-sample-images-vX.X.X.zip.sha256`
+1. **分割ZIPファイル**: `novel-game-plugin-sample-images-vX.X.X-partNN.zip`
+2. **まとめZIPファイル**: `novel-game-plugin-sample-images-vX.X.X-all.zip`
+3. **チェックサムファイル**: 各 ZIP に対応する `.sha256`
+4. **後方互換**: 旧リリースの単一 ZIP `novel-game-plugin-sample-images-vX.X.X.zip` も参照可能
 
 #### チェックサムファイルの生成
 
 ```bash
-sha256sum novel-game-plugin-sample-images-v1.3.0.zip > novel-game-plugin-sample-images-v1.3.0.zip.sha256
+sha256sum novel-game-plugin-sample-images-v1.3.0-part01.zip > novel-game-plugin-sample-images-v1.3.0-part01.zip.sha256
+sha256sum novel-game-plugin-sample-images-v1.3.0-all.zip > novel-game-plugin-sample-images-v1.3.0-all.zip.sha256
 ```
 
 ### セキュリティ
@@ -390,26 +393,22 @@ ZIP ファイルをストリーミング展開します。v1.4.0 で追加。
 
 ### サンプル画像アセットの準備
 
-1. サンプル画像を `assets/sample-images/` ディレクトリに配置
-2. ZIP ファイルを作成:
+1. サンプル画像の元データをリポジトリ内の `assets/sample-images/` ディレクトリに配置
+2. ビルドスクリプトでアセットを生成:
    ```bash
-   cd assets
-   zip -r novel-game-plugin-sample-images-v1.3.0.zip sample-images/
+  bash scripts/build-sample-images.sh v1.3.0 --all
    ```
-3. チェックサムを生成:
-   ```bash
-   sha256sum novel-game-plugin-sample-images-v1.3.0.zip > novel-game-plugin-sample-images-v1.3.0.zip.sha256
-   ```
-4. GitHub Release を作成し、両方のファイルをアセットとしてアップロード
+3. `build/` に生成された `partNN.zip`、`-all.zip`、各 `.sha256` を GitHub Release に添付
+4. `assets/sample-images/` に元データが存在しない場合、サンプル画像アセットは生成されません
 
 ### プラグイン配布パッケージの作成
 
 配布パッケージからサンプル画像を除外する場合：
 
-1. `.gitignore` に `assets/sample-images/` を追加（必要に応じて）
-2. ZIP 作成時に除外:
+1. プラグイン配布 ZIP には `assets/sample-images/` を含めません
+2. `scripts/build-release.sh` は ZIP 作成時に `assets/sample-images/` を除外します:
    ```bash
-   zip -r novel-game-plugin-v1.3.0.zip novel-game-plugin/ -x "*/assets/sample-images/*"
+  bash scripts/build-release.sh v1.3.0
    ```
 
 ## 国際化
