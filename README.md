@@ -1,6 +1,6 @@
 # Novel Game Plugin
 
-**Version:** 1.3.0  
+**Version:** 1.5.0  
 **License:** GPLv2 or later  
 **Author:** shokun0803  
 **Requires:** WordPress 6.3+  

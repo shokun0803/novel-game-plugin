@@ -3,7 +3,7 @@
  * Plugin Name: Novel Game Plugin
  * Plugin URI: https://github.com/shokun0803/novel-game-plugin
  * Description: WordPressでノベルゲームを作成できるプラグイン。
- * Version: 1.3.0
+ * Version: 1.5.0
  * Requires at least: 6.3
  * Requires PHP: 7.4
  * Tested up to: 7.0
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // プラグインの基本定数を定義
 if ( ! defined( 'NOVEL_GAME_PLUGIN_VERSION' ) ) {
     // キャッシュ更新のためバージョンを更新
-    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.3.0' );
+    define( 'NOVEL_GAME_PLUGIN_VERSION', '1.5.0' );
 }
 if ( ! defined( 'NOVEL_GAME_PLUGIN_URL' ) ) {
     define( 'NOVEL_GAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

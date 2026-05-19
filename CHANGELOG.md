@@ -4,6 +4,8 @@ All notable changes to Novel Game Plugin will be documented in this file.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-05-19
+
 ### Added (追加機能)
 
 - **リリース自動化**
