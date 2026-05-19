@@ -114,9 +114,9 @@ jobs:
 
           ### ⚠️ 互換性について
 
-          - **必須環境**: WordPress 4.7+, PHP 7.0+, MySQL 5.6+
-          - **推奨環境**: WordPress 6.0+, PHP 8.0+
-          - **テスト済み**: WordPress 6.0+
+          - **必須環境**: WordPress 6.3+, PHP 7.4+
+          - **推奨環境**: WordPress 7.0+, PHP 8.0+
+          - **テスト済み**: WordPress 7.0
 
           ### 📝 変更内容
 
