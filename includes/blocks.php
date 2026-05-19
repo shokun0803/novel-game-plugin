@@ -14,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * ノベルゲームブロックの初期化
  *
+ * Block API v3 を前提とするため、最低対応 WordPress バージョンは 6.3 です。
+ *
  * @since 1.2.0
  */
 function noveltool_init_blocks() {
@@ -26,15 +28,7 @@ function noveltool_init_blocks() {
     wp_register_script(
         'noveltool-blocks',
         NOVEL_GAME_PLUGIN_URL . 'js/blocks.js',
-        array(
-            'wp-blocks',
-            'wp-element',
-            'wp-block-editor',
-            'wp-components',
-            'wp-i18n',
-            'wp-data',
-            'wp-api-fetch',
-        ),
+        noveltool_get_block_editor_script_dependencies(),
         NOVEL_GAME_PLUGIN_VERSION,
         true
     );
@@ -49,45 +43,83 @@ function noveltool_init_blocks() {
 
     // ブロックタイプの登録
     register_block_type( 'noveltool/game-list', array(
+        'api_version'    => 3,
         'editor_script' => 'noveltool-blocks',
         'editor_style'  => 'noveltool-blocks-style',
         'render_callback' => 'noveltool_render_game_list_block',
-        'attributes' => array(
-            'gameType' => array(
-                'type' => 'string',
-                'default' => 'all'
-            ),
-            'gameTitle' => array(
-                'type' => 'string',
-                'default' => ''
-            ),
-            'showCount' => array(
-                'type' => 'boolean',
-                'default' => true
-            ),
-            'showDescription' => array(
-                'type' => 'boolean',
-                'default' => false
-            ),
-            'columns' => array(
-                'type' => 'number',
-                'default' => 3
-            ),
-            'orderby' => array(
-                'type' => 'string',
-                'default' => 'title'
-            ),
-            'order' => array(
-                'type' => 'string',
-                'default' => 'ASC'
-            )
-        )
+        'attributes'    => noveltool_get_game_list_block_attributes(),
     ) );
-
-    // ゲームリストを取得するためのREST APIエンドポイント
-    add_action( 'rest_api_init', 'noveltool_register_block_rest_routes' );
 }
 add_action( 'init', 'noveltool_init_blocks' );
+
+/**
+ * ブロック用スクリプトの依存関係を取得
+ *
+ * WordPress 6.3 以降の Block API v3 前提で wp-block-editor を優先しつつ、
+ * 既存環境では wp-editor にフォールバックする。
+ *
+ * @return array
+ * @since 1.5.0
+ */
+function noveltool_get_block_editor_script_dependencies() {
+    $dependencies = array(
+        'wp-blocks',
+        'wp-element',
+        'wp-components',
+        'wp-i18n',
+        'wp-data',
+        'wp-api-fetch',
+    );
+
+    if ( wp_script_is( 'wp-block-editor', 'registered' ) ) {
+        $dependencies[] = 'wp-block-editor';
+    } elseif ( wp_script_is( 'wp-editor', 'registered' ) ) {
+        $dependencies[] = 'wp-editor';
+    } else {
+        $dependencies[] = 'wp-block-editor';
+    }
+
+    return $dependencies;
+}
+
+/**
+ * ゲーム一覧ブロック属性を取得
+ *
+ * @return array
+ * @since 1.5.0
+ */
+function noveltool_get_game_list_block_attributes() {
+    return array(
+        'gameType'        => array(
+            'type'    => 'string',
+            'default' => 'all',
+        ),
+        'gameTitle'       => array(
+            'type'    => 'string',
+            'default' => '',
+        ),
+        'showCount'       => array(
+            'type'    => 'boolean',
+            'default' => true,
+        ),
+        'showDescription' => array(
+            'type'    => 'boolean',
+            'default' => false,
+        ),
+        'columns'         => array(
+            'type'    => 'number',
+            'default' => 3,
+        ),
+        'orderby'         => array(
+            'type'    => 'string',
+            'default' => 'title',
+        ),
+        'order'           => array(
+            'type'    => 'string',
+            'default' => 'ASC',
+        ),
+    );
+}
 
 /**
  * ゲーム一覧ブロックのレンダリング
@@ -140,6 +172,7 @@ function noveltool_register_block_rest_routes() {
         }
     ) );
 }
+add_action( 'rest_api_init', 'noveltool_register_block_rest_routes' );
 
 /**
  * ブロックエディタ用のゲーム一覧を取得

@@ -1458,23 +1458,26 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
     $parsed_url = wp_parse_url( $image_url );
     if ( ! isset( $parsed_url['scheme'] ) || ! in_array( $parsed_url['scheme'], array( 'http', 'https' ), true ) ) {
         error_log( '[noveltool] Image download failed: Invalid URL scheme for ' . $image_url );
-        return new WP_Error( 'invalid_scheme', __( 'Only HTTP/HTTPS URLs are allowed.', 'novel-game-plugin' ) );
+        return noveltool_finalize_image_download_result(
+            $image_url,
+            new WP_Error( 'invalid_scheme', __( 'Only HTTP/HTTPS URLs are allowed.', 'novel-game-plugin' ) )
+        );
     }
     
     // Content-Type事前チェック
     $response = wp_remote_head( $image_url, array( 'timeout' => 10 ) );
     if ( is_wp_error( $response ) ) {
         error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $response->get_error_message() );
-        $download_cache[ $image_url ] = $response;
-        return $response;
+        $download_cache[ $image_url ] = noveltool_finalize_image_download_result( $image_url, $response );
+        return $download_cache[ $image_url ];
     }
     
     $content_type = wp_remote_retrieve_header( $response, 'content-type' );
     if ( $content_type && strpos( $content_type, 'image/' ) !== 0 ) {
         error_log( '[noveltool] Image download failed: Invalid Content-Type for ' . $image_url . ' (got: ' . $content_type . ')' );
         $error = new WP_Error( 'invalid_content_type', __( 'URL does not point to an image.', 'novel-game-plugin' ) );
-        $download_cache[ $image_url ] = $error;
-        return $error;
+        $download_cache[ $image_url ] = noveltool_finalize_image_download_result( $image_url, $error );
+        return $download_cache[ $image_url ];
     }
 
     // WordPress HTTP APIを使用して画像をダウンロード
@@ -1485,8 +1488,8 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
     $temp_file = download_url( $image_url, 10 );
     if ( is_wp_error( $temp_file ) ) {
         error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $temp_file->get_error_message() );
-        $download_cache[ $image_url ] = $temp_file;
-        return $temp_file;
+        $download_cache[ $image_url ] = noveltool_finalize_image_download_result( $image_url, $temp_file );
+        return $download_cache[ $image_url ];
     }
     
     // 画像検証: getimagesizeで画像であることを確認
@@ -1497,8 +1500,8 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
         }
         error_log( '[noveltool] Image download failed: File is not a valid image ' . $image_url );
         $error = new WP_Error( 'invalid_image', __( 'Downloaded file is not a valid image.', 'novel-game-plugin' ) );
-        $download_cache[ $image_url ] = $error;
-        return $error;
+        $download_cache[ $image_url ] = noveltool_finalize_image_download_result( $image_url, $error );
+        return $download_cache[ $image_url ];
     }
 
     // MIMEタイプに基づいて拡張子を決定
@@ -1533,14 +1536,43 @@ function noveltool_download_image_to_media_library( $image_url, $parent_post_id 
 
     if ( is_wp_error( $attachment_id ) ) {
         error_log( '[noveltool] Image download failed: ' . $image_url . ' reason: ' . $attachment_id->get_error_message() );
-        $download_cache[ $image_url ] = $attachment_id;
-        return $attachment_id;
+        $download_cache[ $image_url ] = noveltool_finalize_image_download_result( $image_url, $attachment_id );
+        return $download_cache[ $image_url ];
     }
 
     $attachment_url = wp_get_attachment_url( $attachment_id );
     $download_cache[ $image_url ] = $attachment_url;
 
     return $attachment_url;
+}
+
+/**
+ * 外部画像取り込み結果を最終化
+ *
+ * 失敗時の通知をこの関数に集約し、将来的な改善を局所化する。
+ * 既存の戻り値と失敗方針は変更しない。
+ *
+ * @param string          $image_url 画像URL
+ * @param string|WP_Error $result    処理結果
+ * @return string|WP_Error
+ * @since 1.5.0
+ */
+function noveltool_finalize_image_download_result( $image_url, $result ) {
+    if ( is_wp_error( $result ) ) {
+        /**
+         * 外部画像取り込み失敗時のフック
+         *
+         * 失敗時ハンドリングの追加改善をこのフックへ集約する。
+         *
+         * @since 1.5.0
+         *
+         * @param string   $image_url 失敗した画像URL
+         * @param WP_Error $result    失敗内容
+         */
+        do_action( 'noveltool_import_image_download_failed', $image_url, $result );
+    }
+
+    return $result;
 }
 
 /**

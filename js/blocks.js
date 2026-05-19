@@ -5,11 +5,21 @@
  * @since 1.2.0
  */
 
-( function( blocks, element, editor, components, i18n, data ) {
+( function( blocks, element, blockEditor, legacyEditor, components, i18n, data, apiFetch ) {
     'use strict';
+
+    if ( ! blocks || ! element || ! components || ! i18n || ! data || ! apiFetch ) {
+        return;
+    }
 
     var el = element.createElement;
     var __ = i18n.__;
+    var editor = blockEditor && blockEditor.InspectorControls ? blockEditor : legacyEditor;
+
+    if ( ! editor || ! editor.InspectorControls ) {
+        return;
+    }
+
     var SelectControl = components.SelectControl;
     var ToggleControl = components.ToggleControl;
     var RangeControl = components.RangeControl;
@@ -31,7 +41,7 @@
         var setIsLoading = isLoading[1];
 
         useEffect( function() {
-            wp.apiFetch( {
+            apiFetch( {
                 path: '/noveltool/v1/games'
             } ).then( function( gamesList ) {
                 setGames( gamesList );
@@ -256,7 +266,9 @@
     window.wp.blocks,
     window.wp.element,
     window.wp.blockEditor,
+    window.wp.editor,
     window.wp.components,
     window.wp.i18n,
-    window.wp.data
+    window.wp.data,
+    window.wp.apiFetch
 );
