@@ -1034,6 +1034,9 @@ function noveltool_meta_box_callback( $post ) {
                            id="novel_choices_hidden"
                            name="choices"
                            value="<?php echo esc_attr( $choices ); ?>" />
+                    <input type="hidden"
+                           id="novel_choices_draft"
+                           value="<?php echo esc_attr( $choices ); ?>" />
                     <p class="description">
                         <?php esc_html_e( 'Set choices that players can select.', 'novel-game-plugin' ); ?><br>
                         <strong><?php esc_html_e( 'Flag Conditions:', 'novel-game-plugin' ); ?></strong><?php esc_html_e( ' Flag conditions required for display (up to 3, AND/OR supported)', 'novel-game-plugin' ); ?><br>

@@ -14,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * ノベルゲームブロックの初期化
  *
+ * Block API v3 を前提とするため、最低対応 WordPress バージョンは 6.3 です。
+ *
  * @since 1.2.0
  */
 function noveltool_init_blocks() {
@@ -53,7 +55,7 @@ add_action( 'init', 'noveltool_init_blocks' );
 /**
  * ブロック用スクリプトの依存関係を取得
  *
- * WordPress 7.0 以降は wp-block-editor を優先しつつ、
+ * WordPress 6.3 以降の Block API v3 前提で wp-block-editor を優先しつつ、
  * 既存環境では wp-editor にフォールバックする。
  *
  * @return array

@@ -847,10 +847,86 @@ jQuery( function( $ ) {
 	}
 
 	/**
+	 * 編集中の選択肢データ文字列を取得
+	 *
+	 * @return {string} JSON文字列またはレガシー文字列
+	 */
+	function getChoicesEditorSourceValue() {
+		var draftValue = $( '#novel_choices_draft' ).val();
+		if ( draftValue ) {
+			return draftValue;
+		}
+
+		return $( '#novel_choices_hidden' ).val();
+	}
+
+	/**
+	 * 選択肢テーブルから現在の入力内容を収集
+	 *
+	 * @param {boolean} includeIncomplete 未完成行も含めるか
+	 * @return {Array} 選択肢データ
+	 */
+	function collectChoicesFromTable( includeIncomplete ) {
+		var arr = [];
+
+		$( '#novel-choices-table tbody tr' ).each( function() {
+			var $row = $( this );
+			var text = $row.find( '.choice-text' ).val() || '';
+			var next = $row.find( '.choice-next' ).val() || '';
+
+			var flagConditions = [];
+			$row.find( '.flag-condition-row' ).each( function() {
+				var $conditionRow = $( this );
+				var flagName = $conditionRow.find( '.flag-condition-select' ).val();
+				var flagState = $conditionRow.find( '.flag-state-select' ).val() === 'true';
+
+				if ( flagName ) {
+					flagConditions.push( {
+						name: flagName,
+						state: flagState
+					} );
+				}
+			} );
+
+			var setFlags = [];
+			$row.find( '.flag-set-select' ).each( function() {
+				var $select = $( this );
+				var flagName = $select.data( 'flag-name' );
+				var flagSetting = $select.val();
+
+				if ( flagName && flagSetting !== 'none' ) {
+					setFlags.push( {
+						name: flagName,
+						state: flagSetting === 'on'
+					} );
+				}
+			} );
+
+			var flagConditionLogic = $row.find( '.flag-logic-select' ).val() || 'AND';
+			var choiceObject = {
+				text: text,
+				next: next,
+				flagConditions: flagConditions,
+				flagConditionLogic: flagConditionLogic,
+				setFlags: setFlags
+			};
+			var isSavable = text && next && next !== '__new__';
+
+			if ( includeIncomplete ) {
+				arr.push( choiceObject );
+			} else if ( isSavable ) {
+				arr.push( choiceObject );
+			}
+		} );
+
+		return arr;
+	}
+
+	/**
 	 * 選択肢テーブルを描画
 	 */
-	function renderChoicesTable() {
-		var choices = parseChoices( $( '#novel_choices_hidden' ).val() );
+	function renderChoicesTable( choices ) {
+		choices = Array.isArray( choices ) ? choices : parseChoices( getChoicesEditorSourceValue() );
 		var $tbody = $( '#novel-choices-table tbody' );
 
 		$tbody.empty();
@@ -1019,63 +1095,11 @@ jQuery( function( $ ) {
 	 * 選択肢の hidden フィールドを更新（JSON形式で保存）
 	 */
 	function updateChoicesHidden() {
-		var arr = [];
+		var savedChoices = collectChoicesFromTable( false );
+		var draftChoices = collectChoicesFromTable( true );
 
-		$( '#novel-choices-table tbody tr' ).each( function() {
-			var $row = $( this );
-			var text = $row.find( '.choice-text' ).val();
-			var next = $row.find( '.choice-next' ).val();
-
-			if ( text && next && next !== '__new__' ) {
-				// フラグ条件を収集
-				var flagConditions = [];
-				$row.find( '.flag-condition-row' ).each( function() {
-					var $conditionRow = $( this );
-					var flagName = $conditionRow.find( '.flag-condition-select' ).val();
-					var flagState = $conditionRow.find( '.flag-state-select' ).val() === 'true';
-					
-					if ( flagName ) {
-						flagConditions.push( {
-							name: flagName,
-							state: flagState
-						} );
-					}
-				} );
-				
-				// フラグ設定を収集（新形式: ON/OFF/設定しない）
-				var setFlags = [];
-				$row.find( '.flag-set-select' ).each( function() {
-					var $select = $( this );
-					var flagName = $select.data( 'flag-name' );
-					var flagSetting = $select.val();
-					
-					if ( flagName && flagSetting !== 'none' ) {
-						// 新形式: { name: "flag1", state: true/false }
-						setFlags.push( {
-							name: flagName,
-							state: flagSetting === 'on'
-						} );
-					}
-				} );
-				
-				// フラグ条件ロジック
-				var flagConditionLogic = $row.find( '.flag-logic-select' ).val() || 'AND';
-				
-				// 選択肢オブジェクトを作成
-				var choiceObject = {
-					text: text,
-					next: next,
-					flagConditions: flagConditions,
-					flagConditionLogic: flagConditionLogic,
-					setFlags: setFlags
-				};
-				
-				arr.push( choiceObject );
-			}
-		} );
-
-		// JSON形式で保存
-		$( '#novel_choices_hidden' ).val( JSON.stringify( arr ) );
+		$( '#novel_choices_hidden' ).val( JSON.stringify( savedChoices ) );
+		$( '#novel_choices_draft' ).val( JSON.stringify( draftChoices ) );
 	}
 
 	/**
@@ -1282,10 +1306,11 @@ jQuery( function( $ ) {
 
 		// 選択肢を追加
 		$( '#novel-choice-add' ).on( 'click', function() {
-			var choices = parseChoices( $( '#novel_choices_hidden' ).val() );
+			updateChoicesHidden();
+			var choices = parseChoices( getChoicesEditorSourceValue() );
 			choices.push( createEmptyChoiceData() );
-			$( '#novel_choices_hidden' ).val( JSON.stringify( choices ) );
-			renderChoicesTable();
+			$( '#novel_choices_draft' ).val( JSON.stringify( choices ) );
+			renderChoicesTable( choices );
 			$( '#novel-choices-table tbody tr:last .choice-text' ).trigger( 'focus' );
 		} );
 
