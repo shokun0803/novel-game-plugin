@@ -69,6 +69,56 @@ jQuery( function( $ ) {
 		}
 		return dialogueData[index].characters;
 	}
+
+	/**
+	 * セリフ要素を取得
+	 *
+	 * @param {number} index セリフインデックス
+	 * @return {jQuery} セリフ要素
+	 */
+	function getDialogueItemByIndex( index ) {
+		return $( '.novel-dialogue-item[data-index="' + index + '"]' );
+	}
+
+	/**
+	 * セリフ背景UIを更新
+	 *
+	 * @param {number} index セリフインデックス
+	 */
+	function updateDialogueBackgroundUI( index ) {
+		var background = ( dialogueData[index] && dialogueData[index].background ) ? dialogueData[index].background : '';
+		var $item = getDialogueItemByIndex( index );
+		var $imageInput = $item.find( '.dialogue-background-input' );
+		var $imagePreview = $item.find( '.dialogue-background-preview' );
+		var $imageClearButton = $item.find( '.dialogue-background-clear' );
+
+		$imageInput.val( background );
+
+		if ( background ) {
+			$imagePreview.attr( 'src', background ).show();
+			$imageClearButton.show();
+			return;
+		}
+
+		$imagePreview.attr( 'src', '' ).hide();
+		$imageClearButton.hide();
+	}
+
+	/**
+	 * セリフのフラグUIを更新
+	 *
+	 * @param {number} index セリフインデックス
+	 */
+	function refreshDialogueFlagUI( index ) {
+		var $item = getDialogueItemByIndex( index );
+		var $section = $item.find( '.dialogue-flag-section' );
+
+		if ( $section.length === 0 || ! dialogueData[index] ) {
+			return;
+		}
+
+		$section.empty().append( createDialogueFlagUI( dialogueData[index], index ) );
+	}
 	
 	/**
 	 * セリフデータの初期化
@@ -179,7 +229,7 @@ jQuery( function( $ ) {
 			
 			$imageClearButton.on( 'click', function() {
 				dialogueData[index].background = '';
-				renderDialogueList();
+				updateDialogueBackgroundUI( index );
 				updateDialogueTextarea();
 			} );
 			
@@ -219,7 +269,7 @@ jQuery( function( $ ) {
 			$item.append( '<p><strong>' + novelGameMeta.strings.backgroundImage + '</strong></p>' );
 			$item.append( $imageContainer );
 			$item.append( '<p><strong>' + novelGameMeta.strings.flagControl + '</strong></p>' );
-			$item.append( $flagContainer );
+			$item.append( $( '<div class="dialogue-flag-section">' ).append( $flagContainer ) );
 			$item.append( $characterContainer );
 			$item.append( $controls );
 			$item.append( '<hr>' );
@@ -480,7 +530,7 @@ jQuery( function( $ ) {
 			}
 			
 			dialogueData[index].background = attachment.url;
-			renderDialogueList();
+			updateDialogueBackgroundUI( index );
 			updateDialogueTextarea();
 		} );
 		
@@ -508,7 +558,7 @@ jQuery( function( $ ) {
 		$displayModeSelect.on( 'change', function() {
 			dialogueData[index].displayMode = $( this ).val();
 			updateDialogueTextarea();
-			renderDialogueList(); // フラグ条件UIの表示切り替え
+			refreshDialogueFlagUI( index );
 		} );
 		
 		$displayModeContainer.append( $displayModeLabel, $displayModeSelect );
@@ -781,6 +831,22 @@ jQuery( function( $ ) {
 	}
 
 	/**
+	 * 空の選択肢データを作成
+	 *
+	 * @param {string} text 選択肢テキスト
+	 * @return {Object} 選択肢データ
+	 */
+	function createEmptyChoiceData( text ) {
+		return {
+			text: text || '',
+			next: '',
+			flagConditions: [],
+			flagConditionLogic: 'AND',
+			setFlags: []
+		};
+	}
+
+	/**
 	 * 選択肢テーブルを描画
 	 */
 	function renderChoicesTable() {
@@ -879,15 +945,6 @@ jQuery( function( $ ) {
 						'<option value="off"' + (currentSetting === 'off' ? ' selected' : '') + '>OFF</option>' +
 						'</select>' );
 					
-					// フラグ設定変更時のデバッグログ
-					$flagSelect.on( 'change', function() {
-						var flagName = $( this ).data( 'flag-name' );
-						var newValue = $( this ).val();
-						debugLog( novelGameMeta.strings.flagSettingChange, flagName, '→', newValue );
-						// 選択肢データの自動更新をトリガー
-						setTimeout( updateChoicesHidden, 10 );
-					} );
-					
 					$flagRow.append( $flagLabel ).append( $flagSelect );
 					$flagSetContainer.append( $flagRow );
 				} );
@@ -952,7 +1009,8 @@ jQuery( function( $ ) {
 				updateChoicesHidden();
 			},
 			start: function( event, ui ) {
-				ui.placeholder.html( '<td colspan="4" style="height: 40px; background: #f0f0f0; border: 2px dashed #ccc;"></td>' );
+				var columnCount = $( '#novel-choices-table thead th' ).length || ui.item.children( 'td' ).length || 6;
+				ui.placeholder.html( '<td colspan="' + columnCount + '" style="height: 40px; background: #f0f0f0; border: 2px dashed #ccc;"></td>' );
 			}
 		} );
 	}
@@ -1224,33 +1282,11 @@ jQuery( function( $ ) {
 
 		// 選択肢を追加
 		$( '#novel-choice-add' ).on( 'click', function() {
-			var $tbody = $( '#novel-choices-table tbody' );
-			var $row = $( '<tr>' );
-
-			// ドラッグハンドル列を追加
-			$row.append( '<td class="sort-handle" style="cursor: move; text-align: center; width: 30px;">⋮⋮</td>' );
-
-			// テキスト入力欄
-			$row.append( '<td><input type="text" class="choice-text" value="" style="width:98%"></td>' );
-
-			// 次のシーン選択
-			var $select = $( '<select class="choice-next" style="width:98%"></select>' );
-			$select.append( '<option value="">' + novelGameMeta.strings.selectOption + '</option>' );
-
-			scenes.forEach( function( scene ) {
-				$select.append( '<option value="' + scene.ID + '">' + scene.title + ' (ID:' + scene.ID + ')</option>' );
-			} );
-
-			$select.append( '<option value="__new__">' + novelGameMeta.strings.createNew + '</option>' );
-			$row.append( $( '<td>' ).append( $select ) );
-
-			// 操作エリア（削除ボタンのみ、編集ボタンは選択後に動的追加）
-			$row.append( '<td><button type="button" class="button choice-remove">' + novelGameMeta.strings.remove + '</button></td>' );
-
-			$tbody.append( $row );
-
-			// 新しく追加した行にもsortable機能を適用
-			initChoicesSortable();
+			var choices = parseChoices( $( '#novel_choices_hidden' ).val() );
+			choices.push( createEmptyChoiceData() );
+			$( '#novel_choices_hidden' ).val( JSON.stringify( choices ) );
+			renderChoicesTable();
+			$( '#novel-choices-table tbody tr:last .choice-text' ).trigger( 'focus' );
 		} );
 
 		// 選択肢を削除（データ整合性チェック付き）
@@ -1284,7 +1320,11 @@ jQuery( function( $ ) {
 		} );
 
 		// 入力変更時の処理
-		$( '#novel-choices-table' ).on( 'change', '.choice-text, .choice-next, .flag-condition-select, .flag-state-select, .flag-logic-select, .flag-set-checkbox', function() {
+		$( '#novel-choices-table' ).on( 'input change', '.choice-text, .choice-next, .flag-condition-select, .flag-state-select, .flag-logic-select, .flag-set-select', function() {
+			if ( $( this ).hasClass( 'flag-set-select' ) ) {
+				debugLog( novelGameMeta.strings.flagSettingChange, $( this ).data( 'flag-name' ), '→', $( this ).val() );
+			}
+
 			updateChoicesHidden();
 			
 			// 次のシーンの選択変更時に編集ボタンを更新
