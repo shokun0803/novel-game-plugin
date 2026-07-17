@@ -4,6 +4,8 @@ All notable changes to Novel Game Plugin will be documented in this file.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-07-17
+
 ### Changed (変更)
 
 - **プレイ画面デザインの全面刷新（Midnight Noir デザインシステム）**
