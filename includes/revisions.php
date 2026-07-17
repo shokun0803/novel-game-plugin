@@ -176,7 +176,7 @@ function noveltool_save_unified_custom_meta( $post_id ) {
             update_metadata( 'post', $revision_id, '_noveltool_unified_meta', $unified_json );
 
             if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-                error_log( sprintf( 'NovelTool: 強制リビジョン作成 post_id=%d revision_id=%d', $post_id, $revision_id ) );
+                noveltool_log( sprintf( 'NovelTool: 強制リビジョン作成 post_id=%d revision_id=%d', $post_id, $revision_id ) );
             }
         }
     }
@@ -407,6 +407,7 @@ function noveltool_format_field_value( $value ) {
     // 配列の場合
     if ( is_array( $value ) ) {
         $count = count( $value );
+        /* translators: %d: number of array items */
         return sprintf( __( 'Array (%d items)', 'novel-game-plugin' ), $count );
     }
     

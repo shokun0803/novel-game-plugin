@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function noveltool_game_manager_page( $game ) {
     // 権限チェック
     if ( ! current_user_can( 'edit_posts' ) ) {
-        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+        wp_die( esc_html__( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
     // タブの取得と検証
@@ -247,14 +247,18 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                    <?php echo ( 'all' === $view_status ) ? 'class="current" aria-current="page"' : ''; ?>>
                     <?php
                     // WordPress コア翻訳を使用（_nx形式でカウントを含む）
-                    printf(
-                        _nx(
-                            'All <span class="count">(%s)</span>',
-                            'All <span class="count">(%s)</span>',
-                            $total_count,
-                            'posts'
-                        ),
-                        number_format_i18n( $total_count )
+                    echo wp_kses_post(
+                        sprintf(
+                            /* translators: %s: number of scenes */
+                            _nx(
+                                'All <span class="count">(%s)</span>',
+                                'All <span class="count">(%s)</span>',
+                                $total_count,
+                                'posts',
+                                'novel-game-plugin'
+                            ),
+                            number_format_i18n( $total_count )
+                        )
                     );
                     ?>
                 </a><?php echo ( $publish_count > 0 || $draft_count > 0 || $trash_count > 0 ) ? ' |' : ''; ?>
@@ -266,7 +270,7 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                     <?php
                     // WordPress コア翻訳を使用
                     $publish_status_obj = get_post_status_object( 'publish' );
-                    echo esc_html( $publish_status_obj ? $publish_status_obj->label : __( 'Published' ) );
+                    echo esc_html( $publish_status_obj ? $publish_status_obj->label : __( 'Published', 'novel-game-plugin' ) );
                     ?>
                     <span class="count">(<?php echo esc_html( $publish_count ); ?>)</span>
                 </a><?php echo ( $draft_count > 0 || $trash_count > 0 ) ? ' |' : ''; ?>
@@ -292,7 +296,7 @@ function noveltool_render_scenes_tab( $game, $scenes ) {
                     <?php
                     // WordPress コア翻訳を使用
                     $trash_status_obj = get_post_status_object( 'trash' );
-                    echo esc_html( $trash_status_obj ? $trash_status_obj->label : __( 'Trash' ) );
+                    echo esc_html( $trash_status_obj ? $trash_status_obj->label : __( 'Trash', 'novel-game-plugin' ) );
                     ?>
                     <span class="count">(<?php echo esc_html( $trash_count ); ?>)</span>
                 </a>

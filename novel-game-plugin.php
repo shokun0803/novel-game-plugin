@@ -58,21 +58,32 @@ require_once NOVEL_GAME_PLUGIN_PATH . 'admin/ad-management.php';
 require_once NOVEL_GAME_PLUGIN_PATH . 'admin/export-import.php';
 
 /**
+ * デバッグログ出力ユーティリティ
+ *
+ * WP_DEBUG が有効な場合のみログを出力する。
+ * 本番環境でのログ出力を避けるため、プラグイン内のログはすべてこの関数を経由する。
+ *
+ * @param string $message ログメッセージ
+ * @return void
+ * @since 1.6.0
+ */
+function noveltool_log( $message ) {
+    if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- WP_DEBUG 有効時のみのデバッグ出力
+        error_log( (string) $message );
+    }
+}
+
+/**
  * プラグインの初期化
  *
  * @since 1.0.0
  */
 function noveltool_init() {
     // 言語ファイルの読み込み
+    // （サンプルデータの文言も本体と同じテキストドメインに統合済み）
     load_plugin_textdomain(
         NOVEL_GAME_PLUGIN_TEXT_DOMAIN,
-        false,
-        dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
-    );
-    
-    // サンプルデータ用言語ファイルの読み込み
-    load_plugin_textdomain(
-        'novel-game-plugin-sample',
         false,
         dirname( NOVEL_GAME_PLUGIN_BASENAME ) . '/languages'
     );
@@ -100,38 +111,25 @@ function noveltool_activate_plugin() {
     // リライトルールを再生成
     flush_rewrite_rules();
     
-    // サンプルゲーム追加フラグを設定（実際のインストールは init フックで実行）
-    // これにより、翻訳ファイルが確実にロードされた後にサンプルデータが追加される
-    if ( ! get_option( 'noveltool_sample_games_installed' ) ) {
-        update_option( 'noveltool_pending_sample_install', true );
-        // プラグイン有効化後の初回アクセス時にサンプル画像ダウンロードのモーダルを表示するフラグを設定
-        update_option( 'noveltool_sample_images_prompt_pending', true );
-    }
+    // 注意: サンプルゲームの自動インストールは行わない（WordPress.org ガイドライン準拠）
+    // サンプルは「マイゲーム」画面のオプトインボタンからユーザーの明示的な操作で
+    // インストールする（noveltool_install_sample_game_ajax / my-games.php 参照）
 }
 register_activation_hook( __FILE__, 'noveltool_activate_plugin' );
 
 /**
- * サンプルゲーム追加処理の確認と実行
- * 
- * init フックで実行され、有効化時に設定されたフラグを確認し、
- * 必要であればサンプルゲームをインストールする
- * WordPress 6.7以降では、翻訳ファイルは init アクション以降でのみ完全に利用可能
+ * 旧バージョンのサンプル自動インストールフラグの後始末
+ *
+ * 1.6.0 以降、サンプルゲームのインストールはユーザーの明示的な操作
+ * （マイゲーム画面のボタン）でのみ実行されるオプトイン方式に変更された。
+ * 旧バージョンで設定された自動インストール用フラグが残っている場合は、
+ * インストールを実行せずにフラグのみ削除する。
  *
  * @since 1.3.0
  */
 function noveltool_check_and_install_sample_games() {
-    // サンプルゲーム追加フラグをチェック
     if ( get_option( 'noveltool_pending_sample_install' ) ) {
-        // フラグを削除（一度だけ実行されるように）
         delete_option( 'noveltool_pending_sample_install' );
-        
-        // Shadow Detectiveゲームをインストール
-        $result = noveltool_install_shadow_detective_game();
-        
-        // インストール完了フラグを設定
-        if ( $result ) {
-            update_option( 'noveltool_sample_games_installed', true );
-        }
     }
 }
 
@@ -1175,7 +1173,7 @@ function noveltool_redirect_single_scene_direct_access() {
     }
     
     // サイトトップページにリダイレクト
-    wp_redirect( home_url( '/' ) );
+    wp_safe_redirect( home_url( '/' ) );
     exit;
 }
 add_action( 'template_redirect', 'noveltool_redirect_single_scene_direct_access' );
@@ -1359,7 +1357,8 @@ function noveltool_game_list_shortcode( $atts ) {
         }
         
         if ( $show_count ) {
-            echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d Scenes', 'novel-game-plugin' ), $post_count ) . '</p>';
+            /* translators: %d: number of scenes in the game */
+            echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d Scenes', 'novel-game-plugin' ), absint( $post_count ) ) . '</p>';
         }
         
         // ゲーム専用のタイトル画像を取得
@@ -1607,7 +1606,8 @@ function noveltool_all_games_shortcode_output( $atts ) {
         if ( $game_description ) {
             echo '<p class="noveltool-game-description">' . esc_html( wp_trim_words( $game_description, 15, '...' ) ) . '</p>';
         }
-        echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d Scenes', 'novel-game-plugin' ), $post_count ) . '</p>';
+        /* translators: %d: number of scenes in the game */
+        echo '<p class="noveltool-game-count">' . sprintf( esc_html__( '%d Scenes', 'novel-game-plugin' ), absint( $post_count ) ) . '</p>';
         echo '<a href="' . esc_url( add_query_arg( 'shortcode', '1', get_permalink( $start_post->ID ) ) ) . '" class="noveltool-game-link button">';
         echo esc_html__( 'Start Playing', 'novel-game-plugin' );
         echo '</a>';

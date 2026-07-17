@@ -19,6 +19,19 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * アンインストール時のデバッグログ（WP_DEBUG 有効時のみ出力）
+ *
+ * @param string $message ログメッセージ
+ * @return void
+ */
+function noveltool_uninstall_log( $message ) {
+    if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- WP_DEBUG 有効時のみのデバッグ出力
+        error_log( (string) $message );
+    }
+}
+
 // グローバル $wpdb オブジェクトを使用
 global $wpdb;
 
@@ -85,7 +98,7 @@ function noveltool_uninstall_delete_all_data( $wpdb ) {
                 
                 // バッチごとにログ出力
                 if ( count( $batches ) > 1 ) {
-                    error_log( sprintf(
+                    noveltool_uninstall_log( sprintf(
                         'Novel Game Plugin Uninstall: Processed batch %d/%d',
                         $batch_index + 1,
                         count( $batches )
@@ -132,11 +145,11 @@ function noveltool_uninstall_delete_all_data( $wpdb ) {
     } catch ( Exception $e ) {
         // エラーが発生した場合はログに記録
         $errors[] = $e->getMessage();
-        error_log( 'Novel Game Plugin Uninstall Error: ' . $e->getMessage() );
+        noveltool_uninstall_log( 'Novel Game Plugin Uninstall Error: ' . $e->getMessage() );
     }
 
     // 削除完了ログを記録
-    error_log( sprintf(
+    noveltool_uninstall_log( sprintf(
         'Novel Game Plugin Uninstall: Deleted %d posts, %d flag options, %d total options',
         ! empty( $post_ids ) ? count( $post_ids ) : 0,
         ! empty( $flag_options ) ? count( $flag_options ) : 0,
@@ -145,6 +158,6 @@ function noveltool_uninstall_delete_all_data( $wpdb ) {
 
     // エラーがあればログに記録（ベストエフォート）
     if ( ! empty( $errors ) ) {
-        error_log( 'Novel Game Plugin Uninstall completed with errors: ' . implode( ', ', $errors ) );
+        noveltool_uninstall_log( 'Novel Game Plugin Uninstall completed with errors: ' . implode( ', ', $errors ) );
     }
 }

@@ -19,11 +19,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 function noveltool_plugin_settings_page() {
     // 権限チェック
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+        wp_die( esc_html__( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
     // 保存処理（POST メソッド＆nonce 検証）
-    if ( 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['noveltool_settings_nonce'] ) ) {
+    if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) && isset( $_POST['noveltool_settings_nonce'] ) ) {
         check_admin_referer( 'noveltool_settings_save', 'noveltool_settings_nonce' );
         
         // アンインストール時のデータ削除オプション

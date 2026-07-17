@@ -37,11 +37,11 @@ add_action( 'admin_menu', 'noveltool_add_ad_management_menu' );
 function noveltool_ad_management_page() {
     // 権限チェック
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+        wp_die( esc_html__( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
     // 保存処理（POST メソッド＆nonce 検証）
-    if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+    if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) {
         check_admin_referer( 'noveltool_ad_management_save', 'noveltool_ad_management_nonce' );
         
         // Google AdSense ID

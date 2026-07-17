@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function noveltool_my_games_page() {
     // 権限チェック
     if ( ! current_user_can( 'edit_posts' ) ) {
-        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+        wp_die( esc_html__( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
     // ゲーム選択の処理
@@ -258,7 +258,10 @@ function noveltool_my_games_page() {
                                 <div class="game-meta">
                                     <span class="scene-count">
                                         <span class="dashicons dashicons-media-document"></span>
-                                        <?php printf( esc_html__( '%d Scenes', 'novel-game-plugin' ), $scene_count ); ?>
+                                        <?php
+                                        /* translators: %d: number of scenes in the game */
+                                        printf( esc_html__( '%d Scenes', 'novel-game-plugin' ), absint( $scene_count ) );
+                                        ?>
                                     </span>
                                     <?php if ( isset( $game['created_at'] ) ) : ?>
                                         <span class="game-created">
@@ -491,7 +494,7 @@ function noveltool_my_games_admin_scripts( $hook ) {
                         /* translators: %s: estimated file size */
                         __( 'Sample game images are not installed. Would you like to download them now? Download size: approximately %s. The download will be processed in the background.', 'novel-game-plugin' ),
                         $estimated_download_size
-                    ),
+                    ) . ' ' . __( 'The images will be downloaded from this plugin\'s official GitHub release (github.com/shokun0803/novel-game-plugin) and stored in your uploads directory. No personal data is sent.', 'novel-game-plugin' ),
                     'downloadButton'       => __( 'Download', 'novel-game-plugin' ),
                     'laterButton'          => __( 'Later', 'novel-game-plugin' ),
                     'cancelButton'         => __( 'Cancel', 'novel-game-plugin' ),
@@ -801,7 +804,7 @@ add_action( 'wp_ajax_noveltool_check_download_status', 'noveltool_check_download
 function noveltool_handle_download_diagnostic() {
     // 権限チェック
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( __( 'Permission denied.', 'novel-game-plugin' ) );
+        wp_die( esc_html__( 'Permission denied.', 'novel-game-plugin' ) );
     }
 
     // ノンス検証
@@ -809,13 +812,13 @@ function noveltool_handle_download_diagnostic() {
 
     // ZipArchive 必須
     if ( ! class_exists( 'ZipArchive' ) ) {
-        wp_die( __( 'Zip extension is not available on the server.', 'novel-game-plugin' ) );
+        wp_die( esc_html__( 'Zip extension is not available on the server.', 'novel-game-plugin' ) );
     }
 
     $tmp = tempnam( sys_get_temp_dir(), 'noveltool_diag_' );
     $zip = new ZipArchive();
     if ( true !== $zip->open( $tmp, ZipArchive::OVERWRITE ) ) {
-        wp_die( __( 'Failed to create diagnostic package.', 'novel-game-plugin' ) );
+        wp_die( esc_html__( 'Failed to create diagnostic package.', 'novel-game-plugin' ) );
     }
 
     // 診断情報を生成
@@ -913,11 +916,11 @@ function noveltool_handle_download_diagnostic() {
         header( 'Content-Type: application/zip' );
         header( 'Content-Disposition: attachment; filename="noveltool-diagnostic-' . gmdate( 'Ymd-His' ) . '.zip"' );
         header( 'Content-Length: ' . filesize( $tmp ) );
-        readfile( $tmp );
-        unlink( $tmp );
+        readfile( $tmp ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- 生成した診断 ZIP のストリーム出力（メモリ節約のため）
+        wp_delete_file( $tmp );
         exit;
     }
 
-    wp_die( __( 'Failed to generate diagnostic package.', 'novel-game-plugin' ) );
+    wp_die( esc_html__( 'Failed to generate diagnostic package.', 'novel-game-plugin' ) );
 }
 add_action( 'admin_post_noveltool_download_diagnostic', 'noveltool_handle_download_diagnostic' );

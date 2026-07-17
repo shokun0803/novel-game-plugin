@@ -100,7 +100,18 @@ rsync -av --progress \
     --exclude='yarn-debug.log*' \
     --exclude='yarn-error.log*' \
     --exclude='messages.mo*.bak' \
+    --exclude='messages.mo' \
     --exclude='assets/sample-images/' \
+    --exclude='scripts/' \
+    --exclude='docs/' \
+    --exclude='*.md' \
+    --exclude='.gitignore' \
+    --exclude='.distignore' \
+    --exclude='package.json' \
+    --exclude='package-lock.json' \
+    --exclude='composer.json' \
+    --exclude='composer.lock' \
+    --exclude='phpcs.xml*' \
     . "$PLUGIN_DIR/"
 
 echo ""

@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function noveltool_export_import_page() {
     // 権限チェック
     if ( ! current_user_can( 'edit_posts' ) ) {
-        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+        wp_die( esc_html__( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
     // エクスポート実行権限の判定（AJAX側と同じ filter を使用）
@@ -267,17 +267,20 @@ function noveltool_export_import_admin_scripts( $hook ) {
             'importError'             => __( 'Failed to import game data.', 'novel-game-plugin' ),
             'noFileSelected'          => __( 'Please select a file to import.', 'novel-game-plugin' ),
             'noGameSelected'          => __( 'Please select a game to export.', 'novel-game-plugin' ),
+            /* translators: %d: number of images that failed to download */
             'imageDownloadFailures'   => __( 'Note: %d image(s) failed to download.', 'novel-game-plugin' ),
             'zipFallbackWarning'      => __( 'ZIP creation failed. The file was exported as JSON instead.', 'novel-game-plugin' ),
             'jsonMaxSizeBytes'        => noveltool_get_import_max_size( 'json' ),
             'zipMaxSizeBytes'         => noveltool_get_import_max_size( 'zip' ),
             /* translators: %d: maximum file size in megabytes */
             'fileTooLargeJson'        => sprintf(
+                /* translators: %d: maximum upload size in megabytes */
                 __( 'File size is too large. Maximum %dMB allowed for JSON files.', 'novel-game-plugin' ),
                 noveltool_get_import_max_size( 'json' ) / ( 1024 * 1024 )
             ),
             /* translators: %d: maximum file size in megabytes */
             'fileTooLargeZip'         => sprintf(
+                /* translators: %d: maximum upload size in megabytes */
                 __( 'File size is too large. Maximum %dMB allowed for ZIP files.', 'novel-game-plugin' ),
                 noveltool_get_import_max_size( 'zip' ) / ( 1024 * 1024 )
             ),
@@ -289,6 +292,7 @@ function noveltool_export_import_admin_scripts( $hook ) {
             'splitZipPartLabel'       => __( 'Download Part %1$d of %2$d', 'novel-game-plugin' ),
             'splitZipDownloadAll'     => __( 'Download All Parts', 'novel-game-plugin' ),
             'splitZipDownloading'     => __( 'Downloading...', 'novel-game-plugin' ),
+            /* translators: %d: split archive part number */
             'splitZipDownloadError'   => __( 'Failed to download part %d. Please try again.', 'novel-game-plugin' ),
             'splitZipAllDone'         => __( 'All parts downloaded successfully.', 'novel-game-plugin' ),
             'checkingExportSize'      => __( 'Checking export size...', 'novel-game-plugin' ),

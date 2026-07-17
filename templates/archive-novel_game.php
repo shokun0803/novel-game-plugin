@@ -8,6 +8,11 @@
  * @since 1.1.0
  */
 
+// 直接アクセスを防ぐ
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
 // テーマに依存しない自己完結型のHTMLヘッダー
 ?>
 <!DOCTYPE html>
@@ -23,8 +28,8 @@
 
 <div id="novel-game-archive" class="novel-game-archive-container">
     <header class="archive-header">
-        <h1 class="archive-title"><?php _e('Novel Game List', 'novel-game-plugin'); ?></h1>
-        <p class="archive-description"><?php _e('Please select a game to play', 'novel-game-plugin'); ?></p>
+        <h1 class="archive-title"><?php esc_html_e( 'Novel Game List', 'novel-game-plugin' ); ?></h1>
+        <p class="archive-description"><?php esc_html_e( 'Please select a game to play', 'novel-game-plugin' ); ?></p>
     </header>
 
     <div class="novel-games-grid">
@@ -72,7 +77,7 @@
                         $game_data['title']
                     );
 
-                    $first_scene = $wpdb->get_row( $start_scene_query );
+                    $first_scene = $wpdb->get_row( $start_scene_query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- 直上で $wpdb->prepare() 済み
                 }
                 
                 // start_scene_idがない、または取得失敗した場合は最初のシーンを取得
@@ -89,7 +94,7 @@
                         LIMIT 1
                     ", $game_data['title']);
                     
-                    $first_scene = $wpdb->get_row($first_scene_query);
+                    $first_scene = $wpdb->get_row($first_scene_query); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- 直上で $wpdb->prepare() 済み
                 }
                 
                 if ( $first_scene ) {
@@ -104,7 +109,7 @@
                         AND pm.meta_value = %s
                     ", $game_data['title']);
                     
-                    $scene_count_result = $wpdb->get_row($total_scenes_query);
+                    $scene_count_result = $wpdb->get_row($total_scenes_query); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- 直上で $wpdb->prepare() 済み
                     $scene_count = $scene_count_result ? intval($scene_count_result->scene_count) : 0;
                     
                     $games[] = (object) array(
@@ -150,20 +155,26 @@
                             <img src="<?php echo esc_url($game_image); ?>" alt="<?php echo esc_attr($game_title); ?>" class="game-bg-image">
                         <?php else : ?>
                             <div class="game-placeholder">
-                                <span class="placeholder-text"><?php _e('No Image', 'novel-game-plugin'); ?></span>
+                                <span class="placeholder-text"><?php esc_html_e( 'No Image', 'novel-game-plugin' ); ?></span>
                             </div>
                         <?php endif; ?>
                         <div class="game-overlay">
                             <div class="game-info">
-                                <h3 class="game-title"><?php echo $game_title; ?></h3>
+                                <h3 class="game-title"><?php echo esc_html( $game_title ); ?></h3>
                                 <?php if ( $game_description ) : ?>
-                                    <p class="game-description"><?php echo wp_trim_words($game_description, 20, '...'); ?></p>
+                                    <p class="game-description"><?php echo esc_html( wp_trim_words( $game_description, 20, '...' ) ); ?></p>
                                 <?php endif; ?>
-                                <p class="scene-count"><?php printf(__('%d Scenes', 'novel-game-plugin'), $scene_count); ?></p>
-                                <p class="first-scene-info"><?php printf(__('Start: %s', 'novel-game-plugin'), esc_html($game->first_scene_title)); ?></p>
+                                <p class="scene-count"><?php
+                                /* translators: %d: number of scenes in the game */
+                                printf( esc_html__( '%d Scenes', 'novel-game-plugin' ), absint( $scene_count ) );
+                                ?></p>
+                                <p class="first-scene-info"><?php
+                                /* translators: %s: title of the first scene */
+                                printf( esc_html__( 'Start: %s', 'novel-game-plugin' ), esc_html( $game->first_scene_title ) );
+                                ?></p>
                             </div>
                             <div class="play-button">
-                                <span><?php _e('Start Game', 'novel-game-plugin'); ?></span>
+                                <span><?php esc_html_e( 'Start Game', 'novel-game-plugin' ); ?></span>
                             </div>
                         </div>
                     </div>
@@ -173,9 +184,9 @@
         else :
             ?>
             <div class="no-games-message">
-                <p><?php _e('No games have been created yet.', 'novel-game-plugin'); ?></p>
+                <p><?php esc_html_e( 'No games have been created yet.', 'novel-game-plugin' ); ?></p>
                 <?php if (current_user_can('edit_posts')) : ?>
-                    <p><a href="<?php echo admin_url('post-new.php?post_type=novel_game'); ?>" class="button"><?php _e('Create New Game', 'novel-game-plugin'); ?></a></p>
+                    <p><a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=novel_game' ) ); ?>" class="button"><?php esc_html_e( 'Create New Game', 'novel-game-plugin' ); ?></a></p>
                 <?php endif; ?>
             </div>
             <?php

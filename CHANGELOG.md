@@ -4,6 +4,25 @@ All notable changes to Novel Game Plugin will be documented in this file.
 
 ## [Unreleased]
 
+### Changed (変更) — WordPress.org 審査対応
+
+- **readme.txt を新規作成** — Stable tag / External services（GitHubからのサンプル画像取得、任意設定の広告ネットワーク）の開示を含む WordPress.org 形式
+- **サンプルゲームのインストールを完全オプトイン化** — 有効化時の自動インストールを廃止し、マイゲーム画面のボタンからの明示的な操作でのみインストールされるように変更
+- **サンプル画像ダウンロードモーダルに取得元の開示を追加** — GitHub リリースからの取得・保存先・個人情報を送信しないことを明記
+- **テキストドメインを統合** — `novel-game-plugin-sample` を廃止し、全文言を `novel-game-plugin` に統合（翻訳カタログもマージ）
+- **配布パッケージの衛生化** — 開発用ドキュメントを docs/dev/ へ移動、`.distignore` 追加、ビルド除外を強化（scripts/・docs/・*.md 等は配布ZIPに含まれない）
+
+### Fixed (バグ修正) — Plugin Check 指摘対応
+
+- 出力エスケープ漏れ 40件を修正（`wp_die( __() )` → `esc_html__()`、テンプレートの `_e()` → `esc_html_e()` ほか）
+- `error_log()` 直接呼び出し 93件を `WP_DEBUG` 有効時のみ出力するロガー（`noveltool_log()`）に置換
+- `unlink()` 41件を `wp_delete_file()` に置換、`is_writable()` → `wp_is_writable()`
+- `$_FILES` / `$_SERVER['REQUEST_METHOD']` の未サニタイズ入力を修正
+- 翻訳関数の translators コメント欠落 20件、複数プレースホルダーの番号付け（`%1$d`/`%2$d`）を修正
+- コア翻訳の借用 3件（`Published` / `Trash` / `All (%s)`）に自ドメインを付与
+- `wp_redirect()` → `wp_safe_redirect()`
+- ストリーミング必須のファイル操作・prepare済みSQL変数には正当理由付きの phpcs 注釈を付与
+
 ## [1.6.0] - 2026-07-17
 
 ### Changed (変更)

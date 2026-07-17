@@ -413,6 +413,7 @@ function noveltool_meta_box_callback( $post ) {
         'allChoicesDeleted'        => esc_html__( 'All choices have been deleted.', 'novel-game-plugin' ),
         'unsavedChanges'           => esc_html__( 'There are unsaved changes in the current post.\n\nDo you want to open the edit screen without saving?\n\nSelect "Cancel" to save the current post first.', 'novel-game-plugin' ),
         'postNotSaved'             => esc_html__( 'The post has not been saved. Do you want to save it before creating a new command?', 'novel-game-plugin' ),
+        /* translators: %s: newly created scene title */
         'newSceneCreated'          => esc_html__( 'A new scene "%s" has been created. You can edit it from the edit link.', 'novel-game-plugin' ),
         'edit'                     => esc_html__( 'Edit', 'novel-game-plugin' ),
         'unsupportedFileExtension' => esc_html__( 'Unsupported file format. Only jpg, jpeg, png, gif, and webp files can be uploaded.', 'novel-game-plugin' ),
@@ -1252,7 +1253,7 @@ function noveltool_save_meta_box_data( $post_id ) {
     
     // セリフ背景データの保存
     if ( isset( $_POST['dialogue_backgrounds'] ) ) {
-        $dialogue_backgrounds = wp_unslash( $_POST['dialogue_backgrounds'] );
+        $dialogue_backgrounds = wp_unslash( $_POST['dialogue_backgrounds'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON文字列として受領し、直後に json_decode 後、各要素を個別にサニタイズしている
         
         // JSON文字列の場合は妥当性をチェックして保存
         if ( is_string( $dialogue_backgrounds ) ) {
@@ -1271,7 +1272,7 @@ function noveltool_save_meta_box_data( $post_id ) {
     
     // セリフ話者データの保存
     if ( isset( $_POST['dialogue_speakers'] ) ) {
-        $dialogue_speakers = wp_unslash( $_POST['dialogue_speakers'] );
+        $dialogue_speakers = wp_unslash( $_POST['dialogue_speakers'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON文字列として受領し、直後に json_decode 後、各要素を個別にサニタイズしている
         
         // JSON文字列の場合は妥当性をチェックして保存
         if ( is_string( $dialogue_speakers ) ) {
@@ -1290,7 +1291,7 @@ function noveltool_save_meta_box_data( $post_id ) {
     
     // セリフテキストデータの保存（新しいJSON形式）
     if ( isset( $_POST['dialogue_texts'] ) ) {
-        $dialogue_texts = wp_unslash( $_POST['dialogue_texts'] );
+        $dialogue_texts = wp_unslash( $_POST['dialogue_texts'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON文字列として受領し、直後に json_decode 後、各要素を個別にサニタイズしている
         
         // JSON文字列の場合は妥当性をチェックして保存
         if ( is_string( $dialogue_texts ) ) {
@@ -1309,7 +1310,7 @@ function noveltool_save_meta_box_data( $post_id ) {
 
     // セリフごとのキャラクター設定データの保存
     if ( isset( $_POST['dialogue_characters'] ) ) {
-        $dialogue_characters = wp_unslash( $_POST['dialogue_characters'] );
+        $dialogue_characters = wp_unslash( $_POST['dialogue_characters'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON文字列として受領し、直後に json_decode 後、各要素を個別にサニタイズしている
         $sanitized_characters = array();
         
         // JSON文字列の場合は妥当性をチェックして保存
@@ -1428,7 +1429,7 @@ function noveltool_save_meta_box_data( $post_id ) {
 
     // セリフフラグ条件データの保存処理
     if ( isset( $_POST['dialogue_flag_conditions'] ) ) {
-        $dialogue_flag_conditions = wp_unslash( $_POST['dialogue_flag_conditions'] );
+        $dialogue_flag_conditions = wp_unslash( $_POST['dialogue_flag_conditions'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON文字列として受領し、直後に json_decode 後、各要素を個別にサニタイズしている
         
         // JSON文字列の場合は妥当性をチェックして保存
         if ( is_string( $dialogue_flag_conditions ) ) {
@@ -1520,7 +1521,7 @@ function noveltool_save_meta_box_data( $post_id ) {
 
     // 選択肢フラグデータの保存処理
     if ( isset( $_POST['choices'] ) ) {
-        $choices_data = wp_unslash( $_POST['choices'] );
+        $choices_data = wp_unslash( $_POST['choices'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON文字列として受領し、直後に json_decode 後、各要素を個別にサニタイズしている
         
         // JSON文字列の場合は妥当性をチェックして保存
         if ( is_string( $choices_data ) ) {
@@ -1597,7 +1598,7 @@ function noveltool_save_meta_box_data( $post_id ) {
 
     foreach ( $fields as $field => $meta_key ) {
         if ( isset( $_POST[ $field ] ) ) {
-            $value = wp_unslash( $_POST[ $field ] );
+            $value = wp_unslash( $_POST[ $field ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- フィールド種別に応じて直下で個別にサニタイズしている
 
             // choicesフィールドは上で専用処理済みなのでスキップ
             if ( $field === 'choices' ) {

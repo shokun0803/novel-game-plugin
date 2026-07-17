@@ -308,9 +308,9 @@ function noveltool_download_sample_images_zip( $download_url, $temp_file = '', $
             return $temp_file;
         }
 
-        error_log( 'NovelGamePlugin: Chunked download failed, fallback to stream mode: ' . $chunk_result->get_error_message() );
+        noveltool_log( 'NovelGamePlugin: Chunked download failed, fallback to stream mode: ' . $chunk_result->get_error_message() );
         if ( file_exists( $temp_file ) ) {
-            @unlink( $temp_file );
+            wp_delete_file( $temp_file );
         }
     }
     
@@ -327,13 +327,13 @@ function noveltool_download_sample_images_zip( $download_url, $temp_file = '', $
     );
     
     if ( is_wp_error( $response ) ) {
-        @unlink( $temp_file );
+        wp_delete_file( $temp_file );
         return $response;
     }
     
     $status_code = wp_remote_retrieve_response_code( $response );
     if ( $status_code !== 200 ) {
-        @unlink( $temp_file );
+        wp_delete_file( $temp_file );
         return new WP_Error(
             'download_error',
             sprintf(
@@ -361,14 +361,14 @@ function noveltool_download_sample_images_zip_chunked( $download_url, $temp_file
     $chunk_size = intval( apply_filters( 'noveltool_sample_images_chunk_size', 2 * 1024 * 1024 ) );
     $chunk_size = max( 256 * 1024, min( 8 * 1024 * 1024, $chunk_size ) );
 
-    $init_handle = @fopen( $temp_file, 'wb' );
+    $init_handle = @fopen( $temp_file, 'wb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- チャンク分割ダウンロードのストリーム書き込みのため WP_Filesystem では代替不可
     if ( ! $init_handle ) {
         return new WP_Error(
             'tempfile_open_failed',
             __( 'Failed to initialize temporary file for chunked download.', 'novel-game-plugin' )
         );
     }
-    fclose( $init_handle );
+    fclose( $init_handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームのクローズ処理
 
     $offset = 0;
     $max_loops = intval( ceil( $expected_size / $chunk_size ) ) + 5;
@@ -608,7 +608,7 @@ function noveltool_detect_extraction_capabilities() {
 function noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_filesystem ) {
     // WP_Filesystem が direct method の場合は PHP のファイルハンドルで直接書き込み
     if ( $wp_filesystem->method === 'direct' ) {
-        $fp = @fopen( $target_path, 'wb' );
+        $fp = @fopen( $target_path, 'wb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- チャンク分割ダウンロードのストリーム書き込みのため WP_Filesystem では代替不可
         if ( false === $fp ) {
             return new WP_Error(
                 'file_open_error',
@@ -621,20 +621,20 @@ function noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_fi
         }
         
         while ( ! feof( $stream ) ) {
-            $chunk = fread( $stream, $chunk_size );
+            $chunk = fread( $stream, $chunk_size ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームからのチャンク読み込み
             if ( false === $chunk ) {
-                fclose( $fp );
-                @unlink( $target_path );
+                fclose( $fp ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームのクローズ処理
+                wp_delete_file( $target_path );
                 return new WP_Error(
                     'read_error',
                     __( 'Failed to read from stream.', 'novel-game-plugin' )
                 );
             }
             
-            $written = fwrite( $fp, $chunk );
+            $written = fwrite( $fp, $chunk ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームへのチャンク書き込み
             if ( false === $written || $written !== strlen( $chunk ) ) {
-                fclose( $fp );
-                @unlink( $target_path );
+                fclose( $fp ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームのクローズ処理
+                wp_delete_file( $target_path );
                 return new WP_Error(
                     'write_error',
                     __( 'Failed to write chunk to file.', 'novel-game-plugin' )
@@ -642,8 +642,8 @@ function noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_fi
             }
         }
         
-        fclose( $fp );
-        @chmod( $target_path, FS_CHMOD_FILE );
+        fclose( $fp ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームのクローズ処理
+        @chmod( $target_path, FS_CHMOD_FILE ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ダウンロード済み一時ファイルのパーミッション調整
         return true;
     }
     
@@ -656,9 +656,9 @@ function noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_fi
         );
     }
     
-    $fp = @fopen( $temp_file, 'wb' );
+    $fp = @fopen( $temp_file, 'wb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- チャンク分割ダウンロードのストリーム読み書きのため WP_Filesystem では代替不可
     if ( false === $fp ) {
-        @unlink( $temp_file );
+        wp_delete_file( $temp_file );
         return new WP_Error(
             'temp_file_open_error',
             __( 'Failed to open temporary file for writing.', 'novel-game-plugin' )
@@ -666,20 +666,20 @@ function noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_fi
     }
     
     while ( ! feof( $stream ) ) {
-        $chunk = fread( $stream, $chunk_size );
+        $chunk = fread( $stream, $chunk_size ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームからのチャンク読み込み
         if ( false === $chunk ) {
-            fclose( $fp );
-            @unlink( $temp_file );
+            fclose( $fp ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームのクローズ処理
+            wp_delete_file( $temp_file );
             return new WP_Error(
                 'read_error',
                 __( 'Failed to read from stream.', 'novel-game-plugin' )
             );
         }
         
-        $written = fwrite( $fp, $chunk );
+        $written = fwrite( $fp, $chunk ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームへのチャンク書き込み
         if ( false === $written || $written !== strlen( $chunk ) ) {
-            fclose( $fp );
-            @unlink( $temp_file );
+            fclose( $fp ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームのクローズ処理
+            wp_delete_file( $temp_file );
             return new WP_Error(
                 'write_error',
                 __( 'Failed to write chunk to temporary file.', 'novel-game-plugin' )
@@ -687,7 +687,7 @@ function noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_fi
         }
     }
     
-    fclose( $fp );
+    fclose( $fp ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームのクローズ処理
     
     // 一時ファイルを最終的な場所に移動（複数の方法を試行）
     $move_success = false;
@@ -700,25 +700,25 @@ function noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_fi
         }
     }
     
-    // 方法2: copy() + unlink() フォールバック
+    // 方法2: copy() + wp_delete_file() フォールバック
     if ( ! $move_success && method_exists( $wp_filesystem, 'copy' ) ) {
         if ( $wp_filesystem->copy( $temp_file, $target_path, true, FS_CHMOD_FILE ) ) {
-            @unlink( $temp_file );
+            wp_delete_file( $temp_file );
             $move_success = true;
         }
     }
     
     // 方法3: PHP の rename() フォールバック（direct method 限定）
     if ( ! $move_success && isset( $wp_filesystem->method ) && $wp_filesystem->method === 'direct' ) {
-        if ( @rename( $temp_file, $target_path ) ) {
-            @chmod( $target_path, FS_CHMOD_FILE );
+        if ( @rename( $temp_file, $target_path ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions -- 一時ファイルから確定パスへのアトミックな移動
+            @chmod( $target_path, FS_CHMOD_FILE ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ダウンロード済みファイルのパーミッション調整
             $move_success = true;
         }
     }
     
     // すべての方法が失敗した場合
     if ( ! $move_success ) {
-        @unlink( $temp_file );
+        wp_delete_file( $temp_file );
         return new WP_Error(
             'move_error',
             sprintf(
@@ -751,7 +751,7 @@ function noveltool_extract_zip_with_unzip_command( $zip_file, $destination ) {
 
     if ( 0 !== $return_var ) {
         $output_str = implode( "\n", $output );
-        error_log(
+        noveltool_log(
             sprintf(
                 'NovelGamePlugin: unzip command failed with exit code %d. Output: %s',
                 $return_var,
@@ -858,7 +858,7 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
             $real_target = realpath( $target_dir );
             $real_destination = realpath( $destination );
             if ( $real_target === false || $real_destination === false || strpos( $real_target, $real_destination ) !== 0 ) {
-                error_log( "NovelGamePlugin: Skipping file outside destination: {$filename}" );
+                noveltool_log( "NovelGamePlugin: Skipping file outside destination: {$filename}" );
                 continue;
             }
             
@@ -880,7 +880,7 @@ function noveltool_extract_zip_streaming( $zip_file, $destination ) {
             $chunk_size = 8192; // 8KB
             $write_result = noveltool_stream_write_file( $stream, $target_path, $chunk_size, $wp_filesystem );
             
-            fclose( $stream );
+            fclose( $stream ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- ストリームのクローズ処理
             
             if ( is_wp_error( $write_result ) ) {
                 $zip->close();
@@ -927,7 +927,7 @@ function noveltool_extract_zip( $zip_file, $destination ) {
         $check_dir = dirname( $check_dir );
     }
 
-    if ( ! is_writable( $check_dir ) ) {
+    if ( ! wp_is_writable( $check_dir ) ) {
         return new WP_Error(
             'permission_error',
             sprintf(
@@ -956,7 +956,7 @@ function noveltool_extract_zip( $zip_file, $destination ) {
         if ( ! is_wp_error( $unzip_result ) ) {
             return true;
         }
-        error_log( 'NovelGamePlugin: unzip command extraction failed, fallback to ZipArchive: ' . $unzip_result->get_error_message() );
+        noveltool_log( 'NovelGamePlugin: unzip command extraction failed, fallback to ZipArchive: ' . $unzip_result->get_error_message() );
     }
 
     if ( class_exists( 'ZipArchive' ) ) {
@@ -1169,7 +1169,7 @@ function noveltool_process_background_job( $job_id ) {
     $job = noveltool_get_background_job( $job_id );
     
     if ( ! $job ) {
-        error_log( "NovelGamePlugin: Job not found: {$job_id}" );
+        noveltool_log( "NovelGamePlugin: Job not found: {$job_id}" );
         return;
     }
 
@@ -1219,7 +1219,7 @@ function noveltool_process_background_job( $job_id ) {
             )
         );
 
-        error_log(
+        noveltool_log(
             sprintf(
                 'NovelGamePlugin: Background exception job_id=%s type=%s class=%s message=%s file=%s line=%d',
                 sanitize_text_field( $job_id ),
@@ -1246,7 +1246,7 @@ function noveltool_process_background_job( $job_id ) {
             )
         );
         
-        error_log( "NovelGamePlugin: Job failed ({$job_id}): " . $result->get_error_message() );
+        noveltool_log( "NovelGamePlugin: Job failed ({$job_id}): " . $result->get_error_message() );
     } else {
         noveltool_update_background_job(
             $job_id,
@@ -1295,7 +1295,7 @@ function noveltool_handle_background_job_shutdown( $job_id, $running_key ) {
             }
         }
 
-        error_log(
+        noveltool_log(
             sprintf(
                 'NovelGamePlugin: Background fatal job_id=%s message=%s file=%s line=%d',
                 sanitize_text_field( $job_id ),
@@ -1423,7 +1423,7 @@ function noveltool_job_extract_sample_images( $job ) {
     $result = noveltool_extract_zip( $temp_file, $destination );
     
     // 一時ファイルを削除
-    @unlink( $temp_file );
+    wp_delete_file( $temp_file );
     
     if ( is_wp_error( $result ) ) {
         return $result;
@@ -1482,7 +1482,7 @@ function noveltool_update_download_status( $status, $error_message = '', $error_
     // ステータス値のバリデーション
     $valid_statuses = array( 'not_started', 'in_progress', 'completed', 'failed' );
     if ( ! in_array( $status, $valid_statuses, true ) ) {
-        error_log( "NovelGamePlugin: Invalid status value: {$status}" );
+        noveltool_log( "NovelGamePlugin: Invalid status value: {$status}" );
         $status = 'failed';
     }
     
@@ -1605,7 +1605,7 @@ function noveltool_update_download_status( $status, $error_message = '', $error_
         update_option( 'noveltool_sample_images_download_error', $error_data, false );
         
         // 内部ログに詳細を記録（デバッグ用）
-        error_log( sprintf(
+        noveltool_log( sprintf(
             'NovelGamePlugin: Download failed - Code: %s, Stage: %s, Message: %s',
             $error_data['code'],
             $error_data['stage'],
@@ -2016,7 +2016,7 @@ function noveltool_try_recover_stuck_download_job( $status_data ) {
         $result['scheduled'] = true;
         $result['reason'] = 'rescheduled_process_job';
 
-        error_log(
+        noveltool_log(
             sprintf(
                 'NovelGamePlugin: Auto-recovered stuck job %s (lag=%ds)',
                 $job_id,
@@ -2234,7 +2234,7 @@ function noveltool_perform_sample_images_download_background( $release_data, $as
 function noveltool_perform_multi_asset_download_background( $release_data, $assets_with_checksum ) {
     // 必須修正1: assets 空チェック
     if ( empty( $assets_with_checksum ) || ! is_array( $assets_with_checksum ) ) {
-        error_log( 'NovelGamePlugin: noveltool_perform_multi_asset_download_background() called with empty assets array' );
+        noveltool_log( 'NovelGamePlugin: noveltool_perform_multi_asset_download_background() called with empty assets array' );
         return new WP_Error(
             'empty_assets',
             __( 'No assets available for download.', 'novel-game-plugin' ),
@@ -2259,7 +2259,7 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
         
         // 必須修正6: 型検査とサニタイズ
         if ( empty( $asset_name ) || empty( $download_url ) ) {
-            error_log( sprintf( 'NovelGamePlugin: Invalid asset at index %d: missing name or URL', $index ) );
+            noveltool_log( sprintf( 'NovelGamePlugin: Invalid asset at index %d: missing name or URL', $index ) );
             $failed_assets[] = array(
                 'index'   => $index,
                 'name'    => $asset_name ? $asset_name : 'unknown',
@@ -2272,7 +2272,7 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
         // 必須修正4: チェックサム取得ポリシーの明確化
         // チェックサムがない場合はログに記録し、検証スキップとして処理
         if ( empty( $checksum ) ) {
-            error_log( sprintf(
+            noveltool_log( sprintf(
                 'NovelGamePlugin: Checksum not available for %s. Verification will be skipped.',
                 $asset_name
             ) );
@@ -2289,7 +2289,7 @@ function noveltool_perform_multi_asset_download_background( $release_data, $asse
     
     // すべてのジョブ作成に失敗した場合はエラーを返す
     if ( empty( $queue_assets ) ) {
-        error_log( 'NovelGamePlugin: All asset jobs failed to create' );
+        noveltool_log( 'NovelGamePlugin: All asset jobs failed to create' );
         return new WP_Error(
             'all_jobs_failed',
             __( 'Failed to create background jobs for all assets. Please check server logs.', 'novel-game-plugin' ),
@@ -2446,7 +2446,7 @@ function noveltool_check_background_job_chain( $previous_job_id, $checksum = '' 
     
     if ( ! $job ) {
         if ( noveltool_is_stale_watchdog_event( $previous_job_id, 'download' ) ) {
-            error_log( sprintf( 'NovelGamePlugin: Ignore stale chain watcher for missing job: %s', sanitize_text_field( $previous_job_id ) ) );
+            noveltool_log( sprintf( 'NovelGamePlugin: Ignore stale chain watcher for missing job: %s', sanitize_text_field( $previous_job_id ) ) );
             return;
         }
 
@@ -2463,7 +2463,7 @@ function noveltool_check_background_job_chain( $previous_job_id, $checksum = '' 
         }
 
         delete_transient( $retry_key );
-        error_log( "NovelGamePlugin: Previous job not found after retries: {$previous_job_id}" );
+        noveltool_log( "NovelGamePlugin: Previous job not found after retries: {$previous_job_id}" );
         noveltool_update_download_status(
             'failed',
             __( 'ダウンロードジョブが見つかりません。再度ダウンロードを実行してください。', 'novel-game-plugin' ),
@@ -2485,7 +2485,7 @@ function noveltool_check_background_job_chain( $previous_job_id, $checksum = '' 
                 $temp_file = $job['data']['temp_file'];
             }
             if ( ! empty( $temp_file ) && file_exists( $temp_file ) ) {
-                @unlink( $temp_file );
+                wp_delete_file( $temp_file );
             }
             
             $error = isset( $job['error'] ) ? $job['error'] : array( 'message' => 'Unknown error' );
@@ -2665,7 +2665,7 @@ function noveltool_check_background_job_verify( $verify_job_id, $temp_file ) {
     
     if ( ! $job ) {
         if ( noveltool_is_stale_watchdog_event( $verify_job_id, 'verify' ) ) {
-            error_log( sprintf( 'NovelGamePlugin: Ignore stale verify watcher for missing job: %s', sanitize_text_field( $verify_job_id ) ) );
+            noveltool_log( sprintf( 'NovelGamePlugin: Ignore stale verify watcher for missing job: %s', sanitize_text_field( $verify_job_id ) ) );
             return;
         }
 
@@ -2704,7 +2704,7 @@ function noveltool_check_background_job_verify( $verify_job_id, $temp_file ) {
             );
             delete_option( 'noveltool_sample_images_download_lock' );
             noveltool_delete_background_job( $verify_job_id );
-            @unlink( $temp_file );
+            wp_delete_file( $temp_file );
             return;
         }
         
@@ -2778,7 +2778,7 @@ function noveltool_check_background_job_extract( $extract_job_id ) {
     
     if ( ! $job ) {
         if ( noveltool_is_stale_watchdog_event( $extract_job_id, 'extract' ) ) {
-            error_log( sprintf( 'NovelGamePlugin: Ignore stale extract watcher for missing job: %s', sanitize_text_field( $extract_job_id ) ) );
+            noveltool_log( sprintf( 'NovelGamePlugin: Ignore stale extract watcher for missing job: %s', sanitize_text_field( $extract_job_id ) ) );
             return;
         }
 
@@ -2943,7 +2943,7 @@ function noveltool_perform_sample_images_download() {
     if ( ! $lock_acquired ) {
         // ロック取得失敗 - 他のプロセスが実行中
         $error_msg = __( 'Download already in progress.', 'novel-game-plugin' );
-        error_log( 'NovelGamePlugin: Failed to acquire download lock. Another process may have started the download.' );
+        noveltool_log( 'NovelGamePlugin: Failed to acquire download lock. Another process may have started the download.' );
         return array(
             'success' => false,
             'message' => $error_msg,
@@ -3062,10 +3062,10 @@ function noveltool_perform_sample_images_download() {
                 if ( preg_match( '/\b([a-f0-9]{64})\b/i', $checksum_body, $matches ) ) {
                     $checksum = $matches[1];
                 } else {
-                    error_log( sprintf( 'NovelGamePlugin: Invalid checksum format for %s', $asset_name ) );
+                    noveltool_log( sprintf( 'NovelGamePlugin: Invalid checksum format for %s', $asset_name ) );
                 }
             } else {
-                error_log( sprintf( 'NovelGamePlugin: Failed to fetch checksum for %s', $asset_name ) );
+                noveltool_log( sprintf( 'NovelGamePlugin: Failed to fetch checksum for %s', $asset_name ) );
             }
         }
         
@@ -3099,7 +3099,7 @@ function noveltool_perform_sample_images_download() {
     
     // メモリ不足の警告（ただし処理は続行）
     if ( $capabilities['memory_limit_mb'] > 0 && $capabilities['memory_limit_mb'] < 128 ) {
-        error_log( sprintf(
+        noveltool_log( sprintf(
             'NovelGamePlugin: Low memory limit detected: %s MB (recommended: 256 MB or higher)',
             $capabilities['memory_limit_mb']
         ) );
@@ -3121,7 +3121,7 @@ function noveltool_perform_sample_images_download() {
                 $error_code = $result->get_error_code();
                 
                 // 詳細をログに記録
-                error_log( sprintf(
+                noveltool_log( sprintf(
                     'NovelGamePlugin: Multi-asset download failed - Code: %s, Message: %s',
                     $error_code,
                     $error_msg
@@ -3148,7 +3148,7 @@ function noveltool_perform_sample_images_download() {
             
             // 配列型チェック（必須修正6の対応）
             if ( ! is_array( $result ) ) {
-                error_log( 'NovelGamePlugin: Multi-asset download returned non-array result' );
+                noveltool_log( 'NovelGamePlugin: Multi-asset download returned non-array result' );
                 delete_option( 'noveltool_sample_images_download_lock' );
                 return array(
                     'success' => false,
@@ -3200,12 +3200,12 @@ function noveltool_perform_sample_images_download() {
         
         if ( is_wp_error( $checksum_response ) ) {
             // チェックサムファイルの取得失敗は警告のみ（処理は続行）
-            error_log( 'NovelGamePlugin: Failed to fetch checksum file: ' . $checksum_response->get_error_message() );
+            noveltool_log( 'NovelGamePlugin: Failed to fetch checksum file: ' . $checksum_response->get_error_message() );
         } else {
             $checksum_status = wp_remote_retrieve_response_code( $checksum_response );
             if ( $checksum_status !== 200 ) {
                 // HTTP ステータスエラーをログに記録（処理は続行）
-                error_log( sprintf( 'NovelGamePlugin: Checksum file fetch returned HTTP %d. URL: %s', $checksum_status, $checksum_asset['browser_download_url'] ) );
+                noveltool_log( sprintf( 'NovelGamePlugin: Checksum file fetch returned HTTP %d. URL: %s', $checksum_status, $checksum_asset['browser_download_url'] ) );
             } else {
                 $checksum_body = wp_remote_retrieve_body( $checksum_response );
                 
@@ -3214,7 +3214,7 @@ function noveltool_perform_sample_images_download() {
                     $expected_checksum = $matches[1];
                     
                     if ( ! noveltool_verify_checksum( $temp_zip, $expected_checksum ) ) {
-                        @unlink( $temp_zip );
+                        wp_delete_file( $temp_zip );
                         $error_msg = __( 'Checksum verification failed. The downloaded file may be corrupted. Please try again.', 'novel-game-plugin' );
                         noveltool_update_download_status( 'failed', $error_msg, 'ERR-CHECKSUM', 'verify_checksum' );
                         delete_option( 'noveltool_sample_images_download_lock' );
@@ -3227,7 +3227,7 @@ function noveltool_perform_sample_images_download() {
                     }
                 } else {
                     // チェックサムフォーマットが不正（64文字の16進数ではない）
-                    error_log( sprintf( 'NovelGamePlugin: Invalid checksum format in .sha256 file. Expected 64-character hex string. Content: %s', substr( $checksum_body, 0, 200 ) ) );
+                    noveltool_log( sprintf( 'NovelGamePlugin: Invalid checksum format in .sha256 file. Expected 64-character hex string. Content: %s', substr( $checksum_body, 0, 200 ) ) );
                     // フォーマット不正の場合も処理は続行（チェックサムなしでインストール）
                 }
             }
@@ -3239,7 +3239,7 @@ function noveltool_perform_sample_images_download() {
     $extract_result = noveltool_extract_zip( $temp_zip, $destination );
     
     // 一時ファイルを削除
-    @unlink( $temp_zip );
+    wp_delete_file( $temp_zip );
     
     if ( is_wp_error( $extract_result ) ) {
         $error_msg = sprintf(
@@ -3334,7 +3334,7 @@ function noveltool_api_download_sample_images( $request ) {
         $error_message = $result->get_error_message();
         
         // 詳細なエラー情報をログに記録
-        error_log( sprintf(
+        noveltool_log( sprintf(
             'NovelGamePlugin: Sample images download failed with WP_Error - Code: %s, Message: %s',
             $error_code,
             $error_message
@@ -3357,7 +3357,7 @@ function noveltool_api_download_sample_images( $request ) {
     
     // 配列でない場合の保護
     if ( ! is_array( $result ) ) {
-        error_log( 'NovelGamePlugin: noveltool_perform_sample_images_download() returned non-array result' );
+        noveltool_log( 'NovelGamePlugin: noveltool_perform_sample_images_download() returned non-array result' );
         return new WP_REST_Response(
             array(
                 'success' => false,
@@ -3369,7 +3369,7 @@ function noveltool_api_download_sample_images( $request ) {
     
     // success キーの存在チェック
     if ( ! isset( $result['success'] ) ) {
-        error_log( 'NovelGamePlugin: noveltool_perform_sample_images_download() returned array without success key' );
+        noveltool_log( 'NovelGamePlugin: noveltool_perform_sample_images_download() returned array without success key' );
         return new WP_REST_Response(
             array(
                 'success' => false,

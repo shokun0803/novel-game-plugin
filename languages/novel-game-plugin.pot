@@ -2,8 +2,9 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Novel Game Plugin 1.3.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/novel-game-plugin\n"
+"Project-Id-Version: Novel Game Plugin 1.6.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/novel-game-"
+"plugin\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -39,27 +40,17 @@ msgstr ""
 msgid "https://profiles.wordpress.org/shokun0803/"
 msgstr ""
 
-#: admin/ad-management.php:22
-#: admin/ad-management.php:23
-#: admin/ad-management.php:71
-#: admin/game-manager.php:654
+#: admin/ad-management.php:22 admin/ad-management.php:23
+#: admin/ad-management.php:71 admin/game-manager.php:654
 msgid "Ad Management"
 msgstr ""
 
-#: admin/ad-management.php:40
-#: admin/dashboard.php:22
-#: admin/export-import.php:22
-#: admin/game-manager.php:23
-#: admin/game-settings.php:40
-#: admin/game-settings.php:98
-#: admin/game-settings.php:198
-#: admin/game-settings.php:237
-#: admin/game-settings.php:316
-#: admin/game-settings.php:407
-#: admin/game-settings.php:467
-#: admin/my-games.php:22
-#: admin/new-game.php:48
-#: admin/new-game.php:122
+#: admin/ad-management.php:40 admin/dashboard.php:22 admin/export-import.php:22
+#: admin/game-manager.php:23 admin/game-settings.php:40
+#: admin/game-settings.php:98 admin/game-settings.php:198
+#: admin/game-settings.php:237 admin/game-settings.php:316
+#: admin/game-settings.php:407 admin/game-settings.php:467
+#: admin/my-games.php:22 admin/new-game.php:48 admin/new-game.php:122
 #: admin/plugin-settings.php:22
 msgid "You do not have permission to access this page."
 msgstr ""
@@ -81,7 +72,9 @@ msgid "The advertising IDs and settings you enter are your own responsibility."
 msgstr ""
 
 #: admin/ad-management.php:81
-msgid "This plugin does not verify the validity or compliance of the advertising IDs you provide."
+msgid ""
+"This plugin does not verify the validity or compliance of the advertising "
+"IDs you provide."
 msgstr ""
 
 #: admin/ad-management.php:82
@@ -89,15 +82,18 @@ msgid "You must comply with the terms of service of each advertising provider."
 msgstr ""
 
 #: admin/ad-management.php:83
-msgid "The plugin developer is not responsible for any issues arising from the use of advertising features."
+msgid ""
+"The plugin developer is not responsible for any issues arising from the use "
+"of advertising features."
 msgstr ""
 
 #: admin/ad-management.php:84
-msgid "Make sure you have properly registered with the advertising provider and have an approved account before entering your IDs."
+msgid ""
+"Make sure you have properly registered with the advertising provider and "
+"have an approved account before entering your IDs."
 msgstr ""
 
-#: admin/ad-management.php:97
-#: admin/game-manager.php:639
+#: admin/ad-management.php:97 admin/game-manager.php:639
 msgid "Google AdSense"
 msgstr ""
 
@@ -109,8 +105,7 @@ msgstr ""
 msgid "Enter your Google AdSense Publisher ID (e.g., ca-pub-1234567890123456)"
 msgstr ""
 
-#: admin/ad-management.php:123
-#: admin/ad-management.php:168
+#: admin/ad-management.php:123 admin/ad-management.php:168
 msgid "Official Website"
 msgstr ""
 
@@ -119,11 +114,12 @@ msgid "Visit Google AdSense"
 msgstr ""
 
 #: admin/ad-management.php:131
-msgid "Register for a Google AdSense account and get your Publisher ID from the official website."
+msgid ""
+"Register for a Google AdSense account and get your Publisher ID from the "
+"official website."
 msgstr ""
 
-#: admin/ad-management.php:142
-#: admin/game-manager.php:646
+#: admin/ad-management.php:142 admin/game-manager.php:646
 msgid "Adsterra"
 msgstr ""
 
@@ -140,7 +136,9 @@ msgid "Visit Adsterra"
 msgstr ""
 
 #: admin/ad-management.php:176
-msgid "Register for an Adsterra account and get your Publisher ID from the official website."
+msgid ""
+"Register for an Adsterra account and get your Publisher ID from the official "
+"website."
 msgstr ""
 
 #: admin/ad-management.php:185
@@ -152,7 +150,9 @@ msgid "Additional Information"
 msgstr ""
 
 #: admin/ad-management.php:193
-msgid "This section allows you to manage advertising provider IDs for displaying ads in your novel games."
+msgid ""
+"This section allows you to manage advertising provider IDs for displaying "
+"ads in your novel games."
 msgstr ""
 
 #: admin/ad-management.php:194
@@ -160,11 +160,15 @@ msgid "Currently supported advertising providers:"
 msgstr ""
 
 #: admin/ad-management.php:196
-msgid "One of the most popular advertising networks with a wide range of advertisers."
+msgid ""
+"One of the most popular advertising networks with a wide range of "
+"advertisers."
 msgstr ""
 
 #: admin/ad-management.php:197
-msgid "An alternative advertising network with various ad formats and payment options."
+msgid ""
+"An alternative advertising network with various ad formats and payment "
+"options."
 msgstr ""
 
 #: admin/ad-management.php:200
@@ -172,7 +176,9 @@ msgid "Note:"
 msgstr ""
 
 #: admin/ad-management.php:201
-msgid "Ad display functionality is currently under development. The IDs saved here will be used when the feature is fully implemented."
+msgid ""
+"Ad display functionality is currently under development. The IDs saved here "
+"will be used when the feature is fully implemented."
 msgstr ""
 
 #: admin/dashboard.php:37
@@ -195,18 +201,13 @@ msgstr ""
 msgid "Quick Actions"
 msgstr ""
 
-#: admin/dashboard.php:63
-#: admin/my-games.php:146
-#: admin/my-games.php:212
-#: admin/new-game.php:22
-#: admin/new-game.php:23
+#: admin/dashboard.php:63 admin/my-games.php:146 admin/my-games.php:212
+#: admin/new-game.php:22 admin/new-game.php:23
 #: templates/archive-novel_game.php:157
 msgid "Create New Game"
 msgstr ""
 
-#: admin/dashboard.php:67
-#: admin/my-games.php:92
-#: includes/post-types.php:316
+#: admin/dashboard.php:67 admin/my-games.php:92 includes/post-types.php:316
 #: includes/post-types.php:317
 msgid "My Games"
 msgstr ""
@@ -220,7 +221,9 @@ msgid "Create a New Game"
 msgstr ""
 
 #: admin/dashboard.php:80
-msgid "Click \"Create New Game\" to set up your game title, description, and title image."
+msgid ""
+"Click \"Create New Game\" to set up your game title, description, and title "
+"image."
 msgstr ""
 
 #: admin/dashboard.php:86
@@ -228,7 +231,8 @@ msgid "Create Scenes"
 msgstr ""
 
 #: admin/dashboard.php:87
-msgid "Add scenes to your game with backgrounds, characters, dialogue, and choices."
+msgid ""
+"Add scenes to your game with backgrounds, characters, dialogue, and choices."
 msgstr ""
 
 #: admin/dashboard.php:93
@@ -244,7 +248,10 @@ msgid "About Novel Game Plugin"
 msgstr ""
 
 #: admin/dashboard.php:103
-msgid "Novel Game Plugin allows you to create visual novel or sound novel style games directly in WordPress. You can create multiple games, manage scenes with branching storylines, and use flags for conditional content."
+msgid ""
+"Novel Game Plugin allows you to create visual novel or sound novel style "
+"games directly in WordPress. You can create multiple games, manage scenes "
+"with branching storylines, and use flags for conditional content."
 msgstr ""
 
 #: admin/dashboard.php:104
@@ -271,8 +278,7 @@ msgstr ""
 msgid "Shortcodes for easy integration"
 msgstr ""
 
-#: admin/export-import.php:29
-#: includes/post-types.php:334
+#: admin/export-import.php:29 includes/post-types.php:334
 #: includes/post-types.php:335
 msgid "Export/Import"
 msgstr ""
@@ -301,8 +307,7 @@ msgstr ""
 msgid "Export game data as JSON file"
 msgstr ""
 
-#: admin/export-import.php:56
-#: admin/export-import.php:138
+#: admin/export-import.php:56 admin/export-import.php:138
 #: admin/export-import.php:233
 msgid "Export"
 msgstr ""
@@ -331,8 +336,7 @@ msgstr ""
 msgid "Import game data from selected file"
 msgstr ""
 
-#: admin/export-import.php:91
-#: admin/export-import.php:142
+#: admin/export-import.php:91 admin/export-import.php:142
 msgid "Import"
 msgstr ""
 
@@ -360,11 +364,8 @@ msgstr ""
 msgid "Operation"
 msgstr ""
 
-#: admin/export-import.php:120
-#: admin/game-manager.php:499
-#: admin/meta-boxes.php:803
-#: admin/new-game.php:169
-#: includes/post-types.php:88
+#: admin/export-import.php:120 admin/game-manager.php:499
+#: admin/meta-boxes.php:803 admin/new-game.php:169 includes/post-types.php:88
 #: includes/revisions.php:390
 msgid "Game Title"
 msgstr ""
@@ -433,8 +434,7 @@ msgstr ""
 msgid "File size is too large. Maximum 10MB allowed."
 msgstr ""
 
-#: admin/export-import.php:242
-#: admin/game-settings.php:1403
+#: admin/export-import.php:242 admin/game-settings.php:1403
 #, php-format
 msgid "Note: %d image(s) failed to download."
 msgstr ""
@@ -451,24 +451,18 @@ msgstr ""
 msgid "Scene List"
 msgstr ""
 
-#: admin/game-manager.php:79
-#: admin/game-manager.php:323
+#: admin/game-manager.php:79 admin/game-manager.php:323
 #: admin/game-manager.php:422
 msgid "Create New Scene"
 msgstr ""
 
-#: admin/game-manager.php:83
-#: js/blocks.js:167
+#: admin/game-manager.php:83 js/blocks.js:167
 msgid "Game Settings"
 msgstr ""
 
-#: admin/game-manager.php:172
-#: admin/game-manager.php:448
-#: admin/game-settings.php:526
-#: admin/game-settings.php:1266
-#: admin/game-settings.php:1304
-#: admin/meta-boxes.php:27
-#: admin/my-games.php:71
+#: admin/game-manager.php:172 admin/game-manager.php:448
+#: admin/game-settings.php:526 admin/game-settings.php:1266
+#: admin/game-settings.php:1304 admin/meta-boxes.php:27 admin/my-games.php:71
 #: admin/new-game.php:130
 msgid "Security check failed."
 msgstr ""
@@ -481,8 +475,7 @@ msgstr ""
 msgid "Failed to restore scene from trash."
 msgstr ""
 
-#: admin/game-manager.php:181
-#: admin/my-games.php:77
+#: admin/game-manager.php:181 admin/my-games.php:77
 msgid "Invalid ID."
 msgstr ""
 
@@ -495,7 +488,8 @@ msgid "You do not have permission to restore this scene."
 msgstr ""
 
 #: admin/game-manager.php:196
-msgid "Scene has been moved to trash. You can restore it from the trash if needed."
+msgid ""
+"Scene has been moved to trash. You can restore it from the trash if needed."
 msgstr ""
 
 #: admin/game-manager.php:199
@@ -511,7 +505,8 @@ msgid "Scene has been restored from trash and is now published."
 msgstr ""
 
 #: admin/game-manager.php:215
-msgid "The start scene was removed. Please set a new start scene for this game."
+msgid ""
+"The start scene was removed. Please set a new start scene for this game."
 msgstr ""
 
 #: admin/game-manager.php:218
@@ -534,25 +529,20 @@ msgstr ""
 msgid "Create First Scene"
 msgstr ""
 
-#: admin/game-manager.php:332
-#: admin/game-manager.php:347
+#: admin/game-manager.php:332 admin/game-manager.php:347
 msgid "Scene Title"
 msgstr ""
 
-#: admin/game-manager.php:333
-#: admin/game-manager.php:359
+#: admin/game-manager.php:333 admin/game-manager.php:359
 msgid "Status"
 msgstr ""
 
-#: admin/game-manager.php:334
-#: admin/game-manager.php:365
+#: admin/game-manager.php:334 admin/game-manager.php:365
 msgid "Date"
 msgstr ""
 
-#: admin/game-manager.php:335
-#: admin/game-manager.php:368
-#: admin/game-manager.php:685
-#: admin/meta-boxes.php:1014
+#: admin/game-manager.php:335 admin/game-manager.php:368
+#: admin/game-manager.php:685 admin/meta-boxes.php:1014
 msgid "Actions"
 msgstr ""
 
@@ -568,8 +558,7 @@ msgstr ""
 msgid "Restore"
 msgstr ""
 
-#: admin/game-manager.php:381
-#: admin/meta-boxes.php:417
+#: admin/game-manager.php:381 admin/meta-boxes.php:417
 msgid "Edit"
 msgstr ""
 
@@ -578,7 +567,9 @@ msgid "Preview"
 msgstr ""
 
 #: admin/game-manager.php:391
-msgid "Are you sure you want to move this scene to the Trash? You can restore it later from the Trash."
+msgid ""
+"Are you sure you want to move this scene to the Trash? You can restore it "
+"later from the Trash."
 msgstr ""
 
 #: admin/game-manager.php:392
@@ -586,11 +577,13 @@ msgid "Move to Trash"
 msgstr ""
 
 #: admin/game-manager.php:416
-msgid "Create a new scene for this game. After creation, you will be taken to the scene editing screen where you can add backgrounds, characters, dialogue, and choices."
+msgid ""
+"Create a new scene for this game. After creation, you will be taken to the "
+"scene editing screen where you can add backgrounds, characters, dialogue, "
+"and choices."
 msgstr ""
 
-#: admin/game-manager.php:451
-#: admin/new-game.php:133
+#: admin/game-manager.php:451 admin/new-game.php:133
 msgid "Please enter a game title."
 msgstr ""
 
@@ -614,29 +607,23 @@ msgstr ""
 msgid "Flag deleted successfully."
 msgstr ""
 
-#: admin/game-manager.php:513
-#: admin/new-game.php:187
+#: admin/game-manager.php:513 admin/new-game.php:187
 msgid "Game Overview"
 msgstr ""
 
-#: admin/game-manager.php:525
-#: admin/new-game.php:203
+#: admin/game-manager.php:525 admin/new-game.php:203
 msgid "Title Screen Image"
 msgstr ""
 
-#: admin/game-manager.php:534
-#: admin/new-game.php:212
+#: admin/game-manager.php:534 admin/new-game.php:212
 msgid "Title Screen Image Preview"
 msgstr ""
 
-#: admin/game-manager.php:540
-#: admin/meta-boxes.php:858
-#: admin/new-game.php:218
+#: admin/game-manager.php:540 admin/meta-boxes.php:858 admin/new-game.php:218
 msgid "Select from Media"
 msgstr ""
 
-#: admin/game-manager.php:546
-#: admin/new-game.php:224
+#: admin/game-manager.php:546 admin/new-game.php:224
 msgid "Delete Image"
 msgstr ""
 
@@ -645,7 +632,9 @@ msgid "Game Over Screen Text"
 msgstr ""
 
 #: admin/game-manager.php:562
-msgid "Text displayed when there are no choices or next scenes in a non-ending. Default is \"Game Over\"."
+msgid ""
+"Text displayed when there are no choices or next scenes in a non-ending. "
+"Default is \"Game Over\"."
 msgstr ""
 
 #: admin/game-manager.php:568
@@ -657,7 +646,9 @@ msgid "Display title overlaid on title image"
 msgstr ""
 
 #: admin/game-manager.php:586
-msgid "Uncheck this if your title image already includes the game title to avoid duplication."
+msgid ""
+"Uncheck this if your title image already includes the game title to avoid "
+"duplication."
 msgstr ""
 
 #: admin/game-manager.php:592
@@ -665,7 +656,9 @@ msgid "Title Text Color"
 msgstr ""
 
 #: admin/game-manager.php:607
-msgid "Choose the color for the title text. Automatic contrast enhancement (text stroke and shadow) will be applied for readability."
+msgid ""
+"Choose the color for the title text. Automatic contrast enhancement (text "
+"stroke and shadow) will be applied for readability."
 msgstr ""
 
 #: admin/game-manager.php:612
@@ -683,7 +676,9 @@ msgstr ""
 #. translators: %s: Link to ad management page
 #: admin/game-manager.php:653
 #, php-format
-msgid "Note: To display ads, you must first configure the ad provider IDs in %s. If IDs are not set, ads will not be displayed."
+msgid ""
+"Note: To display ads, you must first configure the ad provider IDs in %s. If "
+"IDs are not set, ads will not be displayed."
 msgstr ""
 
 #: admin/game-manager.php:666
@@ -702,19 +697,15 @@ msgstr ""
 msgid "ID"
 msgstr ""
 
-#: admin/game-manager.php:683
-#: admin/game-manager.php:724
+#: admin/game-manager.php:683 admin/game-manager.php:724
 msgid "Flag Name"
 msgstr ""
 
-#: admin/game-manager.php:684
-#: admin/game-manager.php:737
+#: admin/game-manager.php:684 admin/game-manager.php:737
 msgid "Description"
 msgstr ""
 
-#: admin/game-manager.php:703
-#: admin/my-games.php:201
-#: includes/revisions.php:320
+#: admin/game-manager.php:703 admin/my-games.php:201 includes/revisions.php:320
 #: novel-game-plugin.php:1048
 msgid "Delete"
 msgstr ""
@@ -723,8 +714,7 @@ msgstr ""
 msgid "Are you sure you want to delete this flag?"
 msgstr ""
 
-#: admin/game-manager.php:712
-#: admin/meta-boxes.php:1149
+#: admin/game-manager.php:712 admin/meta-boxes.php:1149
 msgid "No flags have been set for this game yet."
 msgstr ""
 
@@ -733,21 +723,21 @@ msgid "Add New Flag"
 msgstr ""
 
 #: admin/game-manager.php:732
-msgid "Only alphanumeric characters and underscores are allowed. Cannot start with a number."
+msgid ""
+"Only alphanumeric characters and underscores are allowed. Cannot start with "
+"a number."
 msgstr ""
 
 #: admin/game-manager.php:752
 msgid "Add Flag"
 msgstr ""
 
-#: admin/game-settings.php:22
-#: admin/game-settings.php:23
+#: admin/game-settings.php:22 admin/game-settings.php:23
 #: novel-game-plugin.php:1064
 msgid "Settings"
 msgstr ""
 
-#: admin/game-settings.php:532
-#: admin/game-settings.php:1272
+#: admin/game-settings.php:532 admin/game-settings.php:1272
 msgid "Invalid game ID."
 msgstr ""
 
@@ -821,13 +811,11 @@ msgstr ""
 msgid "Failed to calculate imported image hash."
 msgstr ""
 
-#: admin/game-settings.php:1435
-#: admin/game-settings.php:1473
+#: admin/game-settings.php:1435 admin/game-settings.php:1473
 msgid "Insufficient permissions."
 msgstr ""
 
-#: admin/game-settings.php:1483
-#: admin/game-settings.php:1496
+#: admin/game-settings.php:1483 admin/game-settings.php:1496
 msgid "No file selected."
 msgstr ""
 
@@ -873,7 +861,7 @@ msgstr ""
 
 #: admin/game-settings.php:1388
 #, php-format
-msgid "Successfully imported game with %d scenes (%d choices remapped)."
+msgid "Successfully imported game with %1$d scenes (%2$d choices remapped)."
 msgstr ""
 
 #: admin/game-settings.php:1395
@@ -905,16 +893,12 @@ msgstr ""
 msgid "+ Create New..."
 msgstr ""
 
-#: admin/meta-boxes.php:373
-#: admin/meta-boxes.php:903
-#: admin/meta-boxes.php:938
+#: admin/meta-boxes.php:373 admin/meta-boxes.php:903 admin/meta-boxes.php:938
 #: admin/meta-boxes.php:973
 msgid "Remove"
 msgstr ""
 
-#: admin/meta-boxes.php:374
-#: admin/meta-boxes.php:897
-#: admin/meta-boxes.php:932
+#: admin/meta-boxes.php:374 admin/meta-boxes.php:897 admin/meta-boxes.php:932
 #: admin/meta-boxes.php:967
 msgid "Select Image"
 msgstr ""
@@ -955,23 +939,17 @@ msgstr ""
 msgid "-- Select Speaker --"
 msgstr ""
 
-#: admin/meta-boxes.php:384
-#: admin/meta-boxes.php:875
-#: novel-game-plugin.php:866
+#: admin/meta-boxes.php:384 admin/meta-boxes.php:875 novel-game-plugin.php:866
 #: novel-game-plugin.php:1043
 msgid "Left Character"
 msgstr ""
 
-#: admin/meta-boxes.php:385
-#: admin/meta-boxes.php:910
-#: novel-game-plugin.php:870
+#: admin/meta-boxes.php:385 admin/meta-boxes.php:910 novel-game-plugin.php:870
 #: novel-game-plugin.php:1044
 msgid "Center Character"
 msgstr ""
 
-#: admin/meta-boxes.php:386
-#: admin/meta-boxes.php:945
-#: novel-game-plugin.php:874
+#: admin/meta-boxes.php:386 admin/meta-boxes.php:945 novel-game-plugin.php:874
 #: novel-game-plugin.php:1045
 msgid "Right Character"
 msgstr ""
@@ -1036,8 +1014,7 @@ msgstr ""
 msgid "Enter the dialogue to display when the flag condition is met"
 msgstr ""
 
-#: admin/meta-boxes.php:402
-#: admin/meta-boxes.php:983
+#: admin/meta-boxes.php:402 admin/meta-boxes.php:983
 msgid "Dialogue"
 msgstr ""
 
@@ -1086,20 +1063,28 @@ msgid "All choices have been deleted."
 msgstr ""
 
 #: admin/meta-boxes.php:414
-msgid "There are unsaved changes in the current post.\\n\\nDo you want to open the edit screen without saving?\\n\\nSelect \"Cancel\" to save the current post first."
+msgid ""
+"There are unsaved changes in the current post.\\n\\nDo you want to open the "
+"edit screen without saving?\\n\\nSelect \"Cancel\" to save the current post "
+"first."
 msgstr ""
 
 #: admin/meta-boxes.php:415
-msgid "The post has not been saved. Do you want to save it before creating a new command?"
+msgid ""
+"The post has not been saved. Do you want to save it before creating a new "
+"command?"
 msgstr ""
 
 #: admin/meta-boxes.php:416
 #, php-format
-msgid "A new scene \"%s\" has been created. You can edit it from the edit link."
+msgid ""
+"A new scene \"%s\" has been created. You can edit it from the edit link."
 msgstr ""
 
 #: admin/meta-boxes.php:418
-msgid "Unsupported file format. Only jpg, jpeg, png, gif, and webp files can be uploaded."
+msgid ""
+"Unsupported file format. Only jpg, jpeg, png, gif, and webp files can be "
+"uploaded."
 msgstr ""
 
 #: admin/meta-boxes.php:419
@@ -1115,7 +1100,9 @@ msgid "Character Settings for This Dialogue"
 msgstr ""
 
 #: admin/meta-boxes.php:423
-msgid "You can set individual character images for each dialogue. If not set, the scene's character settings will be used."
+msgid ""
+"You can set individual character images for each dialogue. If not set, the "
+"scene's character settings will be used."
 msgstr ""
 
 #: admin/meta-boxes.php:424
@@ -1142,8 +1129,7 @@ msgstr ""
 msgid "Please select the game this scene belongs to."
 msgstr ""
 
-#: admin/meta-boxes.php:821
-#: admin/meta-boxes.php:834
+#: admin/meta-boxes.php:821 admin/meta-boxes.php:834
 msgid "Manage Games"
 msgstr ""
 
@@ -1155,8 +1141,7 @@ msgstr ""
 msgid "Set the title for the entire game."
 msgstr ""
 
-#: admin/meta-boxes.php:843
-#: includes/revisions.php:376
+#: admin/meta-boxes.php:843 includes/revisions.php:376
 msgid "Background Image"
 msgstr ""
 
@@ -1176,15 +1161,11 @@ msgstr ""
 msgid "You can place up to 3 characters in left, center, and right positions."
 msgstr ""
 
-#: admin/meta-boxes.php:881
-#: admin/meta-boxes.php:916
-#: admin/meta-boxes.php:951
+#: admin/meta-boxes.php:881 admin/meta-boxes.php:916 admin/meta-boxes.php:951
 msgid "Character Name"
 msgstr ""
 
-#: admin/meta-boxes.php:886
-#: admin/meta-boxes.php:921
-#: admin/meta-boxes.php:956
+#: admin/meta-boxes.php:886 admin/meta-boxes.php:921 admin/meta-boxes.php:956
 msgid "Enter Character Name"
 msgstr ""
 
@@ -1205,16 +1186,16 @@ msgid "+ Add Dialogue"
 msgstr ""
 
 #: admin/meta-boxes.php:996
-msgid "You can set a background image for each dialogue. If no background image is specified, the background from the previous scene will continue."
+msgid ""
+"You can set a background image for each dialogue. If no background image is "
+"specified, the background from the previous scene will continue."
 msgstr ""
 
-#: admin/meta-boxes.php:1002
-#: includes/revisions.php:389
+#: admin/meta-boxes.php:1002 includes/revisions.php:389
 msgid "Choices"
 msgstr ""
 
-#: admin/meta-boxes.php:1009
-#: js/blocks.js:221
+#: admin/meta-boxes.php:1009 js/blocks.js:221
 msgid "Order"
 msgstr ""
 
@@ -1230,8 +1211,7 @@ msgstr ""
 msgid "Flag Conditions"
 msgstr ""
 
-#: admin/meta-boxes.php:1013
-#: admin/meta-boxes.php:1111
+#: admin/meta-boxes.php:1013 admin/meta-boxes.php:1111
 msgid "Flag Settings"
 msgstr ""
 
@@ -1270,7 +1250,9 @@ msgstr ""
 #. translators: %s: title of the other start scene
 #: admin/meta-boxes.php:1057
 #, php-format
-msgid "A start scene already exists for this game: \"%s\". Only one start scene can be set per game."
+msgid ""
+"A start scene already exists for this game: \"%s\". Only one start scene can "
+"be set per game."
 msgstr ""
 
 #: admin/meta-boxes.php:1072
@@ -1278,7 +1260,9 @@ msgid "Set this scene as the start scene (first scene of the game)"
 msgstr ""
 
 #: admin/meta-boxes.php:1075
-msgid "When checked, this scene will be the starting point of the game. Only one start scene can be set per game."
+msgid ""
+"When checked, this scene will be the starting point of the game. Only one "
+"start scene can be set per game."
 msgstr ""
 
 #: admin/meta-boxes.php:1083
@@ -1290,7 +1274,9 @@ msgid "Set this scene as an ending (end of game)"
 msgstr ""
 
 #: admin/meta-boxes.php:1094
-msgid "When checked, the game will end at this scene. The ending takes priority even if choices are set."
+msgid ""
+"When checked, the game will end at this scene. The ending takes priority "
+"even if choices are set."
 msgstr ""
 
 #: admin/meta-boxes.php:1097
@@ -1302,7 +1288,9 @@ msgid "Text to display on ending screen (Default: END)"
 msgstr ""
 
 #: admin/meta-boxes.php:1104
-msgid "Set the text to display on the ending screen. If blank, \"END\" will be displayed."
+msgid ""
+"Set the text to display on the ending screen. If blank, \"END\" will be "
+"displayed."
 msgstr ""
 
 #: admin/meta-boxes.php:1129
@@ -1322,11 +1310,16 @@ msgid "Dialogue-Level Flag Conditions"
 msgstr ""
 
 #: admin/meta-boxes.php:1158
-msgid "To set individual flag conditions for each dialogue, configure them when editing dialogues. Dialogues will not be displayed if flag conditions are not met."
+msgid ""
+"To set individual flag conditions for each dialogue, configure them when "
+"editing dialogues. Dialogues will not be displayed if flag conditions are "
+"not met."
 msgstr ""
 
 #: admin/meta-boxes.php:1161
-msgid "Dialogue flag conditions can be set when editing each dialogue in the \"Dialogue\" section above."
+msgid ""
+"Dialogue flag conditions can be set when editing each dialogue in the "
+"\"Dialogue\" section above."
 msgstr ""
 
 #: admin/my-games.php:74
@@ -1338,35 +1331,38 @@ msgid "Game and all associated scenes have been permanently deleted."
 msgstr ""
 
 #: admin/my-games.php:88
-msgid "Game and all associated scenes have been permanently deleted. Sample images have also been deleted."
+msgid ""
+"Game and all associated scenes have been permanently deleted. Sample images "
+"have also been deleted."
 msgstr ""
 
 #: admin/my-games.php:91
-msgid "Game and all associated scenes have been permanently deleted. However, some sample images could not be deleted."
+msgid ""
+"Game and all associated scenes have been permanently deleted. However, some "
+"sample images could not be deleted."
 msgstr ""
 
 #: admin/my-games.php:115
-msgid "Sample images are not installed. You can download them to use with sample games."
+msgid ""
+"Sample images are not installed. You can download them to use with sample "
+"games."
 msgstr ""
 
-#: admin/my-games.php:119
-#: admin/my-games.php:302
+#: admin/my-games.php:119 admin/my-games.php:302
 msgid "Download Sample Images"
 msgstr ""
 
 #: admin/my-games.php:132
-msgid "Sample game is not installed. You can install a sample game to see how the plugin works."
+msgid ""
+"Sample game is not installed. You can install a sample game to see how the "
+"plugin works."
 msgstr ""
 
-#: admin/my-games.php:135
-#: admin/my-games.php:348
-#: admin/my-games.php:353
+#: admin/my-games.php:135 admin/my-games.php:348 admin/my-games.php:353
 msgid "Install Sample Game"
 msgstr ""
 
-#: admin/my-games.php:143
-#: novel-game-plugin.php:1208
-#: novel-game-plugin.php:1525
+#: admin/my-games.php:143 novel-game-plugin.php:1208 novel-game-plugin.php:1525
 #: templates/archive-novel_game.php:155
 msgid "No games have been created yet."
 msgstr ""
@@ -1375,9 +1371,7 @@ msgstr ""
 msgid "Select a game to manage its scenes and settings."
 msgstr ""
 
-#: admin/my-games.php:182
-#: novel-game-plugin.php:1284
-#: novel-game-plugin.php:1581
+#: admin/my-games.php:182 novel-game-plugin.php:1284 novel-game-plugin.php:1581
 #: templates/archive-novel_game.php:141
 #, php-format
 msgid "%d Scenes"
@@ -1388,11 +1382,14 @@ msgid "Manage"
 msgstr ""
 
 #: admin/my-games.php:200
-msgid "Are you sure you want to delete this game? This action cannot be undone."
+msgid ""
+"Are you sure you want to delete this game? This action cannot be undone."
 msgstr ""
 
 #: admin/my-games.php:201
-msgid "Are you sure you want to delete this game and its sample images? This action cannot be undone."
+msgid ""
+"Are you sure you want to delete this game and its sample images? This action "
+"cannot be undone."
 msgstr ""
 
 #: admin/my-games.php:210
@@ -1406,7 +1403,9 @@ msgstr ""
 #. translators: %s: estimated file size
 #: admin/my-games.php:305
 #, php-format
-msgid "Sample game images are not installed. Would you like to download them now? Download size: approximately %s."
+msgid ""
+"Sample game images are not installed. Would you like to download them now? "
+"Download size: approximately %s."
 msgstr ""
 
 #: admin/my-games.php:308
@@ -1421,12 +1420,14 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: admin/my-games.php:311
+#: admin/my-games.php:311 admin/export-import.php
 msgid "Downloading..."
 msgstr ""
 
 #: admin/my-games.php:312
-msgid "Please wait while the sample images are being downloaded. This may take a few minutes."
+msgid ""
+"Please wait while the sample images are being downloaded. This may take a "
+"few minutes."
 msgstr ""
 
 #: admin/my-games.php:313
@@ -1445,8 +1446,7 @@ msgstr ""
 msgid "Retry"
 msgstr ""
 
-#: admin/my-games.php:317
-#: novel-game-plugin.php:1050
+#: admin/my-games.php:317 novel-game-plugin.php:1050
 msgid "Close"
 msgstr ""
 
@@ -1458,20 +1458,15 @@ msgstr ""
 msgid "Installing..."
 msgstr ""
 
-#: admin/my-games.php:347
-#: admin/my-games.php:352
+#: admin/my-games.php:347 admin/my-games.php:352
 msgid "Installation failed."
 msgstr ""
 
-#: admin/my-games.php:371
-#: novel-game-plugin.php:148
-#: novel-game-plugin.php:180
+#: admin/my-games.php:371 novel-game-plugin.php:148 novel-game-plugin.php:180
 msgid "Security check failed"
 msgstr ""
 
-#: admin/my-games.php:376
-#: novel-game-plugin.php:143
-#: novel-game-plugin.php:175
+#: admin/my-games.php:376 novel-game-plugin.php:143 novel-game-plugin.php:175
 msgid "Insufficient permissions"
 msgstr ""
 
@@ -1512,15 +1507,20 @@ msgid "Help"
 msgstr ""
 
 #: admin/new-game.php:246
-msgid "Enter a game title and click the \"Create Game\" button to create a new game."
+msgid ""
+"Enter a game title and click the \"Create Game\" button to create a new game."
 msgstr ""
 
 #: admin/new-game.php:247
-msgid "After creation, you will be taken to the game management screen where you can create scenes, manage settings, and configure your game."
+msgid ""
+"After creation, you will be taken to the game management screen where you "
+"can create scenes, manage settings, and configure your game."
 msgstr ""
 
 #: admin/new-game.php:248
-msgid "You can optionally add a game overview and title screen image for a better presentation."
+msgid ""
+"You can optionally add a game overview and title screen image for a better "
+"presentation."
 msgstr ""
 
 #: admin/new-game.php:323
@@ -1548,17 +1548,17 @@ msgstr ""
 msgid "Display All Games List"
 msgstr ""
 
-#: admin/plugin-settings.php:58
-#: admin/plugin-settings.php:105
+#: admin/plugin-settings.php:58 admin/plugin-settings.php:105
 msgid "Copy"
 msgstr ""
 
 #: admin/plugin-settings.php:61
-msgid "Displays all games in a beautiful card format. This is the most recommended shortcode for game lists."
+msgid ""
+"Displays all games in a beautiful card format. This is the most recommended "
+"shortcode for game lists."
 msgstr ""
 
-#: admin/plugin-settings.php:63
-#: admin/plugin-settings.php:110
+#: admin/plugin-settings.php:63 admin/plugin-settings.php:110
 msgid "Available Options:"
 msgstr ""
 
@@ -1619,7 +1619,9 @@ msgid "Display Specific Game"
 msgstr ""
 
 #: admin/plugin-settings.php:108
-msgid "Displays a specific game with a hero image and play button. Replace \"Game Name\" with your actual game title."
+msgid ""
+"Displays a specific game with a hero image and play button. Replace \"Game "
+"Name\" with your actual game title."
 msgstr ""
 
 #: admin/plugin-settings.php:113
@@ -1643,7 +1645,9 @@ msgid "Block Editor"
 msgstr ""
 
 #: admin/plugin-settings.php:126
-msgid "In the Gutenberg block editor, search for \"Novel Game List\" block. You can easily insert game lists or individual games with intuitive operations."
+msgid ""
+"In the Gutenberg block editor, search for \"Novel Game List\" block. You can "
+"easily insert game lists or individual games with intuitive operations."
 msgstr ""
 
 #: admin/plugin-settings.php:134
@@ -1662,17 +1666,21 @@ msgstr ""
 msgid "Uninstall Settings"
 msgstr ""
 
-#: admin/plugin-settings.php:158
-#: admin/plugin-settings.php:169
+#: admin/plugin-settings.php:158 admin/plugin-settings.php:169
 msgid "Delete all data on uninstall"
 msgstr ""
 
 #: admin/plugin-settings.php:172
-msgid "When enabled, all game data, posts, and settings will be permanently deleted when you uninstall this plugin. This action cannot be undone. Normally, leave this unchecked."
+msgid ""
+"When enabled, all game data, posts, and settings will be permanently deleted "
+"when you uninstall this plugin. This action cannot be undone. Normally, "
+"leave this unchecked."
 msgstr ""
 
 #: admin/plugin-settings.php:178
-msgid "Warning: When this setting is enabled, all games you created will be deleted upon uninstallation."
+msgid ""
+"Warning: When this setting is enabled, all games you created will be deleted "
+"upon uninstallation."
 msgstr ""
 
 #: admin/plugin-settings.php:186
@@ -1684,11 +1692,12 @@ msgid "Copied!"
 msgstr ""
 
 #: admin/plugin-settings.php:236
-msgid "Are you sure you want to delete all data on uninstall? This action cannot be undone."
+msgid ""
+"Are you sure you want to delete all data on uninstall? This action cannot be "
+"undone."
 msgstr ""
 
-#: includes/blocks.php:156
-#: js/blocks.js:137
+#: includes/blocks.php:156 js/blocks.js:137
 msgid "All Games List"
 msgstr ""
 
@@ -1702,16 +1711,12 @@ msgctxt "Post Type Singular Name"
 msgid "Novel Game"
 msgstr ""
 
-#: includes/post-types.php:23
-#: includes/post-types.php:24
+#: includes/post-types.php:23 includes/post-types.php:24
 msgid "Novel Game"
 msgstr ""
 
-#: includes/post-types.php:25
-#: includes/post-types.php:45
-#: templates/archive-novel_game.php:26
-#: js/blocks.js:54
-#: js/blocks.js:235
+#: includes/post-types.php:25 includes/post-types.php:45
+#: templates/archive-novel_game.php:26 js/blocks.js:54 js/blocks.js:235
 #: js/blocks.js:242
 msgid "Novel Game List"
 msgstr ""
@@ -1748,8 +1753,7 @@ msgstr ""
 msgid "Update Novel Game"
 msgstr ""
 
-#: includes/post-types.php:34
-#: includes/post-types.php:35
+#: includes/post-types.php:34 includes/post-types.php:35
 msgid "View Novel Game"
 msgstr ""
 
@@ -1809,8 +1813,7 @@ msgstr ""
 msgid "All Games"
 msgstr ""
 
-#: includes/post-types.php:298
-#: includes/post-types.php:299
+#: includes/post-types.php:298 includes/post-types.php:299
 msgid "Dashboard"
 msgstr ""
 
@@ -1818,13 +1821,11 @@ msgstr ""
 msgid "Custom Field Data"
 msgstr ""
 
-#: includes/revisions.php:265
-#: includes/revisions.php:270
+#: includes/revisions.php:265 includes/revisions.php:270
 msgid "No Data"
 msgstr ""
 
-#: includes/revisions.php:311
-#: includes/revisions.php:312
+#: includes/revisions.php:311 includes/revisions.php:312
 msgid "(None)"
 msgstr ""
 
@@ -1977,8 +1978,7 @@ msgstr ""
 msgid "Sample game installed successfully"
 msgstr ""
 
-#: novel-game-plugin.php:162
-#: novel-game-plugin.php:194
+#: novel-game-plugin.php:162 novel-game-plugin.php:194
 msgid "Shadow Detective is already installed. No changes were made."
 msgstr ""
 
@@ -1986,8 +1986,7 @@ msgstr ""
 msgid "Shadow Detective game installed successfully"
 msgstr ""
 
-#: novel-game-plugin.php:824
-#: novel-game-plugin.php:1474
+#: novel-game-plugin.php:824 novel-game-plugin.php:1474
 #: templates/archive-novel_game.php:145
 msgid "Start Game"
 msgstr ""
@@ -1996,24 +1995,18 @@ msgstr ""
 msgid "Clear Progress"
 msgstr ""
 
-#: novel-game-plugin.php:836
-#: novel-game-plugin.php:1320
-#: novel-game-plugin.php:1483
-#: templates/archive-novel_game.php:171
+#: novel-game-plugin.php:836 novel-game-plugin.php:1320
+#: novel-game-plugin.php:1483 templates/archive-novel_game.php:171
 msgid "Close Game"
 msgstr ""
 
-#: novel-game-plugin.php:848
-#: novel-game-plugin.php:1331
-#: novel-game-plugin.php:1494
-#: templates/archive-novel_game.php:183
+#: novel-game-plugin.php:848 novel-game-plugin.php:1331
+#: novel-game-plugin.php:1494 templates/archive-novel_game.php:183
 msgid "Start from Beginning"
 msgstr ""
 
-#: novel-game-plugin.php:851
-#: novel-game-plugin.php:1334
-#: novel-game-plugin.php:1497
-#: templates/archive-novel_game.php:186
+#: novel-game-plugin.php:851 novel-game-plugin.php:1334
+#: novel-game-plugin.php:1497 templates/archive-novel_game.php:186
 msgid "Continue from Save"
 msgstr ""
 
@@ -2036,11 +2029,14 @@ msgid "Are you sure you want to delete \"%s\"? This action cannot be undone."
 msgstr ""
 
 #: novel-game-plugin.php:1053
-msgid "Are you sure you want to delete all saved data for this game? This action cannot be undone."
+msgid ""
+"Are you sure you want to delete all saved data for this game? This action "
+"cannot be undone."
 msgstr ""
 
 #: novel-game-plugin.php:1054
-msgid "Your browser does not support local storage; saved data cannot be managed."
+msgid ""
+"Your browser does not support local storage; saved data cannot be managed."
 msgstr ""
 
 #: novel-game-plugin.php:1055
@@ -2083,8 +2079,7 @@ msgstr ""
 msgid "Manage saved data"
 msgstr ""
 
-#: novel-game-plugin.php:1306
-#: novel-game-plugin.php:1583
+#: novel-game-plugin.php:1306 novel-game-plugin.php:1583
 msgid "Start Playing"
 msgstr ""
 
@@ -2198,7 +2193,8 @@ msgid "Include images as ZIP archive (file size may be larger)"
 msgstr ""
 
 #: admin/export-import.php
-msgid "Check to download all images used in the game and include them in a ZIP file."
+msgid ""
+"Check to download all images used in the game and include them in a ZIP file."
 msgstr ""
 
 #: admin/export-import.php
@@ -2286,15 +2282,9 @@ msgid "Failed to write game-data.json to ZIP."
 msgstr ""
 
 #: admin/export-import.php
-msgid "Select JSON or ZIP file"
-msgstr ""
-
-#: admin/export-import.php
-msgid "Select JSON or ZIP file to import"
-msgstr ""
-
-#: admin/export-import.php
-msgid "For split ZIP import, upload one part file at a time in order (Part 1, then Part 2, etc.)."
+msgid ""
+"For split ZIP import, upload one part file at a time in order (Part 1, then "
+"Part 2, etc.)."
 msgstr ""
 
 #: admin/game-settings.php
@@ -2314,10 +2304,6 @@ msgid "Download All Parts"
 msgstr ""
 
 #: admin/export-import.php
-msgid "Downloading..."
-msgstr ""
-
-#: admin/export-import.php
 msgid "Failed to download part %d. Please try again."
 msgstr ""
 
@@ -2329,7 +2315,7 @@ msgstr ""
 msgid "Cannot mix split ZIP parts with other file types."
 msgstr ""
 
-#: admin/export-import.php
+#: admin/export-import.php admin/game-settings.php
 msgid "Only ZIP files are allowed for split ZIP import."
 msgstr ""
 
@@ -2394,7 +2380,9 @@ msgid "Upload complete. Server-side verification and import are still running."
 msgstr ""
 
 #: admin/export-import.php
-msgid "Server-side processing is in progress. Please wait while the game data is being imported."
+msgid ""
+"Server-side processing is in progress. Please wait while the game data is "
+"being imported."
 msgstr ""
 
 #: admin/game-settings.php
@@ -2422,7 +2410,9 @@ msgid "No valid split ZIP parts found."
 msgstr ""
 
 #: admin/game-settings.php
-msgid "Files are from different exports. Please upload only parts from the same export."
+msgid ""
+"Files are from different exports. Please upload only parts from the same "
+"export."
 msgstr ""
 
 #: admin/game-settings.php
@@ -2447,10 +2437,6 @@ msgstr ""
 
 #: admin/game-settings.php
 msgid "ZIP file not found. Please export again."
-msgstr ""
-
-#: admin/game-settings.php
-msgid "Only ZIP files are allowed for split ZIP import."
 msgstr ""
 
 #: admin/game-settings.php
@@ -2531,4 +2517,908 @@ msgstr ""
 
 #: novel-game-plugin.php
 msgid "Return to Title"
+msgstr ""
+
+msgid "Detective"
+msgstr ""
+
+msgid "Misaki"
+msgstr ""
+
+msgid "Sato"
+msgstr ""
+
+msgid "Informant"
+msgstr ""
+
+msgid "Ryu-gumi Executive"
+msgstr ""
+
+msgid "President Takagi"
+msgstr ""
+
+msgid "Makoto Kurosaki"
+msgstr ""
+
+msgid "Pocket Watch"
+msgstr ""
+
+msgid "Sato's Photo"
+msgstr ""
+
+msgid "Kurosaki's Memo"
+msgstr ""
+
+msgid "Safe Key"
+msgstr ""
+
+msgid "Hidden Ledger"
+msgstr ""
+
+msgid "Misaki's Testimony"
+msgstr ""
+
+msgid "Misaki's Confession"
+msgstr ""
+
+msgid "Sato's Testimony"
+msgstr ""
+
+msgid "Sato's Debt"
+msgstr ""
+
+msgid "Sato's Confession"
+msgstr ""
+
+msgid "Hidden Room"
+msgstr ""
+
+msgid "Informant's Intel"
+msgstr ""
+
+msgid "Executive's Slip"
+msgstr ""
+
+msgid "Met Takagi"
+msgstr ""
+
+msgid "Deduction: The Mastermind"
+msgstr ""
+
+msgid "Deduction: Still Alive"
+msgstr ""
+
+msgid "Deduction: The Villa"
+msgstr ""
+
+msgid "Cornered the Mastermind"
+msgstr ""
+
+msgid "Shadow Detective"
+msgstr ""
+
+msgid ""
+"You are the detective. Businessman Makoto Kurosaki vanished from the harbor "
+"three nights ago. Question the people around him, gather evidence, expose "
+"the contradictions — and when the pieces align, name the mastermind, the "
+"truth, and the place. Wrong deductions have consequences."
+msgstr ""
+
+msgid "The trail has gone cold"
+msgstr ""
+
+msgid "Shadow Detective — The Client"
+msgstr ""
+
+msgid ""
+"Cold rain had been falling since noon. Just past seven, a woman appeared at "
+"my office door, holding a photograph like a prayer."
+msgstr ""
+
+msgid "Please, detective. My husband, Makoto, has been missing for three days."
+msgstr ""
+
+msgid ""
+"The police say he simply ran off. But that evening he called me — he said he "
+"would be home by ten."
+msgstr ""
+
+msgid ""
+"A man who calls home before a meeting doesn't vanish by choice. I'll take "
+"the case, Mrs. Kurosaki."
+msgstr ""
+
+msgid "Ask her to walk through that last evening"
+msgstr ""
+
+msgid "Shadow Detective — The Last Evening"
+msgstr ""
+
+msgid ""
+"He left at eight, saying a meeting had come up. He took only his coat and "
+"his briefcase."
+msgstr ""
+
+msgid ""
+"A taxi driver remembered him. He was dropped near the harbor warehouses at "
+"nine."
+msgstr ""
+
+msgid ""
+"And for weeks now, the phone rings late at night. When I answer... no one "
+"speaks."
+msgstr ""
+
+msgid ""
+"A meeting no one knew of, the warehouse district, and silent calls. Three "
+"threads. Time to start pulling."
+msgstr ""
+
+msgid "Walk the warehouse district where he was last seen"
+msgstr ""
+
+msgid "Visit the residence and hear more from Misaki"
+msgstr ""
+
+msgid "Meet Sato, his oldest friend"
+msgstr ""
+
+msgid "Shadow Detective — Traces on the Wharf"
+msgstr ""
+
+msgid ""
+"The harbor at dusk. Rusted cranes, walls of containers — and not a single "
+"security camera in sight."
+msgstr ""
+
+msgid ""
+"Fresh tire marks by the loading bay. A heavy car stopped here, then swung "
+"around in a hurry."
+msgstr ""
+
+msgid ""
+"Something glints between the pallets — a pocket watch. The lid is engraved: "
+"\"To Makoto. Misaki.\""
+msgstr ""
+
+msgid ""
+"The hands stopped at 9:47. A man doesn't drop his wife's gift and stroll "
+"away. He left it here — for someone to find."
+msgstr ""
+
+msgid "Return to the office and lay out the facts"
+msgstr ""
+
+msgid "Call on Misaki at the residence"
+msgstr ""
+
+msgid "Meet Sato at the cafe"
+msgstr ""
+
+msgid "Shadow Detective — The Case Board"
+msgstr ""
+
+msgid ""
+"Back at the office, I pin everything to the corkboard and let the pieces "
+"stare back at me."
+msgstr ""
+
+msgid ""
+"A vanished businessman. Midnight calls with no voice. A meeting that never "
+"existed."
+msgstr ""
+
+msgid ""
+"Money is the thread. Frightened men run from debts; careful men hide the "
+"proof."
+msgstr ""
+
+msgid "The board is still full of holes. Time to knock on the next door."
+msgstr ""
+
+msgid ""
+"The watch stopped at 9:47 on the wharf. If he dropped it on purpose, he was "
+"alive when he left — and he did not leave alone."
+msgstr ""
+
+msgid ""
+"\"The September transfer is the last one. I'm out.\" Men who quit a dirty "
+"game rarely keep their freedom — or their lives."
+msgstr ""
+
+msgid ""
+"The ledger bears his initials on every page. The board is nearly complete — "
+"now one wrong thread could unravel the whole case."
+msgstr ""
+
+msgid "Hear Misaki's account at the residence"
+msgstr ""
+
+msgid "Meet Sato, the old friend"
+msgstr ""
+
+msgid "Ask Misaki about the pocket watch"
+msgstr ""
+
+msgid "Search Makoto's study"
+msgstr ""
+
+msgid "Go back down to the hidden room"
+msgstr ""
+
+msgid "Ask Misaki about the safe key"
+msgstr ""
+
+msgid "Open the safe in the hidden room"
+msgstr ""
+
+msgid "Take Sato's photo to an informant"
+msgstr ""
+
+msgid "Walk into the Ryu-gumi's bar"
+msgstr ""
+
+msgid "Press Sato about his debt"
+msgstr ""
+
+msgid "Pay a visit to Takagi Construction"
+msgstr ""
+
+msgid "Assemble the deduction"
+msgstr ""
+
+msgid "Shadow Detective — The House on the Hill"
+msgstr ""
+
+msgid ""
+"He was proud of the company he built from nothing. But this past year, "
+"something was eating him alive."
+msgstr ""
+
+msgid ""
+"He would shut himself in the study until dawn. Once, I heard him on the "
+"phone. He sounded like he was pleading."
+msgstr ""
+
+msgid ""
+"Twice, a man came to the door. Broad shoulders, a scar on his jaw. My "
+"husband sent me upstairs both times."
+msgstr ""
+
+msgid ""
+"A visitor the wife was never allowed to see. That's not business. That's a "
+"collector."
+msgstr ""
+
+msgid "Show her the pocket watch"
+msgstr ""
+
+msgid "Ask to see the study"
+msgstr ""
+
+msgid "Return to the office"
+msgstr ""
+
+msgid "Shadow Detective — What Misaki Hid"
+msgstr ""
+
+msgid ""
+"This was found where your husband was last seen. I need the whole truth now, "
+"Mrs. Kurosaki."
+msgstr ""
+
+msgid "...It's the watch I gave him. He never took it off. Not even to sleep."
+msgstr ""
+
+msgid ""
+"Forgive me — I did hear that call. He said: \"The September payment is the "
+"last one. After that, I'm out.\""
+msgstr ""
+
+msgid ""
+"I was afraid, detective. I thought if I repeated those words, they would "
+"come true."
+msgstr ""
+
+msgid "Shadow Detective — An Old Friend"
+msgstr ""
+
+msgid ""
+"Makoto? We've known each other thirty years. If he were in real trouble, I'd "
+"know— I mean, I'd want to know."
+msgstr ""
+
+msgid ""
+"Actually, last week I saw him near the harbor with some rough-looking men. I "
+"took a photo. Just in case."
+msgstr ""
+
+msgid "Near the harbor. And you just happened to be there, camera ready?"
+msgstr ""
+
+msgid ""
+"I— I was passing by, that's all! Here, take the photo. Just find him. Please."
+msgstr ""
+
+msgid "Have an informant identify the men in the photo"
+msgstr ""
+
+msgid "Visit the Kurosaki residence"
+msgstr ""
+
+msgid "Shadow Detective — The Study"
+msgstr ""
+
+msgid ""
+"Ledgers, contracts, tax files — all immaculate. Too immaculate for a company "
+"said to be gasping for cash."
+msgstr ""
+
+msgid ""
+"The books balance perfectly, yet the company was starving. Money flowed "
+"through these pages, not into them."
+msgstr ""
+
+msgid ""
+"One bookshelf stands a finger's width off the wall. Behind it — a low door "
+"with a dial lock, left half-open."
+msgstr ""
+
+msgid ""
+"Whoever came for the secret left in a hurry, and empty-handed. Let's see "
+"what they couldn't find."
+msgstr ""
+
+msgid "Step through the hidden door"
+msgstr ""
+
+msgid "Withdraw and rethink at the office"
+msgstr ""
+
+msgid "Shadow Detective — The Hidden Room"
+msgstr ""
+
+msgid ""
+"A cramped room. A steel safe, a bare desk, and the stale smell of cigarettes "
+"and sleepless nights."
+msgstr ""
+
+msgid ""
+"On the desk, a memo in Kurosaki's hand: \"Sept. transfer to T. The last one. "
+"I'm out.\""
+msgstr ""
+
+msgid ""
+"T. He was paying someone, and September was meant to end it. Men like \"T\" "
+"rarely agree to endings."
+msgstr ""
+
+msgid ""
+"The safe won't give. Somewhere there's a key — and I'd wager the lady of the "
+"house knows where."
+msgstr ""
+
+msgid "Shadow Detective — The Second Key"
+msgstr ""
+
+msgid "There's a safe behind his bookshelf. I need whatever opens it."
+msgstr ""
+
+msgid ""
+"A safe? I never knew... wait. His father's desk has a drawer with a false "
+"bottom. He kept a small key there."
+msgstr ""
+
+msgid ""
+"Beneath the false bottom lies a small brass key, its surface polished by "
+"worried fingers."
+msgstr ""
+
+msgid ""
+"She is still holding something back. I can see it in the way she watches the "
+"door."
+msgstr ""
+
+msgid ""
+"This should fit the dial door. Time to hear what the safe has been keeping "
+"quiet."
+msgstr ""
+
+msgid "Open the safe"
+msgstr ""
+
+msgid "Shadow Detective — The Hidden Ledger"
+msgstr ""
+
+msgid "The key turns with a click that echoes like a gunshot in the tiny room."
+msgstr ""
+
+msgid ""
+"Inside: bundles of cash, and a second ledger — money moving every month from "
+"a city contractor through Kurosaki's firm."
+msgstr ""
+
+msgid ""
+"Public money, washed clean and returned as \"consulting fees\". And every "
+"page is initialed by the same hand: \"T.T.\""
+msgstr ""
+
+msgid ""
+"Takagi Construction. The biggest name in the harbor redevelopment. A "
+"dangerous name to put in a ledger."
+msgstr ""
+
+msgid ""
+"\"The September payment is the last one.\" The entries stop in September — "
+"exactly as Misaki heard him promise. And every page bears the same initials: "
+"\"T.T.\""
+msgstr ""
+
+msgid "Have the photo identified first"
+msgstr ""
+
+msgid "Shadow Detective — The Informant"
+msgstr ""
+
+msgid "Two minutes of your time. Who are the men in this photo?"
+msgstr ""
+
+msgid ""
+"Heh. The tall one is Gonda — the Ryu-gumi's collections man. Loans, threats, "
+"disposal. Full service."
+msgstr ""
+
+msgid ""
+"And one more thing, since you pay well. Your client's friend — Sato, the "
+"cafe gentleman — owes the Ryu-gumi three million."
+msgstr ""
+
+msgid ""
+"Sato owes the same people who took Makoto. And it was Sato's photo that led "
+"me here. How very convenient."
+msgstr ""
+
+msgid "Shadow Detective — The Dragon's Den"
+msgstr ""
+
+msgid "A detective, in my bar. You've got nerve — or nothing left to lose."
+msgstr ""
+
+msgid ""
+"Makoto Kurosaki. Your man Gonda met him on the wharf the night he vanished. "
+"I can put them both there at 9:47."
+msgstr ""
+
+msgid ""
+"Careful now. We lent Kurosaki money, that's all. Think, detective — a dead "
+"man repays nothing. Thirty million says we keep him breathing."
+msgstr ""
+
+msgid ""
+"\"We keep him breathing.\" Not \"we don't have him.\" The dragon just showed "
+"me one of his cards."
+msgstr ""
+
+msgid "Force your way into the back rooms"
+msgstr ""
+
+msgid "Shadow Detective — A Friend's Confession"
+msgstr ""
+
+msgid ""
+"Three million to the Ryu-gumi, Sato. And a perfect photo of Makoto, taken "
+"the week he disappears. Start talking."
+msgstr ""
+
+msgid ""
+"...They said they only wanted his schedule! A debt wiped clean, for a few "
+"dates and places. I never thought they would—"
+msgstr ""
+
+msgid ""
+"The night it happened, Gonda's car passed me by the harbor gate. It didn't "
+"turn toward their office. It took the coast road — toward President Takagi's "
+"villa."
+msgstr ""
+
+msgid ""
+"The coast road. Sato — that guilt of yours may have just saved your friend's "
+"life."
+msgstr ""
+
+msgid "Return to the office and build the case"
+msgstr ""
+
+msgid "Shadow Detective — The Man Behind the Harbor"
+msgstr ""
+
+msgid ""
+"A private detective. How quaint. I gave Kurosaki-kun his first contract, you "
+"know. Terrible business, his disappearance."
+msgstr ""
+
+msgid ""
+"His firm moved your money for years. Consulting fees. Harbor redevelopment. "
+"The paperwork is remarkably tidy."
+msgstr ""
+
+msgid ""
+"Rumors. Show me one document with my name on it, and I will show you my "
+"lawyers."
+msgstr ""
+
+msgid ""
+"He didn't ask which money. From a careful man, a careless word is worth more "
+"than a confession."
+msgstr ""
+
+msgid ""
+"He wants a document with his name. I have a ledger with his initials on "
+"every page — but not here. Not until the whole picture is airtight."
+msgstr ""
+
+msgid "Assemble the deduction at the office"
+msgstr ""
+
+msgid "Dig for more before the confrontation"
+msgstr ""
+
+msgid "Shadow Detective — Deduction I: The Hand That Moves"
+msgstr ""
+
+msgid ""
+"Night. The desk lamp draws a small circle of light around everything I know."
+msgstr ""
+
+msgid ""
+"The ledger, the memo, the debts, the lies. Behind them all — whose hand has "
+"been moving the pieces?"
+msgstr ""
+
+msgid ""
+"Name the wrong player, and the real one sweeps the board while I kick down "
+"the wrong door. Think."
+msgstr ""
+
+msgid "President Takagi. The initials, the money, the motive."
+msgstr ""
+
+msgid "The Ryu-gumi. Collectors turned kidnappers."
+msgstr ""
+
+msgid "Sato. The friend who knew his every move."
+msgstr ""
+
+msgid "Not yet. I will not accuse without proof."
+msgstr ""
+
+msgid "Shadow Detective — Deduction II: Alive or Dead"
+msgstr ""
+
+msgid ""
+"Takagi gave the order; the Ryu-gumi carried it out. But carried out — what, "
+"exactly?"
+msgstr ""
+
+msgid ""
+"The watch was dropped, not smashed. No blood on the wharf, no body in the "
+"bay, no ransom note on the door."
+msgstr ""
+
+msgid "So answer it straight: is Makoto Kurosaki alive?"
+msgstr ""
+
+msgid ""
+"\"A dead man repays nothing. Thirty million says we keep him breathing.\" "
+"The executive's slip fits the clean wharf: no blood, no body, no note."
+msgstr ""
+
+msgid "Alive. He's worth nothing to them dead."
+msgstr ""
+
+msgid "Dead. They silenced him that night."
+msgstr ""
+
+msgid "He staged everything and fled abroad."
+msgstr ""
+
+msgid "I can't call it yet. Back to the streets."
+msgstr ""
+
+msgid "Shadow Detective — Deduction III: The Coast Road"
+msgstr ""
+
+msgid ""
+"Alive, hidden, and useful. Where does Takagi cage a man who knows where "
+"every yen is buried?"
+msgstr ""
+
+msgid ""
+"Not the Ryu-gumi's bar — too many eyes already on it. Not a hotel — too many "
+"witnesses he doesn't own."
+msgstr ""
+
+msgid "Say it out loud, and stake the case on it."
+msgstr ""
+
+msgid ""
+"Sato watched Gonda's car take the coast road that night. And the coast road "
+"ends at exactly one property worth hiding a man in."
+msgstr ""
+
+msgid "Takagi's villa, at the end of the coast road."
+msgstr ""
+
+msgid "The back rooms of the Ryu-gumi's bar."
+msgstr ""
+
+msgid "A freighter already out of the harbor."
+msgstr ""
+
+msgid "Not sure enough. One more round of legwork."
+msgstr ""
+
+msgid "Shadow Detective — The Villa"
+msgstr ""
+
+msgid ""
+"The villa at the end of the coast road. Beyond the iron gate, a single "
+"window burns on the second floor."
+msgstr ""
+
+msgid ""
+"Detective. This is private property. One phone call and you are finished in "
+"this city."
+msgstr ""
+
+msgid ""
+"Make the call. The police will want to see the second floor too — and this "
+"ledger, initialed by you on every page."
+msgstr ""
+
+msgid ""
+"...What do you want? Money? A seat on a board? Name your figure and "
+"disappear."
+msgstr ""
+
+msgid ""
+"The only figure I want is the man upstairs — alive. And then the truth. All "
+"of it, in your own words."
+msgstr ""
+
+msgid "Lay every piece of evidence on the table"
+msgstr ""
+
+msgid "Demand to see Kurosaki first"
+msgstr ""
+
+msgid "Shadow Detective — The Whole Truth"
+msgstr ""
+
+msgid ""
+"Kurosaki wanted out. Out! With everything he knew about the harbor money "
+"still in that stubborn head of his."
+msgstr ""
+
+msgid ""
+"So Gonda collected him from the wharf that night. No one was to be hurt. He "
+"simply had to be persuaded — to stay quiet."
+msgstr ""
+
+msgid ""
+"The midnight calls? Gonda's idea. A telephone that rings and says nothing — "
+"so the house never forgets what silence sounds like."
+msgstr ""
+
+msgid ""
+"Then the ledger vanished from his study. Three days I asked him, politely, "
+"where it went. Three days, he said nothing at all."
+msgstr ""
+
+msgid ""
+"Upstairs, behind a locked door, a hollow-cheeked man lifts his head at the "
+"sound of new footsteps."
+msgstr ""
+
+msgid "Open the door"
+msgstr ""
+
+msgid "Shadow Detective — The Man Upstairs"
+msgstr ""
+
+msgid "You're... not one of Takagi's men. Then who—"
+msgstr ""
+
+msgid "A detective. Your wife hired me. She never once believed you ran."
+msgstr ""
+
+msgid ""
+"Misaki... I dropped the watch on the wharf, praying someone would read it "
+"right. Three days, I've been holding on to that prayer."
+msgstr ""
+
+msgid ""
+"The police are on the coast road now. It's over. All that's left is to "
+"decide how much of the truth we hand them."
+msgstr ""
+
+msgid "Hand over everything — ledger, memo, watch, and every testimony"
+msgstr ""
+
+msgid "Bring him home first. The rest can wait."
+msgstr ""
+
+msgid "Shadow Detective — Ending: Into the Light"
+msgstr ""
+
+msgid ""
+"One week later, the harbor scandal owns every front page. Takagi arrested. "
+"The Ryu-gumi raided. The ledger in an evidence vault."
+msgstr ""
+
+msgid ""
+"Detective. You gave me back my husband — and the truth with him. I don't "
+"have words enough."
+msgstr ""
+
+msgid ""
+"The watch is back where it belongs. And this time, the September payment "
+"really was the last."
+msgstr ""
+
+msgid ""
+"Rain again tonight. Some cases end with a cell door closing. The good ones "
+"end with a lit window in a warm house."
+msgstr ""
+
+msgid "Complete Solution — Every truth brought into the light"
+msgstr ""
+
+msgid "Shadow Detective — Ending: A Half Truth"
+msgstr ""
+
+msgid "Makoto Kurosaki came home. That much of the job, I did."
+msgstr ""
+
+msgid ""
+"But the chain of proof had gaps, and Takagi's lawyers cut the ledger loose. "
+"\"Insufficient corroboration,\" the court called it."
+msgstr ""
+
+msgid ""
+"He sold the villa, paid a fine, and smiled for the cameras. The dragon lost "
+"a claw. Nothing more."
+msgstr ""
+
+msgid ""
+"A half truth keeps a man awake worse than any lie. Someday, Takagi. Someday."
+msgstr ""
+
+msgid "Partial Solution — The mastermind slips the net"
+msgstr ""
+
+msgid "Shadow Detective — Ending: The Wrong Door"
+msgstr ""
+
+msgid ""
+"I was so sure. I named the wrong name, kicked the wrong door — and watched "
+"the case fall apart in my hands."
+msgstr ""
+
+msgid ""
+"While the papers laughed at the detective who cried wolf, a quieter hand "
+"swept the board clean."
+msgstr ""
+
+msgid ""
+"The ledger is ash now. The witnesses have forgotten my face. And Makoto "
+"Kurosaki is still out there — somewhere."
+msgstr ""
+
+msgid ""
+"A detective's oath: when you are wrong, you start over — from the very first "
+"thread."
+msgstr ""
+
+msgid "False Deduction — The truth slipped through your fingers"
+msgstr ""
+
+msgid "Shadow Detective — Ending: Dead End"
+msgstr ""
+
+msgid "Force, against a house built on force. It was over in half a minute."
+msgstr ""
+
+msgid ""
+"They left me in the back alley with a receipt written in bruises: the next "
+"visit ends in the harbor."
+msgstr ""
+
+msgid ""
+"By morning, every door in the case had quietly shut. Witnesses moved away. "
+"The client received a generous \"settlement\"."
+msgstr ""
+
+msgid ""
+"A detective who runs out of patience runs out of everything. This case is a "
+"dead end — and the dead end is mine."
+msgstr ""
+
+msgid "Dead End — The investigation is closed"
+msgstr ""
+
+msgid ""
+"Makoto's pocket watch, found on the wharf. Stopped at 9:47 — dropped on "
+"purpose."
+msgstr ""
+
+msgid ""
+"A photo of Makoto with rough-looking men near the harbor, taken by Sato."
+msgstr ""
+
+msgid ""
+"A memo in Makoto's hand: \"Sept. transfer to T. The last one. I'm out.\""
+msgstr ""
+
+msgid ""
+"A brass key from the false-bottomed drawer. Opens the safe in the hidden "
+"room."
+msgstr ""
+
+msgid ""
+"A second ledger tracking laundered public money. Every page initialed \"T.T."
+"\""
+msgstr ""
+
+msgid ""
+"Misaki spoke of sleepless nights, a pleading phone call, and a scarred "
+"visitor."
+msgstr ""
+
+msgid ""
+"Misaki admitted overhearing him: \"The September payment is the last one. "
+"I'm out.\""
+msgstr ""
+
+msgid "Sato provided the photo — but his story has holes."
+msgstr ""
+
+msgid "The informant says Sato owes the Ryu-gumi three million."
+msgstr ""
+
+msgid ""
+"Sato sold Makoto's schedule for his debt — and saw Gonda's car take the "
+"coast road."
+msgstr ""
+
+msgid ""
+"Behind the study bookshelf: a dial-locked door someone else searched in a "
+"hurry."
+msgstr ""
+
+msgid "The tall man in the photo is Gonda, the Ryu-gumi's collections man."
+msgstr ""
+
+msgid ""
+"\"A dead man repays nothing. Thirty million says we keep him breathing.\""
+msgstr ""
+
+msgid ""
+"President Takagi never asked which money. A careless word from a careful man."
+msgstr ""
+
+msgid "Concluded that President Takagi is the hand moving the pieces."
+msgstr ""
+
+msgid "Concluded that Makoto is alive — worth nothing to them dead."
+msgstr ""
+
+msgid "Concluded that Makoto is held at the villa on the coast road."
+msgstr ""
+
+msgid "Confronted Takagi at the villa with the ledger."
+msgstr ""
+
+#: admin/my-games.php
+msgid "The images will be downloaded from this plugin's official GitHub release (github.com/shokun0803/novel-game-plugin) and stored in your uploads directory. No personal data is sent."
 msgstr ""

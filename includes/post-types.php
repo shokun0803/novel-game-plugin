@@ -235,7 +235,12 @@ function noveltool_add_admin_filters() {
             
             foreach ( $game_titles as $game_title ) {
                 $selected = selected( $current_filter, $game_title, false );
-                echo '<option value="' . esc_attr( $game_title ) . '" ' . $selected . '>' . esc_html( $game_title ) . '</option>';
+                printf(
+                    '<option value="%s"%s>%s</option>',
+                    esc_attr( $game_title ),
+                    selected( $current_filter, $game_title, false ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() の出力はエスケープ済み
+                    esc_html( $game_title )
+                );
             }
             
             echo '</select>';

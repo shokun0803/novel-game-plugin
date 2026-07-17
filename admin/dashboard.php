@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function noveltool_dashboard_page() {
     // 権限チェック
     if ( ! current_user_can( 'edit_posts' ) ) {
-        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+        wp_die( esc_html__( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
     // ゲーム統計の取得

@@ -45,7 +45,7 @@ function noveltool_handle_new_game_form() {
     if ( isset( $_POST['create_game'] ) ) {
         // 権限チェック
         if ( ! current_user_can( 'edit_posts' ) ) {
-            wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+            wp_die( esc_html__( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
         }
 
         // nonceチェック
@@ -119,7 +119,7 @@ add_action( 'admin_init', 'noveltool_handle_new_game_form' );
 function noveltool_new_game_page() {
     // 権限チェック
     if ( ! current_user_can( 'edit_posts' ) ) {
-        wp_die( __( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
+        wp_die( esc_html__( 'You do not have permission to access this page.', 'novel-game-plugin' ) );
     }
 
     // URLパラメーターからエラーメッセージを取得
@@ -320,6 +320,7 @@ function noveltool_create_new_game( $game_title ) {
         update_option( 'noveltool_game_title', $sanitized_game_title );
         
         // デフォルトのセリフを設定
+        /* translators: %s: game title */
         $default_dialogue = sprintf( __( 'Welcome to "%s"!', 'novel-game-plugin' ), $sanitized_game_title );
         update_post_meta( $new_id, '_dialogue_text', $default_dialogue );
     }
