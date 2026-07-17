@@ -1066,6 +1066,7 @@ function noveltool_enqueue_scripts() {
                 'gameData'               => esc_html__( 'Game data', 'novel-game-plugin' ),
                 'settingsButtonLabel'    => esc_html__( 'Settings', 'novel-game-plugin' ),
                 'settingsButtonTitle'    => esc_html__( 'Manage saved data', 'novel-game-plugin' ),
+                'returnToTitleLabel'     => esc_html__( 'Return to Title', 'novel-game-plugin' ),
             )
         )
     );

@@ -1,50 +1,62 @@
 /**
  * ノベルゲームプラグイン フロントエンド スタイル
  *
+ * デザインテーマ「Midnight Noir」:
+ * 深い藍黒を基調に、金彩(アンバー)のアクセントと明朝体を組み合わせた
+ * ミステリー/ノベルゲーム向けのビジュアルシステム。
+ *
  * @package NovelGamePlugin
  * @since 1.0.0
  */
+
+/* =============================================================================
+   デザイントークン
+   ============================================================================= */
+
+:root {
+    /* 基調色 */
+    --nvl-ink-900: #070a12;
+    --nvl-ink-800: #0b0f1b;
+    --nvl-ink-700: #121729;
+    --nvl-ink-600: #1b2236;
+
+    /* パネル */
+    --nvl-panel: linear-gradient(180deg, rgba(13, 17, 30, 0.72) 0%, rgba(7, 10, 18, 0.94) 100%);
+    --nvl-panel-solid: rgba(10, 13, 24, 0.88);
+    --nvl-panel-edge: rgba(255, 255, 255, 0.14);
+    --nvl-panel-edge-soft: rgba(255, 255, 255, 0.08);
+
+    /* アクセント（金彩） */
+    --nvl-gold: #e3bd6d;
+    --nvl-gold-bright: #f4d692;
+    --nvl-gold-deep: #a97f35;
+    --nvl-gold-glow: rgba(227, 189, 109, 0.35);
+
+    /* テキスト */
+    --nvl-text: #f4f2ea;
+    --nvl-text-dim: #b7bcc9;
+    --nvl-text-faint: #8b90a0;
+
+    /* 危険色 */
+    --nvl-danger: #b33939;
+    --nvl-danger-deep: #7c1f1f;
+
+    /* フォント */
+    --nvl-font-serif: "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", "YuMincho", "BIZ UDPMincho", "Noto Serif JP", "Times New Roman", serif;
+    --nvl-font-sans: "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Yu Gothic", "Meiryo", "メイリオ", sans-serif;
+
+    /* 影 */
+    --nvl-shadow-panel: 0 14px 40px rgba(0, 0, 0, 0.55);
+    --nvl-shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
 
 /* =============================================================================
    WordPress レイアウト制約対応 - 特別なオーバーライド
    ============================================================================= */
 
 /* WordPress の .is-layout-constrained による制約を回避 */
-.is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay {
-    /* WordPress のレイアウト制約を完全に無効化 */
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    /* ビューポート全体をカバー */
-    transform: none;
-    /* 配置を強制 */
-    inset: 0;
-}
-
-/* ブロックエディターのコンテンツ制約を回避 */
-.wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay {
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    transform: none;
-    inset: 0;
-}
-
-/* 追加の WordPress テーマ制約を回避 */
+.is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay,
+.wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay,
 .wp-site-blocks #novel-game-modal-overlay.novel-game-modal-overlay,
 .wp-container #novel-game-modal-overlay.novel-game-modal-overlay,
 .entry-content #novel-game-modal-overlay.novel-game-modal-overlay {
@@ -66,26 +78,39 @@
    タイトル画面 スタイル（統合モーダル内）
    ============================================================================= */
 
-/* タイトル画面 */
 .novel-title-screen {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(160deg, #10141f 0%, #1d1b2c 55%, #26203a 100%);
+    background-size: cover;
+    background-position: center;
+    color: var(--nvl-text);
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     z-index: 10;
-    animation: title-screen-appear 0.4s ease-out;
+    overflow: hidden;
+    animation: title-screen-appear 0.5s ease-out;
+}
+
+/* 下部を暗くするビネット（タイトル文字・ボタンの可読性確保） */
+.novel-title-screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(7, 10, 18, 0.25) 0%, rgba(7, 10, 18, 0) 35%, rgba(7, 10, 18, 0.72) 82%, rgba(7, 10, 18, 0.9) 100%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 @keyframes title-screen-appear {
     from {
         opacity: 0;
-        transform: scale(0.95);
+        transform: scale(1.02);
     }
     to {
         opacity: 1;
@@ -95,180 +120,203 @@
 
 /* タイトル画面コンテンツ */
 .novel-title-content {
+    position: relative;
+    z-index: 1;
     text-align: center;
-    max-width: 600px;
-    padding: 40px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    color: white;
+    max-width: 680px;
+    width: 100%;
+    padding: 24px 40px 56px;
+    color: var(--nvl-text);
+    animation: title-content-rise 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes title-content-rise {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* タイトルテキスト */
 .novel-title-main {
-    font-size: 3em;
-    font-weight: bold;
-    margin-bottom: 20px;
-    text-shadow: 
-        3px 3px 6px rgba(0, 0, 0, 0.8),
-        1px 1px 3px rgba(0, 0, 0, 0.9);
-    line-height: 1.2;
-    color: white;
+    font-family: var(--nvl-font-serif);
+    font-size: clamp(2em, 5vw, 3.2em);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    margin: 0 0 14px;
+    line-height: 1.25;
+    color: var(--nvl-text);
+    text-shadow:
+        0 2px 14px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+/* タイトル下の金彩ルール */
+.novel-title-main::after {
+    content: '';
+    display: block;
+    width: 86px;
+    height: 2px;
+    margin: 18px auto 0;
+    background: linear-gradient(90deg, transparent, var(--nvl-gold), transparent);
+    box-shadow: 0 0 12px var(--nvl-gold-glow);
 }
 
 /* サブタイトル */
 .novel-title-subtitle {
-    font-size: 1.3em;
-    margin-bottom: 15px;
-    font-weight: 300;
-    text-shadow: 
-        2px 2px 4px rgba(0, 0, 0, 0.8),
-        1px 1px 2px rgba(0, 0, 0, 0.9);
-    color: rgba(255, 255, 255, 0.95);
+    font-family: var(--nvl-font-serif);
+    font-size: 1.15em;
+    letter-spacing: 0.2em;
+    margin: 0 0 12px;
+    font-weight: 400;
+    color: var(--nvl-gold-bright);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
 }
 
 /* 説明文 */
 .novel-title-description {
-    font-size: 1.1em;
-    margin-bottom: 40px;
-    line-height: 1.6;
-    text-shadow: 
-        2px 2px 4px rgba(0, 0, 0, 0.8),
-        1px 1px 2px rgba(0, 0, 0, 0.9);
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(0, 0, 0, 0.2);
-    padding: 15px 20px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: var(--nvl-font-sans);
+    font-size: 0.98em;
+    margin: 0 auto 30px;
+    max-width: 560px;
+    line-height: 1.9;
+    color: var(--nvl-text-dim);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
 }
 
 /* ボタンコンテナ */
 .novel-title-buttons {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
     align-items: center;
 }
 
 /* タイトル画面ボタン */
 .novel-title-btn {
     position: relative;
-    background: linear-gradient(45deg, #28a745, #20c997);
-    color: white;
-    border: none;
-    padding: 15px 40px;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 50px;
+    font-family: var(--nvl-font-serif);
+    background: rgba(9, 12, 22, 0.6);
+    color: var(--nvl-text);
+    border: 1px solid rgba(244, 214, 146, 0.45);
+    padding: 14px 48px;
+    font-size: 17px;
+    letter-spacing: 0.18em;
+    font-weight: 500;
+    border-radius: 3px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    min-width: 200px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+    min-width: 260px;
     overflow: hidden;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
-.novel-title-btn:hover {
+.novel-title-btn:hover,
+.novel-title-btn:focus-visible {
+    background: linear-gradient(180deg, rgba(227, 189, 109, 0.22), rgba(169, 127, 53, 0.18));
+    border-color: var(--nvl-gold-bright);
+    color: var(--nvl-gold-bright);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55), 0 0 22px var(--nvl-gold-glow);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .novel-title-btn:active {
     transform: translateY(0);
 }
 
-/* 続きからボタン */
+/* 続きからボタン（主導線として少し強調） */
 .novel-title-continue-btn {
-    background: linear-gradient(45deg, #fd7e14, #ffc107);
+    border-color: var(--nvl-gold);
+    color: var(--nvl-gold-bright);
 }
 
-/* ボタンアニメーション効果 */
+/* ボタンの光沢アニメーション */
 .novel-title-btn::before {
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
+    left: -120%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+    background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+    transition: left 0.6s ease;
+    pointer-events: none;
 }
 
-.novel-title-btn:active::before {
-    left: 100%;
+.novel-title-btn:hover::before {
+    left: 120%;
 }
 
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
     .novel-title-content {
-        padding: 30px 20px;
-        max-width: 90%;
-        background: rgba(0, 0, 0, 0.4);
+        padding: 20px 20px 44px;
+        max-width: 92%;
     }
-    
+
     .novel-title-main {
-        font-size: 2.2em;
-        text-shadow: 
-            2px 2px 4px rgba(0, 0, 0, 0.9),
-            1px 1px 2px rgba(0, 0, 0, 1);
+        font-size: clamp(1.7em, 7vw, 2.4em);
     }
-    
+
     .novel-title-subtitle {
-        font-size: 1.1em;
-        text-shadow: 
-            1px 1px 3px rgba(0, 0, 0, 0.9),
-            0 0 2px rgba(0, 0, 0, 1);
-    }
-    
-    .novel-title-description {
         font-size: 1em;
-        padding: 12px 15px;
-        background: rgba(0, 0, 0, 0.3);
-        text-shadow: 
-            1px 1px 3px rgba(0, 0, 0, 0.9),
-            0 0 2px rgba(0, 0, 0, 1);
     }
-    
+
+    .novel-title-description {
+        font-size: 0.92em;
+        line-height: 1.75;
+        margin-bottom: 22px;
+    }
+
     .novel-title-btn {
         min-width: 100%;
-        padding: 18px 25px;
-        font-size: 18px;
+        padding: 15px 24px;
+        font-size: 16px;
     }
 }
+
 /* =============================================================================
    ゲーム再開ダイアログ スタイル
    ============================================================================= */
 
-/* 再開ダイアログオーバーレイ */
 .novel-resume-dialog-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(4, 6, 12, 0.82);
     z-index: 2147483648;
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
 }
 
-/* 再開ダイアログ本体 */
 .novel-resume-dialog {
-    background: white;
+    background: var(--nvl-ink-700);
+    border: 1px solid var(--nvl-panel-edge);
     border-radius: 10px;
     padding: 30px;
-    max-width: 400px;
+    max-width: 420px;
     width: 90%;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    color: var(--nvl-text);
+    box-shadow: var(--nvl-shadow-panel);
     animation: resume-dialog-appear 0.3s ease-out;
 }
 
 @keyframes resume-dialog-appear {
     from {
         opacity: 0;
-        transform: scale(0.9) translateY(-20px);
+        transform: scale(0.94) translateY(-16px);
     }
     to {
         opacity: 1;
@@ -276,28 +324,27 @@
     }
 }
 
-/* ダイアログタイトル */
 .novel-resume-dialog h3 {
-    margin: 0 0 20px 0;
-    color: #333;
-    font-size: 1.4em;
-    font-weight: bold;
+    margin: 0 0 18px 0;
+    color: var(--nvl-gold-bright);
+    font-family: var(--nvl-font-serif);
+    letter-spacing: 0.08em;
+    font-size: 1.3em;
+    font-weight: 600;
 }
 
-/* ダイアログメッセージ */
 .novel-resume-dialog p {
-    margin: 0 0 25px 0;
-    color: #666;
-    line-height: 1.6;
+    margin: 0 0 24px 0;
+    color: var(--nvl-text-dim);
+    line-height: 1.7;
     font-size: 1em;
 }
 
 .novel-resume-dialog small {
-    color: #999;
+    color: var(--nvl-text-faint);
     font-size: 0.9em;
 }
 
-/* ボタンコンテナ */
 .novel-resume-dialog > div:last-child {
     display: flex;
     gap: 10px;
@@ -305,49 +352,43 @@
     flex-wrap: wrap;
 }
 
-/* ダイアログボタン */
 .novel-resume-dialog button {
-    border: none;
+    border: 1px solid var(--nvl-panel-edge);
+    background: var(--nvl-ink-600);
+    color: var(--nvl-text);
     padding: 12px 20px;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    min-width: 120px;
-    transition: all 0.3s ease;
+    min-width: 130px;
+    transition: all 0.25s ease;
     font-weight: 500;
+    letter-spacing: 0.04em;
 }
 
-/* 再開ボタン */
+/* 再開ボタン（主動線・金彩） */
 .novel-resume-dialog button:first-of-type {
-    background: #4CAF50;
-    color: white;
+    background: linear-gradient(180deg, rgba(227, 189, 109, 0.24), rgba(169, 127, 53, 0.2));
+    border-color: var(--nvl-gold);
+    color: var(--nvl-gold-bright);
 }
 
 .novel-resume-dialog button:first-of-type:hover {
-    background: #45a049;
+    box-shadow: 0 0 18px var(--nvl-gold-glow);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
 /* 最初からボタン */
-.novel-resume-dialog button:last-of-type {
-    background: #f44336;
-    color: white;
-}
-
 .novel-resume-dialog button:last-of-type:hover {
-    background: #da190b;
+    border-color: rgba(255, 255, 255, 0.4);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
 }
 
-/* ボタン押下効果 */
 .novel-resume-dialog button:active {
     transform: translateY(0);
     box-shadow: none;
 }
 
-/* モバイル対応 */
 @media (max-width: 480px) {
     .novel-resume-dialog {
         padding: 20px;
@@ -355,12 +396,12 @@
         max-width: none;
         width: calc(100% - 40px);
     }
-    
+
     .novel-resume-dialog > div:last-child {
         flex-direction: column;
         gap: 8px;
     }
-    
+
     .novel-resume-dialog button {
         min-width: 100%;
         padding: 15px 20px;
@@ -372,7 +413,6 @@
    広告コンテナ スタイル
    ============================================================================= */
 
-/* 広告コンテナ */
 .novel-ad-container {
     position: absolute;
     top: 0;
@@ -380,8 +420,8 @@
     width: 100%;
     min-height: 60px;
     max-height: 100px;
-    background: rgba(240, 240, 240, 0.95);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(10, 13, 24, 0.92);
+    border-bottom: 1px solid var(--nvl-panel-edge-soft);
     z-index: 5;
     display: flex;
     align-items: center;
@@ -389,11 +429,48 @@
     overflow: hidden;
 }
 
-/* 広告コンテナの内容 */
 .novel-ad-container > div,
 .novel-ad-container > ins {
     max-width: 100%;
     max-height: 100%;
+}
+
+/* ダミー広告バナー（広告プレビューモード用） */
+/* margin auto: コンテナが flex 以外で表示された場合でも中央寄せを維持する */
+.novel-ad-dummy {
+    width: min(468px, 92%);
+    height: 60px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: repeating-linear-gradient(45deg, #1c2233, #1c2233 12px, #232a3f 12px, #232a3f 24px);
+    border: 1px dashed rgba(255, 255, 255, 0.35);
+    border-radius: 4px;
+    color: var(--nvl-text-dim);
+    font-family: var(--nvl-font-sans);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.novel-ad-dummy-badge {
+    background: var(--nvl-gold);
+    color: var(--nvl-ink-900);
+    font-weight: 700;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.1em;
+}
+
+@media (max-width: 480px) {
+    .novel-ad-dummy {
+        height: 50px;
+        font-size: 11px;
+    }
 }
 
 /* タイトル画面では広告を非表示（高い特異性で確実に非表示） */
@@ -402,7 +479,6 @@
     display: none;
 }
 
-/* モバイル対応 */
 @media (max-width: 768px) {
     .novel-ad-container {
         min-height: 50px;
@@ -410,27 +486,19 @@
     }
 }
 
-/* =============================================================================
-   広告表示時のUI位置調整（レスポンシブ対応）
-   ============================================================================= */
-
-/* 広告表示時のみ、ゲームコンテナ全体に余白を付与して広告と重ならないようにする */
-
-/* モバイル（767px以下）: 広告分の高さをゲームコンテナで吸収 */
+/* 広告表示時のみ、ゲームコンテナに余白を付与して広告と重ならないようにする */
 @media (max-width: 767px) {
     .novel-game-container.has-ad-banner {
         padding-top: 80px;
     }
 }
 
-/* タブレット（768px〜1023px）: 広告分の高さをゲームコンテナで吸収 */
 @media (min-width: 768px) and (max-width: 1023px) {
     .novel-game-container.has-ad-banner {
         padding-top: 90px;
     }
 }
 
-/* PC（1024px以上）: 広告分の高さをゲームコンテナで吸収 */
 @media (min-width: 1024px) {
     .novel-game-container.has-ad-banner {
         padding-top: 100px;
@@ -449,7 +517,6 @@ html.modal-open body.modal-open {
     padding: 0;
 }
 
-/* モーダル開放時のHTMLスタイル */
 html.modal-open {
     overflow: hidden;
     height: 100vh;
@@ -457,131 +524,96 @@ html.modal-open {
     padding: 0;
 }
 
-/* ゲーム開始ボタンコンテナ */
+/* ゲーム開始ボタンコンテナ（記事内） */
 .novel-game-start-container {
     text-align: center;
     margin: 20px 0;
-    padding: 40px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 44px 20px;
+    background:
+        radial-gradient(120% 140% at 50% 0%, rgba(227, 189, 109, 0.12) 0%, rgba(227, 189, 109, 0) 45%),
+        linear-gradient(160deg, var(--nvl-ink-700) 0%, var(--nvl-ink-800) 100%);
+    border: 1px solid var(--nvl-panel-edge-soft);
+    border-radius: 12px;
+    box-shadow: var(--nvl-shadow-soft);
 }
 
-/* ゲーム開始ボタン */
+/* ゲーム開始ボタン（記事内） */
 .novel-game-start-btn {
-    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-    color: white;
-    border: none;
-    padding: 20px 40px;
-    border-radius: 50px;
+    font-family: var(--nvl-font-serif);
+    background: linear-gradient(180deg, rgba(227, 189, 109, 0.28), rgba(169, 127, 53, 0.24));
+    color: var(--nvl-gold-bright);
+    border: 1px solid var(--nvl-gold);
+    padding: 18px 44px;
+    border-radius: 4px;
     font-size: 18px;
-    font-weight: bold;
+    letter-spacing: 0.16em;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     margin: 0 10px 10px 0;
     display: inline-block;
 }
 
 .novel-game-start-btn:hover {
-    background: linear-gradient(45deg, #ff5252, #d84315);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+    background: linear-gradient(180deg, rgba(227, 189, 109, 0.42), rgba(169, 127, 53, 0.34));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5), 0 0 24px var(--nvl-gold-glow);
 }
 
 .novel-game-start-btn:active {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.5);
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
-/* 進捗クリアボタン */
+/* 進捗クリアボタン（記事内） */
 .novel-game-clear-progress-btn {
-    background: linear-gradient(45deg, #6c757d, #495057);
-    color: white;
-    border: none;
+    background: transparent;
+    color: var(--nvl-text-dim);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     padding: 12px 24px;
-    border-radius: 25px;
-    font-size: 14px;
+    border-radius: 4px;
+    font-size: 13px;
     font-weight: 500;
+    letter-spacing: 0.08em;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
     margin: 0 10px 10px 0;
     display: inline-block;
-    opacity: 0.8;
 }
 
 .novel-game-clear-progress-btn:hover {
-    background: linear-gradient(45deg, #5a6268, #343a40);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
-    opacity: 1;
+    border-color: rgba(255, 255, 255, 0.55);
+    color: var(--nvl-text);
+    transform: translateY(-1px);
 }
 
 .novel-game-clear-progress-btn:active {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(108, 117, 125, 0.3);
-}
-
-/* ボタンコンテナのレスポンシブ調整 */
-.novel-game-start-container {
-    text-align: center;
-    margin: 20px 0;
-    padding: 40px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
 }
 
 @media (max-width: 480px) {
     .novel-game-start-container {
         padding: 30px 15px;
     }
-    
+
     .novel-game-start-btn,
     .novel-game-clear-progress-btn {
         display: block;
         width: 100%;
-        margin: 0 0 10px 0;
+        margin: 0 auto 10px;
         max-width: 280px;
-        margin-left: auto;
-        margin-right: auto;
     }
-    
+
     .novel-game-start-btn {
         font-size: 16px;
-        padding: 18px 30px;
+        padding: 16px 30px;
     }
-    
+
     .novel-game-clear-progress-btn {
-        font-size: 13px;
-        padding: 12px 20px;
+        font-size: 12px;
+        padding: 11px 20px;
     }
-}
-    font-size: 24px;
-    font-weight: bold;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
-    min-width: 200px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.novel-game-start-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
-    background: linear-gradient(45deg, #ff5252, #e84118);
-}
-
-.novel-game-start-btn:active {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
 }
 
 /* モーダルオーバーレイ - WordPress レイアウト制約を回避 */
@@ -595,23 +627,18 @@ body #novel-game-modal-overlay.novel-game-modal-overlay {
     height: 100vh;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(3, 5, 10, 0.88);
     z-index: 2147483647; /* 最大値のz-index */
     display: none;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     box-sizing: border-box;
-    /* WordPress レイアウト制約を明示的に回避 */
     margin: 0;
     padding: 0;
     max-width: none;
-    /* WordPressの管理バーよりも前面に */
     overflow: hidden;
-    /* レイアウト制約をリセット */
-    left: 0;
-    right: 0;
     margin-left: 0;
     margin-right: 0;
 }
@@ -623,13 +650,12 @@ html.modal-open body.modal-open #wpadminbar {
     opacity: 0;
 }
 
-/* モーダルが表示されている時のオーバーレイ - WordPress レイアウト制約を回避 */
+/* モーダルが表示されている時のオーバーレイ */
 .is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay.show,
 .wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay.show,
 body #novel-game-modal-overlay.novel-game-modal-overlay.show {
     display: flex;
     animation: fadeIn 0.3s ease-out;
-    /* WordPress レイアウト制約を強制的に回避 */
     position: fixed;
     top: 0;
     left: 0;
@@ -642,26 +668,24 @@ body #novel-game-modal-overlay.novel-game-modal-overlay.show {
     margin-right: 0;
 }
 
-/* モーダルの強制表示（JavaScript用） - WordPress レイアウト制約を回避 */
+/* モーダルの強制表示（JavaScript用） */
 .is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"],
 .wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"],
 body #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"] {
     display: flex;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(3, 5, 10, 0.88);
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 2147483647; /* 最大値のz-index */
+    z-index: 2147483647;
     margin: 0;
     padding: 0;
     overflow: hidden;
-    /* WordPress レイアウト制約を明示的に回避 */
     max-width: none;
     margin-left: 0;
     margin-right: 0;
-    left: 0;
     right: 0;
 }
 
@@ -674,7 +698,7 @@ body #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"] 
     }
 }
 
-/* モーダルコンテンツ - WordPress レイアウト制約を回避 */
+/* モーダルコンテンツ */
 .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content,
 .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content,
 body #novel-game-modal-overlay .novel-game-modal-content {
@@ -684,50 +708,41 @@ body #novel-game-modal-overlay .novel-game-modal-content {
     justify-content: center;
     animation: slideUp 0.4s ease-out;
     box-sizing: border-box;
-    /* モーダルコンテンツは親要素のサイズを継承 */
     width: 100%;
     height: 100%;
-    /* flexboxでゲームエリアを中央配置 */
     padding: 20px;
-    /* WordPress レイアウト制約を回避 */
     margin: 0;
     max-width: none;
     margin-left: 0;
     margin-right: 0;
 }
 
-/* ゲームエリア（中央配置用） - WordPress レイアウト制約を回避 */
+/* ゲームエリア（中央配置用） */
 .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
 .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
 body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
-    /* レスポンシブなゲーム画面サイズ設定 */
     width: min(90vw, 1280px);
     height: min(80vh, 720px);
-    /* 最大サイズを1280×720に設定 */
     max-width: 1280px;
     max-height: 720px;
-    /* アスペクト比を保持しつつレスポンシブ対応 */
     aspect-ratio: 16/9;
-    background: #000;
-    border-radius: 15px;
+    background: var(--nvl-ink-900);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 0, 0, 0.6);
     position: relative;
-    /* ゲームコンテンツが確実に表示されるよう */
     min-width: 320px;
     min-height: 180px;
-    /* flexbox内で中央配置 */
     flex-shrink: 0;
-    /* 強制的に中央配置 */
     margin: auto;
-    /* WordPress レイアウト制約を回避 */
     margin-left: auto;
     margin-right: auto;
 }
 
 @keyframes slideUp {
     from {
-        transform: translateY(50px);
+        transform: translateY(40px);
         opacity: 0;
     }
     to {
@@ -736,7 +751,7 @@ body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
     }
 }
 
-/* モバイル対応：小画面では全画面モーダル - WordPress レイアウト制約を回避 */
+/* モバイル対応：小画面では全画面モーダル */
 @media (max-width: 768px) {
     .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
     .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
@@ -746,64 +761,51 @@ body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
         max-width: none;
         max-height: none;
         border-radius: 0;
+        border: none;
         min-width: auto;
         min-height: auto;
-        /* WordPress レイアウト制約を回避 */
         margin: 0;
         margin-left: 0;
         margin-right: 0;
     }
-    
+
     .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content,
     .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content,
     body #novel-game-modal-overlay .novel-game-modal-content {
         padding: 0;
-        /* WordPress レイアウト制約を回避 */
         margin: 0;
         max-width: none;
         margin-left: 0;
         margin-right: 0;
     }
-    
-    .novel-game-start-btn {
-        padding: 15px 30px;
-        font-size: 20px;
-        min-width: 180px;
-    }
 }
 
-/* タブレット対応 - WordPress レイアウト制約を回避 */
+/* タブレット対応 */
 @media (min-width: 769px) and (max-width: 1024px) {
     .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
     .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
     body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
-        /* タブレットサイズでも最大1280×720を維持 */
         width: min(95vw, 1280px);
         height: min(90vh, 720px);
         max-width: 1280px;
         max-height: 720px;
-        /* アスペクト比を保持 */
         aspect-ratio: 16/9;
-        /* WordPress レイアウト制約を回避 */
         margin: auto;
         margin-left: auto;
         margin-right: auto;
     }
 }
 
-/* 大画面対応 - WordPress レイアウト制約を回避 */
+/* 大画面対応 */
 @media (min-width: 1025px) {
     .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
     .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
     body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
-        /* 大画面でも最大1280×720を維持 */
         width: min(80vw, 1280px);
         height: min(75vh, 720px);
         max-width: 1280px;
         max-height: 720px;
-        /* アスペクト比を保持 */
         aspect-ratio: 16/9;
-        /* WordPress レイアウト制約を回避 */
         margin: auto;
         margin-left: auto;
         margin-right: auto;
@@ -835,7 +837,6 @@ html.modal-open body.modal-open .main-content {
     z-index: 1;
 }
 
-/* モーダル表示時のHTML/Bodyスタイル */
 html.modal-open body.modal-open,
 html.modal-open {
     overflow: hidden;
@@ -845,59 +846,22 @@ html.modal-open {
     height: 100%;
 }
 
-/* モーダル要素のz-index確保 - WordPress レイアウト制約を回避 */
-.is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay,
-.wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay,
-body #novel-game-modal-overlay.novel-game-modal-overlay {
-    z-index: 2147483647; /* 最大値のz-index */
-    /* WordPress レイアウト制約を強制的に回避 */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-}
+/* =============================================================================
+   ゲームコンテナ
+   ============================================================================= */
 
-/* 追加のオーバーレイ強制ルール - WordPress レイアウト制約を回避 */
-.is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay.show,
-.wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay.show,
-body #novel-game-modal-overlay.novel-game-modal-overlay.show {
-    display: flex;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 2147483647; /* 最大値のz-index */
-    /* WordPress レイアウト制約を強制的に回避 */
-    margin: 0;
-    padding: 0;
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-    left: 0;
-    right: 0;
-}
-
-/* ゲーム全体のコンテナ */
 #novel-game-container {
     width: 100%;
     height: 100%;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    background-color: var(--nvl-ink-900);
     position: relative;
     overflow: hidden;
-    touch-action: manipulation; /* タッチ操作最適化 */
+    touch-action: manipulation;
 }
 
-/* モーダル内のゲームコンテナのスタイル強化 */
 body #novel-game-modal-overlay #novel-game-container {
     width: 100%;
     height: 100%;
@@ -908,45 +872,55 @@ body #novel-game-modal-overlay #novel-game-container {
     overflow: hidden;
 }
 
+/* シーン遷移用フェーダー（JSが生成・制御） */
+.novel-scene-fader {
+    position: absolute;
+    inset: 0;
+    background: var(--nvl-ink-900);
+    z-index: 6;
+    display: none;
+    pointer-events: none;
+}
+
 /* ゲーム閉じるボタン */
 .novel-game-close-btn {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    background: rgba(0, 0, 0, 0.8);
-    border: 2px solid rgba(255, 255, 255, 0.9);
+    top: 18px;
+    right: 18px;
+    width: 46px;
+    height: 46px;
+    background: rgba(7, 10, 18, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 50%;
-    color: #fff;
-    font-size: 24px;
-    font-weight: bold;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 22px;
+    font-weight: 400;
     cursor: pointer;
     z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: all 0.25s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
 }
 
 .novel-game-close-btn:hover {
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
-    border-color: #333;
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+    background: rgba(227, 189, 109, 0.18);
+    color: var(--nvl-gold-bright);
+    border-color: var(--nvl-gold);
+    transform: scale(1.06);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 16px var(--nvl-gold-glow);
 }
 
 .novel-game-close-btn:active {
-    transform: scale(0.95);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transform: scale(0.96);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
 .novel-game-close-btn:focus {
-    outline: 3px solid #0073aa;
+    outline: 2px solid var(--nvl-gold);
     outline-offset: 2px;
 }
 
@@ -959,85 +933,91 @@ body #novel-game-modal-overlay #novel-game-container {
     -ms-user-select: none;
 }
 
-/* モバイルでの閉じるボタン調整 */
 @media (max-width: 768px) {
     .novel-game-close-btn {
-        top: 15px;
-        right: 15px;
-        width: 45px;
-        height: 45px;
-        font-size: 20px;
+        top: 12px;
+        right: 12px;
+        width: 42px;
+        height: 42px;
+        font-size: 19px;
+    }
+
+    /* 広告バナー表示中はバナーと重ならないよう閉じるボタンを下へ退避
+       （:has 非対応ブラウザではボタンがバナー前面に重なるが操作は可能） */
+    .novel-game-modal-content:has(.novel-game-container.has-ad-banner) .novel-game-close-btn {
+        top: 64px;
     }
 }
 
-/* ゲームタイトル */
+/* ゲームタイトル（記事内見出し） */
 .novel-game-title {
     text-align: center;
-    font-size: clamp(18px, 4vw, 24px); /* レスポンシブフォントサイズ */
-    font-weight: bold;
+    font-family: var(--nvl-font-serif);
+    font-size: clamp(18px, 4vw, 24px);
+    font-weight: 600;
+    letter-spacing: 0.1em;
     margin-bottom: 20px;
-    color: #333;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 5px;
+    color: var(--nvl-text);
+    padding: 12px;
+    background: linear-gradient(160deg, var(--nvl-ink-700), var(--nvl-ink-800));
+    border: 1px solid var(--nvl-panel-edge-soft);
+    border-radius: 8px;
     line-height: 1.4;
 }
 
-/* キャラクター画像 */
+/* =============================================================================
+   キャラクター表示
+   ============================================================================= */
+
 #novel-character,
 .novel-character {
     position: absolute;
-    bottom: 20%;
-    max-height: 40%;
+    bottom: 19%;
+    max-height: 58%;
     max-width: 70%;
     z-index: 2;
     object-fit: contain;
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
+    opacity: 1;
+    transition: opacity 0.3s ease, filter 0.3s ease;
+    filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.45));
 }
 
 /* 3体キャラクター個別配置 */
 .novel-character-left {
-    left: 5%;
+    left: 4%;
     transform: none;
     -webkit-transform: none;
-    -moz-transform: none;
-    -ms-transform: none;
-    max-width: 25%;
+    max-width: 30%;
 }
 
 .novel-character-center {
     left: 50%;
     transform: translateX(-50%);
     -webkit-transform: translateX(-50%);
-    -moz-transform: translateX(-50%);
-    -ms-transform: translateX(-50%);
-    max-width: 30%;
+    max-width: 34%;
 }
 
 .novel-character-right {
-    right: 5%;
+    right: 4%;
     transform: none;
     -webkit-transform: none;
-    -moz-transform: none;
-    -ms-transform: none;
-    max-width: 25%;
+    max-width: 30%;
 }
 
 /* 話者によるキャラクター強調 */
 .novel-character.speaking {
     opacity: 1;
-    filter: brightness(1.1);
+    filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.5)) brightness(1.06);
 }
 
 .novel-character.not-speaking {
-    opacity: 0.5;
-    filter: brightness(0.8);
+    opacity: 0.92;
+    filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.4)) brightness(0.52) saturate(0.72);
 }
 
 /* セリフごとのキャラクター切り替えアニメーション */
 .novel-character.novel-character-transitioning {
-    transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out, filter 0.3s ease;
 }
 
 /* 後方互換性のための旧スタイル */
@@ -1045,123 +1025,171 @@ body #novel-game-modal-overlay #novel-game-container {
     left: 50%;
     transform: translateX(-50%);
     -webkit-transform: translateX(-50%);
-    -moz-transform: translateX(-50%);
-    -ms-transform: translateX(-50%);
 }
 
-/* セリフボックス */
+/* =============================================================================
+   セリフボックス・話者名
+   ============================================================================= */
+
+/* セリフボックス（フローティングパネル） */
 #novel-dialogue-box,
 .novel-dialogue-box {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    color: #fff;
-    padding: 20px;
-    font-size: clamp(14px, 3vw, 18px); /* レスポンシブフォントサイズ */
-    line-height: 1.6;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    background: var(--nvl-panel);
+    border: 1px solid var(--nvl-panel-edge);
+    border-radius: 10px;
+    color: var(--nvl-text);
+    padding: 20px 24px;
+    font-size: clamp(15px, 2.6vw, 18px);
+    line-height: 1.7;
     z-index: 3;
     box-sizing: border-box;
-    height: 140px; /* 固定高さ設定 - ノベルゲームの標準的な表示 */
+    height: 150px;
     display: flex;
     flex-direction: column;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--nvl-shadow-panel);
+}
+
+/* パネル上端の金彩ヘアライン */
+#novel-dialogue-box::before,
+.novel-dialogue-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 24px;
+    right: 24px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(227, 189, 109, 0.5), transparent);
+    pointer-events: none;
 }
 
 /* モーダル内のセリフボックススタイル強化 */
 body #novel-game-modal-overlay #novel-dialogue-box,
 body #novel-game-modal-overlay .novel-dialogue-box {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    color: #fff;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    background: var(--nvl-panel);
+    color: var(--nvl-text);
     z-index: 3;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
 }
 
-/* 話者名表示 */
+/* 話者名プレート */
 .novel-speaker-name {
     position: absolute;
-    bottom: 100px; /* ダイアログボックスに半分重ねる位置 */
-    left: 20px;
-    font-weight: bold;
-    color: #ffd700;
-    font-size: 0.9em;
-    opacity: 0.9;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 6px 12px;
-    border-radius: 4px;
+    bottom: 146px;
+    left: 28px;
+    font-family: var(--nvl-font-serif);
+    font-weight: 600;
+    color: var(--nvl-gold-bright);
+    font-size: 0.95em;
+    letter-spacing: 0.12em;
+    background: linear-gradient(180deg, rgba(20, 25, 42, 0.95), rgba(9, 12, 22, 0.95));
+    border: 1px solid rgba(227, 189, 109, 0.4);
+    border-bottom-color: transparent;
+    padding: 7px 20px 9px;
+    border-radius: 8px 8px 0 0;
     display: block;
     width: fit-content;
-    min-width: 80px;
-    min-height: 20px; /* 空欄時でも高さを維持 */
+    min-width: 90px;
     text-align: center;
     z-index: 4;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.3);
+    transition: opacity 0.2s ease;
+}
+
+/* 話者なし（ナレーション）のときはプレートを消す */
+.novel-speaker-name:empty {
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* セリフテキストコンテナ */
+/* 注意: 垂直中央寄せにするとタイプライター表示で行が増えるたびに
+   テキスト全体がせり上がって読みにくいため、必ず上寄せにする */
 .novel-dialogue-text-container {
     flex: 1;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    overflow: hidden;
 }
 
 /* セリフテキストの詳細スタイル */
 #novel-dialogue-text {
     white-space: pre-wrap;
     word-break: break-all;
-    font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'Meiryo', 'メイリオ', sans-serif;
-    letter-spacing: 0.05em;
+    font-family: var(--nvl-font-serif);
+    letter-spacing: 0.06em;
     overflow-wrap: break-word;
-    max-height: calc(1.6em * 3); /* 3行分の高さ */
+    max-height: calc(1.7em * 3);
     overflow: hidden;
     width: 100%;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 /* 継続インジケーター */
 .novel-dialogue-continue {
     position: absolute;
-    bottom: 5px;
-    right: 15px;
+    bottom: 10px;
+    right: 20px;
     z-index: 1;
 }
 
 .continue-indicator {
-    font-size: 16px;
-    color: #ffd700;
-    animation: blink 1s infinite;
+    display: inline-block;
+    font-size: 14px;
+    color: var(--nvl-gold);
+    text-shadow: 0 0 8px var(--nvl-gold-glow);
+    animation: nvl-continue-bob 1.2s ease-in-out infinite;
 }
 
-@keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0.3; }
+@keyframes nvl-continue-bob {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(4px);
+        opacity: 0.45;
+    }
 }
 
-/* 選択肢コンテナ */
+/* =============================================================================
+   選択肢
+   ============================================================================= */
+
+/* 選択肢コンテナ（中央配置） */
 #novel-choices,
 .novel-choices {
     position: absolute;
-    bottom: 5%;
-    left: 5%;
-    width: 90%;
+    bottom: 14%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(660px, 92%);
     z-index: 4;
     display: none;
 }
 
-/* 選択肢リスト */
+/* 選択肢リスト（背景パネルは持たず、各項目が独立したガラスピル） */
 #novel-choices .choice-list,
 .novel-choices .choice-list {
-    background: rgba(0, 0, 0, 0.8);
-    color: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'Meiryo', 'メイリオ', sans-serif;
-    font-size: clamp(14px, 3vw, 18px);
+    background: transparent;
+    color: var(--nvl-text);
+    padding: 0;
+    border-radius: 0;
+    font-family: var(--nvl-font-sans);
+    font-size: clamp(14px, 2.6vw, 17px);
     line-height: 1.6;
     max-width: 100%;
     box-sizing: border-box;
@@ -1170,100 +1198,127 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 /* 選択肢アイテム */
 #novel-choices .choice-item,
 .novel-choices .choice-item {
+    position: relative;
     display: block;
-    padding: 12px 20px;
-    margin: 8px 0;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid transparent;
-    border-radius: 5px;
+    padding: 14px 22px 14px 26px;
+    margin: 10px 0;
+    background: linear-gradient(180deg, rgba(16, 21, 36, 0.85), rgba(8, 11, 20, 0.92));
+    border: 1px solid var(--nvl-panel-edge);
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    -webkit-transition: all 0.3s ease;
-    -moz-transition: all 0.3s ease;
-    -ms-transition: all 0.3s ease;
-    min-height: 44px; /* タッチ対応最小サイズ */
+    transition: all 0.25s ease;
+    min-height: 48px;
     box-sizing: border-box;
     white-space: pre-wrap;
     word-break: break-word;
     text-align: left;
+    color: var(--nvl-text);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    animation: nvl-choice-in 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+}
+
+/* 選択肢の出現アニメーション（時間差） */
+#novel-choices .choice-item:nth-child(1) { animation-delay: 0.05s; }
+#novel-choices .choice-item:nth-child(2) { animation-delay: 0.14s; }
+#novel-choices .choice-item:nth-child(3) { animation-delay: 0.23s; }
+#novel-choices .choice-item:nth-child(4) { animation-delay: 0.32s; }
+
+@keyframes nvl-choice-in {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 左側の金彩バー（選択状態のインジケーター） */
+#novel-choices .choice-item::before,
+.novel-choices .choice-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 8px 0 0 8px;
+    background: transparent;
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+    border: none;
+    margin: 0;
 }
 
 /* 選択肢アイテムの選択状態 */
 #novel-choices .choice-item.selected,
 .novel-choices .choice-item.selected {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: #fff;
-    color: #fff;
+    background: linear-gradient(180deg, rgba(38, 43, 62, 0.92), rgba(20, 24, 40, 0.95));
+    border-color: rgba(227, 189, 109, 0.75);
+    color: var(--nvl-gold-bright);
+}
+
+#novel-choices .choice-item.selected::before,
+.novel-choices .choice-item.selected::before {
+    background: linear-gradient(180deg, var(--nvl-gold-bright), var(--nvl-gold-deep));
+    box-shadow: 0 0 10px var(--nvl-gold-glow);
+    border: none;
 }
 
 /* 選択肢アイテムのホバー状態 */
 #novel-choices .choice-item:hover,
 .novel-choices .choice-item:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: linear-gradient(180deg, rgba(38, 43, 62, 0.92), rgba(20, 24, 40, 0.95));
+    border-color: rgba(227, 189, 109, 0.6);
+    transform: translateX(4px);
+}
+
+#novel-choices .choice-item:hover::before,
+.novel-choices .choice-item:hover::before {
+    background: linear-gradient(180deg, var(--nvl-gold-bright), var(--nvl-gold-deep));
 }
 
 /* 選択肢アイテムのフォーカス状態 */
 #novel-choices .choice-item:focus,
 .novel-choices .choice-item:focus {
-    outline: 2px solid #0073aa;
+    outline: 2px solid var(--nvl-gold);
     outline-offset: 2px;
 }
 
 /* 選択肢アイテムのアクティブ状態 */
 #novel-choices .choice-item:active,
 .novel-choices .choice-item:active {
-    transform: scale(0.98);
-    -webkit-transform: scale(0.98);
-    -moz-transform: scale(0.98);
-    -ms-transform: scale(0.98);
-}
-
-/* 選択肢の三角表示 */
-#novel-choices .choice-item::before,
-.novel-choices .choice-item::before {
-    content: "";
-    display: inline-block;
-    width: 0;
-    height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-bottom: 8px solid transparent;
-    margin-right: 8px;
-    vertical-align: middle;
-    transition: all 0.3s ease;
-}
-
-#novel-choices .choice-item.selected::before,
-.novel-choices .choice-item.selected::before {
-    border-left: 8px solid #fff;
-    border-right: 0;
-    border-bottom: 4px solid transparent;
-    border-top: 4px solid transparent;
-}
-
-#novel-choices .choice-list,
-.novel-choices .choice-list {
-    /* Remove counter reset since we're not using counters anymore */
+    transform: scale(0.985);
+    -webkit-transform: scale(0.985);
 }
 
 /* 古いボタンスタイル（後方互換性のため残す） */
 #novel-choices button:not(.game-nav-button),
 .novel-choices button:not(.game-nav-button),
 .novel-choice-button {
-    display: none; /* 新しいスタイルを使用する場合は非表示 */
+    display: none;
 }
+
+/* =============================================================================
+   ゲーム終了・Game Over
+   ============================================================================= */
 
 /* ゲーム終了メッセージ */
 .game-end-message {
-    background: rgba(0, 0, 0, 0.8);
-    color: #fff;
-    padding: 40px;
+    background:
+        radial-gradient(140% 160% at 50% 0%, rgba(227, 189, 109, 0.14) 0%, rgba(227, 189, 109, 0) 50%),
+        linear-gradient(180deg, rgba(14, 18, 32, 0.9), rgba(7, 10, 18, 0.95));
+    color: var(--nvl-text);
+    font-family: var(--nvl-font-serif);
+    letter-spacing: 0.14em;
+    padding: 42px 32px;
     border-radius: 10px;
     text-align: center;
-    font-size: clamp(24px, 6vw, 36px);
-    font-weight: bold;
-    border: 2px solid #ffd700;
+    font-size: clamp(22px, 5vw, 32px);
+    font-weight: 600;
+    border: 1px solid rgba(227, 189, 109, 0.55);
     margin: 20px 0;
     min-height: 80px;
     display: flex;
@@ -1273,18 +1328,24 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--nvl-shadow-panel), 0 0 40px rgba(227, 189, 109, 0.12);
+    animation: nvl-end-appear 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
 /* Game Over メッセージ */
 .game-over-message {
-    background: rgba(139, 0, 0, 0.9);
-    color: #fff;
-    padding: 40px;
+    background: linear-gradient(180deg, rgba(60, 12, 12, 0.92), rgba(28, 5, 5, 0.95));
+    color: var(--nvl-text);
+    font-family: var(--nvl-font-serif);
+    letter-spacing: 0.14em;
+    padding: 42px 32px;
     border-radius: 10px;
     text-align: center;
-    font-size: clamp(24px, 6vw, 36px);
-    font-weight: bold;
-    border: 2px solid #ff4444;
+    font-size: clamp(22px, 5vw, 32px);
+    font-weight: 600;
+    border: 1px solid rgba(179, 57, 57, 0.7);
     margin: 20px 0;
     min-height: 80px;
     display: flex;
@@ -1294,131 +1355,117 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--nvl-shadow-panel), 0 0 40px rgba(179, 57, 57, 0.18);
+    animation: nvl-end-appear 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes nvl-end-appear {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 /* ゲームナビゲーションボタン */
 .game-navigation {
     margin-top: 20px;
     text-align: center;
+    animation: nvl-end-appear 0.7s 0.25s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
 .game-nav-button {
     display: inline-block;
-    padding: 15px 30px;
-    margin: 0 10px;
-    background: #ff6b6b;
-    color: white;
-    border: none;
-    border-radius: 25px;
-    font-size: clamp(16px, 3vw, 20px);
-    font-weight: bold;
+    font-family: var(--nvl-font-serif);
+    padding: 14px 34px;
+    margin: 0 8px;
+    background: rgba(9, 12, 22, 0.75);
+    color: var(--nvl-text);
+    border: 1px solid rgba(244, 214, 146, 0.5);
+    border-radius: 4px;
+    font-size: clamp(15px, 3vw, 18px);
+    letter-spacing: 0.12em;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     text-decoration: none;
     min-height: 50px;
-    min-width: 150px;
+    min-width: 170px;
     box-sizing: border-box;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
 .game-nav-button:hover {
-    background: #ff5252;
+    background: linear-gradient(180deg, rgba(227, 189, 109, 0.22), rgba(169, 127, 53, 0.18));
+    color: var(--nvl-gold-bright);
+    border-color: var(--nvl-gold-bright);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), 0 0 18px var(--nvl-gold-glow);
 }
 
 .game-nav-button:active {
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .game-nav-button.close-button {
-    background: #666;
+    border-color: rgba(255, 255, 255, 0.35);
 }
 
 .game-nav-button.close-button:hover {
-    background: #555;
+    border-color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--nvl-text);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
-
 
 .game-nav-button.title-return-button {
-    background: #2196F3;
-}
-
-.game-nav-button.title-return-button:hover {
-    background: #1976D2;
-}
-
-/* 古いゲーム終了メッセージのスタイル調整 */
-.game-end-message:hover {
-    background: rgba(0, 0, 0, 0.9);
-    border-color: #fff;
-    transform: none; /* ナビゲーションボタンがある場合は変形しない */
-}
-
-.game-end-message:active {
-    transform: none; /* ナビゲーションボタンがある場合は変形しない */
-}
-
-/* Game Over メッセージのホバー・アクティブ状態 */
-.game-over-message:hover {
-    background: rgba(139, 0, 0, 1);
-    border-color: #fff;
-    transform: none;
-    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4);
-}
-
-.game-over-message:active {
-    transform: none;
+    border-color: rgba(244, 214, 146, 0.5);
 }
 
 /* タッチデバイス用のゲーム終了メッセージ */
 @media (hover: none) and (pointer: coarse) {
-    .game-end-message {
-        padding: 50px;
-        font-size: clamp(28px, 8vw, 42px);
-        min-height: 100px;
-    }
-    
+    .game-end-message,
     .game-over-message {
-        padding: 50px;
-        font-size: clamp(28px, 8vw, 42px);
+        padding: 46px 28px;
+        font-size: clamp(24px, 7vw, 36px);
         min-height: 100px;
     }
-    
+
     .game-nav-button {
-        padding: 20px 40px;
-        font-size: clamp(18px, 4vw, 24px);
+        padding: 18px 40px;
+        font-size: clamp(17px, 4vw, 22px);
         min-height: 60px;
         min-width: 200px;
-        margin: 10px;
+        margin: 8px;
     }
 }
 
 /* 小画面での調整 */
 @media (max-width: 480px) {
-    .game-end-message {
-        padding: 30px;
-        font-size: clamp(20px, 5vw, 28px);
-        min-height: 60px;
-    }
-    
+    .game-end-message,
     .game-over-message {
-        padding: 30px;
-        font-size: clamp(20px, 5vw, 28px);
+        padding: 28px 18px;
+        font-size: clamp(19px, 5.5vw, 26px);
         min-height: 60px;
     }
-    
+
     .game-nav-button {
-        padding: 15px 25px;
-        font-size: clamp(14px, 3vw, 18px);
+        padding: 14px 22px;
+        font-size: clamp(14px, 3vw, 17px);
         min-height: 50px;
         min-width: 120px;
         margin: 5px;
         display: block;
         width: 100%;
     }
-    
+
     .game-navigation {
         margin-top: 15px;
     }
@@ -1453,14 +1500,14 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 .archive-title {
-    font-size: clamp(1.8em, 5vw, 2.5em); /* レスポンシブフォントサイズ */
+    font-size: clamp(1.8em, 5vw, 2.5em);
     color: #333;
     margin-bottom: 10px;
     line-height: 1.2;
 }
 
 .archive-description {
-    font-size: clamp(1em, 2.5vw, 1.2em); /* レスポンシブフォントサイズ */
+    font-size: clamp(1em, 2.5vw, 1.2em);
     color: #666;
     margin: 0;
     line-height: 1.4;
@@ -1474,19 +1521,21 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 .novel-game-card {
-    background: white;
+    background: var(--nvl-ink-700);
+    border: 1px solid var(--nvl-panel-edge-soft);
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
-    min-height: 200px; /* 最小高さ設定 */
+    min-height: 200px;
 }
 
 .novel-game-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    border-color: rgba(227, 189, 109, 0.45);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35), 0 0 20px rgba(227, 189, 109, 0.12);
 }
 
 .game-thumbnail {
@@ -1494,7 +1543,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     height: 180px;
     overflow: hidden;
     position: relative;
-    background: #f0f0f0;
+    background: var(--nvl-ink-800);
 }
 
 .game-bg-image {
@@ -1509,8 +1558,8 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f0f0f0;
-    color: #666;
+    background: var(--nvl-ink-800);
+    color: var(--nvl-text-faint);
 }
 
 .game-overlay {
@@ -1518,7 +1567,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    background: linear-gradient(transparent, rgba(4, 6, 12, 0.9));
     color: white;
     padding: 15px;
     display: flex;
@@ -1531,27 +1580,30 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 .game-title {
+    font-family: var(--nvl-font-serif);
     font-size: clamp(1.1em, 2.5vw, 1.4em);
-    font-weight: bold;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     margin: 0 0 5px 0;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
     line-height: 1.2;
 }
 
 .scene-count {
     font-size: clamp(0.8em, 1.5vw, 0.9em);
-    color: #ccc;
+    color: var(--nvl-text-dim);
     margin: 0;
 }
 
 .play-button {
-    background: #ff6b6b;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(227, 189, 109, 0.9), rgba(169, 127, 53, 0.9));
+    color: var(--nvl-ink-900);
+    padding: 8px 18px;
+    border-radius: 3px;
     text-align: center;
     font-weight: bold;
-    transition: background-color 0.3s ease;
+    letter-spacing: 0.06em;
+    transition: all 0.3s ease;
     font-size: clamp(0.8em, 1.5vw, 0.9em);
     min-height: 32px;
     display: flex;
@@ -1561,7 +1613,8 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 
 .novel-game-card:hover .play-button,
 .novel-game-card.hovered .play-button {
-    background: #ff5252;
+    background: linear-gradient(180deg, var(--nvl-gold-bright), var(--nvl-gold));
+    box-shadow: 0 0 14px var(--nvl-gold-glow);
 }
 
 .no-games-message {
@@ -1598,57 +1651,58 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 @media (prefers-contrast: high) {
     #novel-choices .choice-item,
     .novel-choices .choice-item {
-        border-width: 3px;
+        border-width: 2px;
+        background: rgba(0, 0, 0, 0.95);
     }
 
     #novel-choices .choice-item.selected,
     .novel-choices .choice-item.selected {
         border-color: #fff;
-        background: rgba(255, 255, 255, 0.5);
+        background: rgba(40, 40, 40, 1);
+        color: #fff;
     }
 
     .novel-game-title {
         background: rgba(255, 255, 255, 1);
+        color: #000;
         border: 2px solid #000;
     }
 
     #novel-dialogue-box,
     .novel-dialogue-box {
-        background: rgba(0, 0, 0, 1);
+        background: rgba(0, 0, 0, 0.98);
         border: 2px solid #fff;
     }
 
-    #novel-choices .choice-list,
-    .novel-choices .choice-list {
+    .novel-speaker-name {
         background: rgba(0, 0, 0, 1);
-        border: 2px solid #fff;
+        border-color: #fff;
+        color: #fff;
     }
 }
 
 /* 動きを減らす設定への対応 */
 @media (prefers-reduced-motion: reduce) {
+    .novel-title-screen,
+    .novel-title-content,
+    .novel-title-btn::before,
     #novel-choices .choice-item,
-    .novel-choices .choice-item {
+    .novel-choices .choice-item,
+    .game-end-message,
+    .game-over-message,
+    .game-navigation,
+    .continue-indicator {
+        animation: none;
         transition: none;
         -webkit-transition: none;
-        -moz-transition: none;
-        -ms-transition: none;
     }
 
     #novel-choices .choice-item:hover,
-    .novel-choices .choice-item:hover {
-        transform: none;
-        -webkit-transform: none;
-        -moz-transform: none;
-        -ms-transform: none;
-    }
-
     #novel-choices .choice-item:active,
+    .novel-choices .choice-item:hover,
     .novel-choices .choice-item:active {
         transform: none;
         -webkit-transform: none;
-        -moz-transform: none;
-        -ms-transform: none;
     }
 
     .novel-game-card:hover {
@@ -1657,7 +1711,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 /* =============================================================================
-   レスポンシブデザイン - モバイルファースト
+   レスポンシブデザイン - ゲーム画面
    ============================================================================= */
 
 /* タブレット以上（768px以上） */
@@ -1680,51 +1734,56 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     }
 
     .novel-character-left {
-        max-width: 28%;
+        max-width: 30%;
     }
 
     .novel-character-center {
-        max-width: 32%;
+        max-width: 34%;
     }
 
     .novel-character-right {
-        max-width: 28%;
+        max-width: 30%;
     }
 
     #novel-character,
     .novel-character {
-        bottom: 15%;
-        max-height: 45%;
+        bottom: 20%;
+        max-height: 60%;
     }
 
     #novel-dialogue-box,
     .novel-dialogue-box {
-        padding: 25px;
-        height: 160px; /* 固定高さ - タブレット以上 */
+        padding: 22px 34px;
+        height: 170px;
+        bottom: 16px;
+        left: 20px;
+        right: 20px;
+        border-radius: 12px;
     }
-    
+
+    body #novel-game-modal-overlay #novel-dialogue-box,
+    body #novel-game-modal-overlay .novel-dialogue-box {
+        bottom: 16px;
+        left: 20px;
+        right: 20px;
+    }
+
     .novel-speaker-name {
-        bottom: 120px; /* タブレット以上での位置調整 */
-        font-size: 1em;
-        padding: 8px 16px;
-        min-height: 24px; /* 空欄時でも高さを維持 */
+        bottom: 170px;
+        left: 44px;
+        font-size: 1.02em;
+        padding: 8px 24px 10px;
     }
-    
-    .novel-dialogue-text-container {
-        flex: 1;
-        display: flex;
-        align-items: center;
-    }
-    
+
     #novel-dialogue-text {
-        max-height: calc(1.6em * 3);
-        font-size: clamp(16px, 2.5vw, 20px);
+        max-height: calc(1.7em * 3);
+        font-size: clamp(16px, 2.2vw, 19px);
     }
 
     #novel-choices .choice-item,
     .novel-choices .choice-item {
-        padding: 15px 25px;
-        margin: 8px 0;
+        padding: 15px 26px 15px 30px;
+        margin: 10px 0;
     }
 }
 
@@ -1744,7 +1803,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     }
 
     .novel-character-left {
-        max-width: 30%;
+        max-width: 31%;
     }
 
     .novel-character-center {
@@ -1752,37 +1811,41 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     }
 
     .novel-character-right {
-        max-width: 30%;
+        max-width: 31%;
     }
 
     #novel-character,
     .novel-character {
-        bottom: 20%;
-        max-height: 50%;
+        bottom: 21%;
+        max-height: 63%;
     }
 
     #novel-dialogue-box,
     .novel-dialogue-box {
-        padding: 30px;
-        height: 180px; /* 固定高さ - デスクトップ */
+        padding: 26px 40px;
+        height: 186px;
+        bottom: 18px;
+        left: 24px;
+        right: 24px;
     }
-    
+
+    body #novel-game-modal-overlay #novel-dialogue-box,
+    body #novel-game-modal-overlay .novel-dialogue-box {
+        bottom: 18px;
+        left: 24px;
+        right: 24px;
+    }
+
     .novel-speaker-name {
-        bottom: 140px; /* デスクトップでの位置調整 */
+        bottom: 188px;
+        left: 52px;
         font-size: 1.1em;
-        padding: 10px 20px;
-        min-height: 28px; /* 空欄時でも高さを維持 */
+        padding: 9px 26px 11px;
     }
-    
-    .novel-dialogue-text-container {
-        flex: 1;
-        display: flex;
-        align-items: center;
-    }
-    
+
     #novel-dialogue-text {
-        max-height: calc(1.6em * 3);
-        font-size: clamp(18px, 2vw, 22px);
+        max-height: calc(1.7em * 3);
+        font-size: clamp(18px, 2vw, 21px);
     }
 }
 
@@ -1804,7 +1867,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 @media (max-width: 767px) and (orientation: portrait) {
     #novel-game-container {
         height: 100vh;
-        height: 100dvh; /* 動的ビューポート対応 */
+        height: 100dvh;
     }
 
     .novel-game-title {
@@ -1814,73 +1877,69 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     }
 
     .novel-character-left {
-        left: 2%;
-        max-width: 25%;
-        max-height: 35%;
+        left: 0;
+        max-width: 46%;
     }
 
     .novel-character-center {
-        max-width: 30%;
-        max-height: 35%;
+        max-width: 54%;
     }
 
     .novel-character-right {
-        right: 2%;
-        max-width: 25%;
-        max-height: 35%;
+        right: 0;
+        max-width: 46%;
     }
 
     #novel-character,
     .novel-character {
-        bottom: 25%;
-        max-height: 35%;
+        bottom: 16%;
+        max-height: 46%;
     }
 
     #novel-dialogue-box,
     .novel-dialogue-box {
-        padding: 15px;
-        height: 100px; /* 固定高さ - モバイル縦画面 */
+        padding: 12px 16px;
+        height: 118px;
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
         font-size: 14px;
+        border-radius: 8px;
     }
-    
+
+    body #novel-game-modal-overlay #novel-dialogue-box,
+    body #novel-game-modal-overlay .novel-dialogue-box {
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
+    }
+
     .novel-speaker-name {
-        bottom: 85px; /* モバイル縦画面での位置調整 */
+        bottom: 124px;
+        left: 20px;
         font-size: 12px;
-        padding: 4px 8px;
-        min-height: 16px; /* 空欄時でも高さを維持 */
+        padding: 5px 14px 7px;
+        min-width: 70px;
     }
-    
-    .novel-dialogue-text-container {
-        flex: 1;
-        display: flex;
-        align-items: center;
-    }
-    
+
     #novel-dialogue-text {
-        max-height: calc(1.5em * 3);
+        max-height: calc(1.6em * 3);
         font-size: 14px;
-        line-height: 1.5;
+        line-height: 1.6;
     }
 
     #novel-choices,
     .novel-choices {
-        bottom: 10%;
-        left: 10%;
-        width: 80%;
-    }
-
-    #novel-choices .choice-list,
-    .novel-choices .choice-list {
-        padding: 15px;
-        font-size: 14px;
+        bottom: 20%;
+        width: 92%;
     }
 
     #novel-choices .choice-item,
     .novel-choices .choice-item {
-        padding: 15px;
-        margin: 10px 0;
+        padding: 14px 16px 14px 20px;
+        margin: 8px 0;
         font-size: 14px;
-        min-height: 48px; /* タッチ対応 */
+        min-height: 48px;
     }
 
     /* アーカイブページ */
@@ -1907,7 +1966,6 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 
     .play-button {
         padding: 6px 12px;
-        border-radius: 15px;
     }
 }
 
@@ -1918,7 +1976,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 @media (max-width: 767px) and (orientation: landscape) {
     #novel-game-container {
         height: 100vh;
-        height: 100dvh; /* 動的ビューポート対応 */
+        height: 100dvh;
     }
 
     .novel-game-title {
@@ -1929,78 +1987,68 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 
     .novel-character-left {
         left: 2%;
-        bottom: 15%;
-        max-width: 20%;
-        max-height: 40%;
+        max-width: 24%;
     }
 
     .novel-character-center {
-        left: 40%;
-        bottom: 15%;
-        max-width: 20%;
-        max-height: 40%;
+        max-width: 26%;
     }
 
     .novel-character-right {
         right: 2%;
-        bottom: 15%;
-        max-width: 20%;
-        max-height: 40%;
+        max-width: 24%;
     }
 
     #novel-character,
     .novel-character {
-        bottom: 20%;
-        max-height: 40%;
+        bottom: 24%;
+        max-height: 58%;
     }
 
     #novel-dialogue-box,
     .novel-dialogue-box {
-        padding: 10px;
-        height: 80px; /* 固定高さ - モバイル横画面 */
+        padding: 10px 14px;
+        height: 92px;
+        bottom: 6px;
+        left: 6px;
+        right: 6px;
         font-size: 12px;
-        left: 0;
-        width: 55%;
+        border-radius: 8px;
     }
-    
+
+    body #novel-game-modal-overlay #novel-dialogue-box,
+    body #novel-game-modal-overlay .novel-dialogue-box {
+        bottom: 6px;
+        left: 6px;
+        right: 6px;
+    }
+
     .novel-speaker-name {
-        bottom: 65px; /* モバイル横画面での位置調整 */
-        font-size: 10px;
-        padding: 3px 6px;
-        min-height: 14px; /* 空欄時でも高さを維持 */
+        bottom: 96px;
+        left: 16px;
+        font-size: 11px;
+        padding: 3px 10px 5px;
+        min-width: 60px;
     }
-    
-    .novel-dialogue-text-container {
-        flex: 1;
-        display: flex;
-        align-items: center;
-    }
-    
+
     #novel-dialogue-text {
-        max-height: calc(1.4em * 3);
+        max-height: calc(1.5em * 3);
         font-size: 12px;
-        line-height: 1.4;
+        line-height: 1.5;
     }
 
     #novel-choices,
     .novel-choices {
-        bottom: 5%;
-        left: 5%;
-        width: 50%;
-    }
-
-    #novel-choices .choice-list,
-    .novel-choices .choice-list {
-        padding: 10px;
-        font-size: 12px;
+        bottom: 12%;
+        width: 76%;
     }
 
     #novel-choices .choice-item,
     .novel-choices .choice-item {
         font-size: 12px;
-        padding: 8px 12px;
-        margin: 3px 0;
-        min-height: 36px;
+        padding: 9px 12px 9px 16px;
+        margin: 5px 0;
+        min-height: 38px;
     }
 
     /* アーカイブページ */
@@ -2030,40 +2078,27 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 
     #novel-dialogue-box,
     .novel-dialogue-box {
-        padding: 12px;
+        padding: 11px 14px;
         font-size: 13px;
-        height: 90px; /* 固定高さ - 小画面 */
+        height: 110px;
     }
-    
+
     .novel-speaker-name {
-        bottom: 75px; /* 小画面での位置調整 */
+        bottom: 116px;
         font-size: 11px;
-        padding: 3px 6px;
-        min-height: 15px; /* 空欄時でも高さを維持 */
+        padding: 4px 12px 6px;
     }
-    
-    .novel-dialogue-text-container {
-        flex: 1;
-        display: flex;
-        align-items: center;
-    }
-    
+
     #novel-dialogue-text {
-        max-height: calc(1.5em * 3);
+        max-height: calc(1.6em * 3);
         font-size: 13px;
-        line-height: 1.5;
-    }
-    
-    #novel-dialogue-text {
-        max-height: calc(1.5em * 3);
-        font-size: 13px;
-        line-height: 1.5;
+        line-height: 1.6;
     }
 
     #novel-choices .choice-item,
     .novel-choices .choice-item {
         font-size: 13px;
-        padding: 12px;
+        padding: 12px 14px 12px 18px;
         min-height: 44px;
     }
 
@@ -2097,29 +2132,27 @@ body #novel-game-modal-overlay .novel-dialogue-box {
    タッチ対応スタイル
    ============================================================================= */
 
-/* タッチフィードバック */
 .touch-active {
-    opacity: 0.7;
+    opacity: 0.85;
 }
 
 #novel-game-container.touch-active {
-    filter: brightness(0.9);
+    filter: brightness(0.95);
 }
 
-/* タッチデバイス専用スタイル */
 @media (hover: none) and (pointer: coarse) {
     #novel-choices .choice-item,
     .novel-choices .choice-item {
-        padding: 16px 24px;
-        font-size: 16px;
-        min-height: 48px;
+        padding: 16px 22px 16px 26px;
+        font-size: 15px;
+        min-height: 50px;
     }
-    
+
     .play-button {
         padding: 10px 16px;
         min-height: 40px;
     }
-    
+
     .no-games-message .button {
         padding: 16px 32px;
         min-height: 48px;
@@ -2130,18 +2163,19 @@ body #novel-game-modal-overlay .novel-dialogue-box {
    ショートコード用スタイル
    ============================================================================= */
 
-/* ショートコード内のプレイボタン */
 .noveltool-play-button {
-    background: linear-gradient(45deg, #667eea, #764ba2);
-    color: white;
+    font-family: var(--nvl-font-serif);
+    background: linear-gradient(180deg, rgba(227, 189, 109, 0.9), rgba(169, 127, 53, 0.92));
+    color: var(--nvl-ink-900);
     border: none;
-    padding: 12px 24px;
+    padding: 12px 26px;
     font-size: 16px;
-    font-weight: bold;
-    border-radius: 25px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
     text-decoration: none;
     display: inline-block;
     min-width: 120px;
@@ -2149,16 +2183,16 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 .noveltool-play-button:hover {
-    background: linear-gradient(45deg, #5a67d8, #6b46c1);
+    background: linear-gradient(180deg, var(--nvl-gold-bright), var(--nvl-gold));
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    color: white;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 18px var(--nvl-gold-glow);
+    color: var(--nvl-ink-900);
     text-decoration: none;
 }
 
 .noveltool-play-button:active {
     transform: translateY(0);
-    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* ゲーム一覧グリッド */
@@ -2170,16 +2204,18 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 .noveltool-game-list-item {
-    background: #fff;
-    border-radius: 12px;
+    background: var(--nvl-ink-700);
+    border: 1px solid var(--nvl-panel-edge-soft);
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
     transition: all 0.3s ease;
 }
 
 .noveltool-game-list-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: rgba(227, 189, 109, 0.45);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35), 0 0 20px rgba(227, 189, 109, 0.1);
 }
 
 .noveltool-game-thumbnail {
@@ -2205,30 +2241,32 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 
 .noveltool-game-title {
     margin: 0 0 10px 0;
+    font-family: var(--nvl-font-serif);
     font-size: 1.3em;
-    font-weight: bold;
-    color: #333;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--nvl-text);
 }
 
 .noveltool-game-title a {
-    color: #333;
+    color: var(--nvl-text);
     text-decoration: none;
 }
 
 .noveltool-game-title a:hover {
-    color: #667eea;
+    color: var(--nvl-gold-bright);
 }
 
 .noveltool-game-description {
     margin: 0 0 10px 0;
-    color: #666;
-    line-height: 1.5;
+    color: var(--nvl-text-dim);
+    line-height: 1.6;
     font-size: 0.95em;
 }
 
 .noveltool-game-count {
     margin: 0 0 15px 0;
-    color: #888;
+    color: var(--nvl-text-faint);
     font-size: 0.9em;
 }
 
@@ -2236,21 +2274,20 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     text-align: center;
 }
 
-/* レスポンシブ対応：ショートコード */
 @media (max-width: 768px) {
     .noveltool-game-list-grid {
         grid-template-columns: 1fr;
         gap: 15px;
     }
-    
+
     .noveltool-game-thumbnail {
         height: 180px;
     }
-    
+
     .noveltool-game-content {
         padding: 15px;
     }
-    
+
     .noveltool-play-button {
         padding: 10px 20px;
         font-size: 14px;
@@ -2262,11 +2299,11 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     .noveltool-game-thumbnail {
         height: 160px;
     }
-    
+
     .noveltool-game-content {
         padding: 12px;
     }
-    
+
     .noveltool-game-title {
         font-size: 1.1em;
     }
@@ -2283,10 +2320,10 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     right: 20px;
     width: 44px;
     height: 44px;
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.5);
+    background: rgba(9, 12, 22, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 50%;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.85);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -2299,14 +2336,14 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 .novel-title-settings-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.8);
-    color: white;
+    background: rgba(227, 189, 109, 0.18);
+    border-color: var(--nvl-gold);
+    color: var(--nvl-gold-bright);
     transform: rotate(30deg);
 }
 
 .novel-title-settings-btn:focus {
-    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline: 2px solid var(--nvl-gold);
     outline-offset: 2px;
 }
 
@@ -2316,15 +2353,14 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 /* 設定モーダルオーバーレイ */
-/* フォールバック: body に append される場合（通常ケース） */
 .novel-settings-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
-    z-index: 9999; /* 過度に高い値は避ける */
+    background: rgba(4, 6, 12, 0.85);
+    z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2332,29 +2368,30 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     -webkit-backdrop-filter: blur(3px);
 }
 
-/* ゲームオーバーレイ内に append されるケース: overlay 内で前面に表示 */
 #novel-game-modal-overlay .novel-settings-modal-overlay {
-    z-index: 10001; /* overlay 内で最前面に表示するために調整 */
+    z-index: 10001;
 }
 
 /* 設定モーダル本体 */
 .novel-settings-modal {
-    background: white;
-    border-radius: 12px;
+    background: var(--nvl-ink-700);
+    border: 1px solid var(--nvl-panel-edge);
+    border-radius: 10px;
     max-width: 500px;
     width: 90%;
     max-height: 80vh;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--nvl-shadow-panel);
     animation: novel-settings-modal-appear 0.3s ease-out;
     display: flex;
     flex-direction: column;
+    color: var(--nvl-text);
 }
 
 @keyframes novel-settings-modal-appear {
     from {
         opacity: 0;
-        transform: scale(0.9) translateY(-20px);
+        transform: scale(0.94) translateY(-16px);
     }
     to {
         opacity: 1;
@@ -2367,23 +2404,25 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 25px;
-    border-bottom: 1px solid #eee;
-    background: #f8f9fa;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--nvl-panel-edge-soft);
+    background: var(--nvl-ink-800);
 }
 
 .novel-settings-modal-title {
     margin: 0;
-    font-size: 1.3em;
-    font-weight: bold;
-    color: #333;
+    font-family: var(--nvl-font-serif);
+    font-size: 1.2em;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    color: var(--nvl-gold-bright);
 }
 
 .novel-settings-modal-close {
     background: none;
     border: none;
-    font-size: 28px;
-    color: #999;
+    font-size: 26px;
+    color: var(--nvl-text-faint);
     cursor: pointer;
     padding: 0;
     width: 36px;
@@ -2397,13 +2436,13 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 .novel-settings-modal-close:hover {
-    background: #eee;
-    color: #333;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--nvl-text);
 }
 
 /* 設定モーダルコンテンツ */
 .novel-settings-modal-content {
-    padding: 25px;
+    padding: 24px;
     overflow-y: auto;
     flex: 1;
 }
@@ -2411,7 +2450,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 /* データなしメッセージ */
 .novel-settings-no-data {
     text-align: center;
-    color: #666;
+    color: var(--nvl-text-dim);
     padding: 30px 0;
     font-size: 1em;
 }
@@ -2428,11 +2467,11 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px;
+    padding: 14px;
     margin-bottom: 10px;
-    background: #f8f9fa;
+    background: var(--nvl-ink-600);
     border-radius: 8px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--nvl-panel-edge-soft);
     transition: all 0.2s ease;
 }
 
@@ -2441,8 +2480,7 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 .novel-settings-data-item:hover {
-    background: #f1f3f4;
-    border-color: #dee2e6;
+    border-color: var(--nvl-panel-edge);
 }
 
 /* データ情報 */
@@ -2456,13 +2494,13 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 
 .novel-settings-data-label {
     font-weight: 600;
-    color: #333;
+    color: var(--nvl-text);
     font-size: 1em;
 }
 
 .novel-settings-data-meta {
     font-size: 0.85em;
-    color: #666;
+    color: var(--nvl-text-faint);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2470,11 +2508,11 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 
 /* 削除ボタン */
 .novel-settings-delete-btn {
-    background: #dc3545;
-    color: white;
-    border: none;
+    background: transparent;
+    color: #e08585;
+    border: 1px solid rgba(179, 57, 57, 0.6);
     padding: 8px 16px;
-    border-radius: 5px;
+    border-radius: 4px;
     font-size: 0.9em;
     font-weight: 500;
     cursor: pointer;
@@ -2484,9 +2522,10 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 }
 
 .novel-settings-delete-btn:hover {
-    background: #c82333;
+    background: rgba(179, 57, 57, 0.2);
+    border-color: var(--nvl-danger);
+    color: #f0a0a0;
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
 }
 
 .novel-settings-delete-btn:active {
@@ -2496,35 +2535,36 @@ body #novel-game-modal-overlay .novel-dialogue-box {
 
 /* アクションエリア */
 .novel-settings-actions {
-    margin-top: 25px;
+    margin-top: 24px;
     padding-top: 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--nvl-panel-edge-soft);
     text-align: center;
 }
 
 /* 全データクリアボタン */
 .novel-settings-clear-all-btn {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-    color: white;
-    border: none;
+    background: linear-gradient(180deg, rgba(179, 57, 57, 0.85), rgba(124, 31, 31, 0.9));
+    color: #fff;
+    border: 1px solid rgba(224, 133, 133, 0.4);
     padding: 12px 30px;
-    border-radius: 25px;
+    border-radius: 4px;
     font-size: 1em;
-    font-weight: bold;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .novel-settings-clear-all-btn:hover {
-    background: linear-gradient(135deg, #ff5252, #d84315);
+    background: linear-gradient(180deg, rgba(200, 70, 70, 0.9), rgba(150, 40, 40, 0.95));
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 .novel-settings-clear-all-btn:active {
     transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* レスポンシブ対応 */
@@ -2535,35 +2575,35 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         width: 40px;
         height: 40px;
     }
-    
+
     .novel-title-settings-btn svg {
         width: 20px;
         height: 20px;
     }
-    
+
     .novel-settings-modal {
         width: 95%;
         max-height: 85vh;
     }
-    
+
     .novel-settings-modal-header {
         padding: 15px 20px;
     }
-    
+
     .novel-settings-modal-title {
         font-size: 1.1em;
     }
-    
+
     .novel-settings-modal-content {
         padding: 20px;
     }
-    
+
     .novel-settings-data-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
     }
-    
+
     .novel-settings-delete-btn {
         margin-left: 0;
         width: 100%;
@@ -2577,32 +2617,32 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         width: 36px;
         height: 36px;
     }
-    
+
     .novel-title-settings-btn svg {
         width: 18px;
         height: 18px;
     }
-    
+
     .novel-settings-modal-header {
         padding: 12px 15px;
     }
-    
+
     .novel-settings-modal-content {
         padding: 15px;
     }
-    
+
     .novel-settings-data-item {
         padding: 12px;
     }
-    
+
     .novel-settings-data-label {
         font-size: 0.95em;
     }
-    
+
     .novel-settings-data-meta {
         font-size: 0.8em;
     }
-    
+
     .novel-settings-clear-all-btn {
         padding: 10px 25px;
         font-size: 0.95em;

@@ -419,9 +419,63 @@
 		 *
 		 * @since 1.4.0
 		 */
+		/**
+		 * 広告プレビューモードかどうかを判定する
+		 *
+		 * 広告プロバイダー未設定の環境でも、URLに nvl_ad_preview=1 を付けるか
+		 * コンソールで window.novelGameAdPreview = true を設定することで
+		 * ダミー広告バナーを表示し、広告表示時のレイアウトを確認できる。
+		 *
+		 * @return {boolean} プレビューモードの場合 true
+		 * @since 1.6.0
+		 */
+		function isAdPreviewMode() {
+			try {
+				if ( window.novelGameAdPreview === true ) {
+					return true;
+				}
+				return window.location.search.indexOf( 'nvl_ad_preview=1' ) !== -1;
+			} catch ( e ) {
+				return false;
+			}
+		}
+
+		/**
+		 * ダミー広告バナーを表示する（レイアウト確認用）
+		 *
+		 * @since 1.6.0
+		 */
+		function displayDummyAd() {
+			// 既にダミーが存在する場合は何もしない（冪等性確保）
+			if ( $adContainer.find( '.novel-ad-dummy' ).length > 0 ) {
+				return;
+			}
+
+			if ( ! isAdContainerAvailable() ) {
+				debugLog( 'ダミー広告: コンテナが使用できません（既にコンテンツが存在します）' );
+				return;
+			}
+
+			var $dummy = $( '<div>' )
+				.addClass( 'novel-ad-dummy' )
+				.attr( 'aria-hidden', 'true' )
+				.append( $( '<span>' ).addClass( 'novel-ad-dummy-badge' ).text( 'AD' ) )
+				.append( $( '<span>' ).addClass( 'novel-ad-dummy-text' ).text( 'ダミー広告バナー（プレビュー用 468×60）' ) );
+
+			$adContainer.append( $dummy );
+			debugLog( 'ダミー広告バナーを表示しました' );
+		}
+
 		function showAdvertisement() {
-			// 広告設定がない場合は何もしない
+			// 広告設定がない場合はダミープレビューのみ判定して終了
 			if ( ! adConfig || adConfig.provider === 'none' || ! adConfig.publisherId ) {
+				if ( isAdPreviewMode() ) {
+					displayDummyAd();
+					$adContainer.show();
+					$gameContainer.addClass( 'has-ad-banner' );
+					debugLog( '広告プレビューモード: ダミー広告を表示しました' );
+					return;
+				}
 				debugLog( '広告設定がありません。広告は表示しません。' );
 				return;
 			}
@@ -468,6 +522,24 @@
 			$gameContainer.removeClass( 'has-ad-banner' );
 			debugLog( '広告を非表示にしました' );
 		}
+
+		/**
+		 * 広告プレビュー（ダミー広告）の表示切替をコンソールから行えるように公開
+		 *
+		 * 使用例: novelGameToggleAdPreview( true )  // ダミー広告を表示
+		 *         novelGameToggleAdPreview( false ) // ダミー広告を非表示
+		 *
+		 * @since 1.6.0
+		 */
+		window.novelGameToggleAdPreview = function( enabled ) {
+			window.novelGameAdPreview = !! enabled;
+			if ( enabled ) {
+				showAdvertisement();
+			} else {
+				$adContainer.find( '.novel-ad-dummy' ).remove();
+				hideAdvertisement();
+			}
+		};
 		
 		// debugLog 関数は js/debug-log.js でグローバルに定義されています（window.debugLog として利用可能）
 		
@@ -522,6 +594,85 @@
 			}
 		};
 		
+		// タイプライター演出の状態管理
+		var typewriterState = {
+			timer: null,
+			active: false,
+			fullText: '',
+			speed: 34 // 1文字あたりの表示間隔（ミリ秒）
+		};
+
+		/**
+		 * OSの「視差効果を減らす」設定を確認する
+		 *
+		 * @return {boolean} 動きを減らすべき場合 true
+		 * @since 1.6.0
+		 */
+		function prefersReducedMotion() {
+			try {
+				return !! ( window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches );
+			} catch ( e ) {
+				return false;
+			}
+		}
+
+		/**
+		 * タイプライター表示を停止する（テキストは現状のまま）
+		 *
+		 * @since 1.6.0
+		 */
+		function stopTypewriter() {
+			if ( typewriterState.timer ) {
+				clearInterval( typewriterState.timer );
+				typewriterState.timer = null;
+			}
+			typewriterState.active = false;
+		}
+
+		/**
+		 * タイプライター表示を完了させ、全文を即時表示する
+		 *
+		 * @since 1.6.0
+		 */
+		function finishTypewriter() {
+			stopTypewriter();
+			$dialogueText.text( typewriterState.fullText );
+			$dialogueContinue.show();
+		}
+
+		/**
+		 * セリフをタイプライター演出で表示する
+		 *
+		 * 表示完了後に継続インジケーターを表示する。
+		 * 「動きを減らす」設定時は即時表示にフォールバックする。
+		 *
+		 * @param {string} text 表示する全文
+		 * @since 1.6.0
+		 */
+		function startTypewriter( text ) {
+			stopTypewriter();
+			typewriterState.fullText = text || '';
+
+			if ( ! typewriterState.fullText || prefersReducedMotion() ) {
+				$dialogueText.text( typewriterState.fullText );
+				$dialogueContinue.show();
+				return;
+			}
+
+			typewriterState.active = true;
+			$dialogueContinue.hide();
+			$dialogueText.text( '' );
+
+			var charIndex = 0;
+			typewriterState.timer = setInterval( function() {
+				charIndex++;
+				$dialogueText.text( typewriterState.fullText.slice( 0, charIndex ) );
+				if ( charIndex >= typewriterState.fullText.length ) {
+					finishTypewriter();
+				}
+			}, typewriterState.speed );
+		}
+
 		// 表示設定
 		var displaySettings = {
 			maxCharsPerLine: 20,
@@ -529,20 +680,46 @@
 			get maxCharsPerPage() {
 				return this.maxCharsPerLine * this.maxLines;
 			},
-			
+
 			// 画面サイズに応じた設定調整
+			// セリフボックスの実際の内寸とフォントサイズから1行の文字数を算出し、
+			// ボックス幅いっぱいまでテキストが流れるようにする
 			adjustForScreenSize: function() {
-				const screenWidth = window.innerWidth;
-				
+				var computed = 0;
+
+				try {
+					var textEl = document.getElementById( 'novel-dialogue-text' );
+					if ( textEl ) {
+						var $textEl = $( textEl );
+						var innerWidth = $textEl.width();
+						var fontSize = parseFloat( $textEl.css( 'font-size' ) );
+
+						if ( innerWidth > 0 && fontSize > 0 ) {
+							// 全角1文字 ≒ フォントサイズ + letter-spacing(0.06em)
+							// 行末禁則（句読点のぶら下げ）用に1文字ぶんの余裕を残す
+							computed = Math.floor( innerWidth / ( fontSize * 1.06 ) ) - 1;
+						}
+					}
+				} catch ( e ) {
+					computed = 0;
+				}
+
+				if ( computed > 0 ) {
+					// 極端な値を避けるための安全域
+					this.maxCharsPerLine = Math.max( 14, Math.min( 64, computed ) );
+					return;
+				}
+
+				// 測定できない場合（ボックス非表示など）のフォールバック
+				var screenWidth = window.innerWidth;
 				if ( screenWidth < 480 ) {
-					// 小画面：文字数を調整
-					this.maxCharsPerLine = 18;
+					this.maxCharsPerLine = 20;
 				} else if ( screenWidth < 768 ) {
-					// モバイル：標準設定
-					this.maxCharsPerLine = 20;
+					this.maxCharsPerLine = 24;
+				} else if ( screenWidth < 1024 ) {
+					this.maxCharsPerLine = 40;
 				} else {
-					// タブレット・デスクトップ：標準設定
-					this.maxCharsPerLine = 20;
+					this.maxCharsPerLine = 50;
 				}
 			}
 		};
@@ -2054,14 +2231,14 @@
 				} else {
 					debugLog( 'warn', '無効なURLスキームのため背景画像を設定しません:', backgroundImage );
 					$titleScreen.css( {
-						'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+						'background': 'linear-gradient(160deg, #10141f 0%, #1d1b2c 55%, #26203a 100%)',
 						'background-image': 'none'
 					} );
 				}
 			} else {
 				debugLog( 'No background image found, using default gradient' );
 				$titleScreen.css( {
-					'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+					'background': 'linear-gradient(160deg, #10141f 0%, #1d1b2c 55%, #26203a 100%)',
 					'background-image': 'none'
 				} );
 			}
@@ -2090,7 +2267,7 @@
 				$titleScreen.css( 'display', 'none' );
 				// 背景画像をリセット
 				$titleScreen.css( {
-					'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+					'background': 'linear-gradient(160deg, #10141f 0%, #1d1b2c 55%, #26203a 100%)',
 					'background-image': 'none'
 				} );
 			} );
@@ -2922,7 +3099,10 @@
 		 */
 		function resetGameState() {
 			debugLog( 'Resetting game display state...' );
-			
+
+			// 進行中のタイプライター演出を停止
+			stopTypewriter();
+
 			// セリフ関連の表示状態をリセット
 			currentDialogueIndex = 0;
 			currentPageIndex = 0;
@@ -3261,23 +3441,35 @@
 			if ( ! text ) {
 				return [];
 			}
-			
+
+			// 行頭に置けない文字（簡易禁則: 前の行末に1文字だけぶら下げる）
+			const KINSOKU_LINE_START = '、。，．・：；…‥！？!?）」』】〉》〕｝ゝゞ々ーぁぃぅぇぉっゃゅょァィゥェォッャュョ';
+
 			const pages = [];
 			let currentIndex = 0;
-			
+
 			while ( currentIndex < text.length ) {
 				let pageText = '';
 				let currentLines = 0;
 				let currentLineLength = 0;
-				
+
 				while ( currentIndex < text.length && currentLines < displaySettings.maxLines ) {
 					const char = text.charAt( currentIndex );
-					
+
 					if ( char === '\n' ) {
 						// 改行文字の場合
 						pageText += char;
 						currentLines++;
 						currentLineLength = 0;
+						currentIndex++;
+					} else if (
+						currentLineLength >= displaySettings.maxCharsPerLine &&
+						currentLineLength < displaySettings.maxCharsPerLine + 1 &&
+						KINSOKU_LINE_START.indexOf( char ) !== -1
+					) {
+						// 禁則文字は改行せず前の行末にぶら下げる
+						pageText += char;
+						currentLineLength++;
 						currentIndex++;
 					} else if ( currentLineLength >= displaySettings.maxCharsPerLine ) {
 						// 行の文字数が上限に達した場合
@@ -3475,20 +3667,43 @@
 		}
 		
 		/**
+		 * シーン遷移用のフェーダー要素を取得（無ければ生成）する
+		 *
+		 * 背景切り替え時にゲームコンテナ全体を消さずに演出するためのレイヤー。
+		 * loadGameData() でコンテナ内容が差し替えられた場合も再生成される。
+		 *
+		 * @return {jQuery} フェーダー要素
+		 * @since 1.6.0
+		 */
+		function ensureSceneFader() {
+			var $fader = $gameContainer.find( '#novel-scene-fader' );
+			if ( $fader.length === 0 ) {
+				$fader = $( '<div>' )
+					.attr( 'id', 'novel-scene-fader' )
+					.addClass( 'novel-scene-fader' );
+				$gameContainer.append( $fader );
+			}
+			return $fader;
+		}
+
+		/**
 		 * 背景画像を変更する（フェードアニメーション付き）
+		 *
+		 * コンテナ全体をフェードさせるとUIごと消えて煩雑なため、
+		 * 専用の暗幕レイヤーをクロスフェードさせて背景のみ切り替える。
 		 */
 		function changeBackground( newBackground ) {
 			if ( newBackground === currentBackground ) {
 				return Promise.resolve();
 			}
-			
+
 			return new Promise( function( resolve ) {
 				// 新しい背景が空の場合は何もしない
 				if ( ! newBackground && ! currentBackground ) {
 					resolve();
 					return;
 				}
-				
+
 				// 現在の背景が空で、新しい背景が設定されている場合
 				if ( ! currentBackground && newBackground ) {
 					$gameContainer.css( 'background-image', 'url("' + newBackground + '")' );
@@ -3496,18 +3711,27 @@
 					resolve();
 					return;
 				}
-				
+
 				// 現在の背景があり、新しい背景が空の場合は何もしない
 				if ( currentBackground && ! newBackground ) {
 					resolve();
 					return;
 				}
-				
-				// フェードアニメーション
-				$gameContainer.fadeOut( 300, function() {
+
+				// 「動きを減らす」設定時は即時切り替え
+				if ( prefersReducedMotion() ) {
 					$gameContainer.css( 'background-image', 'url("' + newBackground + '")' );
 					currentBackground = newBackground;
-					$gameContainer.fadeIn( 300, function() {
+					resolve();
+					return;
+				}
+
+				// 暗幕レイヤーによるクロスフェード
+				var $fader = ensureSceneFader();
+				$fader.stop( true, true ).fadeIn( 220, function() {
+					$gameContainer.css( 'background-image', 'url("' + newBackground + '")' );
+					currentBackground = newBackground;
+					$fader.fadeOut( 280, function() {
 						resolve();
 					} );
 				} );
@@ -3532,22 +3756,16 @@
 					updateDialogueCharacters( currentPage.characters );
 				}
 				
-				// 継続インジケーターの表示/非表示
-				// 次のページがある場合は常に表示
-				if ( currentPageIndex < allDialoguePages.length - 1 ) {
-					$dialogueContinue.show();
-				} else {
-					// 最後のページでも継続マーカーを表示（選択肢がある場合もない場合も）
-					$dialogueContinue.show();
-				}
-				
+				// 継続インジケーターはタイプライター演出側が表示制御する
+				// （表示完了時に表示される）
+
 				// 新しいセリフの最初のページの場合は背景を変更
 				if ( currentPage.isFirstPageOfDialogue && currentPage.background ) {
 					changeBackground( currentPage.background ).then( function() {
-						$dialogueText.text( currentPage.text );
+						startTypewriter( currentPage.text );
 					} );
 				} else {
-					$dialogueText.text( currentPage.text );
+					startTypewriter( currentPage.text );
 				}
 				
 				return true;
@@ -3714,9 +3932,15 @@
 		 * 次のページまたは選択肢を表示
 		 */
 		function showNextDialogue() {
+			// タイプライター表示中の場合は全文を即時表示して止める（クリックスキップ）
+			if ( typewriterState.active ) {
+				finishTypewriter();
+				return;
+			}
+
 			// キーボードイベントリスナーをクリーンアップ
 			$( document ).off( 'keydown.novel-choices' );
-			
+
 			// 次のページがある場合
 			if ( currentPageIndex < allDialoguePages.length - 1 ) {
 				currentPageIndex++;
@@ -3727,7 +3951,10 @@
 			} else {
 				// すべてのセリフが終わったら選択肢を表示
 				$dialogueBox.hide();
-				
+
+				// 話者名プレートもクリアする
+				$speakerName.text( '' );
+
 				// すべてのキャラクターを通常状態に戻す
 				updateCharacterStates( '' );
 				
@@ -4039,7 +4266,7 @@
 				// ショートコードの場合は「閉じる」ボタンのみ
 				$closeButton = $( '<button>' )
 					.addClass( 'game-nav-button close-button' )
-					.text( '閉じる' )
+					.text( ( typeof novelGameFront !== 'undefined' && novelGameFront.strings && novelGameFront.strings.closeLabel ) ? novelGameFront.strings.closeLabel : '閉じる' )
 					.on( 'click', function() {
 						// ショートコードコンテナを非表示にする（最新のDOMから取得）
 						$( '#novel-game-container' ).closest( '.noveltool-shortcode-container' ).hide();
@@ -4054,7 +4281,7 @@
 				// 通常の場合は「タイトルに戻る」ボタンのみ
 				$titleReturnButton = $( '<button>' )
 					.addClass( 'game-nav-button title-return-button' )
-					.text( 'タイトルに戻る' )
+					.text( ( typeof novelGameFront !== 'undefined' && novelGameFront.strings && novelGameFront.strings.returnToTitleLabel ) ? novelGameFront.strings.returnToTitleLabel : 'タイトルに戻る' )
 					.on( 'click', function() {
 						returnToTitle();
 					});
@@ -4126,7 +4353,7 @@
 				// ショートコードの場合は「閉じる」ボタンのみ
 				$closeButton = $( '<button>' )
 					.addClass( 'game-nav-button close-button' )
-					.text( '閉じる' )
+					.text( ( typeof novelGameFront !== 'undefined' && novelGameFront.strings && novelGameFront.strings.closeLabel ) ? novelGameFront.strings.closeLabel : '閉じる' )
 					.on( 'click', function() {
 						// ショートコードコンテナを非表示にする（最新のDOMから取得）
 						$( '#novel-game-container' ).closest( '.noveltool-shortcode-container' ).hide();
@@ -4141,7 +4368,7 @@
 				// 通常の場合は「タイトルに戻る」ボタンのみ
 				$titleReturnButton = $( '<button>' )
 					.addClass( 'game-nav-button title-return-button' )
-					.text( 'タイトルに戻る' )
+					.text( ( typeof novelGameFront !== 'undefined' && novelGameFront.strings && novelGameFront.strings.returnToTitleLabel ) ? novelGameFront.strings.returnToTitleLabel : 'タイトルに戻る' )
 					.on( 'click', function() {
 						returnToTitle();
 					});

@@ -2528,3 +2528,7 @@ msgstr ""
 #: includes/sample-data.php
 msgid "Path is outside the allowed directory, skipped for safety: %s"
 msgstr ""
+
+#: novel-game-plugin.php
+msgid "Return to Title"
+msgstr ""

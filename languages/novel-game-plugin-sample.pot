@@ -1,918 +1,703 @@
-# Copyright (C) 2026 shokun0803
-# This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Novel Game Plugin 1.3.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/novel-game-plugin\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Project-Id-Version: Novel Game Plugin - Sample Data 1.6.0\n"
+"Report-Msgid-Bugs-To: https://github.com/shokun0803/novel-game-plugin/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-03-06T04:15:51+00:00\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: novel-game-plugin-sample\n"
+"POT-Creation-Date: 2026-07-16 07:56+0000\n"
+"X-Generator: Novel Game Plugin build script\n"
 
-#. Plugin Name of the plugin
-#: novel-game-plugin.php
-msgid "Novel Game Plugin"
-msgstr ""
-
-#. Plugin URI of the plugin
-#: novel-game-plugin.php
-msgid "https://github.com/shokun0803/novel-game-plugin"
-msgstr ""
-
-#. Description of the plugin
-#: novel-game-plugin.php
-msgid "WordPressでノベルゲームを作成できるプラグイン。"
-msgstr ""
-
-#. Author of the plugin
-#: novel-game-plugin.php
-msgid "shokun0803"
-msgstr ""
-
-#. Author URI of the plugin
-#: novel-game-plugin.php
-msgid "https://profiles.wordpress.org/shokun0803/"
-msgstr ""
-
-#: includes/sample-data.php:238
-#: includes/sample-data.php:1582
-msgid "Shadow Detective"
-msgstr ""
-
-#: includes/sample-data.php:239
-msgid "A full-fledged mystery game. Investigate the disappearance of businessman Makoto Kurosaki and uncover the truth. Gather evidence and make the right choices to reach the complete solution ending."
-msgstr ""
-
-#: includes/sample-data.php:241
-msgid "Investigation Failed"
-msgstr ""
-
-#: includes/sample-data.php:251
-msgid "Shadow Detective - The Beginning"
-msgstr ""
-
-#: includes/sample-data.php:256
-#: includes/sample-data.php:301
-#: includes/sample-data.php:347
-#: includes/sample-data.php:395
-#: includes/sample-data.php:452
-#: includes/sample-data.php:498
-#: includes/sample-data.php:545
-#: includes/sample-data.php:583
-#: includes/sample-data.php:627
-#: includes/sample-data.php:693
-#: includes/sample-data.php:741
-#: includes/sample-data.php:785
-#: includes/sample-data.php:826
-#: includes/sample-data.php:883
-#: includes/sample-data.php:927
-#: includes/sample-data.php:968
-#: includes/sample-data.php:1010
-#: includes/sample-data.php:1052
-#: includes/sample-data.php:1099
-#: includes/sample-data.php:1137
-#: includes/sample-data.php:1217
-#: includes/sample-data.php:1242
 msgid "Detective"
 msgstr ""
 
-#: includes/sample-data.php:258
-#: includes/sample-data.php:303
-#: includes/sample-data.php:450
-#: includes/sample-data.php:691
-#: includes/sample-data.php:1191
 msgid "Misaki"
 msgstr ""
 
-#: includes/sample-data.php:260
-msgid "Good evening. You must be Ms. Kurosaki. Please, have a seat."
-msgstr ""
-
-#: includes/sample-data.php:261
-msgid "Detective, please help me... My husband has been missing for three days."
-msgstr ""
-
-#: includes/sample-data.php:262
-msgid "The police say there's no criminal activity, but my husband would never do this..."
-msgstr ""
-
-#: includes/sample-data.php:263
-msgid "Understood, Ms. Misaki Kurosaki. I will find your husband, Makoto Kurosaki."
-msgstr ""
-
-#: includes/sample-data.php:276
-msgid "Let us start with the timeline in detail"
-msgstr ""
-
-#: includes/sample-data.php:280
-msgid "I will inspect the disappearance site first"
-msgstr ""
-
-#: includes/sample-data.php:284
-msgid "I should interview his friends and associates"
-msgstr ""
-
-#: includes/sample-data.php:296
-msgid "Shadow Detective - Details of Disappearance"
-msgstr ""
-
-#: includes/sample-data.php:305
-msgid "Three days ago in the evening, my husband said \"I have an important business meeting\" and left."
-msgstr ""
-
-#: includes/sample-data.php:306
-msgid "Since then, his phone hasn't connected, and he hasn't shown up at the company."
-msgstr ""
-
-#: includes/sample-data.php:307
-msgid "Recently he seemed strange... as if he was worried about something."
-msgstr ""
-
-#: includes/sample-data.php:308
-msgid "Thank you. I'll trace his movements and the people around him."
-msgstr ""
-
-#: includes/sample-data.php:321
-msgid "First, I'll investigate the disappearance site"
-msgstr ""
-
-#: includes/sample-data.php:325
-msgid "I will visit your home and ask your family directly"
-msgstr ""
-
-#: includes/sample-data.php:329
-msgid "I'd like to hear from friends and acquaintances"
-msgstr ""
-
-#: includes/sample-data.php:341
-msgid "Shadow Detective - Warehouse District"
-msgstr ""
-
-#: includes/sample-data.php:350
-msgid "The warehouse district by the port where he was last seen. A deserted, dimly lit place."
-msgstr ""
-
-#: includes/sample-data.php:351
-msgid "Something shiny is on the ground... It's a pocket watch."
-msgstr ""
-
-#: includes/sample-data.php:352
-msgid "Opening the back reveals an inscription: \"To Makoto, with love, Misaki\""
-msgstr ""
-
-#: includes/sample-data.php:353
-msgid "This must belong to Makoto Kurosaki. Something happened here."
-msgstr ""
-
-#: includes/sample-data.php:359
-msgid "Question nearby workers and witnesses"
-msgstr ""
-
-#: includes/sample-data.php:367
-msgid "Return to the office to organize information"
-msgstr ""
-
-#: includes/sample-data.php:371
-msgid "Bring this clue and question the family again"
-msgstr ""
-
-#: includes/sample-data.php:389
-msgid "Shadow Detective - Time to Deduce"
-msgstr ""
-
-#: includes/sample-data.php:398
-msgid "Time to organize the gathered information."
-msgstr ""
-
-#: includes/sample-data.php:399
-msgid "The pocket watch... evidence he was at the disappearance site."
-msgstr ""
-
-#: includes/sample-data.php:400
-msgid "A businessman's sudden disappearance. Mention of family noticing strange behavior."
-msgstr ""
-
-#: includes/sample-data.php:401
-msgid "This case doesn't seem superficial."
-msgstr ""
-
-#: includes/sample-data.php:412
-msgid "The pocket watch found at the scene... and sudden disappearance. This connects to something bigger."
-msgstr ""
-
-#: includes/sample-data.php:417
-msgid "Prioritize questioning the family"
-msgstr ""
-
-#: includes/sample-data.php:425
-msgid "Investigate friends and associates"
-msgstr ""
-
-#: includes/sample-data.php:433
-msgid "Request access to his study and private records"
-msgstr ""
-
-#: includes/sample-data.php:445
-msgid "Shadow Detective - Family Testimony"
-msgstr ""
-
-#: includes/sample-data.php:454
-msgid "After moving to the Kurosaki residence, Misaki began to speak more calmly."
-msgstr ""
-
-#: includes/sample-data.php:455
-msgid "He seemed to have problems with business partners... but he wouldn't tell me details."
-msgstr ""
-
-#: includes/sample-data.php:456
-msgid "Also... there were calls from unknown men."
-msgstr ""
-
-#: includes/sample-data.php:457
-msgid "My husband said \"It's fine\" but his expression was dark..."
-msgstr ""
-
-#: includes/sample-data.php:463
-msgid "Talk to company associates"
-msgstr ""
-
-#: includes/sample-data.php:471
-msgid "Let me investigate the study"
-msgstr ""
-
-#: includes/sample-data.php:475
-msgid "Ask about the unknown callers in detail"
-msgstr ""
-
-#: includes/sample-data.php:493
-msgid "Shadow Detective - Friend's Testimony"
-msgstr ""
-
-#: includes/sample-data.php:500
 msgid "Sato"
 msgstr ""
 
-#: includes/sample-data.php:502
-msgid "Mr. Makoto has been acting strange recently."
-msgstr ""
-
-#: includes/sample-data.php:503
-msgid "Last week, I happened to see him... talking with suspicious men."
-msgstr ""
-
-#: includes/sample-data.php:504
-msgid "I was worried, so I took a photo. Here it is."
-msgstr ""
-
-#: includes/sample-data.php:505
-msgid "This photo is enough to move. I'll track these men immediately."
-msgstr ""
-
-#: includes/sample-data.php:511
-msgid "Investigate these men"
-msgstr ""
-
-#: includes/sample-data.php:520
-msgid "First, investigate the Kurosaki residence more"
-msgstr ""
-
-#: includes/sample-data.php:524
-msgid "Ask Sato for more background before deciding next move"
-msgstr ""
-
-#: includes/sample-data.php:539
-msgid "Shadow Detective - Secret of the Study"
-msgstr ""
-
-#: includes/sample-data.php:548
-msgid "With permission, I investigate the study."
-msgstr ""
-
-#: includes/sample-data.php:549
-msgid "Desk drawers contain receipts and contracts... nothing particularly suspicious."
-msgstr ""
-
-#: includes/sample-data.php:550
-msgid "However, the bookshelf arrangement seems unnatural..."
-msgstr ""
-
-#: includes/sample-data.php:551
-msgid "Moving the bookshelf reveals... a hidden door!"
-msgstr ""
-
-#: includes/sample-data.php:557
-msgid "Try to open the hidden door"
-msgstr ""
-
-#: includes/sample-data.php:561
-#: includes/sample-data.php:802
-msgid "Retreat for now"
-msgstr ""
-
-#: includes/sample-data.php:565
-msgid "Search the study more thoroughly first"
-msgstr ""
-
-#: includes/sample-data.php:577
-msgid "Shadow Detective - Hidden Truth"
-msgstr ""
-
-#: includes/sample-data.php:586
-msgid "Beyond the hidden door is a small room. There's a safe and a desk."
-msgstr ""
-
-#: includes/sample-data.php:587
-msgid "A diary on the desk... It's Makoto Kurosaki's handwriting."
-msgstr ""
-
-#: includes/sample-data.php:588
-msgid "\"I chose the wrong path...\""
-msgstr ""
-
-#: includes/sample-data.php:589
-msgid "\"I can't repay the debt to them. I don't want to trouble my family.\""
-msgstr ""
-
-#: includes/sample-data.php:595
-msgid "Try to open the safe"
-msgstr ""
-
-#: includes/sample-data.php:603
-msgid "Take the diary back for analysis"
-msgstr ""
-
-#: includes/sample-data.php:607
-msgid "Search the hidden room further for clues to the safe"
-msgstr ""
-
-#: includes/sample-data.php:621
-msgid "Shadow Detective - To the Core of the Case"
-msgstr ""
-
-#: includes/sample-data.php:630
-msgid "From the evidence collected so far, Kurosaki was in serious financial trouble."
-msgstr ""
-
-#: includes/sample-data.php:631
-msgid "The men in the photo from my friend... loan sharks?"
-msgstr ""
-
-#: includes/sample-data.php:632
-msgid "Someone is still hiding the real structure behind this case."
-msgstr ""
-
-#: includes/sample-data.php:633
-msgid "I need to find the key to the safe."
-msgstr ""
-
-#: includes/sample-data.php:644
-msgid "The men in the photo from my friend... clearly loan sharks from Ryu-gumi."
-msgstr ""
-
-#: includes/sample-data.php:652
-msgid "The hidden room I found... There's definitely something big he was hiding."
-msgstr ""
-
-#: includes/sample-data.php:657
-msgid "Ask the wife about the safe key"
-msgstr ""
-
-#: includes/sample-data.php:665
-msgid "Pursue the men in the photo"
-msgstr ""
-
-#: includes/sample-data.php:674
-msgid "Review all gathered evidence and decide the next move"
-msgstr ""
-
-#: includes/sample-data.php:686
-msgid "Shadow Detective - Finding the Key"
-msgstr ""
-
-#: includes/sample-data.php:695
-msgid "The safe key... Oh, I think there was a spare in my husband's study drawer."
-msgstr ""
-
-#: includes/sample-data.php:696
-msgid "All right. Show me the drawer, and I'll check it myself."
-msgstr ""
-
-#: includes/sample-data.php:697
-msgid "Will this key finally open the truth?"
-msgstr ""
-
-#: includes/sample-data.php:698
-msgid "This key might open the safe in the hidden room."
-msgstr ""
-
-#: includes/sample-data.php:704
-msgid "Open the safe in the hidden room immediately"
-msgstr ""
-
-#: includes/sample-data.php:712
-msgid "Gather other clues first"
-msgstr ""
-
-#: includes/sample-data.php:721
-msgid "Return to the office and prepare the confrontation plan"
-msgstr ""
-
-#: includes/sample-data.php:736
-msgid "Shadow Detective - Dangerous Investigation"
-msgstr ""
-
-#: includes/sample-data.php:743
 msgid "Informant"
 msgstr ""
 
-#: includes/sample-data.php:745
-msgid "I need details about the men in this photo. Start talking."
-msgstr ""
-
-#: includes/sample-data.php:746
-msgid "Ah, these guys... dangerous bunch."
-msgstr ""
-
-#: includes/sample-data.php:747
-msgid "They're from \"Ryu-gumi\", a loan shark operation. Once you're in, you're done."
-msgstr ""
-
-#: includes/sample-data.php:748
-msgid "Makoto Kurosaki? Yeah, I've heard. He owed them a huge amount."
-msgstr ""
-
-#: includes/sample-data.php:754
-msgid "Investigate Ryu-gumi in detail"
-msgstr ""
-
-#: includes/sample-data.php:758
-msgid "Return to the office and organize everything found so far"
-msgstr ""
-
-#: includes/sample-data.php:762
-msgid "Search for more connections to Ryu-gumi"
-msgstr ""
-
-#: includes/sample-data.php:780
-msgid "Shadow Detective - Dragon's Den"
-msgstr ""
-
-#: includes/sample-data.php:787
 msgid "Ryu-gumi Executive"
 msgstr ""
 
-#: includes/sample-data.php:789
-msgid "Makoto Kurosaki? Yeah, I know him."
-msgstr ""
-
-#: includes/sample-data.php:790
-msgid "He ran away after defaulting on a 30 million yen debt."
-msgstr ""
-
-#: includes/sample-data.php:791
-msgid "But we didn't do anything. You got no proof, right?"
-msgstr ""
-
-#: includes/sample-data.php:792
-msgid "He is lying. I need a stronger card before I corner him."
-msgstr ""
-
-#: includes/sample-data.php:798
-msgid "Press hard"
-msgstr ""
-
-#: includes/sample-data.php:806
-msgid "Try a different approach and negotiate"
-msgstr ""
-
-#: includes/sample-data.php:820
-msgid "Shadow Detective - Decisive Evidence"
-msgstr ""
-
-#: includes/sample-data.php:829
-msgid "I use the key to open the safe."
-msgstr ""
-
-#: includes/sample-data.php:830
-msgid "Inside are numerous documents and... cash!"
-msgstr ""
-
-#: includes/sample-data.php:831
-msgid "These records are detailed... dates, sums, and signatures."
-msgstr ""
-
-#: includes/sample-data.php:832
-msgid "And this name appears repeatedly: \"Takagi Construction, President Takagi\"."
-msgstr ""
-
-#: includes/sample-data.php:843
-msgid "And a name other than Ryu-gumi... \"Takagi Construction, President Takagi\"?"
-msgstr ""
-
-#: includes/sample-data.php:848
-msgid "Investigate Takagi Construction"
-msgstr ""
-
-#: includes/sample-data.php:857
-msgid "Contact Ryu-gumi again"
-msgstr ""
-
-#: includes/sample-data.php:865
-msgid "Cross-check dates and reconstruct the transaction timeline"
-msgstr ""
-
-#: includes/sample-data.php:877
-msgid "Shadow Detective - Shadow of the Mastermind"
-msgstr ""
-
-#: includes/sample-data.php:886
-msgid "Takagi Construction... a major general contractor. Why involved in illicit deals?"
-msgstr ""
-
-#: includes/sample-data.php:887
-msgid "While searching around the office, I find a discarded internal memo..."
-msgstr ""
-
-#: includes/sample-data.php:888
-msgid "\"Payment from Kurosaki confirmed. Process next through Ryu-gumi\""
-msgstr ""
-
-#: includes/sample-data.php:889
-msgid "This ties Takagi, Kurosaki, and Ryu-gumi together in one chain."
-msgstr ""
-
-#: includes/sample-data.php:895
-msgid "Go directly to meet President Takagi"
-msgstr ""
-
-#: includes/sample-data.php:899
-msgid "Gather more evidence"
-msgstr ""
-
-#: includes/sample-data.php:903
-msgid "Question former employees about backdoor deals"
-msgstr ""
-
-#: includes/sample-data.php:921
-msgid "Shadow Detective - Deepening Investigation"
-msgstr ""
-
-#: includes/sample-data.php:930
-msgid "Evidence has been accumulating. But I still don't have complete certainty."
-msgstr ""
-
-#: includes/sample-data.php:931
-msgid "President Takagi's memo... this could be the decisive evidence."
-msgstr ""
-
-#: includes/sample-data.php:932
-msgid "Ryu-gumi, Kurosaki, and Takagi Construction... the connections are becoming clear."
-msgstr ""
-
-#: includes/sample-data.php:933
-msgid "Now I need to choose: confront now, or reinforce the case first."
-msgstr ""
-
-#: includes/sample-data.php:939
-msgid "Interrogate President Takagi"
-msgstr ""
-
-#: includes/sample-data.php:943
-msgid "Consult with the police"
-msgstr ""
-
-#: includes/sample-data.php:947
-msgid "Verify the evidence one more time"
-msgstr ""
-
-#: includes/sample-data.php:963
-msgid "Shadow Detective - Encounter with the Mastermind"
-msgstr ""
-
-#: includes/sample-data.php:970
-#: includes/sample-data.php:1012
-#: includes/sample-data.php:1054
-#: includes/sample-data.php:1101
 msgid "President Takagi"
 msgstr ""
 
-#: includes/sample-data.php:972
-msgid "Detective, what brings you here?"
-msgstr ""
-
-#: includes/sample-data.php:973
-msgid "You sound calm, President Takagi, but your eyes say otherwise."
-msgstr ""
-
-#: includes/sample-data.php:974
-msgid "Please tell me about your relationship with Makoto Kurosaki."
-msgstr ""
-
-#: includes/sample-data.php:975
-msgid "Ah, I had a business relationship with him."
-msgstr ""
-
-#: includes/sample-data.php:981
-msgid "Explain this illicit transaction memo"
-msgstr ""
-
-#: includes/sample-data.php:989
-msgid "What about your relationship with Ryu-gumi?"
-msgstr ""
-
-#: includes/sample-data.php:993
-msgid "Withdraw for now and strengthen the evidence file"
-msgstr ""
-
-#: includes/sample-data.php:1005
-msgid "Shadow Detective - Cautious Approach"
-msgstr ""
-
-#: includes/sample-data.php:1014
-msgid "Ryu-gumi? Ah, I've heard rumors, but I have no connection with them."
-msgstr ""
-
-#: includes/sample-data.php:1015
-msgid "He is dodging every question. Without hard proof, this won't break."
-msgstr ""
-
-#: includes/sample-data.php:1016
-msgid "Detective, baseless defamation is libel, you know."
-msgstr ""
-
-#: includes/sample-data.php:1017
-msgid "Not yet... I need one decisive piece to force a confession."
-msgstr ""
-
-#: includes/sample-data.php:1023
-msgid "Wait, please look at this evidence"
-msgstr ""
-
-#: includes/sample-data.php:1031
-msgid "Sorry, excuse me"
-msgstr ""
-
-#: includes/sample-data.php:1035
-msgid "Try bluffing with partial evidence"
-msgstr ""
-
-#: includes/sample-data.php:1047
-msgid "Shadow Detective - Revealing the Truth"
-msgstr ""
-
-#: includes/sample-data.php:1056
-msgid "Then explain this memo. I place it on your desk."
-msgstr ""
-
-#: includes/sample-data.php:1057
-msgid "...This is..."
-msgstr ""
-
-#: includes/sample-data.php:1058
-msgid "Your face changed. That means this evidence is real."
-msgstr ""
-
-#: includes/sample-data.php:1059
-msgid "Tch... Kurosaki left evidence behind."
-msgstr ""
-
-#: includes/sample-data.php:1072
-msgid "Where is Makoto Kurosaki?"
-msgstr ""
-
-#: includes/sample-data.php:1076
-msgid "I'm calling the police and securing the villa first"
-msgstr ""
-
-#: includes/sample-data.php:1080
-msgid "Tell me everything you know"
-msgstr ""
-
-#: includes/sample-data.php:1094
-msgid "Shadow Detective - All the Truth"
-msgstr ""
-
-#: includes/sample-data.php:1103
-msgid "Fine... I'll tell you everything."
-msgstr ""
-
-#: includes/sample-data.php:1104
-msgid "Kurosaki discovered my fraud. So I tried to silence him..."
-msgstr ""
-
-#: includes/sample-data.php:1105
-msgid "But I didn't kill him. I asked Ryu-gumi to threaten him."
-msgstr ""
-
-#: includes/sample-data.php:1106
-msgid "Kurosaki is hiding in my villa. He chose it out of fear."
-msgstr ""
-
-#: includes/sample-data.php:1112
-msgid "Protect Kurosaki immediately"
-msgstr ""
-
-#: includes/sample-data.php:1116
-msgid "Take one minute to confirm route and backup"
-msgstr ""
-
-#: includes/sample-data.php:1120
-msgid "Get the villa location first"
-msgstr ""
-
-#: includes/sample-data.php:1132
-msgid "Shadow Detective - Reunion with the Missing"
-msgstr ""
-
-#: includes/sample-data.php:1139
 msgid "Makoto Kurosaki"
 msgstr ""
 
-#: includes/sample-data.php:1141
-msgid "You're the detective..."
-msgstr ""
-
-#: includes/sample-data.php:1142
-msgid "I discovered Takagi's fraud and was threatened."
-msgstr ""
-
-#: includes/sample-data.php:1143
-msgid "I was told my family would be harmed, so I had no choice but to hide."
-msgstr ""
-
-#: includes/sample-data.php:1144
-msgid "Please... I want to see my wife, Misaki, and end this."
-msgstr ""
-
-#: includes/sample-data.php:1157
-msgid "Everything is resolved. Let's go back to your family"
-msgstr ""
-
-#: includes/sample-data.php:1170
-msgid "There are still unclear points. I need a safer closure."
-msgstr ""
-
-#: includes/sample-data.php:1174
-msgid "Let me confirm the evidence one more time before closing"
-msgstr ""
-
-#: includes/sample-data.php:1186
-msgid "Shadow Detective - Complete Solution"
-msgstr ""
-
-#: includes/sample-data.php:1193
-msgid "Makoto"
-msgstr ""
-
-#: includes/sample-data.php:1195
-msgid "All evidence gathered, the truth has been revealed."
-msgstr ""
-
-#: includes/sample-data.php:1196
-msgid "Detective, thank you so much."
-msgstr ""
-
-#: includes/sample-data.php:1197
-msgid "President Takagi was arrested, and I will cooperate with the police."
-msgstr ""
-
-#: includes/sample-data.php:1198
-msgid "Another case solved... and this time, everyone came back alive."
-msgstr ""
-
-#: includes/sample-data.php:1204
-msgid "Complete Solution - All truths have been revealed"
-msgstr ""
-
-#: includes/sample-data.php:1211
-msgid "Shadow Detective - Partial Solution"
-msgstr ""
-
-#: includes/sample-data.php:1220
-msgid "Makoto Kurosaki was protected, and the case saw some resolution."
-msgstr ""
-
-#: includes/sample-data.php:1221
-msgid "However, I couldn't gather all the evidence."
-msgstr ""
-
-#: includes/sample-data.php:1222
-msgid "President Takagi's crimes couldn't be fully proven, leaving parts unresolved."
-msgstr ""
-
-#: includes/sample-data.php:1223
-msgid "Frustrating, but I protected the victim. I'll finish the rest next time."
-msgstr ""
-
-#: includes/sample-data.php:1229
-msgid "Partial Solution - Some truths remain in darkness"
-msgstr ""
-
-#: includes/sample-data.php:1236
-msgid "Shadow Detective - Insufficient Evidence"
-msgstr ""
-
-#: includes/sample-data.php:1245
-msgid "Evidence was insufficient, couldn't reach the truth."
-msgstr ""
-
-#: includes/sample-data.php:1246
-msgid "Makoto Kurosaki remains missing."
-msgstr ""
-
-#: includes/sample-data.php:1247
-msgid "I should have been more careful and thorough in my investigation."
-msgstr ""
-
-#: includes/sample-data.php:1248
-msgid "I will restart from the beginning, and this time I won't miss the turning point."
-msgstr ""
-
-#: includes/sample-data.php:1254
-msgid "Insufficient Evidence - Detective Failure"
-msgstr ""
-
-#: includes/sample-data.php:1263
 msgid "Pocket Watch"
 msgstr ""
 
-#: includes/sample-data.php:1264
-msgid "A pocket watch belonging to Makoto Kurosaki. Evidence he was at the disappearance site."
+msgid "Sato's Photo"
 msgstr ""
 
-#: includes/sample-data.php:1268
-msgid "Missing Person's Diary"
+msgid "Kurosaki's Memo"
 msgstr ""
 
-#: includes/sample-data.php:1269
-msgid "Kurosaki's diary revealing his troubles and evidence of transactions."
+msgid "Safe Key"
 msgstr ""
 
-#: includes/sample-data.php:1273
-msgid "Evidence Photo"
+msgid "Hidden Ledger"
 msgstr ""
 
-#: includes/sample-data.php:1274
-msgid "A photo of the illicit transaction scene."
+msgid "Misaki's Testimony"
 msgstr ""
 
-#: includes/sample-data.php:1278
-msgid "Hidden Room Key"
+msgid "Misaki's Confession"
 msgstr ""
 
-#: includes/sample-data.php:1279
-msgid "The key to access the hidden room."
+msgid "Sato's Testimony"
 msgstr ""
 
-#: includes/sample-data.php:1283
-msgid "Illicit Transaction Memo"
+msgid "Sato's Debt"
 msgstr ""
 
-#: includes/sample-data.php:1284
-msgid "Decisive evidence revealing the mastermind's identity."
+msgid "Sato's Confession"
 msgstr ""
 
-#: includes/sample-data.php:1288
-msgid "Talked to Wife"
+msgid "Hidden Room"
 msgstr ""
 
-#: includes/sample-data.php:1289
-msgid "Obtained testimony from Misaki."
+msgid "Informant's Intel"
 msgstr ""
 
-#: includes/sample-data.php:1293
-msgid "Talked to Friend"
+msgid "Executive's Slip"
 msgstr ""
 
-#: includes/sample-data.php:1294
-msgid "Obtained testimony from friend Sato."
+msgid "Met Takagi"
 msgstr ""
 
-#: includes/sample-data.php:1298
-msgid "Discovered Hidden Room"
+msgid "Deduction: The Mastermind"
 msgstr ""
 
-#: includes/sample-data.php:1299
-msgid "Found the hidden room in the study."
+msgid "Deduction: Still Alive"
 msgstr ""
 
-#: includes/sample-data.php:1303
-msgid "Contacted Underworld"
+msgid "Deduction: The Villa"
 msgstr ""
 
-#: includes/sample-data.php:1304
-msgid "Made contact with Ryu-gumi."
+msgid "Cornered the Mastermind"
 msgstr ""
 
-#: includes/sample-data.php:1308
-msgid "Confronted Mastermind"
+msgid "Shadow Detective"
 msgstr ""
 
-#: includes/sample-data.php:1309
-msgid "Confronted President Takagi."
+msgid "You are the detective. Businessman Makoto Kurosaki vanished from the harbor three nights ago. Question the people around him, gather evidence, expose the contradictions — and when the pieces align, name the mastermind, the truth, and the place. Wrong deductions have consequences."
 msgstr ""
+
+msgid "The trail has gone cold"
+msgstr ""
+
+msgid "Shadow Detective — The Client"
+msgstr ""
+
+msgid "Cold rain had been falling since noon. Just past seven, a woman appeared at my office door, holding a photograph like a prayer."
+msgstr ""
+
+msgid "Please, detective. My husband, Makoto, has been missing for three days."
+msgstr ""
+
+msgid "The police say he simply ran off. But that evening he called me — he said he would be home by ten."
+msgstr ""
+
+msgid "A man who calls home before a meeting doesn't vanish by choice. I'll take the case, Mrs. Kurosaki."
+msgstr ""
+
+msgid "Ask her to walk through that last evening"
+msgstr ""
+
+msgid "Shadow Detective — The Last Evening"
+msgstr ""
+
+msgid "He left at eight, saying a meeting had come up. He took only his coat and his briefcase."
+msgstr ""
+
+msgid "A taxi driver remembered him. He was dropped near the harbor warehouses at nine."
+msgstr ""
+
+msgid "And for weeks now, the phone rings late at night. When I answer... no one speaks."
+msgstr ""
+
+msgid "A meeting no one knew of, the warehouse district, and silent calls. Three threads. Time to start pulling."
+msgstr ""
+
+msgid "Walk the warehouse district where he was last seen"
+msgstr ""
+
+msgid "Visit the residence and hear more from Misaki"
+msgstr ""
+
+msgid "Meet Sato, his oldest friend"
+msgstr ""
+
+msgid "Shadow Detective — Traces on the Wharf"
+msgstr ""
+
+msgid "The harbor at dusk. Rusted cranes, walls of containers — and not a single security camera in sight."
+msgstr ""
+
+msgid "Fresh tire marks by the loading bay. A heavy car stopped here, then swung around in a hurry."
+msgstr ""
+
+msgid "Something glints between the pallets — a pocket watch. The lid is engraved: \"To Makoto. Misaki.\""
+msgstr ""
+
+msgid "The hands stopped at 9:47. A man doesn't drop his wife's gift and stroll away. He left it here — for someone to find."
+msgstr ""
+
+msgid "Return to the office and lay out the facts"
+msgstr ""
+
+msgid "Call on Misaki at the residence"
+msgstr ""
+
+msgid "Meet Sato at the cafe"
+msgstr ""
+
+msgid "Shadow Detective — The Case Board"
+msgstr ""
+
+msgid "Back at the office, I pin everything to the corkboard and let the pieces stare back at me."
+msgstr ""
+
+msgid "A vanished businessman. Midnight calls with no voice. A meeting that never existed."
+msgstr ""
+
+msgid "Money is the thread. Frightened men run from debts; careful men hide the proof."
+msgstr ""
+
+msgid "The board is still full of holes. Time to knock on the next door."
+msgstr ""
+
+msgid "The watch stopped at 9:47 on the wharf. If he dropped it on purpose, he was alive when he left — and he did not leave alone."
+msgstr ""
+
+msgid "\"The September transfer is the last one. I'm out.\" Men who quit a dirty game rarely keep their freedom — or their lives."
+msgstr ""
+
+msgid "The ledger bears his initials on every page. The board is nearly complete — now one wrong thread could unravel the whole case."
+msgstr ""
+
+msgid "Hear Misaki's account at the residence"
+msgstr ""
+
+msgid "Meet Sato, the old friend"
+msgstr ""
+
+msgid "Ask Misaki about the pocket watch"
+msgstr ""
+
+msgid "Search Makoto's study"
+msgstr ""
+
+msgid "Go back down to the hidden room"
+msgstr ""
+
+msgid "Ask Misaki about the safe key"
+msgstr ""
+
+msgid "Open the safe in the hidden room"
+msgstr ""
+
+msgid "Take Sato's photo to an informant"
+msgstr ""
+
+msgid "Walk into the Ryu-gumi's bar"
+msgstr ""
+
+msgid "Press Sato about his debt"
+msgstr ""
+
+msgid "Pay a visit to Takagi Construction"
+msgstr ""
+
+msgid "Assemble the deduction"
+msgstr ""
+
+msgid "Shadow Detective — The House on the Hill"
+msgstr ""
+
+msgid "He was proud of the company he built from nothing. But this past year, something was eating him alive."
+msgstr ""
+
+msgid "He would shut himself in the study until dawn. Once, I heard him on the phone. He sounded like he was pleading."
+msgstr ""
+
+msgid "Twice, a man came to the door. Broad shoulders, a scar on his jaw. My husband sent me upstairs both times."
+msgstr ""
+
+msgid "A visitor the wife was never allowed to see. That's not business. That's a collector."
+msgstr ""
+
+msgid "Show her the pocket watch"
+msgstr ""
+
+msgid "Ask to see the study"
+msgstr ""
+
+msgid "Return to the office"
+msgstr ""
+
+msgid "Shadow Detective — What Misaki Hid"
+msgstr ""
+
+msgid "This was found where your husband was last seen. I need the whole truth now, Mrs. Kurosaki."
+msgstr ""
+
+msgid "...It's the watch I gave him. He never took it off. Not even to sleep."
+msgstr ""
+
+msgid "Forgive me — I did hear that call. He said: \"The September payment is the last one. After that, I'm out.\""
+msgstr ""
+
+msgid "I was afraid, detective. I thought if I repeated those words, they would come true."
+msgstr ""
+
+msgid "Shadow Detective — An Old Friend"
+msgstr ""
+
+msgid "Makoto? We've known each other thirty years. If he were in real trouble, I'd know— I mean, I'd want to know."
+msgstr ""
+
+msgid "Actually, last week I saw him near the harbor with some rough-looking men. I took a photo. Just in case."
+msgstr ""
+
+msgid "Near the harbor. And you just happened to be there, camera ready?"
+msgstr ""
+
+msgid "I— I was passing by, that's all! Here, take the photo. Just find him. Please."
+msgstr ""
+
+msgid "Have an informant identify the men in the photo"
+msgstr ""
+
+msgid "Visit the Kurosaki residence"
+msgstr ""
+
+msgid "Shadow Detective — The Study"
+msgstr ""
+
+msgid "Ledgers, contracts, tax files — all immaculate. Too immaculate for a company said to be gasping for cash."
+msgstr ""
+
+msgid "The books balance perfectly, yet the company was starving. Money flowed through these pages, not into them."
+msgstr ""
+
+msgid "One bookshelf stands a finger's width off the wall. Behind it — a low door with a dial lock, left half-open."
+msgstr ""
+
+msgid "Whoever came for the secret left in a hurry, and empty-handed. Let's see what they couldn't find."
+msgstr ""
+
+msgid "Step through the hidden door"
+msgstr ""
+
+msgid "Withdraw and rethink at the office"
+msgstr ""
+
+msgid "Shadow Detective — The Hidden Room"
+msgstr ""
+
+msgid "A cramped room. A steel safe, a bare desk, and the stale smell of cigarettes and sleepless nights."
+msgstr ""
+
+msgid "On the desk, a memo in Kurosaki's hand: \"Sept. transfer to T. The last one. I'm out.\""
+msgstr ""
+
+msgid "T. He was paying someone, and September was meant to end it. Men like \"T\" rarely agree to endings."
+msgstr ""
+
+msgid "The safe won't give. Somewhere there's a key — and I'd wager the lady of the house knows where."
+msgstr ""
+
+msgid "Shadow Detective — The Second Key"
+msgstr ""
+
+msgid "There's a safe behind his bookshelf. I need whatever opens it."
+msgstr ""
+
+msgid "A safe? I never knew... wait. His father's desk has a drawer with a false bottom. He kept a small key there."
+msgstr ""
+
+msgid "Beneath the false bottom lies a small brass key, its surface polished by worried fingers."
+msgstr ""
+
+msgid "She is still holding something back. I can see it in the way she watches the door."
+msgstr ""
+
+msgid "This should fit the dial door. Time to hear what the safe has been keeping quiet."
+msgstr ""
+
+msgid "Open the safe"
+msgstr ""
+
+msgid "Shadow Detective — The Hidden Ledger"
+msgstr ""
+
+msgid "The key turns with a click that echoes like a gunshot in the tiny room."
+msgstr ""
+
+msgid "Inside: bundles of cash, and a second ledger — money moving every month from a city contractor through Kurosaki's firm."
+msgstr ""
+
+msgid "Public money, washed clean and returned as \"consulting fees\". And every page is initialed by the same hand: \"T.T.\""
+msgstr ""
+
+msgid "Takagi Construction. The biggest name in the harbor redevelopment. A dangerous name to put in a ledger."
+msgstr ""
+
+msgid "\"The September payment is the last one.\" The entries stop in September — exactly as Misaki heard him promise. And every page bears the same initials: \"T.T.\""
+msgstr ""
+
+msgid "Have the photo identified first"
+msgstr ""
+
+msgid "Shadow Detective — The Informant"
+msgstr ""
+
+msgid "Two minutes of your time. Who are the men in this photo?"
+msgstr ""
+
+msgid "Heh. The tall one is Gonda — the Ryu-gumi's collections man. Loans, threats, disposal. Full service."
+msgstr ""
+
+msgid "And one more thing, since you pay well. Your client's friend — Sato, the cafe gentleman — owes the Ryu-gumi three million."
+msgstr ""
+
+msgid "Sato owes the same people who took Makoto. And it was Sato's photo that led me here. How very convenient."
+msgstr ""
+
+msgid "Shadow Detective — The Dragon's Den"
+msgstr ""
+
+msgid "A detective, in my bar. You've got nerve — or nothing left to lose."
+msgstr ""
+
+msgid "Makoto Kurosaki. Your man Gonda met him on the wharf the night he vanished. I can put them both there at 9:47."
+msgstr ""
+
+msgid "Careful now. We lent Kurosaki money, that's all. Think, detective — a dead man repays nothing. Thirty million says we keep him breathing."
+msgstr ""
+
+msgid "\"We keep him breathing.\" Not \"we don't have him.\" The dragon just showed me one of his cards."
+msgstr ""
+
+msgid "Force your way into the back rooms"
+msgstr ""
+
+msgid "Shadow Detective — A Friend's Confession"
+msgstr ""
+
+msgid "Three million to the Ryu-gumi, Sato. And a perfect photo of Makoto, taken the week he disappears. Start talking."
+msgstr ""
+
+msgid "...They said they only wanted his schedule! A debt wiped clean, for a few dates and places. I never thought they would—"
+msgstr ""
+
+msgid "The night it happened, Gonda's car passed me by the harbor gate. It didn't turn toward their office. It took the coast road — toward President Takagi's villa."
+msgstr ""
+
+msgid "The coast road. Sato — that guilt of yours may have just saved your friend's life."
+msgstr ""
+
+msgid "Return to the office and build the case"
+msgstr ""
+
+msgid "Shadow Detective — The Man Behind the Harbor"
+msgstr ""
+
+msgid "A private detective. How quaint. I gave Kurosaki-kun his first contract, you know. Terrible business, his disappearance."
+msgstr ""
+
+msgid "His firm moved your money for years. Consulting fees. Harbor redevelopment. The paperwork is remarkably tidy."
+msgstr ""
+
+msgid "Rumors. Show me one document with my name on it, and I will show you my lawyers."
+msgstr ""
+
+msgid "He didn't ask which money. From a careful man, a careless word is worth more than a confession."
+msgstr ""
+
+msgid "He wants a document with his name. I have a ledger with his initials on every page — but not here. Not until the whole picture is airtight."
+msgstr ""
+
+msgid "Assemble the deduction at the office"
+msgstr ""
+
+msgid "Dig for more before the confrontation"
+msgstr ""
+
+msgid "Shadow Detective — Deduction I: The Hand That Moves"
+msgstr ""
+
+msgid "Night. The desk lamp draws a small circle of light around everything I know."
+msgstr ""
+
+msgid "The ledger, the memo, the debts, the lies. Behind them all — whose hand has been moving the pieces?"
+msgstr ""
+
+msgid "Name the wrong player, and the real one sweeps the board while I kick down the wrong door. Think."
+msgstr ""
+
+msgid "President Takagi. The initials, the money, the motive."
+msgstr ""
+
+msgid "The Ryu-gumi. Collectors turned kidnappers."
+msgstr ""
+
+msgid "Sato. The friend who knew his every move."
+msgstr ""
+
+msgid "Not yet. I will not accuse without proof."
+msgstr ""
+
+msgid "Shadow Detective — Deduction II: Alive or Dead"
+msgstr ""
+
+msgid "Takagi gave the order; the Ryu-gumi carried it out. But carried out — what, exactly?"
+msgstr ""
+
+msgid "The watch was dropped, not smashed. No blood on the wharf, no body in the bay, no ransom note on the door."
+msgstr ""
+
+msgid "So answer it straight: is Makoto Kurosaki alive?"
+msgstr ""
+
+msgid "\"A dead man repays nothing. Thirty million says we keep him breathing.\" The executive's slip fits the clean wharf: no blood, no body, no note."
+msgstr ""
+
+msgid "Alive. He's worth nothing to them dead."
+msgstr ""
+
+msgid "Dead. They silenced him that night."
+msgstr ""
+
+msgid "He staged everything and fled abroad."
+msgstr ""
+
+msgid "I can't call it yet. Back to the streets."
+msgstr ""
+
+msgid "Shadow Detective — Deduction III: The Coast Road"
+msgstr ""
+
+msgid "Alive, hidden, and useful. Where does Takagi cage a man who knows where every yen is buried?"
+msgstr ""
+
+msgid "Not the Ryu-gumi's bar — too many eyes already on it. Not a hotel — too many witnesses he doesn't own."
+msgstr ""
+
+msgid "Say it out loud, and stake the case on it."
+msgstr ""
+
+msgid "Sato watched Gonda's car take the coast road that night. And the coast road ends at exactly one property worth hiding a man in."
+msgstr ""
+
+msgid "Takagi's villa, at the end of the coast road."
+msgstr ""
+
+msgid "The back rooms of the Ryu-gumi's bar."
+msgstr ""
+
+msgid "A freighter already out of the harbor."
+msgstr ""
+
+msgid "Not sure enough. One more round of legwork."
+msgstr ""
+
+msgid "Shadow Detective — The Villa"
+msgstr ""
+
+msgid "The villa at the end of the coast road. Beyond the iron gate, a single window burns on the second floor."
+msgstr ""
+
+msgid "Detective. This is private property. One phone call and you are finished in this city."
+msgstr ""
+
+msgid "Make the call. The police will want to see the second floor too — and this ledger, initialed by you on every page."
+msgstr ""
+
+msgid "...What do you want? Money? A seat on a board? Name your figure and disappear."
+msgstr ""
+
+msgid "The only figure I want is the man upstairs — alive. And then the truth. All of it, in your own words."
+msgstr ""
+
+msgid "Lay every piece of evidence on the table"
+msgstr ""
+
+msgid "Demand to see Kurosaki first"
+msgstr ""
+
+msgid "Shadow Detective — The Whole Truth"
+msgstr ""
+
+msgid "Kurosaki wanted out. Out! With everything he knew about the harbor money still in that stubborn head of his."
+msgstr ""
+
+msgid "So Gonda collected him from the wharf that night. No one was to be hurt. He simply had to be persuaded — to stay quiet."
+msgstr ""
+
+msgid "The midnight calls? Gonda's idea. A telephone that rings and says nothing — so the house never forgets what silence sounds like."
+msgstr ""
+
+msgid "Then the ledger vanished from his study. Three days I asked him, politely, where it went. Three days, he said nothing at all."
+msgstr ""
+
+msgid "Upstairs, behind a locked door, a hollow-cheeked man lifts his head at the sound of new footsteps."
+msgstr ""
+
+msgid "Open the door"
+msgstr ""
+
+msgid "Shadow Detective — The Man Upstairs"
+msgstr ""
+
+msgid "You're... not one of Takagi's men. Then who—"
+msgstr ""
+
+msgid "A detective. Your wife hired me. She never once believed you ran."
+msgstr ""
+
+msgid "Misaki... I dropped the watch on the wharf, praying someone would read it right. Three days, I've been holding on to that prayer."
+msgstr ""
+
+msgid "The police are on the coast road now. It's over. All that's left is to decide how much of the truth we hand them."
+msgstr ""
+
+msgid "Hand over everything — ledger, memo, watch, and every testimony"
+msgstr ""
+
+msgid "Bring him home first. The rest can wait."
+msgstr ""
+
+msgid "Shadow Detective — Ending: Into the Light"
+msgstr ""
+
+msgid "One week later, the harbor scandal owns every front page. Takagi arrested. The Ryu-gumi raided. The ledger in an evidence vault."
+msgstr ""
+
+msgid "Detective. You gave me back my husband — and the truth with him. I don't have words enough."
+msgstr ""
+
+msgid "The watch is back where it belongs. And this time, the September payment really was the last."
+msgstr ""
+
+msgid "Rain again tonight. Some cases end with a cell door closing. The good ones end with a lit window in a warm house."
+msgstr ""
+
+msgid "Complete Solution — Every truth brought into the light"
+msgstr ""
+
+msgid "Shadow Detective — Ending: A Half Truth"
+msgstr ""
+
+msgid "Makoto Kurosaki came home. That much of the job, I did."
+msgstr ""
+
+msgid "But the chain of proof had gaps, and Takagi's lawyers cut the ledger loose. \"Insufficient corroboration,\" the court called it."
+msgstr ""
+
+msgid "He sold the villa, paid a fine, and smiled for the cameras. The dragon lost a claw. Nothing more."
+msgstr ""
+
+msgid "A half truth keeps a man awake worse than any lie. Someday, Takagi. Someday."
+msgstr ""
+
+msgid "Partial Solution — The mastermind slips the net"
+msgstr ""
+
+msgid "Shadow Detective — Ending: The Wrong Door"
+msgstr ""
+
+msgid "I was so sure. I named the wrong name, kicked the wrong door — and watched the case fall apart in my hands."
+msgstr ""
+
+msgid "While the papers laughed at the detective who cried wolf, a quieter hand swept the board clean."
+msgstr ""
+
+msgid "The ledger is ash now. The witnesses have forgotten my face. And Makoto Kurosaki is still out there — somewhere."
+msgstr ""
+
+msgid "A detective's oath: when you are wrong, you start over — from the very first thread."
+msgstr ""
+
+msgid "False Deduction — The truth slipped through your fingers"
+msgstr ""
+
+msgid "Shadow Detective — Ending: Dead End"
+msgstr ""
+
+msgid "Force, against a house built on force. It was over in half a minute."
+msgstr ""
+
+msgid "They left me in the back alley with a receipt written in bruises: the next visit ends in the harbor."
+msgstr ""
+
+msgid "By morning, every door in the case had quietly shut. Witnesses moved away. The client received a generous \"settlement\"."
+msgstr ""
+
+msgid "A detective who runs out of patience runs out of everything. This case is a dead end — and the dead end is mine."
+msgstr ""
+
+msgid "Dead End — The investigation is closed"
+msgstr ""
+
+msgid "Makoto's pocket watch, found on the wharf. Stopped at 9:47 — dropped on purpose."
+msgstr ""
+
+msgid "A photo of Makoto with rough-looking men near the harbor, taken by Sato."
+msgstr ""
+
+msgid "A memo in Makoto's hand: \"Sept. transfer to T. The last one. I'm out.\""
+msgstr ""
+
+msgid "A brass key from the false-bottomed drawer. Opens the safe in the hidden room."
+msgstr ""
+
+msgid "A second ledger tracking laundered public money. Every page initialed \"T.T.\""
+msgstr ""
+
+msgid "Misaki spoke of sleepless nights, a pleading phone call, and a scarred visitor."
+msgstr ""
+
+msgid "Misaki admitted overhearing him: \"The September payment is the last one. I'm out.\""
+msgstr ""
+
+msgid "Sato provided the photo — but his story has holes."
+msgstr ""
+
+msgid "The informant says Sato owes the Ryu-gumi three million."
+msgstr ""
+
+msgid "Sato sold Makoto's schedule for his debt — and saw Gonda's car take the coast road."
+msgstr ""
+
+msgid "Behind the study bookshelf: a dial-locked door someone else searched in a hurry."
+msgstr ""
+
+msgid "The tall man in the photo is Gonda, the Ryu-gumi's collections man."
+msgstr ""
+
+msgid "\"A dead man repays nothing. Thirty million says we keep him breathing.\""
+msgstr ""
+
+msgid "President Takagi never asked which money. A careless word from a careful man."
+msgstr ""
+
+msgid "Concluded that President Takagi is the hand moving the pieces."
+msgstr ""
+
+msgid "Concluded that Makoto is alive — worth nothing to them dead."
+msgstr ""
+
+msgid "Concluded that Makoto is held at the villa on the coast road."
+msgstr ""
+
+msgid "Confronted Takagi at the villa with the ledger."
+msgstr ""
+
