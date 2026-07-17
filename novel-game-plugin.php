@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Novel Game Plugin
+ * Plugin Name: Novel Game Maker
  * Plugin URI: https://github.com/shokun0803/novel-game-plugin
  * Description: WordPressでノベルゲームを作成できるプラグイン。
  * Version: 1.6.0

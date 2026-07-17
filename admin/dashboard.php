@@ -34,7 +34,7 @@ function noveltool_dashboard_page() {
     
     ?>
     <div class="wrap">
-        <h1><?php esc_html_e( 'Novel Game Plugin Dashboard', 'novel-game-plugin' ); ?></h1>
+        <h1><?php esc_html_e( 'Novel Game Maker Dashboard', 'novel-game-plugin' ); ?></h1>
         
         <div class="noveltool-dashboard-container">
             <!-- 統計情報セクション -->
@@ -99,8 +99,8 @@ function noveltool_dashboard_page() {
 
             <!-- プラグイン概要セクション -->
             <div class="noveltool-about-section">
-                <h2><?php esc_html_e( 'About Novel Game Plugin', 'novel-game-plugin' ); ?></h2>
-                <p><?php esc_html_e( 'Novel Game Plugin allows you to create visual novel or sound novel style games directly in WordPress. You can create multiple games, manage scenes with branching storylines, and use flags for conditional content.', 'novel-game-plugin' ); ?></p>
+                <h2><?php esc_html_e( 'About Novel Game Maker', 'novel-game-plugin' ); ?></h2>
+                <p><?php esc_html_e( 'Novel Game Maker allows you to create visual novel or sound novel style games directly in WordPress. You can create multiple games, manage scenes with branching storylines, and use flags for conditional content.', 'novel-game-plugin' ); ?></p>
                 <p><strong><?php esc_html_e( 'Key Features:', 'novel-game-plugin' ); ?></strong></p>
                 <ul>
                     <li><?php esc_html_e( 'Multiple game management', 'novel-game-plugin' ); ?></li>

@@ -1,4 +1,4 @@
-=== Novel Game Plugin ===
+=== Novel Game Maker ===
 Contributors: shokun0803
 Tags: game, novel, visual novel, adventure, story
 Requires at least: 6.3
@@ -12,7 +12,7 @@ Create and publish branching visual novel / sound novel games on your site, with
 
 == Description ==
 
-Novel Game Plugin lets you build classic branching visual novel games directly inside the block editor and play them on the front end in an immersive full-screen player.
+Novel Game Maker lets you build classic branching visual novel games directly inside the block editor and play them on the front end in an immersive full-screen player.
 
 **Features**
 

@@ -366,8 +366,8 @@ msgid "Add Flag"
 msgstr "フラグを追加"
 
 #: admin/dashboard.php:37
-msgid "Novel Game Plugin Dashboard"
-msgstr "ノベルゲームプラグイン ダッシュボード"
+msgid "Novel Game Maker Dashboard"
+msgstr "Novel Game Maker ダッシュボード"
 
 #: admin/dashboard.php:42
 msgid "Statistics"
@@ -431,16 +431,16 @@ msgstr ""
 "ショートコードを使用して、サイトの任意のページや投稿にゲームを表示します。"
 
 #: admin/dashboard.php:102
-msgid "About Novel Game Plugin"
-msgstr "ノベルゲームプラグインについて"
+msgid "About Novel Game Maker"
+msgstr "Novel Game Maker について"
 
 #: admin/dashboard.php:103
 msgid ""
-"Novel Game Plugin allows you to create visual novel or sound novel style "
+"Novel Game Maker allows you to create visual novel or sound novel style "
 "games directly in WordPress. You can create multiple games, manage scenes "
 "with branching storylines, and use flags for conditional content."
 msgstr ""
-"ノベルゲームプラグインは、WordPress上で直接ビジュアルノベルやサウンドノベル形"
+"Novel Game Maker は、WordPress上で直接ビジュアルノベルやサウンドノベル形"
 "式のゲームを作成できます。複数のゲームを作成し、分岐するストーリーラインで"
 "シーンを管理し、条件付きコンテンツにフラグを使用できます。"
 

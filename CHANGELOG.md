@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Novel Game Plugin will be documented in this file.
+All notable changes to Novel Game Maker (formerly Novel Game Plugin) will be documented in this file.
 
 ## [Unreleased]
 

@@ -182,7 +182,7 @@ msgid ""
 msgstr ""
 
 #: admin/dashboard.php:37
-msgid "Novel Game Plugin Dashboard"
+msgid "Novel Game Maker Dashboard"
 msgstr ""
 
 #: admin/dashboard.php:42
@@ -244,12 +244,12 @@ msgid "Use shortcodes to display your game on any page or post on your site."
 msgstr ""
 
 #: admin/dashboard.php:102
-msgid "About Novel Game Plugin"
+msgid "About Novel Game Maker"
 msgstr ""
 
 #: admin/dashboard.php:103
 msgid ""
-"Novel Game Plugin allows you to create visual novel or sound novel style "
+"Novel Game Maker allows you to create visual novel or sound novel style "
 "games directly in WordPress. You can create multiple games, manage scenes "
 "with branching storylines, and use flags for conditional content."
 msgstr ""
