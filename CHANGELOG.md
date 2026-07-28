@@ -4,6 +4,8 @@ All notable changes to Novel Game Maker (formerly Novel Game Plugin) will be doc
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-07-17
+
 ### Changed (変更) — WordPress.org 審査対応
 
 - **readme.txt を新規作成** — Stable tag / External services（GitHubからのサンプル画像取得、任意設定の広告ネットワーク）の開示を含む WordPress.org 形式
@@ -22,8 +24,6 @@ All notable changes to Novel Game Maker (formerly Novel Game Plugin) will be doc
 - コア翻訳の借用 3件（`Published` / `Trash` / `All (%s)`）に自ドメインを付与
 - `wp_redirect()` → `wp_safe_redirect()`
 - ストリーミング必須のファイル操作・prepare済みSQL変数には正当理由付きの phpcs 注釈を付与
-
-## [1.6.0] - 2026-07-17
 
 ### Changed (変更)
 
