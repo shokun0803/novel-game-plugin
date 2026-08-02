@@ -778,6 +778,25 @@ body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
         margin-left: 0;
         margin-right: 0;
     }
+
+    /* モバイルブラウザのアドレスバー分を除いた実表示領域（dvh）に合わせる。
+       100vh はアドレスバーを含んだ高さになるため、画面下端のセリフボックスが
+       ブラウザ UI の裏に隠れて文字が切れてしまう。
+       dvh 非対応ブラウザでは直前の 100vh がそのまま使われる。 */
+    .is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay,
+    .wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay,
+    body #novel-game-modal-overlay.novel-game-modal-overlay,
+    .is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay.show,
+    .wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay.show,
+    body #novel-game-modal-overlay.novel-game-modal-overlay.show,
+    .is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"],
+    .wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"],
+    body #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"],
+    .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
+    .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
+    body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
+        height: 100dvh;
+    }
 }
 
 /* タブレット対応 */
@@ -809,6 +828,47 @@ body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
         margin: auto;
         margin-left: auto;
         margin-right: auto;
+    }
+}
+
+/* スマートフォン横向き：CSS 幅は 768px を超えるものの高さが足りないため、
+   タブレット/デスクトップ扱いのレターボックスにせず全画面にする。
+   幅ベースのブレークポイントより後に置いて上書きさせる。 */
+@media (orientation: landscape) and (max-height: 500px) {
+    .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
+    .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content .novel-game-container,
+    body #novel-game-modal-overlay .novel-game-modal-content .novel-game-container {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        max-width: none;
+        max-height: none;
+        aspect-ratio: auto;
+        border-radius: 0;
+        border: none;
+        min-width: auto;
+        min-height: auto;
+        margin: 0;
+    }
+
+    .is-layout-constrained #novel-game-modal-overlay .novel-game-modal-content,
+    .wp-block-post-content #novel-game-modal-overlay .novel-game-modal-content,
+    body #novel-game-modal-overlay .novel-game-modal-content {
+        padding: 0;
+        margin: 0;
+        max-width: none;
+    }
+
+    .is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay,
+    .wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay,
+    body #novel-game-modal-overlay.novel-game-modal-overlay,
+    .is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay.show,
+    .wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay.show,
+    body #novel-game-modal-overlay.novel-game-modal-overlay.show,
+    .is-layout-constrained #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"],
+    .wp-block-post-content #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"],
+    body #novel-game-modal-overlay.novel-game-modal-overlay[style*="display: flex"] {
+        height: 100dvh;
     }
 }
 
@@ -935,8 +995,8 @@ body #novel-game-modal-overlay #novel-game-container {
 
 @media (max-width: 768px) {
     .novel-game-close-btn {
-        top: 12px;
-        right: 12px;
+        top: calc(12px + env(safe-area-inset-top, 0px));
+        right: calc(12px + env(safe-area-inset-right, 0px));
         width: 42px;
         height: 42px;
         font-size: 19px;
@@ -945,7 +1005,29 @@ body #novel-game-modal-overlay #novel-game-container {
     /* 広告バナー表示中はバナーと重ならないよう閉じるボタンを下へ退避
        （:has 非対応ブラウザではボタンがバナー前面に重なるが操作は可能） */
     .novel-game-modal-content:has(.novel-game-container.has-ad-banner) .novel-game-close-btn {
-        top: 64px;
+        top: calc(64px + env(safe-area-inset-top, 0px));
+    }
+}
+
+/* スマートフォン横向きは CSS 幅が 768px を超えるため上のブロックに入らない。
+   高さ基準で同じ退避を適用する（広告バナーは横向きでは 60px 前後）。 */
+@media (orientation: landscape) and (max-height: 500px) {
+    .novel-game-close-btn {
+        top: calc(12px + env(safe-area-inset-top, 0px));
+        right: calc(12px + env(safe-area-inset-right, 0px));
+        width: 42px;
+        height: 42px;
+        font-size: 19px;
+    }
+
+    /* 横向きは縦の余裕がないので広告バナー自体も低くする */
+    .novel-ad-container {
+        min-height: 50px;
+        max-height: 60px;
+    }
+
+    .novel-game-modal-content:has(.novel-game-container.has-ad-banner) .novel-game-close-btn {
+        top: calc(70px + env(safe-area-inset-top, 0px));
     }
 }
 
@@ -1865,9 +1947,37 @@ body #novel-game-modal-overlay .novel-dialogue-box {
    ============================================================================= */
 
 @media (max-width: 767px) and (orientation: portrait) {
+    /* セリフボックスの高さと下端オフセットを一元管理する。
+       立ち絵・話者プレートの位置をここから算出することで、
+       ボックスとの間に不自然な隙間が空くのを防ぐ。 */
     #novel-game-container {
+        --nvl-dialogue-h: 124px;
+        --nvl-dialogue-offset: calc(8px + env(safe-area-inset-bottom, 0px));
+        /* 画面上部で他の UI（閉じるボタン・広告バナー）が占める領域。
+           選択肢の最大高さの算出に使う */
+        --nvl-top-ui-reserve: calc(80px + env(safe-area-inset-top, 0px));
+        /* 100vh はアドレスバーを含む高さのため、実表示領域の dvh を優先する */
         height: 100vh;
         height: 100dvh;
+    }
+
+    /* 広告バナー表示時は閉じるボタンが下にずれるぶん確保域を広げる */
+    #novel-game-container.has-ad-banner {
+        --nvl-top-ui-reserve: calc(124px + env(safe-area-inset-top, 0px));
+    }
+
+    /* 縦長画面では背景が大きく引き伸ばされて上部が間延びして見えるため、
+       上端に暗いスクリムを重ねて空きを演出として馴染ませる */
+    #novel-game-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 42%;
+        background: linear-gradient(180deg, rgba(3, 5, 10, 0.55) 0%, rgba(3, 5, 10, 0.18) 55%, transparent 100%);
+        pointer-events: none;
+        z-index: 1;
     }
 
     .novel-game-title {
@@ -1876,47 +1986,66 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         padding: 8px;
     }
 
+    /* 立ち絵は画面幅いっぱいまで使って拡大し、左右は透明余白ぶんはみ出させる。
+       素材が正方形（AI 生成でよくある 1:1）でも十分な大きさになるようにする。 */
     .novel-character-left {
-        left: 0;
-        max-width: 46%;
+        left: -9%;
+        max-width: 72%;
     }
 
     .novel-character-center {
-        max-width: 54%;
+        max-width: 88%;
     }
 
     .novel-character-right {
-        right: 0;
-        max-width: 46%;
+        right: -9%;
+        max-width: 72%;
     }
 
+    /* 3体同時表示のときは中央と重なりすぎないように縮め、
+       左右のはみ出しも戻す（:has() 非対応ブラウザでは上の 2 体想定の値が残る） */
+    #novel-game-container:has(.novel-character-left):has(.novel-character-center):has(.novel-character-right) .novel-character-left {
+        left: -2%;
+        max-width: 44%;
+    }
+
+    #novel-game-container:has(.novel-character-left):has(.novel-character-center):has(.novel-character-right) .novel-character-right {
+        right: -2%;
+        max-width: 44%;
+    }
+
+    #novel-game-container:has(.novel-character-left):has(.novel-character-center):has(.novel-character-right) .novel-character-center {
+        max-width: 48%;
+    }
+
+    /* 足元をセリフボックスの内側に潜り込ませ、宙に浮いて見えないようにする */
     #novel-character,
     .novel-character {
-        bottom: 16%;
-        max-height: 46%;
+        bottom: calc(var(--nvl-dialogue-offset, 8px) + var(--nvl-dialogue-h, 124px) - 28px);
+        max-height: 52%;
     }
 
     #novel-dialogue-box,
     .novel-dialogue-box {
         padding: 12px 16px;
-        height: 118px;
-        bottom: 8px;
-        left: 8px;
-        right: 8px;
+        height: var(--nvl-dialogue-h, 124px);
+        bottom: var(--nvl-dialogue-offset, 8px);
+        left: calc(8px + env(safe-area-inset-left, 0px));
+        right: calc(8px + env(safe-area-inset-right, 0px));
         font-size: 14px;
         border-radius: 8px;
     }
 
     body #novel-game-modal-overlay #novel-dialogue-box,
     body #novel-game-modal-overlay .novel-dialogue-box {
-        bottom: 8px;
-        left: 8px;
-        right: 8px;
+        bottom: var(--nvl-dialogue-offset, 8px);
+        left: calc(8px + env(safe-area-inset-left, 0px));
+        right: calc(8px + env(safe-area-inset-right, 0px));
     }
 
     .novel-speaker-name {
-        bottom: 124px;
-        left: 20px;
+        bottom: calc(var(--nvl-dialogue-offset, 8px) + var(--nvl-dialogue-h, 124px) - 2px);
+        left: calc(20px + env(safe-area-inset-left, 0px));
         font-size: 12px;
         padding: 5px 14px 7px;
         min-width: 70px;
@@ -1928,10 +2057,20 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         line-height: 1.6;
     }
 
+    /* 選択肢はセリフボックスがあった位置から上に積む（親指が届きやすく、
+       立ち絵の顔を覆いにくい）。選択肢が多い・折り返して長くなった場合でも
+       画面外や閉じるボタン（上部）に食い込まないよう最大高さを制限し、
+       溢れる場合はスクロールさせる。 */
     #novel-choices,
     .novel-choices {
-        bottom: 20%;
+        bottom: calc(var(--nvl-dialogue-offset, 8px) + var(--nvl-dialogue-h, 124px) - 24px);
         width: 92%;
+        max-height: calc(100% - var(--nvl-dialogue-offset, 8px) - var(--nvl-dialogue-h, 124px) - var(--nvl-top-ui-reserve, 116px));
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(227, 189, 109, 0.5) transparent;
     }
 
     #novel-choices .choice-item,
@@ -1940,6 +2079,13 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         margin: 8px 0;
         font-size: 14px;
         min-height: 48px;
+    }
+
+    /* スクロールコンテナ内では最終項目の下マージンが余分な
+       スクロール量になるため打ち消す */
+    #novel-choices .choice-item:last-child,
+    .novel-choices .choice-item:last-child {
+        margin-bottom: 0;
     }
 
     /* アーカイブページ */
@@ -1969,14 +2115,32 @@ body #novel-game-modal-overlay .novel-dialogue-box {
     }
 }
 
+/* 小型スマホ（縦） - セリフの文字サイズが小さくなるぶんボックスも詰める。
+   ボックス高さは変数経由で立ち絵・話者プレートにも反映される。 */
+@media (max-width: 480px) and (orientation: portrait) {
+    #novel-game-container {
+        --nvl-dialogue-h: 112px;
+    }
+}
+
 /* =============================================================================
    モバイル横画面特化（Landscape）
+
+   最近のスマートフォンは横向きだと CSS 幅が 800px を超えるため
+   （例: iPhone 14 は 844x390）、幅ではなく高さで判定する。
    ============================================================================= */
 
-@media (max-width: 767px) and (orientation: landscape) {
+@media (orientation: landscape) and (max-height: 500px) {
     #novel-game-container {
+        --nvl-dialogue-h: 92px;
+        --nvl-dialogue-offset: calc(6px + env(safe-area-inset-bottom, 0px));
+        --nvl-top-ui-reserve: calc(72px + env(safe-area-inset-top, 0px));
         height: 100vh;
         height: 100dvh;
+    }
+
+    #novel-game-container.has-ad-banner {
+        --nvl-top-ui-reserve: calc(126px + env(safe-area-inset-top, 0px));
     }
 
     .novel-game-title {
@@ -1985,47 +2149,49 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         padding: 5px;
     }
 
+    /* 横向きは幅に余裕があるので、正方形素材でも高さ側（max-height）が
+       効く程度まで幅の上限を上げておく */
     .novel-character-left {
         left: 2%;
-        max-width: 24%;
+        max-width: 34%;
     }
 
     .novel-character-center {
-        max-width: 26%;
+        max-width: 40%;
     }
 
     .novel-character-right {
         right: 2%;
-        max-width: 24%;
+        max-width: 34%;
     }
 
     #novel-character,
     .novel-character {
-        bottom: 24%;
-        max-height: 58%;
+        bottom: calc(var(--nvl-dialogue-offset, 6px) + var(--nvl-dialogue-h, 92px) - 20px);
+        max-height: 62%;
     }
 
     #novel-dialogue-box,
     .novel-dialogue-box {
         padding: 10px 14px;
-        height: 92px;
-        bottom: 6px;
-        left: 6px;
-        right: 6px;
+        height: var(--nvl-dialogue-h, 92px);
+        bottom: var(--nvl-dialogue-offset, 6px);
+        left: calc(6px + env(safe-area-inset-left, 0px));
+        right: calc(6px + env(safe-area-inset-right, 0px));
         font-size: 12px;
         border-radius: 8px;
     }
 
     body #novel-game-modal-overlay #novel-dialogue-box,
     body #novel-game-modal-overlay .novel-dialogue-box {
-        bottom: 6px;
-        left: 6px;
-        right: 6px;
+        bottom: var(--nvl-dialogue-offset, 6px);
+        left: calc(6px + env(safe-area-inset-left, 0px));
+        right: calc(6px + env(safe-area-inset-right, 0px));
     }
 
     .novel-speaker-name {
-        bottom: 96px;
-        left: 16px;
+        bottom: calc(var(--nvl-dialogue-offset, 6px) + var(--nvl-dialogue-h, 92px) - 2px);
+        left: calc(16px + env(safe-area-inset-left, 0px));
         font-size: 11px;
         padding: 3px 10px 5px;
         min-width: 60px;
@@ -2037,10 +2203,18 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         line-height: 1.5;
     }
 
+    /* 横向きは縦の余裕が少ないため、選択肢が増えても閉じるボタン・広告に
+       食い込まないよう最大高さを制限してスクロールさせる */
     #novel-choices,
     .novel-choices {
-        bottom: 12%;
+        bottom: calc(var(--nvl-dialogue-offset, 6px) + var(--nvl-dialogue-h, 92px) - 18px);
         width: 76%;
+        max-height: calc(100% - var(--nvl-dialogue-offset, 6px) - var(--nvl-dialogue-h, 92px) - var(--nvl-top-ui-reserve, 72px));
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(227, 189, 109, 0.5) transparent;
     }
 
     #novel-choices .choice-item,
@@ -2049,6 +2223,11 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         padding: 9px 12px 9px 16px;
         margin: 5px 0;
         min-height: 38px;
+    }
+
+    #novel-choices .choice-item:last-child,
+    .novel-choices .choice-item:last-child {
+        margin-bottom: 0;
     }
 
     /* アーカイブページ */
@@ -2076,15 +2255,15 @@ body #novel-game-modal-overlay .novel-dialogue-box {
         padding: 6px;
     }
 
+    /* 高さ・下端位置は --nvl-dialogue-h / --nvl-dialogue-offset 側で管理するため、
+       ここでは見た目（余白・文字サイズ）のみを調整する */
     #novel-dialogue-box,
     .novel-dialogue-box {
         padding: 11px 14px;
         font-size: 13px;
-        height: 110px;
     }
 
     .novel-speaker-name {
-        bottom: 116px;
         font-size: 11px;
         padding: 4px 12px 6px;
     }

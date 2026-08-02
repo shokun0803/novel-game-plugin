@@ -2686,7 +2686,12 @@
 			} ).animate( { opacity: 1 }, 300, function() {
 				$modalOverlay.addClass( 'show' );
 			} );
-			
+
+			// モバイルブラウザではアドレスバーぶん 100vh が実表示領域より大きくなり、
+			// 画面下端のセリフボックスが隠れて文字が切れる。dvh 対応ブラウザでは
+			// 実表示領域に合わせ直す（非対応ブラウザでは値が無視され 100vh のまま）。
+			$modalOverlay.css( 'height', '100dvh' );
+
 			debugLog( 'Modal overlay display set to flex' );
 			
 			// ゲームデータがオブジェクトとして渡された場合（ゲームリストから）
