@@ -80,6 +80,13 @@ In the player's browser (localStorage). No play data is sent to the server or to
 
 == Changelog ==
 
+= 1.6.1 =
+* Fixed dialogue text being cut off at the bottom of the screen on mobile browsers (switched the player to the dynamic viewport height).
+* Fixed character sprites appearing small and floating above the dialogue box in portrait orientation, especially with square (1:1) artwork.
+* Fixed phones in landscape being treated as tablets, which letterboxed the player and left the close button overlapping the ad banner.
+* Choices are now capped in height and scroll instead of running off screen or under the close button.
+* Added safe-area (notch / home indicator) support.
+
 = 1.6.0 =
 * Redesigned front-end player (dialogue panel, choices, title and ending screens, typewriter text, cross-fade transitions).
 * Rewrote the optional sample game as a 25-scene mystery with a three-stage deduction phase and four endings.
@@ -91,6 +98,9 @@ In the player's browser (localStorage). No play data is sent to the server or to
 * Release automation, title readability improvements.
 
 == Upgrade Notice ==
+
+= 1.6.1 =
+Mobile layout fixes for the player (viewport height, character size, choices and ad banner placement). PC and tablet layouts are unchanged.
 
 = 1.6.0 =
 Front-end player redesign and reworked sample game. Clear your browser cache after updating.
