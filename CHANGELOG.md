@@ -4,6 +4,8 @@ All notable changes to Novel Game Maker (formerly Novel Game Plugin) will be doc
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-08-03
+
 ### Added (機能追加) — リビジョン比較の高度差分（段階3）
 
 - **配列要素の並び替え（移動）検出に対応** — 内容が完全一致する要素が別の位置に移動しただけの場合、削除+追加ではなく「移動」として検出し、移動元・移動先の位置番号を差分に注記するようにした

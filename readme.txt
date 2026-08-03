@@ -4,7 +4,7 @@ Tags: game, novel, visual novel, adventure, story
 Requires at least: 6.3
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.6.1
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +80,12 @@ In the player's browser (localStorage). No play data is sent to the server or to
 
 == Changelog ==
 
+= 1.7.0 =
+* The post revision comparison screen now shows line-by-line differences for array-based scene fields (dialogue lines, backgrounds, speakers, choices, flag conditions, scene-arrival flags), including reordered lines detected as moves rather than delete+add, and per-key differences within choices.
+* Added "show changed lines only", "collapse unchanged lines" and "export as JSON" controls to the revision comparison screen.
+* Fixed a bug where the custom-field diff on the revision comparison screen never actually rendered (a filter name mismatch since the feature was first added), so revisions always fell back to a raw, hard-to-read comparison.
+* Fixed revision comparison and restore breaking for scenes that had choices configured.
+
 = 1.6.1 =
 * Fixed dialogue text being cut off at the bottom of the screen on mobile browsers (switched the player to the dynamic viewport height).
 * Fixed character sprites appearing small and floating above the dialogue box in portrait orientation, especially with square (1:1) artwork.
@@ -98,6 +104,9 @@ In the player's browser (localStorage). No play data is sent to the server or to
 * Release automation, title readability improvements.
 
 == Upgrade Notice ==
+
+= 1.7.0 =
+Revision comparison for scenes is much more readable now (per-line and per-key diffs, move detection, changed-only view, JSON export), and a long-standing bug that prevented it from rendering at all is fixed.
 
 = 1.6.1 =
 Mobile layout fixes for the player (viewport height, character size, choices and ad banner placement). PC and tablet layouts are unchanged.
