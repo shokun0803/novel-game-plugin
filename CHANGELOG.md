@@ -4,6 +4,16 @@ All notable changes to Novel Game Maker (formerly Novel Game Plugin) will be doc
 
 ## [Unreleased]
 
+### Added (機能追加) — リビジョン比較の配列フィールド詳細差分表示（段階2）
+
+- **配列フィールドの行単位差分表示を追加** — `_dialogue_texts` / `_dialogue_backgrounds` / `_dialogue_speakers` / `_dialogue_flag_conditions` / `_choices` / `_scene_arrival_flags` について、変更があった場合にフィールド単位の差分表示に加えて配列内部の行ごとの「同一 / 変更 / 追加 / 削除」を表示するようにした
+- 変更が無いフィールドは従来どおりの要約表示（`配列（N要素）`）を維持し、冗長な表示を避けた
+- 要素数が多い配列（200行超）では詳細差分の生成をスキップし、負荷を抑えたフォールバック表示にした
+
+### Fixed (バグ修正)
+
+- **選択肢（`_choices`）を含むシーンでリビジョン比較・復元が壊れる不具合を修正** — `_choices` はJSON文字列としてメタ保存されるため、リビジョン用の統合JSONにそのままネストすると二重エンコードとなり、`update_post_meta()` / `update_metadata()` 内部の `wp_unslash()` によってエスケープ済みの引用符が失われ、統合JSON全体が破損してリビジョン比較が「データなし」表示になっていた。統合JSON生成時に配列へ復元してから格納し、復元時にJSON文字列へ戻すことで解消
+
 ## [1.6.1] - 2026-08-02
 
 ### Fixed (バグ修正) — スマートフォン表示の最適化

@@ -2211,6 +2211,16 @@ msgstr "はい"
 msgid "No"
 msgstr "いいえ"
 
+#: includes/revisions.php:504
+msgid "Too many items to show a detailed diff. Showing summary only."
+msgstr "件数が多いため詳細差分は省略し、要約のみ表示しています。"
+
+#. translators: %d: 配列内の行番号（1始まり）
+#: includes/revisions.php:540
+#, php-format
+msgid "Row %d"
+msgstr "%d行目"
+
 #: includes/blocks.php:156
 msgid "All Games List"
 msgstr "全ゲーム一覧"
