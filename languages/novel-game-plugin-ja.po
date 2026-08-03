@@ -2198,18 +2198,19 @@ msgstr "エンディングテキスト"
 msgid "Scene Arrival Flags"
 msgstr "シーン到達時フラグ"
 
-#: includes/revisions.php:410
-#, php-format
-msgid "Array (%d items)"
-msgstr "配列（%d要素）"
-
-#: includes/revisions.php:415
+#: includes/revisions.php:387
 msgid "Yes"
 msgstr "はい"
 
-#: includes/revisions.php:415
+#: includes/revisions.php:387
 msgid "No"
 msgstr "いいえ"
+
+#. translators: %d: 配列の要素数
+#: includes/revisions.php:321
+#, php-format
+msgid "Too many items to list individually (%d items)."
+msgstr "件数が多いため個別には表示していません（%d件）。"
 
 #: includes/blocks.php:156
 msgid "All Games List"

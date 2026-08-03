@@ -1901,17 +1901,18 @@ msgstr ""
 msgid "Scene Arrival Flags"
 msgstr ""
 
-#: includes/revisions.php:410
-#, php-format
-msgid "Array (%d items)"
-msgstr ""
-
-#: includes/revisions.php:415
+#: includes/revisions.php:387
 msgid "Yes"
 msgstr ""
 
-#: includes/revisions.php:415
+#: includes/revisions.php:387
 msgid "No"
+msgstr ""
+
+#. translators: %d: 配列の要素数
+#: includes/revisions.php:321
+#, php-format
+msgid "Too many items to list individually (%d items)."
 msgstr ""
 
 #. translators: %d: HTTP status code
