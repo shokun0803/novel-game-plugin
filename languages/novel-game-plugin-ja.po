@@ -2207,10 +2207,48 @@ msgid "No"
 msgstr "いいえ"
 
 #. translators: %d: 配列の要素数
-#: includes/revisions.php:321
+#: includes/revisions.php:337
 #, php-format
 msgid "Too many items to list individually (%d items)."
 msgstr "件数が多いため個別には表示していません（%d件）。"
+
+#. translators: %d: 移動先の位置番号（1始まり）
+#: includes/revisions.php:515
+#, php-format
+msgid "(moved to #%d)"
+msgstr "（%d番目に移動）"
+
+#. translators: %d: 移動元の位置番号（1始まり）
+#: includes/revisions.php:521
+#, php-format
+msgid "(moved from #%d)"
+msgstr "（%d番目から移動）"
+
+#: includes/revisions.php:631
+msgid "Show changed lines only"
+msgstr "変更行のみ表示"
+
+#: includes/revisions.php:632
+msgid "Collapse unchanged lines"
+msgstr "同一行を折りたたむ"
+
+#: includes/revisions.php:633
+msgid "Export as JSON"
+msgstr "JSON形式で出力"
+
+#. translators: %d: 折りたたまれた変更なし行の件数
+#: includes/revisions.php:635
+#, php-format
+msgid "%d unchanged lines"
+msgstr "%d件の変更なし行"
+
+#: includes/revisions.php:636
+msgid "Failed to export the diff data. Please try again."
+msgstr "差分データの出力に失敗しました。もう一度お試しください。"
+
+#: includes/revisions.php:690
+msgid "Invalid request."
+msgstr "不正なリクエストです。"
 
 #: includes/blocks.php:156
 msgid "All Games List"

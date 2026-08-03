@@ -1910,9 +1910,47 @@ msgid "No"
 msgstr ""
 
 #. translators: %d: 配列の要素数
-#: includes/revisions.php:321
+#: includes/revisions.php:337
 #, php-format
 msgid "Too many items to list individually (%d items)."
+msgstr ""
+
+#. translators: %d: 移動先の位置番号（1始まり）
+#: includes/revisions.php:515
+#, php-format
+msgid "(moved to #%d)"
+msgstr ""
+
+#. translators: %d: 移動元の位置番号（1始まり）
+#: includes/revisions.php:521
+#, php-format
+msgid "(moved from #%d)"
+msgstr ""
+
+#: includes/revisions.php:631
+msgid "Show changed lines only"
+msgstr ""
+
+#: includes/revisions.php:632
+msgid "Collapse unchanged lines"
+msgstr ""
+
+#: includes/revisions.php:633
+msgid "Export as JSON"
+msgstr ""
+
+#. translators: %d: 折りたたまれた変更なし行の件数
+#: includes/revisions.php:635
+#, php-format
+msgid "%d unchanged lines"
+msgstr ""
+
+#: includes/revisions.php:636
+msgid "Failed to export the diff data. Please try again."
+msgstr ""
+
+#: includes/revisions.php:690
+msgid "Invalid request."
 msgstr ""
 
 #. translators: %d: HTTP status code
