@@ -266,133 +266,72 @@ add_action( 'wp_restore_post_revision', 'noveltool_restore_revision_meta', 10, 2
 /**
  * リビジョン比較画面でのカスタムフィールドデータ表示
  *
- * @param string $value       フィールドの値
- * @param string $field       フィールド名
- * @param object $compare_from 比較元のリビジョン
- * @param string $context     コンテキスト（'to' または 'from'）
- * @return string 表示用の値
+ * WordPressコアの `_wp_post_revision_field_{$field}` フィルタは、比較対象の
+ * from側・to側それぞれに対して1回ずつ個別に呼び出され、コア側の wp_text_diff() が
+ * 2回分の戻り値を行単位で突き合わせて追加/削除/変更をハイライトする仕組みになっている。
+ * そのため、ここでは「このリビジョン単体の状態」を読みやすいプレーンテキストとして
+ * 返すだけにとどめ、実際の差分ハイライトはコアの行差分に委ねる。
+ * フィールド1件・配列の要素1件をそれぞれ1行として出力することで、
+ * コアの行単位差分がそのまま項目単位・配列要素単位の差分表示として機能する
+ * （HTMLをここで組み立てると、コアが差分結果同士をさらに文字レベルで
+ * 突き合わせてしまい、二重に差分化された壊れた表示になるため避けている）。
+ *
+ * @param string  $value   フィールドの値（このリビジョン側の統合JSON文字列）
+ * @param string  $field   フィールド名
+ * @param WP_Post $post    このリビジョン自体の投稿オブジェクト
+ * @param string  $context コンテキスト（'to' または 'from'）
+ * @return string 表示用のプレーンテキスト
  * @since 1.2.0
  */
-function noveltool_revision_field_display( $value, $field, $compare_from, $context ) {
+function noveltool_revision_field_display( $value, $field, $post, $context ) {
     if ( '_noveltool_unified_meta' !== $field ) {
         return $value;
     }
-    
-    // 現在側(value) と 比較元(compare_from) の両方の JSON を扱い差分を判定
+
     if ( empty( $value ) ) {
-        return __( 'No Data', 'novel-game-plugin' );
+        return '';
     }
 
-    $current  = json_decode( $value, true ); // 表示対象（to もしくは from コンテキスト依存）
-    if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $current ) ) {
-        return __( 'No Data', 'novel-game-plugin' );
+    $data = json_decode( $value, true );
+    if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $data ) ) {
+        return '';
     }
 
-    // 比較元リビジョン（$compare_from）があればそちらから同フィールド値を取得
-    $previous = array();
-    if ( $compare_from && isset( $compare_from->ID ) ) {
-        $prev_raw = get_metadata( 'post', $compare_from->ID, '_noveltool_unified_meta', true );
-        if ( ! empty( $prev_raw ) ) {
-            $prev_decoded = json_decode( $prev_raw, true );
-            if ( json_last_error() === JSON_ERROR_NONE && is_array( $prev_decoded ) ) {
-                $previous = $prev_decoded;
+    $array_diff_keys = noveltool_get_array_diff_meta_keys();
+    $max_rows         = (int) apply_filters( 'noveltool_revision_array_diff_max_rows', 200 );
+    $lines            = array();
+
+    foreach ( noveltool_get_revision_meta_keys() as $key ) {
+        if ( ! array_key_exists( $key, $data ) ) {
+            continue;
+        }
+
+        $label       = noveltool_get_field_label( $key );
+        $field_value = $data[ $key ];
+
+        if ( is_array( $field_value ) && in_array( $key, $array_diff_keys, true ) ) {
+            // 配列フィールドは要素ごとに1行とし、要素単位の追加/削除/変更を
+            // コアの行差分でそのまま表現できるようにする（段階2スコープ）。
+            $lines[] = $label . ':';
+            $rows    = array_values( $field_value );
+
+            if ( count( $rows ) > $max_rows ) {
+                // 大規模配列では行差分の計算負荷が高くなるため、安全側にフォールバックする。
+                /* translators: %d: 配列の要素数 */
+                $lines[] = '  ' . sprintf( __( 'Too many items to list individually (%d items).', 'novel-game-plugin' ), count( $rows ) );
+            } else {
+                foreach ( $rows as $index => $row ) {
+                    $lines[] = '  ' . ( $index + 1 ) . '. ' . noveltool_format_array_row_line( $row );
+                }
             }
+        } else {
+            $lines[] = $label . ': ' . noveltool_format_scalar_line( $field_value );
         }
     }
 
-    // キー集合（追加/削除検出のため和集合をとる）
-    $all_keys = array_unique( array_merge( array_keys( $current ), array_keys( $previous ) ) );
-    sort( $all_keys );
-
-    $output = '<div class="noveltool-revision-data">';
-    foreach ( $all_keys as $key ) {
-        $label = noveltool_get_field_label( $key );
-        $exists_now   = array_key_exists( $key, $current );
-        $exists_prev  = array_key_exists( $key, $previous );
-        $now_val      = $exists_now ? $current[ $key ] : null;
-        $prev_val     = $exists_prev ? $previous[ $key ] : null;
-
-        // 変更タイプ判定
-        $change_type = 'unchanged';
-        if ( ! $exists_prev && $exists_now ) {
-            $change_type = 'added';
-        } elseif ( $exists_prev && ! $exists_now ) {
-            $change_type = 'removed';
-        } elseif ( $exists_prev && $exists_now ) {
-            // 値比較（シリアライズして単純比較: 配列/真偽値含む）
-            if ( noveltool_revision_values_differ( $prev_val, $now_val ) ) {
-                $change_type = 'changed';
-            }
-        }
-
-        // 表示用値
-        $formatted_now  = $exists_now  ? noveltool_format_field_value( $now_val )  : __( '(None)', 'novel-game-plugin' );
-        $formatted_prev = $exists_prev ? noveltool_format_field_value( $prev_val ) : __( '(None)', 'novel-game-plugin' );
-
-        // バッジ文言
-        switch ( $change_type ) {
-            case 'added':
-                $badge = '<span class="noveltool-rev-badge added">' . esc_html__( 'Add', 'novel-game-plugin' ) . '</span>';
-                break;
-            case 'removed':
-                $badge = '<span class="noveltool-rev-badge removed">' . esc_html__( 'Delete', 'novel-game-plugin' ) . '</span>';
-                break;
-            case 'changed':
-                $badge = '<span class="noveltool-rev-badge changed">' . esc_html__( 'Change', 'novel-game-plugin' ) . '</span>';
-                break;
-            default:
-                $badge = '<span class="noveltool-rev-badge unchanged">' . esc_html__( 'Same', 'novel-game-plugin' ) . '</span>';
-        }
-
-        $output .= '<div class="noveltool-revision-field noveltool-revision-' . esc_attr( $change_type ) . '">';
-        $output .= '<strong>' . esc_html( $label ) . '</strong> ' . $badge . '<br />';
-
-        if ( 'unchanged' === $change_type ) {
-            $output .= '<span class="noveltool-rev-value">' . wp_kses_post( $formatted_now ) . '</span>';
-        } elseif ( 'added' === $change_type ) {
-            $output .= '<span class="noveltool-rev-value new">' . wp_kses_post( $formatted_now ) . '</span>';
-        } elseif ( 'removed' === $change_type ) {
-            $output .= '<span class="noveltool-rev-value old">' . wp_kses_post( $formatted_prev ) . '</span>';
-        } else { // changed
-            $output .= '<span class="noveltool-rev-value old">' . wp_kses_post( $formatted_prev ) . '</span> → <span class="noveltool-rev-value new">' . wp_kses_post( $formatted_now ) . '</span>';
-        }
-
-        // 配列フィールドは、変更がある場合のみ行単位の詳細差分を追加情報として表示する。
-        // 変更がない場合は既存のフィールド単位表示のみを維持する（段階2スコープ）。
-        if ( 'unchanged' !== $change_type && in_array( $key, noveltool_get_array_diff_meta_keys(), true ) ) {
-            $now_arr  = noveltool_maybe_decode_array_value( $now_val );
-            $prev_arr = noveltool_maybe_decode_array_value( $prev_val );
-
-            if ( null !== $now_arr || null !== $prev_arr ) {
-                $output .= noveltool_render_array_row_diff( $prev_arr, $now_arr );
-            }
-        }
-
-        $output .= '</div>';
-    }
-    $output .= '</div>';
-    return $output;
+    return implode( "\n", $lines );
 }
-add_filter( 'wp_post_revision_field__noveltool_unified_meta', 'noveltool_revision_field_display', 10, 4 );
-
-/**
- * 値の差異を判定（配列・スカラーを包括）
- *
- * @param mixed $a 旧値
- * @param mixed $b 新値
- * @return bool 異なれば true
- * @since 1.2.1
- */
-function noveltool_revision_values_differ( $a, $b ) {
-    // 型と値を統一的に比較（配列は JSON、オブジェクトは強制配列化）
-    if ( is_array( $a ) || is_object( $a ) ) {
-        $a = wp_json_encode( $a );
-    }
-    if ( is_array( $b ) || is_object( $b ) ) {
-        $b = wp_json_encode( $b );
-    }
-    return (string) $a !== (string) $b;
-}
+add_filter( '_wp_post_revision_field__noveltool_unified_meta', 'noveltool_revision_field_display', 10, 4 );
 
 /**
  * 配列単位の行差分表示対象となるカスタムフィールドキーを取得
@@ -412,153 +351,47 @@ function noveltool_get_array_diff_meta_keys() {
 }
 
 /**
- * 値を配列として解釈できる場合に配列として返す
- *
- * `_choices` のように JSON 文字列としてメタ保存されるフィールドがあるため、
- * 配列そのものだけでなく JSON デコード可能な文字列も配列として扱う。
- *
- * @param mixed $value 判定対象の値
- * @return array|null 配列として解釈できた場合は配列、できない場合は null
- * @since 1.7.0
- */
-function noveltool_maybe_decode_array_value( $value ) {
-    if ( is_array( $value ) ) {
-        return $value;
-    }
-
-    if ( is_string( $value ) ) {
-        $decoded = json_decode( $value, true );
-        if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
-            return $decoded;
-        }
-    }
-
-    return null;
-}
-
-/**
- * 配列内の1行分の値を表示用文字列に整形
+ * 配列内の1要素を、コアの行差分に渡すための1行テキストに整形
  *
  * ネストしたキー単位の差分表示は対象外（段階3で対応）とし、
  * 連想配列は「キー: 値」の並びとして表示する。
  *
  * @param mixed $row 行データ
- * @return string 整形済みHTML（エスケープ済み）
+ * @return string 1行分のプレーンテキスト
  * @since 1.7.0
  */
-function noveltool_format_array_row_value( $row ) {
+function noveltool_format_array_row_line( $row ) {
     if ( is_array( $row ) ) {
         $parts = array();
         foreach ( $row as $row_key => $row_value ) {
-            if ( is_array( $row_value ) || is_object( $row_value ) ) {
-                $row_value = wp_json_encode( $row_value, JSON_UNESCAPED_UNICODE );
-            } elseif ( is_bool( $row_value ) ) {
-                $row_value = $row_value ? __( 'Yes', 'novel-game-plugin' ) : __( 'No', 'novel-game-plugin' );
-            }
-
-            $row_value = (string) $row_value;
-            if ( mb_strlen( $row_value ) > 50 ) {
-                $row_value = mb_substr( $row_value, 0, 50 ) . '...';
-            }
-
-            $parts[] = esc_html( $row_key ) . ': ' . esc_html( $row_value );
+            $parts[] = $row_key . ': ' . noveltool_format_scalar_line( $row_value );
         }
         return implode( ' / ', $parts );
     }
 
-    if ( is_bool( $row ) ) {
-        return $row ? esc_html__( 'Yes', 'novel-game-plugin' ) : esc_html__( 'No', 'novel-game-plugin' );
-    }
-
-    $row = (string) $row;
-    if ( mb_strlen( $row ) > 80 ) {
-        return esc_html( mb_substr( $row, 0, 80 ) ) . '...';
-    }
-    return esc_html( $row );
+    return noveltool_format_scalar_line( $row );
 }
 
 /**
- * 配列フィールドの行単位差分をHTMLとして生成
+ * スカラー値を1行のプレーンテキストに整形
  *
- * 各行を「同一 / 変更 / 追加 / 削除」に判定して表示する（段階2スコープ）。
- * 要素数が多すぎる場合は詳細表示をスキップし、負荷を抑えたフォールバック表示にする。
+ * 改行を含む値をそのまま返すと、コアの行差分での1要素=1行という
+ * 対応関係が崩れるため、区切り記号に置換する。
  *
- * @param array $prev_arr 比較元（変更前）の配列
- * @param array $now_arr  比較対象（変更後）の配列
- * @return string 生成されたHTML
+ * @param mixed $value 値
+ * @return string 1行分のプレーンテキスト
  * @since 1.7.0
  */
-function noveltool_render_array_row_diff( $prev_arr, $now_arr ) {
-    $prev_arr = array_values( (array) $prev_arr );
-    $now_arr  = array_values( (array) $now_arr );
-
-    $row_count = max( count( $prev_arr ), count( $now_arr ) );
-
-    if ( 0 === $row_count ) {
-        return '';
+function noveltool_format_scalar_line( $value ) {
+    if ( is_bool( $value ) ) {
+        return $value ? __( 'Yes', 'novel-game-plugin' ) : __( 'No', 'novel-game-plugin' );
     }
 
-    // 大規模配列では詳細差分の生成負荷が高くなるため、安全側にフォールバックする。
-    $max_rows = (int) apply_filters( 'noveltool_revision_array_diff_max_rows', 200 );
-    if ( $row_count > $max_rows ) {
-        return '<p class="noveltool-rev-array-fallback">' . esc_html__( 'Too many items to show a detailed diff. Showing summary only.', 'novel-game-plugin' ) . '</p>';
+    if ( is_array( $value ) || is_object( $value ) ) {
+        $value = wp_json_encode( $value, JSON_UNESCAPED_UNICODE );
     }
 
-    $output = '<div class="noveltool-revision-array-diff">';
-
-    for ( $i = 0; $i < $row_count; $i++ ) {
-        $exists_prev = array_key_exists( $i, $prev_arr );
-        $exists_now  = array_key_exists( $i, $now_arr );
-        $prev_row    = $exists_prev ? $prev_arr[ $i ] : null;
-        $now_row     = $exists_now ? $now_arr[ $i ] : null;
-
-        if ( ! $exists_prev && $exists_now ) {
-            $row_change = 'added';
-        } elseif ( $exists_prev && ! $exists_now ) {
-            $row_change = 'removed';
-        } elseif ( noveltool_revision_values_differ( $prev_row, $now_row ) ) {
-            $row_change = 'changed';
-        } else {
-            $row_change = 'unchanged';
-        }
-
-        switch ( $row_change ) {
-            case 'added':
-                $badge = '<span class="noveltool-rev-badge added">' . esc_html__( 'Add', 'novel-game-plugin' ) . '</span>';
-                break;
-            case 'removed':
-                $badge = '<span class="noveltool-rev-badge removed">' . esc_html__( 'Delete', 'novel-game-plugin' ) . '</span>';
-                break;
-            case 'changed':
-                $badge = '<span class="noveltool-rev-badge changed">' . esc_html__( 'Change', 'novel-game-plugin' ) . '</span>';
-                break;
-            default:
-                $badge = '<span class="noveltool-rev-badge unchanged">' . esc_html__( 'Same', 'novel-game-plugin' ) . '</span>';
-        }
-
-        /* translators: %d: 配列内の行番号（1始まり） */
-        $row_label = sprintf( __( 'Row %d', 'novel-game-plugin' ), $i + 1 );
-
-        $output .= '<div class="noveltool-revision-array-row noveltool-revision-' . esc_attr( $row_change ) . '">';
-        $output .= '<span class="noveltool-rev-row-label">' . esc_html( $row_label ) . '</span> ' . $badge;
-
-        if ( 'unchanged' === $row_change ) {
-            $output .= '<div class="noveltool-rev-value">' . noveltool_format_array_row_value( $now_row ) . '</div>';
-        } elseif ( 'added' === $row_change ) {
-            $output .= '<div class="noveltool-rev-value new">' . noveltool_format_array_row_value( $now_row ) . '</div>';
-        } elseif ( 'removed' === $row_change ) {
-            $output .= '<div class="noveltool-rev-value old">' . noveltool_format_array_row_value( $prev_row ) . '</div>';
-        } else { // changed
-            $output .= '<div class="noveltool-rev-value old">' . noveltool_format_array_row_value( $prev_row ) . '</div>';
-            $output .= '<div class="noveltool-rev-value new">' . noveltool_format_array_row_value( $now_row ) . '</div>';
-        }
-
-        $output .= '</div>';
-    }
-
-    $output .= '</div>';
-
-    return $output;
+    return str_replace( array( "\r\n", "\r", "\n" ), ' ⏎ ', (string) $value );
 }
 
 /**
@@ -592,84 +425,3 @@ function noveltool_get_field_label( $key ) {
     
     return isset( $labels[ $key ] ) ? $labels[ $key ] : $key;
 }
-
-/**
- * カスタムフィールド値を表示用に整形
- *
- * @param mixed $value カスタムフィールド値
- * @return string 整形された値
- * @since 1.2.0
- */
-function noveltool_format_field_value( $value ) {
-    // 配列の場合
-    if ( is_array( $value ) ) {
-        $count = count( $value );
-        /* translators: %d: number of array items */
-        return sprintf( __( 'Array (%d items)', 'novel-game-plugin' ), $count );
-    }
-    
-    // 真偽値の場合
-    if ( is_bool( $value ) ) {
-        return $value ? __( 'Yes', 'novel-game-plugin' ) : __( 'No', 'novel-game-plugin' );
-    }
-    
-    // 文字列の場合（長い場合は省略）
-    if ( is_string( $value ) ) {
-        if ( mb_strlen( $value ) > 50 ) {
-            return esc_html( mb_substr( $value, 0, 50 ) ) . '...';
-        }
-        return esc_html( $value );
-    }
-    
-    // その他
-    return esc_html( (string) $value );
-}
-
-/**
- * リビジョン比較画面用のスタイルを追加
- *
- * @since 1.2.0
- */
-function noveltool_revision_styles() {
-    global $pagenow;
-    
-    if ( 'revision.php' === $pagenow ) {
-        ?>
-        <style>
-        .noveltool-revision-data {
-            padding: 10px;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-        }
-        .noveltool-revision-field {
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .noveltool-revision-field:last-child {
-            border-bottom: none;
-        }
-        .noveltool-revision-field strong {
-            color: #333;
-            min-width: 150px;
-            display: inline-block;
-        }
-        .noveltool-revision-field span { color: #555; }
-        .noveltool-revision-field .noveltool-rev-badge { display:inline-block; margin-left:4px; padding:2px 6px; font-size:11px; border-radius:10px; background:#ccc; color:#222; line-height:1.2; }
-        .noveltool-revision-field.changed .noveltool-rev-badge.changed { background:#f0ad4e; color:#222; }
-        .noveltool-revision-field.added .noveltool-rev-badge.added { background:#5cb85c; color:#fff; }
-        .noveltool-revision-field.removed .noveltool-rev-badge.removed { background:#d9534f; color:#fff; }
-        .noveltool-revision-field.unchanged .noveltool-rev-badge.unchanged { background:#e0e0e0; color:#555; }
-        .noveltool-rev-value.old { text-decoration:line-through; opacity:0.7; }
-        .noveltool-rev-value.new { font-weight:bold; }
-        .noveltool-revision-array-diff { margin-top:6px; padding-left:10px; border-left:2px solid #ddd; }
-        .noveltool-revision-array-row { padding:4px 0; border-bottom:1px dotted #e5e5e5; }
-        .noveltool-revision-array-row:last-child { border-bottom:none; }
-        .noveltool-rev-row-label { font-size:11px; color:#777; min-width:60px; display:inline-block; }
-        .noveltool-revision-array-row .noveltool-rev-value { margin-left:4px; font-size:13px; }
-        .noveltool-rev-array-fallback { font-style:italic; color:#777; margin-top:6px; }
-        </style>
-        <?php
-    }
-}
-add_action( 'admin_head', 'noveltool_revision_styles' );

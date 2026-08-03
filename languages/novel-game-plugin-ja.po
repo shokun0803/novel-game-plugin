@@ -2198,28 +2198,19 @@ msgstr "エンディングテキスト"
 msgid "Scene Arrival Flags"
 msgstr "シーン到達時フラグ"
 
-#: includes/revisions.php:410
-#, php-format
-msgid "Array (%d items)"
-msgstr "配列（%d要素）"
-
-#: includes/revisions.php:415
+#: includes/revisions.php:387
 msgid "Yes"
 msgstr "はい"
 
-#: includes/revisions.php:415
+#: includes/revisions.php:387
 msgid "No"
 msgstr "いいえ"
 
-#: includes/revisions.php:504
-msgid "Too many items to show a detailed diff. Showing summary only."
-msgstr "件数が多いため詳細差分は省略し、要約のみ表示しています。"
-
-#. translators: %d: 配列内の行番号（1始まり）
-#: includes/revisions.php:540
+#. translators: %d: 配列の要素数
+#: includes/revisions.php:321
 #, php-format
-msgid "Row %d"
-msgstr "%d行目"
+msgid "Too many items to list individually (%d items)."
+msgstr "件数が多いため個別には表示していません（%d件）。"
 
 #: includes/blocks.php:156
 msgid "All Games List"
